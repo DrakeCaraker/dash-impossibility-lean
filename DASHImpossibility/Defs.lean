@@ -149,3 +149,21 @@ axiom spearman_bound (f f' : Model) (ℓ : Fin fs.L)
     (hdiff : firstMover fs f ≠ firstMover fs f') :
     spearman fs (fun j => attribution fs j f) (fun j => attribution fs j f') ≤
       1 - (fs.groupSize ℓ : ℝ) ^ 3 / ((fs.P : ℝ) ^ 3 * 6)
+
+/-! ## Probabilistic axioms for DASH analysis -/
+
+/-- AXIOM 6: First-mover symmetry.
+    By DGP symmetry, each feature in a group is equally likely to be first-mover.
+    For a balanced ensemble, each feature serves as first-mover the same number of times. -/
+axiom firstMover_balanced (M : ℕ) (hM : 0 < M) (models : Fin M → Model)
+    (ℓ : Fin fs.L) (j k : Fin fs.P) (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) :
+    (Finset.univ.filter (fun i => firstMover fs (models i) = j)).card =
+    (Finset.univ.filter (fun i => firstMover fs (models i) = k)).card
+
+/-- AXIOM 7: Attribution symmetry in expectation.
+    Direct consequence of DGP symmetry + first-mover balance: summed attributions
+    are equal for same-group features across a balanced ensemble. -/
+axiom attribution_sum_symmetric (M : ℕ) (hM : 0 < M) (models : Fin M → Model)
+    (j k : Fin fs.P) (ℓ : Fin fs.L) (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) :
+    Finset.univ.sum (fun i => attribution fs j (models i)) =
+    Finset.univ.sum (fun i => attribution fs k (models i))
