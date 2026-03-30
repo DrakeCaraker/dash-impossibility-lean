@@ -6,3 +6,4 @@ import DASHImpossibility.SplitGap
 import DASHImpossibility.Ratio
 import DASHImpossibility.General
 import DASHImpossibility.Impossibility
+import DASHImpossibility.Corollary
