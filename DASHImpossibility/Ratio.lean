@@ -20,7 +20,7 @@ variable (fs : FeatureSpace)
 theorem splitCount_ratio (f : Model) (j₁ j₂ : Fin fs.P) (ℓ : Fin fs.L)
     (hj₁ : j₁ ∈ fs.group ℓ) (hj₂ : j₂ ∈ fs.group ℓ)
     (hfm : firstMover fs f = j₁) (hne : firstMover fs f ≠ j₂) :
-    (splitCount fs j₁ f : ℝ) / (splitCount fs j₂ f : ℝ) =
+    splitCount fs j₁ f / splitCount fs j₂ f =
       1 / (1 - fs.ρ ^ 2) := by
   have hfm_grp : firstMover fs f ∈ fs.group ℓ := by rw [hfm]; exact hj₁
   rw [splitCount_firstMover fs f j₁ hfm,
@@ -48,10 +48,20 @@ theorem attribution_ratio (f : Model) (j₁ j₂ : Fin fs.P) (ℓ : Fin fs.L)
 theorem ratio_tendsto_atTop :
     Filter.Tendsto (fun ρ : ℝ => 1 / (1 - ρ ^ 2))
       (nhdsWithin 1 (Set.Iio 1)) Filter.atTop := by
-  -- TODO: Factor 1-ρ² = (1-ρ)(1+ρ), use Tendsto.div and
-  -- tendsto_inv_zero_atTop on the (1-ρ) factor.
-  -- Mathlib has the primitives in Mathlib.Topology.Algebra.Order.LiminfLimsup
-  -- and Mathlib.Analysis.SpecificLimits.Basic.
-  sorry
+  simp_rw [one_div]
+  apply Filter.Tendsto.comp tendsto_inv_nhdsGT_zero
+  -- Goal: Tendsto (fun ρ => 1 - ρ ^ 2) (𝓝[<] 1) (𝓝[>] 0)
+  apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within
+  · -- Tendsto (fun ρ => 1 - ρ ^ 2) (𝓝[<] 1) (𝓝 0)
+    have : Filter.Tendsto (fun ρ : ℝ => 1 - ρ ^ 2) (nhds 1) (nhds 0) := by
+      have h : (fun ρ : ℝ => 1 - ρ ^ 2) = (fun ρ => 1 - ρ ^ 2) := rfl
+      have : (1 : ℝ) - (1 : ℝ) ^ 2 = 0 := by ring
+      rw [← this]
+      exact ((continuous_const.sub (continuous_pow 2)).tendsto 1)
+    exact this.mono_left nhdsWithin_le_nhds
+  · -- ∀ᶠ ρ in 𝓝[<] 1, 1 - ρ ^ 2 ∈ Set.Ioi 0
+    filter_upwards [Ioo_mem_nhdsLT (show (0 : ℝ) < 1 by norm_num)] with ρ hρ
+    simp only [Set.mem_Ioi, Set.mem_Ioo] at *
+    nlinarith [sq_nonneg ρ]
 
 end DASHImpossibility

@@ -20,7 +20,7 @@ variable (fs : FeatureSpace)
 theorem splitCount_firstMover_gt (f : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
     (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ)
     (hfm : firstMover fs f = j) (hjk : j ≠ k) :
-    (splitCount fs k f : ℝ) < (splitCount fs j f : ℝ) := by
+    splitCount fs k f < splitCount fs j f := by
   have hne : firstMover fs f ≠ k := by rw [hfm]; exact hjk
   have hgap := split_gap_exact fs f j k ℓ hj hk hfm hne
   have hpos : 0 < fs.ρ ^ 2 * (numTrees : ℝ) / (2 - fs.ρ ^ 2) :=

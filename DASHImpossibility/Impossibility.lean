@@ -41,12 +41,12 @@ theorem not_equitable (f : Model) (j₁ j₂ : Fin fs.P) (ℓ : Fin fs.L)
 
 /-! ### Part (ii): Stability bound -/
 
-/-- Stability is bounded: Spearman ≤ 1 - (m/P)³/6 when first-movers differ. -/
+/-- Stability is bounded: Spearman ≤ 1 - (m/P)³ when first-movers differ. -/
 theorem not_stable (f f' : Model) (ℓ : Fin fs.L)
     (hfm_grp : firstMover fs f ∈ fs.group ℓ)
     (hfm'_grp : firstMover fs f' ∈ fs.group ℓ)
     (hdiff : firstMover fs f ≠ firstMover fs f')
-    (δ : ℝ) (hδ : δ < (fs.groupSize ℓ : ℝ) ^ 3 / ((fs.P : ℝ) ^ 3 * 6)) :
+    (δ : ℝ) (hδ : δ < (fs.groupSize ℓ : ℝ) ^ 3 / (fs.P : ℝ) ^ 3) :
     ¬ isStable δ (spearman fs (fun j => attribution fs j f)
                                 (fun j => attribution fs j f')) := by
   unfold isStable
@@ -66,7 +66,7 @@ theorem impossibility (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
     attribution fs j f / attribution fs k f ≥ 1 + fs.ρ ^ 2 / (1 - fs.ρ ^ 2) ∧
     -- AND stability is bounded:
     spearman fs (fun i => attribution fs i f) (fun i => attribution fs i f') ≤
-      1 - (fs.groupSize ℓ : ℝ) ^ 3 / ((fs.P : ℝ) ^ 3 * 6) := by
+      1 - (fs.groupSize ℓ : ℝ) ^ 3 / (fs.P : ℝ) ^ 3 := by
   refine ⟨?_, ?_⟩
   · exact attribution_ratio_ge fs f j k ℓ hj hk hfm (by rw [hfm]; exact hjk)
   · exact spearman_bound fs f f' ℓ (by rw [hfm]; exact hj) (by rw [hfm']; exact hk)
