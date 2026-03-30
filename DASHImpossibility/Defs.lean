@@ -107,9 +107,11 @@ axiom splitCount_nonFirstMover (f : Model) (j : Fin fs.P)
     (splitCount fs j f : ℝ) = (1 - fs.ρ ^ 2) * numTrees / (2 - fs.ρ ^ 2)
 
 /-- AXIOM 4: Attribution proportional to split count (Assumption 7).
-    Under the uniform-contribution model, φ_j = c · n_j for some c > 0. -/
-axiom attribution_proportional (f : Model) (j : Fin fs.P) :
-    ∃ c : ℝ, 0 < c ∧ attribution fs j f = c * (splitCount fs j f : ℝ)
+    Under the uniform-contribution model, every feature in a given model
+    shares the same proportionality constant: φ_j = c · n_j for all j. -/
+axiom attribution_proportional (f : Model) :
+    ∃ c : ℝ, 0 < c ∧ ∀ (j : Fin fs.P),
+      attribution fs j f = c * (splitCount fs j f : ℝ)
 
 /-! ## Stability and equity definitions -/
 
