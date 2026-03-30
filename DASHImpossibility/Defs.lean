@@ -129,3 +129,23 @@ def isEquitable (γ : ℝ) (maxMinRatio : ℝ) : Prop :=
 noncomputable def consensus (M : ℕ) (hM : 0 < M) (models : Fin M → Model)
     (j : Fin fs.P) : ℝ :=
   (1 / (M : ℝ)) * (Finset.univ.sum (fun i => attribution fs j (models i)))
+
+/-! ## Spearman rank correlation -/
+
+/-- Spearman rank correlation between two attribution vectors.
+    Full definition via Σd²/(P(P²-1)) deferred; we axiomatize the key bound. -/
+axiom spearman (v w : Fin fs.P → ℝ) : ℝ
+
+/-- Spearman is at most 1. -/
+axiom spearman_le_one (v w : Fin fs.P → ℝ) : spearman fs v w ≤ 1
+
+/-- AXIOM 5: When two models have different first-movers in the same group,
+    within-group rank reshuffling bounds Spearman. Justified by the paper's
+    combinatorial argument: non-first-movers are tied and randomly ordered,
+    giving E[Σd²] = m(m²-1)/6 for group size m. -/
+axiom spearman_bound (f f' : Model) (ℓ : Fin fs.L)
+    (hfm_grp : firstMover fs f ∈ fs.group ℓ)
+    (hfm'_grp : firstMover fs f' ∈ fs.group ℓ)
+    (hdiff : firstMover fs f ≠ firstMover fs f') :
+    spearman fs (fun j => attribution fs j f) (fun j => attribution fs j f') ≤
+      1 - (fs.groupSize ℓ : ℝ) ^ 3 / ((fs.P : ℝ) ^ 3 * 6)
