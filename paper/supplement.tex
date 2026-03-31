@@ -127,6 +127,31 @@ Consequently, binned flip rates are non-monotonic in $|\rho|$: the highest
 instability occurs not at maximal correlation but at the intersection of
 high correlation and similar feature importance.
 
+\section{Depth Dependence of the Signal Capture Fraction}
+
+The corrected ratio $1/(1-\alpha\rho^2)$ from the main text uses
+$\alpha \approx 2/\pi$ for stumps (depth~1). We find that $\alpha$
+is non-monotonic in tree depth:
+
+\begin{center}
+\small
+\begin{tabular}{@{}clp{6.5cm}@{}}
+\toprule
+Depth & $\alpha$ (fitted) & Behavior \\
+\midrule
+1 & ${\approx}\,0.60$ ($R^2{=}0.89$) & Consistent with $2/\pi$: one binary split captures $2/\pi$ of Gaussian signal variance \\
+3 & ${\approx}\,0.30$ & Ratio ${\approx}1.3$ nearly $\rho$-independent; depth-3 trees use multiple features per tree, distributing splits and reducing the first-mover advantage \\
+6 & ${\approx}\,0.60$ & Recovers stump-like $\alpha$; the root split dominates deeper trees \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Practitioner guidance:} depth~3 gives the \emph{lowest}
+attribution instability among standard configurations. For users
+prioritizing explanation stability over predictive accuracy, shallow
+ensembles with moderate depth and \DASH{} consensus ($M \geq 5$)
+provide a practical tradeoff.
+
 \section{Gaussian Conditioning Argument}
 
 The split count formulas (Axioms~2--3) are justified by the following

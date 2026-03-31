@@ -87,11 +87,11 @@ def fig_ratio_divergence():
     ax.plot(rho_dense, theory, color="#d62728", linestyle="--", lw=1.0,
             label=r"Idealized ($\alpha{=}1$): $1/(1-\rho^2)$", zorder=2)
 
-    # Corrected curve: 1/(1 - alpha * rho^2) with alpha = 0.615 (fitted)
-    ALPHA_FIT = 0.615
+    # Corrected curve: 1/(1 - alpha * rho^2) with alpha = 2/pi (fitted ≈ 0.60)
+    ALPHA_FIT = 2.0 / np.pi  # 0.637; fitted value is 0.60
     corrected = 1.0 / (1.0 - ALPHA_FIT * rho_dense ** 2)
     ax.plot(rho_dense, corrected, color="#2ca02c", linestyle="-", lw=1.4,
-            label=r"Corrected ($\alpha{=}0.62$): $1/(1-\alpha\rho^2)$", zorder=3)
+            label=r"Corrected ($\alpha{=}2/\pi$): $1/(1-\alpha\rho^2)$", zorder=3)
 
     if has_validation:
         with open(val_path) as vf:

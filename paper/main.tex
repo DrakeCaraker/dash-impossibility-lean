@@ -52,7 +52,7 @@ SHAP values are widely used for feature attribution in machine learning, yet pra
 We prove an \emph{attribution impossibility}: no single model can simultaneously produce feature attributions that are faithful (reflecting true model reliance), stable (robust to retraining), and complete (summing to the prediction).
 The proof proceeds in two layers.
 First, a model-agnostic argument shows that the Rashomon property of collinear designs forces symmetric features into conflicting orderings across near-optimal models.
-Second, model-specific bounds quantify the severity: for gradient-boosted trees, the attribution ratio follows $1/(1-\alpha\rho^2)$ where $\alpha$ is the per-tree signal capture fraction ($\alpha \approx 0.62$ empirically, $R^2 = 0.96$); for Lasso, the ratio is infinite; while random forests remain bounded at $O(1/\sqrt{T})$.
+Second, model-specific bounds quantify the severity: for gradient-boosted trees the attribution ratio follows $1/(1-\alpha\rho^2)$ ($\alpha \approx 2/\pi$, validated empirically); for Lasso it is infinite; while random forests remain bounded at $O(1/\sqrt{T})$.
 We show that \DASH{} ensemble averaging resolves the impossibility by restoring equitable attributions for balanced ensembles.
 The entire proof---28 substantive theorems with no unresolved goals---is mechanically verified in Lean~4, constituting the first formally verified impossibility result in explainable AI.
 \end{abstract}
@@ -278,7 +278,7 @@ Writing $1-\rho^2 = (1-\rho)(1+\rho)$, we see that $1/(1-\rho^2) \to +\infty$ as
 In the Lean~4 formalization, the limit is proved using the filter-based definition of convergence in Mathlib's \texttt{Analysis.SpecialFunctions}.
 \end{proof}
 
-Theorem~\ref{thm:ratio} assumes full signal capture ($\alpha{=}1$); for finite-depth trees, $\alpha < 1$ yields a corrected ratio $1/(1{-}\alpha\rho^2)$ with $\alpha \approx 0.62$ for stumps ($R^2{=}0.96$; Figure~\ref{fig:ratio}).
+For finite-depth trees, the effective signal capture $\alpha < 1$ yields a corrected ratio $1/(1{-}\alpha\rho^2)$; for stumps $\alpha \approx 2/\pi$ ($R^2{=}0.89$; Figure~\ref{fig:ratio}).
 
 For stability, when two models $f, f'$ have different first-movers within the same group of size $m$, the within-group rank reshuffling bounds the Spearman correlation:
 \[
@@ -382,7 +382,7 @@ TreeSHAP values provide feature attributions.
 \begin{subfigure}[t]{0.31\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figures/ratio_divergence.pdf}
-\caption{Attribution ratio vs.\ $\rho$. The corrected model $1/(1{-}\alpha\rho^2)$ with $\alpha{=}0.62$ (solid) fits the data ($R^2{=}0.96$); the idealized $1/(1{-}\rho^2)$ (dashed) is a theoretical upper bound.}
+\caption{Attribution ratio vs.\ $\rho$. The corrected $1/(1{-}\alpha\rho^2)$ with $\alpha{\approx}2/\pi$ (solid) fits stumps ($R^2{=}0.89$); the idealized $\alpha{=}1$ (dashed) is a theoretical upper bound.}
 \label{fig:ratio}
 \end{subfigure}\hfill
 \begin{subfigure}[t]{0.31\textwidth}
@@ -445,7 +445,7 @@ The impossibility requires $\rho > 0$, with minor practical impact when $\rho$ i
 The balanced ensemble assumption is idealized, though $O(1/M)$ convergence is robust to approximate balance.
 The variance bound is stated but not yet formally proved, pending Mathlib infrastructure.
 Decorrelating via PCA removes collinearity but destroys the original feature semantics---the impossibility applies to original features, which are what practitioners want to explain.
-\DASH{} requires $M\times$ training cost; at $M = 25$, this is practical for models training in under one hour but may be prohibitive for very large models.
+\DASH{} requires $M\times$ training cost; $M{=}25$ brings the flip rate below 1\%, while $M{=}5$ provides a substantial improvement (variance reduced $5\times$) at modest cost.
 
 \paragraph{Regulatory implications.}
 Our theorem proves that attribution instability under collinearity is a ``known and foreseeable circumstance'' affecting accuracy under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}.
