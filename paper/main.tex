@@ -443,8 +443,8 @@ All previous results are corollaries: Theorem~\ref{thm:impossibility} is the inf
 The full proof, with the Pareto optimality argument and five formal corollaries, is in the supplement.
 
 This characterization parallels Arrow's landscape: Arrow's theorem restricts the space of social welfare functions; our theorem restricts the space of attribution aggregation methods.
-But unlike Arrow's setting---where the three relaxation paths yield distinct solutions (Borda count, majority rule, single-peaked preferences)---our relaxation paths \emph{converge}: the optimal ``drop faithfulness'' method equals the optimal ``drop completeness'' method (\DASH{}).
-The M-axis is the unique design dimension.
+The structural parallel holds at the formal level, though the substantive interpretation differs: Arrow aggregates heterogeneous preferences of distinct agents, while we aggregate noisy measurements of the same underlying quantity.
+Unlike Arrow's setting---where the three relaxation paths yield distinct solutions---our relaxation paths \emph{converge} (supplement), reflecting the DGP symmetry that Arrow's voters lack.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Work}
@@ -458,7 +458,7 @@ Our result is the first to address cross-model \emph{stability}, give quantitati
 
 \paragraph{Rashomon effect and model multiplicity.}
 \citet{laberge2023partial} find that attribution rankings across Rashomon sets are inherently partial orders; \citet{rudin2024amazing} advocate embracing model multiplicity.
-Our theorem shows the partial order is not an artifact of insufficient search but a mathematical necessity, and \DASH{} provides a principled aggregation.
+Our theorem shows the partial order is not a pragmatic choice but a mathematical necessity: completeness is formally incompatible with faithfulness and stability. \DASH{} provides the provably optimal aggregation within this partial-order framework.
 
 \paragraph{Fairness impossibility.}
 \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove calibration, balance, and equal false positive rates cannot coexist.

@@ -583,6 +583,12 @@ Compute & Synthetic: ${<}5$ min; Validation: ${<}30$ min;
 All experiments use publicly available datasets (California Housing and
 Breast Cancer from scikit-learn) and are fully reproducible from the
 scripts in the anonymized code repository.
+Note: each seed uses a different train/test split, so SHAP values are
+computed on seed-specific test sets. This conflates model instability
+with evaluation-set variation; the reported flip rates may slightly
+overestimate pure model instability. A fixed-evaluation-set design
+would isolate the model effect, at the cost of reduced test-set
+diversity.
 A minimal reference implementation of \DASH{} consensus attribution
 (\texttt{dash\_example.py}) is included in the code supplement,
 demonstrating the practical recommendation of \S5: train $M \geq 25$
@@ -1423,6 +1429,10 @@ Heart Disease) where split counts are reliable, but drops to
 counts are sparse. This confirms F5 as a conservative
 \emph{screening} tool: it works well for moderate-$P$ datasets but
 should be supplemented by the full F1 test for high-dimensional settings.
+All datasets use identical XGBoost hyperparameters ($T{=}100$,
+depth${=}6$, $\eta{=}0.1$); absolute flip rates are therefore not
+directly comparable across datasets of different sizes and
+dimensionalities.
 
 \begin{figure}[ht]
 \centering
@@ -1467,7 +1477,8 @@ in financial modeling (duration~$\leftrightarrow$~credit amount,
 $|\rho| = 0.63$; job~$\leftrightarrow$~own telephone, $|\rho| = 0.37$).
 
 \paragraph{Step 0.} The correlation matrix identifies 4 correlated groups
-at threshold $|\rho| > 0.3$.
+at threshold $|\rho| > 0.3$ (lowered from the standard $0.5$ because
+German Credit has modest correlations; only 1 pair exceeds $0.5$).
 
 \paragraph{Step 1 (F5).} A single XGBoost model flags 1 pair as
 potentially unstable: job~$\leftrightarrow$~own telephone
