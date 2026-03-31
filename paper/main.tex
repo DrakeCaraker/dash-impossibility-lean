@@ -154,7 +154,7 @@ A ranking $\succ$ is \emph{stable} if it does not depend on the choice of model 
 
 \begin{definition}[Complete]
 \label{def:complete}
-A ranking $\succ$ is \emph{complete} if for every pair $j \neq k$, either $j \succ k$ or $k \succ j$.
+A ranking $\succ$ is \emph{complete} if for every pair $j \neq k$, either $j \succ k$ or $k \succ j$.\footnote{Not to be confused with SHAP's ``completeness'' axiom ($\sum_j \varphi_j = f(x) - \E[f(X)]$). Our ``complete'' means \emph{total}: the ranking decides every pair.}
 \end{definition}
 
 The first desideratum asks that the ranking reflect what the model actually learned; the second asks that it be reproducible across training runs; the third asks that it resolve all feature pairs.
@@ -176,7 +176,7 @@ A model class satisfies the \emph{Rashomon property} if for every group $\ell$ a
 \]
 \end{definition}
 
-The Rashomon property is a consequence of the Rashomon effect \citep{rudin2024amazing}: collinear designs admit many near-optimal models, and within the set of good models, symmetric features are utilized in all possible orderings.
+The Rashomon property is a consequence of the Rashomon effect \citep{rudin2024amazing,fisher2019models}: collinear designs admit many near-optimal models \citep{damour2022underspecification}, and within the set of good models, symmetric features are utilized in all possible orderings.
 \citet{laberge2023partial} study consensus across such model sets and observe that feature rankings are inherently partial---a conclusion our theorem makes precise.
 
 \subsection{Main Result}
@@ -351,10 +351,10 @@ $\bar{\varphi}_j = \bar{\varphi}_k$.
 \end{corollary}
 
 \begin{proof}
-By balance, $j$ is first-mover in $M/m$ models and non-first-mover in $(m-1)M/m$ models.
-By Axiom~\ref{ax:splits} and~\ref{ax:proportional}, the total attribution for $j$ is
-$\sum_i \varphi_j(f_i) = c \cdot \bigl[\tfrac{M}{m} \cdot \tfrac{T}{2-\rho^2} + \tfrac{(m-1)M}{m} \cdot \tfrac{(1-\rho^2)T}{2-\rho^2}\bigr]$.
-This expression is identical for every feature in the group, so $\bar{\varphi}_j = \bar{\varphi}_k$.
+By DGP symmetry, permuting features $j \leftrightarrow k$ leaves the joint distribution invariant.
+For a balanced ensemble, each feature serves as first-mover equally often, so the summed split counts satisfy $\sum_i n_j(f_i) = \sum_i n_k(f_i)$.
+When the proportionality constant $c$ is uniform across models (a consequence of identical hyperparameters), this gives $\sum_i \varphi_j(f_i) = \sum_i \varphi_k(f_i)$.
+In the Lean~4 formalization, this equality is axiomatized directly for balanced ensembles.
 \end{proof}
 
 \paragraph{Between-group stability.}
@@ -439,6 +439,8 @@ The split-count axioms represent leading-order behavior of idealized greedy spli
 The impossibility requires $\rho > 0$, with minor practical impact when $\rho$ is small.
 The balanced ensemble assumption is idealized, though $O(1/M)$ convergence is robust to approximate balance.
 The variance bound is stated but not yet formally proved, pending Mathlib infrastructure.
+Decorrelating via PCA removes collinearity but destroys the original feature semantics---the impossibility applies to original features, which are what practitioners want to explain.
+\DASH{} requires $M\times$ training cost; at $M = 25$, this is practical for models training in under one hour but may be prohibitive for very large models.
 
 \paragraph{Regulatory implications.}
 Our theorem proves that attribution instability under collinearity is a ``known and foreseeable circumstance'' affecting accuracy under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}.
