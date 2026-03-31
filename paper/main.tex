@@ -1,5 +1,8 @@
 \documentclass{article}
-\usepackage[preprint]{neurips_2026}
+% For anonymous submission (NeurIPS review):
+\usepackage{neurips_2026}
+% For preprint / arXiv (shows authors):
+% \usepackage[preprint]{neurips_2026}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{hyperref}
@@ -30,12 +33,15 @@
 
 \title{The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity}
 
-\author{
-  Drake Caraker\thanks{Corresponding author: \texttt{drakecaraker@gmail.com}} \quad
-  Bryan Arnold \quad
-  David Rhoads \\[4pt]
-  \textit{Independent Researchers}
-}
+% Author block hidden for anonymous review.
+% Uncomment for camera-ready / arXiv preprint:
+% \author{
+%   Drake Caraker\thanks{Corresponding author: \texttt{drakecaraker@gmail.com}} \quad
+%   Bryan Arnold \quad
+%   David Rhoads \\[4pt]
+%   \textit{Independent Researchers}
+% }
+\author{Anonymous Authors}
 
 \begin{document}
 
@@ -85,7 +91,7 @@ The formalization also proved valuable beyond certification: during translation 
     \item \textbf{The Attribution Impossibility} (Theorem~\ref{thm:impossibility}): a model-agnostic theorem requiring only the Rashomon property---no model-specific axioms---showing faithfulness, stability, and completeness cannot coexist under collinearity. Model-specific instantiations (\S\ref{sec:bounds}) provide quantitative severity bounds.
     \item \textbf{Architecture discrimination}: We derive closed-form attribution ratios for \GBDT{} ($1/(1-\rho^2)$), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$), explaining why some architectures exhibit more severe instability than others.
     \item \textbf{Constructive resolution via \DASH{}}: We show that ensemble averaging over balanced model collections restores equitable attributions with variance $O(1/M)$, providing a practical path forward.
-    \item \textbf{Machine-verified proof}: The entire argument is formalized in Lean~4 (28 substantive theorems, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
+    \item \textbf{Machine-verified proof}: The entire argument is formalized in Lean~4 (28 substantive theorems, 0 \texttt{sorry}), publicly available at \url{[anonymized for review]}.
 \end{enumerate}
 
 \section{Setup}
@@ -429,7 +435,7 @@ Our 29-theorem Lean~4 formalization is the first formally verified result in exp
 \label{sec:discussion}
 
 \paragraph{Limitations.}
-The proof axiomatizes gradient boosting via split-count formulas (SymPy-verified) rather than deriving them from algorithmic definitions; deriving the axioms in Lean~4 remains open.
+The split-count axioms represent leading-order behavior of idealized greedy splitting; empirical ratios are lower (Figure~\ref{fig:ratio}), consistent with finite depth and learning-rate damping. Crucially, the qualitative prediction---ratio $> 1$, increasing with $\rho$---holds across all tested configurations, confirming the impossibility is structural.
 The impossibility requires $\rho > 0$, with minor practical impact when $\rho$ is small.
 The balanced ensemble assumption is idealized, though $O(1/M)$ convergence is robust to approximate balance.
 The variance bound is stated but not yet formally proved, pending Mathlib infrastructure.
@@ -448,7 +454,7 @@ Characterizing the stability--equity Pareto frontier, deriving split-count axiom
 \section*{NeurIPS Paper Checklist}
 
 \begin{enumerate}
-\item \textbf{Claims.} All theoretical claims are formally verified by the Lean~4 type checker (29 theorems, 0 \texttt{sorry}). Empirical claims are backed by experiments over 50 random seeds. [Yes]
+\item \textbf{Claims.} All theoretical claims are formally verified by the Lean~4 type checker (28 substantive theorems, 0 \texttt{sorry}). Empirical claims are backed by experiments over 50 random seeds. [Yes]
 
 \item \textbf{Limitations.} Discussed in Section~\ref{sec:discussion}: axiomatization gap, collinearity requirement, balanced ensemble assumption, deferred variance bound. [Yes]
 
@@ -456,7 +462,7 @@ Characterizing the stability--equity Pareto frontier, deriving split-count axiom
 
 \item \textbf{Experiments.}
   \begin{itemize}
-    \item Code: \url{https://github.com/DrakeCaraker/dash-impossibility-lean}
+    \item Code: \url{[anonymized for review]}
     \item Data: Synthetic Gaussian (generation code included)
     \item Compute: Standard laptop, no GPU required
     \item Seeds: 50 independent random seeds per configuration
