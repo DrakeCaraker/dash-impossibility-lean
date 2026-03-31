@@ -17,6 +17,7 @@ lake-packages/
 *.fdb_latexmk
 *.synctex.gz
 paper/main.pdf
+paper/supplement.pdf
 
 # Claude Code / Alfred
 .claude/.onboarding-state.json
@@ -25,3 +26,5 @@ paper/main.pdf
 .claude/.pilot-identity.json
 .claude/settings.local.json
 .claude/worktrees/
+.claude/.pilot-session-start
+.claude/.session-count
