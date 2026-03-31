@@ -1534,6 +1534,75 @@ a defensible explanation.
 The full output (Step 0--4 with numbers) is in the code supplement
 (\texttt{financial\_case\_study.py}).
 
+\subsection{Financial case study: Taiwan Credit Card Default}
+
+To validate the impossibility on data with genuine high collinearity
+($|\rho| > 0.9$), we apply the workflow to the UCI ``default of credit
+card clients'' dataset (30{,}000 samples, 23 features, binary default
+outcome; subsampled to 10{,}000).
+
+The bill-amount features (monthly bills for 6~consecutive months)
+exhibit strong collinearity: 29~pairs have $|\rho| > 0.5$, with the
+highest at $|\rho| = 0.95$ (giving a theoretical attribution ratio of
+$1/(1{-}0.95^2) \approx 10.3\times$).
+
+\paragraph{Step 0.} 29 correlated pairs identified at $|\rho| > 0.5$
+(no threshold lowering needed).
+
+\paragraph{Step 1 (F5).} A single model flags 4 of the 10 tracked pairs
+as potentially unstable ($|Z^{\text{split}}| > 1.96$).
+
+\paragraph{Step 3 (DASH).} With $M = 25$ models, the mean flip rate
+across correlated pairs is 4\%. One pair (bill amounts at months 5
+vs.\ 6, $|\rho| = 0.946$) retains a 16\% flip rate even at $M = 25$,
+illustrating that very high collinearity requires larger ensembles.
+
+This dataset demonstrates the impossibility biting hard: features
+measuring the same underlying quantity (monthly bill amounts) have
+near-identical predictive signal, and the attribution ranking across
+these features is genuinely unstable.
+The full output is in \texttt{lending\_club\_case\_study.py}.
+
+\subsection{Proportionality axiom validation}
+
+The proportionality axiom ($\varphi_j = c \cdot n_j$ for a
+model-specific constant $c$) is central to the quantitative bounds.
+We validate it empirically on Breast Cancer by computing
+$c_j = |\text{SHAP}_j| / n_j$ for each feature $j$ in each of 50
+XGBoost models and reporting the coefficient of variation (CV) of
+$c_j$ across features within each model.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Depth & Mean CV of $c_j$ & Interpretation \\
+\midrule
+1 (stumps) & 0.35 & Proportionality holds within $\sim$35\% \\
+3 & 0.60 & Moderate violation \\
+6 & 0.66 & Moderate violation \\
+10 & 0.66 & Saturated (same as depth 6) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For stumps (depth~1), the axiom holds reasonably well (CV~$=$~0.35):
+per-split SHAP contributions are roughly homogeneous. For deeper
+trees, multi-level interactions cause per-split contributions to vary
+by feature, increasing the CV to ${\approx}0.66$.
+
+The most stable features (lowest CV) are the dominant predictors
+(worst texture, worst concave points) where split count tracks SHAP
+closely. The least stable are weak/collinear features (mean symmetry,
+concave points error) where the proportionality constant varies most.
+
+\paragraph{Impact on the impossibility.}
+The proportionality axiom is used only for the \emph{quantitative}
+bounds (Theorems~2--3); the core impossibility (Theorem~1) does not
+depend on it. The 35--66\% CV means the predicted ratio $1/(1{-}\rho^2)$
+is an order-of-magnitude guide rather than a precise prediction,
+consistent with the $\alpha$-corrected model ($R^2 = 0.89$).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INFORMATION LOSS ANALYSIS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
