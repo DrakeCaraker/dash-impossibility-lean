@@ -4,6 +4,8 @@
 import DASHImpossibility.Defs
 import DASHImpossibility.Trilemma
 import DASHImpossibility.Iterative
+import DASHImpossibility.Lasso
+import DASHImpossibility.NeuralNet
 import DASHImpossibility.SplitGap
 import DASHImpossibility.Ratio
 import DASHImpossibility.General
