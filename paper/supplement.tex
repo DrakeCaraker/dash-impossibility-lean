@@ -704,6 +704,17 @@ flagged by F5 can then be validated with the full F1 test.
     \item If no pairs are flagged: single-model SHAP is reliable.
 \end{enumerate}
 
+\paragraph{F5 screening accuracy.}
+On the Breast Cancer dataset (435 pairs, threshold: flip rate $> 0.1$
+defines ``truly unstable''):
+F5 flags 49~pairs with \textbf{94\% precision} (46 true positives,
+3~false positives) and 27\% recall.
+F1 (the full test) flags 47~pairs with \textbf{100\% precision}
+(zero false positives).
+Both diagnostics are conservative: they rarely flag stable pairs but
+miss moderate-instability pairs. For production use, the high precision
+is the key property---a flagged pair is almost certainly unstable.
+
 \paragraph{Ensemble size guidance.}
 The required $M$ depends on the between-group gap $\Delta_{jk} = |E[\varphi_j] - E[\varphi_k]|$:
 $M \geq (z_{\alpha/2} \cdot \sigma_{jk} / \Delta_{jk})^2$.
