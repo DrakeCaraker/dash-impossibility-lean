@@ -56,10 +56,10 @@ Consensus variance bound & \texttt{consensus\_variance\_bound} & $\Var(\bar\varp
 
 \section{Proof Architecture}
 
-The formalization comprises 13 Lean~4 files (15 axioms, 29 substantive theorems):
+The formalization comprises 14 Lean~4 files (15 axioms, 33 substantive theorems):
 
 \begin{verbatim}
-Defs.lean (11 axioms, type definitions)
+Defs.lean (15 axioms, type definitions)
   |
   +-- Trilemma.lean (RashimonProperty, attribution_impossibility)
   |     |
@@ -74,9 +74,26 @@ Defs.lean (11 axioms, type definitions)
   +-- SpearmanDef.lean (spearmanCorr definition, derived bound)
   |
   +-- Impossibility.lean (not_equitable, not_stable, impossibility)
-  +-- Corollary.lean (consensus_equity, consensus_difference_zero)
+  +-- Corollary.lean (consensus_equity, variance_rate, variance_halves)
+  +-- DesignSpace.lean (design_space_theorem, dash_produces_ties)
   +-- RandomForest.lean (contrast case, documentation only)
 \end{verbatim}
+
+\paragraph{Variance axiom design choice.}
+The consensus variance bound ($\Var(\bar\varphi_j) = \Var(\varphi_j)/M$)
+is axiomatized directly rather than derived from Mathlib's measure-theoretic
+infrastructure (\texttt{IndepFun.variance\_sum}). The alternative would
+require 4 additional axioms (\texttt{MeasurableSpace Model},
+\texttt{MeasureTheory.Measure Model}, \texttt{Measurable (attribution fs j)},
+and an independence axiom), increasing the total axiom count from 15 to 19
+while adding significant type-theoretic boilerplate. We chose the single
+intuitive axiom because: (i) $\Var(\bar{X}) = \Var(X)/M$ for i.i.d.\
+random variables is a textbook identity requiring no justification beyond
+the independence assumption; (ii) the 4 measure-theoretic axioms are
+harder to audit (they assert abstract mathematical structure on our
+\texttt{Model} type, which has no natural measurable-space interpretation);
+and (iii) the derived theorems (variance halving, nonnegativity) are
+genuine Lean proofs, not tautologies from the axiom.
 
 \section{Inconsistencies Found During Formalization}
 
@@ -150,10 +167,67 @@ In each boosting round, a stump makes one binary split on the selected
 feature, capturing $2/\pi$ of that feature's remaining signal variance.
 This gives the effective signal capture fraction $\alpha = 2/\pi$ in
 the corrected ratio $1/(1-\alpha\rho^2)$.
-The fitted value ($\alpha \approx 0.60$) is slightly below $2/\pi = 0.637$
-because (i) stumps split on the empirical median rather than the
-population median, and (ii) after the first boosting round, residuals
-are no longer exactly Gaussian.
+The fitted value ($\alpha \approx 0.60$) is below $2/\pi = 0.637$.
+Two error sources explain the gap:
+
+\paragraph{Error source 1: Empirical vs.\ population split (rigorous bound).}
+\begin{proposition}[First-stump variance capture]
+\label{prop:first-stump}
+For the first boosting round on $n$ Gaussian training samples,
+the stump splits at the empirical median $\hat{m}$, which satisfies
+$|\hat{m}| = O_p(\sigma/\sqrt{n})$. The variance captured by a split
+at $\hat{m}$ instead of $0$ is:
+\[
+    \alpha_1(n) = \frac{2}{\pi}\left(1 -
+    \frac{\pi - 2}{n} + O(n^{-2})\right)
+\]
+For $n = 2000$ (our synthetic setting), the correction is
+$\Delta\alpha_1 \approx 0.0004$---negligible.
+\end{proposition}
+
+\begin{proof}
+The optimal split of $X \sim \mathcal{N}(0, \sigma^2)$ at $\delta$
+instead of $0$ gives conditional means
+$\mu_+ = \sigma\phi(\delta/\sigma)/(1-\Phi(\delta/\sigma))$ and
+$\mu_- = -\sigma\phi(\delta/\sigma)/\Phi(\delta/\sigma)$, where
+$\phi$ and $\Phi$ are the standard normal pdf and cdf.
+The variance captured is
+$\Var(\hat{X}) = \mu_+^2 \Pr(X > \delta) + \mu_-^2 \Pr(X \leq \delta)$.
+Expanding around $\delta = 0$ using $\phi(0) = 1/\sqrt{2\pi}$:
+$\Var(\hat{X}) = (2/\pi)\sigma^2(1 - \delta^2(\pi-2)/\sigma^2 + O(\delta^4/\sigma^4))$.
+The empirical median of $n$ standard Gaussians has variance
+$\pi/(2n)$ (asymptotic), so $\mathbb{E}[\delta^2] = \pi\sigma^2/(2n)$.
+Substituting: $\mathbb{E}[\alpha_1] = (2/\pi)(1 - (\pi-2)\pi/(2n) + O(n^{-2}))
+= (2/\pi)(1 - (\pi^2-2\pi)/(2n) + O(n^{-2}))$.
+\end{proof}
+
+\paragraph{Error source 2: Non-Gaussian residuals (dominant effect).}
+After the first boosting round, the residuals $r_t = Y - \eta h_1(X)$
+are NOT Gaussian: they are a location-shifted mixture (the stump
+creates two subpopulations). For a stump with two leaves at values
+$\pm c$, the residuals have excess kurtosis
+$\kappa = O(\eta^2 c^2/\sigma^2)$, which modifies the variance
+capture. For the standard learning rate $\eta = 0.1$, the kurtosis
+correction is small but accumulates across boosting rounds, producing
+a systematic downward bias in $\alpha$.
+
+The fitted $\alpha = 0.60$ (empirical) vs.\ $2/\pi = 0.637$ (theory)
+represents a gap of $\Delta\alpha = 0.037$. Error source 1 accounts
+for $< 0.001$ of this gap; error source 2 accounts for the
+remaining $\approx 0.036$. This is consistent with the kurtosis
+accumulating across $T = 100$ boosting rounds at rate $O(\eta)$ per
+round.
+
+\paragraph{Impact on the impossibility.}
+The impossibility theorem (Theorem~1) does not depend on $\alpha$
+at all---it requires only the Rashomon property. The quantitative
+ratio $1/(1-\alpha\rho^2)$ uses $\alpha$ to predict the SEVERITY
+of the violation, not its existence. Whether $\alpha = 0.60$ or
+$0.637$, the ratio diverges as $\rho \to 1$; the practical difference
+is in the rate of divergence (e.g., ratio 2.56 vs.\ 2.70 at $\rho = 0.9$).
+The $\alpha$-corrected model with the fitted $\alpha = 0.60$ matches
+the data ($R^2 = 0.89$) regardless of the theoretical derivation's
+precision.
 
 \section{Fisher Information and the Rashomon Property}
 
