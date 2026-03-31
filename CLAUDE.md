@@ -39,19 +39,20 @@ DASHImpossibility/
   Basic.lean         — Import hub
 paper/
   main.tex           — NeurIPS 2026 paper (9 pages)
-  supplement.tex     — Supplementary (3 pages)
+  supplement.tex     — Supplementary (24 pages)
   references.bib     — 14 citations
-  scripts/           — Figure generation
-  figures/           — 3 PDF figures
+  scripts/           — Figure generation + validation scripts
+  figures/           — PDF figures (ratio, instability, DASH, F1/F5, comprehensive)
 ```
 
-## Axiom Inventory (12 total)
+## Axiom Inventory (15 total)
 
 | Category | Axioms | Used by |
 |----------|--------|---------|
 | Type declarations | Model, numTrees, numTrees_pos, attribution, splitCount, firstMover | Infrastructure |
 | Core properties | firstMover_surjective, splitCount_firstMover, splitCount_nonFirstMover, attribution_proportional | GBDT bounds |
-| DASH | attribution_sum_symmetric | Corollary only |
+| DASH | attribution_sum_symmetric | Corollary equity |
+| Variance | attribution_variance, attribution_variance_nonneg, consensus_variance_bound | Corollary stability |
 | Spearman | spearman_classical_bound (about defined quantity) | Quantitative stability |
 
 The core impossibility theorem (Levels 0-1) uses **none** of these — only the Rashomon property as hypothesis.
