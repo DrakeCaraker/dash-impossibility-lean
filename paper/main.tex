@@ -103,11 +103,251 @@ This echoes experiences in other domains where formalization has uncovered subtl
 \section{Setup}
 \label{sec:setup}
 
+We consider a supervised learning setting with $P$ input features partitioned into $L$ groups by their correlation structure.
+Within each group $\ell \in [L]$, features share a common pairwise correlation $\rho \in (0,1)$; features in different groups are independent.
+Each group contains at least two members.
+This structure arises naturally in applied settings---e.g., multiple measurements of the same physical quantity, or one-hot encodings of related categories.
+
+\paragraph{Models and attributions.}
+A \emph{model} $f$ is trained from a random seed $s$ via a deterministic training procedure: $f = \texttt{train}(s)$.
+For each feature $j \in [P]$, we observe a nonneg\-ative attribution $\varphi_j(f) \geq 0$, representing the global importance of feature $j$ in model $f$ (e.g., mean absolute SHAP value, gain-based importance, or integrated gradients norm).
+
+We require a proportionality axiom connecting attributions to model structure:
+
+\begin{axiom}[Proportionality]
+\label{ax:proportional}
+For every model $f$, there exists a constant $c(f) > 0$ such that $\varphi_j(f) = c(f) \cdot n_j(f)$ for all $j \in [P]$, where $n_j(f)$ is the utilization count of feature $j$ in model $f$ (e.g., split count for tree ensembles, gradient norm for neural networks).
+\end{axiom}
+
+This axiom holds exactly under the uniform-contribution model of \citet{lundberg2017unified}, and approximately whenever per-split (or per-neuron) contributions are roughly homogeneous.
+
+\paragraph{Sequential gradient boosting axioms.}
+For gradient-boosted decision trees (\GBDT{}) with $T$ boosting rounds, we axiomatize the split-count structure induced by Gaussian conditioning under collinearity.
+Let $j_1$ denote the \emph{first-mover}---the feature selected at the root of the first tree.
+
+\begin{axiom}[First-mover surjectivity]
+\label{ax:surjective}
+For every group $\ell$ and every feature $j$ in group $\ell$, there exists a model $f$ with $j_1(f) = j$.
+\end{axiom}
+
+This follows from the DGP symmetry: when features in a group have identical marginal distributions, sub-sampling and tie-breaking randomness ensure each can serve as first-mover.
+
+\begin{axiom}[Split counts]
+\label{ax:splits}
+For any model $f$ with first-mover $j_1 \in$ group $\ell$:
+\begin{align}
+    n_{j_1}(f) &= \frac{T}{2 - \rho^2}, \label{eq:splits-first} \\
+    n_{k}(f) &= \frac{(1-\rho^2)\,T}{2 - \rho^2}, \quad k \in \text{group}(\ell),\ k \neq j_1. \label{eq:splits-other}
+\end{align}
+\end{axiom}
+
+These are the leading-order split counts from the Gaussian conditioning argument: the first-mover absorbs the $\rho$-aligned signal component, leaving only the $(1-\rho^2)$ residual for subsequent features.
+The formulas are verified algebraically by SymPy.
+
+\paragraph{Ranking desiderata.}
+A \emph{feature ranking} is a binary relation $\succ$ on $[P]$.
+We formalize three desiderata:
+
+\begin{definition}[Faithful]
+\label{def:faithful}
+A ranking $\succ$ is \emph{faithful} to model $f$ if $j \succ k$ whenever $\varphi_j(f) > \varphi_k(f)$.
+\end{definition}
+
+\begin{definition}[Stable]
+\label{def:stable}
+A ranking $\succ$ is \emph{stable} if it does not depend on the choice of model $f$---that is, $\succ$ is a fixed relation applied identically to all models.
+\end{definition}
+
+\begin{definition}[Complete]
+\label{def:complete}
+A ranking $\succ$ is \emph{complete} if for every pair $j \neq k$, either $j \succ k$ or $k \succ j$.
+\end{definition}
+
+The first desideratum asks that the ranking reflect what the model actually learned; the second asks that it be reproducible across training runs; the third asks that it resolve all feature pairs.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The Attribution Impossibility}
 \label{sec:impossibility}
 
+\subsection{The Rashomon Property}
+\label{sec:rashomon}
+
+The central structural property driving the impossibility is that collinear features admit models ranking them in opposite orders.
+
+\begin{definition}[Rashomon property]
+\label{def:rashomon}
+A model class satisfies the \emph{Rashomon property} if for every group $\ell$ and every pair of distinct features $j, k$ in group $\ell$, there exist models $f, f'$ such that
+\[
+    \varphi_j(f) > \varphi_k(f) \quad \text{and} \quad \varphi_k(f') > \varphi_j(f').
+\]
+\end{definition}
+
+The Rashomon property is a consequence of the Rashomon effect \citep{rudin2024amazing}: collinear designs admit many near-optimal models, and within the set of good models, symmetric features are utilized in all possible orderings.
+\citet{laberge2023partial} study consensus across such model sets and observe that feature rankings are inherently partial---a conclusion our theorem makes precise.
+
+\subsection{Main Result}
+\label{sec:main-result}
+
+\begin{theorem}[Attribution Impossibility]
+\label{thm:impossibility}
+If a model class satisfies the Rashomon property (Definition~\ref{def:rashomon}), then no feature ranking can be simultaneously faithful, stable, and complete.
+\end{theorem}
+
+\begin{proof}
+Let $j, k$ be distinct features in the same group $\ell$.
+By the Rashomon property, there exist models $f, f'$ with $\varphi_j(f) > \varphi_k(f)$ and $\varphi_k(f') > \varphi_j(f')$.
+Suppose for contradiction that $\succ$ is faithful, stable, and complete.
+By completeness, either $j \succ k$ or $k \succ j$.
+Without loss of generality, assume $j \succ k$.
+By stability, this relation holds for all models, including $f'$.
+But faithfulness applied to $f'$ requires $k \succ j$ (since $\varphi_k(f') > \varphi_j(f')$), contradicting $j \succ k$.
+\end{proof}
+
+The argument is structurally parallel to Arrow's impossibility theorem for social welfare functions \citep{arrow1951social}: Arrow shows that no aggregation rule can satisfy independence of irrelevant alternatives, the Pareto principle, and non-dictatorship simultaneously.
+Here, faithfulness plays the role of the Pareto condition (the ranking must respect the model's preferences), stability plays the role of IIA (the ranking must not depend on which ``voter''---i.e., model---is consulted), and completeness plays the role of totality.
+\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; our Lean~4 formalization follows the same spirit.
+
+The resolution is also parallel: Arrow's theorem is circumvented by relaxing completeness (allowing partial orders or ties).
+\DASH{} achieves this by averaging attributions across the Rashomon set, producing $\E[\varphi_j] = \E[\varphi_k]$ for symmetric features---a tie rather than an arbitrary ordering.
+
+\subsection{From Abstract to Concrete: Iterative Optimizers}
+\label{sec:iterative}
+
+The Rashomon property is not merely a theoretical possibility---it is a structural consequence of iterative optimization under collinearity.
+
+\begin{definition}[Iterative optimizer]
+\label{def:iterative}
+An \emph{iterative optimizer} is a model class equipped with a dominant-feature function $d\colon \mathcal{F} \to [P]$ satisfying:
+\begin{enumerate}
+    \item \textbf{Dominance:} For every model $f$, group $\ell$, and feature $k \in \text{group}(\ell)$ with $k \neq d(f)$, if $d(f) \in \text{group}(\ell)$ then $\varphi_k(f) < \varphi_{d(f)}(f)$.
+    \item \textbf{Surjectivity:} For every group $\ell$ and feature $j \in \text{group}(\ell)$, there exists $f$ with $d(f) = j$.
+\end{enumerate}
+\end{definition}
+
+The dominant feature is the one that, through the iterative optimization dynamics, accumulates a disproportionate share of the predictive signal.
+For \GBDT{}, it is the first-mover; for Lasso, the selected feature; for neural networks, the feature that captures the most gradient flow early in training.
+
+\begin{proposition}
+\label{prop:iterative-rashomon}
+Every iterative optimizer satisfies the Rashomon property, and therefore the Attribution Impossibility (Theorem~\ref{thm:impossibility}) holds.
+\end{proposition}
+
+\begin{proof}
+Let $j, k$ be distinct features in group $\ell$.
+By surjectivity, there exist models $f, f'$ with $d(f) = j$ and $d(f') = k$.
+By dominance, $\varphi_j(f) > \varphi_k(f)$ and $\varphi_k(f') > \varphi_j(f')$.
+This is exactly the Rashomon property.
+\end{proof}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Quantitative Bounds by Model Class}
 \label{sec:bounds}
+
+The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is qualitative: it establishes that a faithful, stable, complete ranking cannot exist, but says nothing about how badly faithfulness or stability must be violated.
+We now derive quantitative bounds on the \emph{attribution ratio}---the factor by which the dominant feature is overweighted relative to its symmetric partner---for four model classes.
+
+\subsection{Gradient Boosting: Divergent Violation}
+\label{sec:gbdt-bounds}
+
+\begin{lemma}[Split gap]
+\label{lem:split-gap}
+For a \GBDT{} model $f$ with first-mover $j_1$ in group $\ell$, and any $k \neq j_1$ in the same group,
+\[
+    n_{j_1}(f) - n_k(f) = \frac{\rho^2 T}{2 - \rho^2} \;\geq\; \tfrac{1}{2}\rho^2 T.
+\]
+\end{lemma}
+
+\begin{proof}
+By Axiom~\ref{ax:splits}, $n_{j_1} - n_k = T/(2-\rho^2) - (1-\rho^2)T/(2-\rho^2) = \rho^2 T/(2-\rho^2)$.
+Since $2 - \rho^2 \leq 2$ for $\rho \in (0,1)$, we have $\rho^2 T/(2-\rho^2) \geq \rho^2 T/2$.
+\end{proof}
+
+\begin{theorem}[Attribution ratio --- gradient boosting]
+\label{thm:ratio}
+For any \GBDT{} model $f$ with first-mover $j_1$ in group $\ell$ and any non-first-mover $k$ in the same group,
+\[
+    \frac{\varphi_{j_1}(f)}{\varphi_k(f)} = \frac{1}{1 - \rho^2}.
+\]
+Moreover, this ratio diverges: $1/(1-\rho^2) \to \infty$ as $\rho \to 1^-$.
+\end{theorem}
+
+\begin{proof}
+By Axiom~\ref{ax:proportional}, $\varphi_{j_1}/\varphi_k = n_{j_1}/n_k$.
+Substituting Axiom~\ref{ax:splits}:
+\[
+    \frac{n_{j_1}}{n_k} = \frac{T/(2-\rho^2)}{(1-\rho^2)T/(2-\rho^2)} = \frac{1}{1-\rho^2}.
+\]
+Writing $1-\rho^2 = (1-\rho)(1+\rho)$, we see that $1/(1-\rho^2) \to +\infty$ as $\rho \to 1^-$, since the denominator vanishes while the numerator is fixed.
+In the Lean~4 formalization, the limit is proved using the filter-based definition of convergence in Mathlib's \texttt{Analysis.SpecialFunctions}.
+\end{proof}
+
+For stability, when two models $f, f'$ have different first-movers within the same group of size $m$, the within-group rank reshuffling bounds the Spearman correlation:
+\[
+    \rho_S(f, f') \;\leq\; 1 - \frac{m^3}{P^3}.
+\]
+This bound follows from the combinatorial argument that non-first-mover features are tied in split count and therefore randomly ordered, contributing $\Theta(m^3)$ to $\sum d_i^2$ in the Spearman formula.
+
+\subsection{Lasso: Infinite Violation}
+\label{sec:lasso}
+
+The $\ell_1$ penalty in Lasso regression produces an extreme form of dominance: among a group of correlated features, it selects exactly one and sets all others' coefficients to zero.
+
+Under the iterative optimizer framework (Definition~\ref{def:iterative}), the selected feature $d(f)$ receives all attribution ($\varphi_{d(f)}(f) > 0$) while $\varphi_k(f) = 0$ for all other $k$ in the same group.
+By surjectivity---which holds because regularization path tie-breaking and data perturbation can make any feature the selected one---the Rashomon property is satisfied.
+
+The attribution ratio is infinite: $\varphi_{d(f)}/\varphi_k = \infty$ for $k \neq d(f)$.
+This is the most severe possible violation, and it holds at \emph{any} correlation $\rho > 0$.
+
+\subsection{Neural Networks: Conditional Violation}
+\label{sec:nn}
+
+Neural networks with random initialization exhibit a form of symmetry breaking analogous to the \GBDT{} first-mover effect.
+When correlated features compete for gradient flow early in training, the feature that receives the largest initial weight perturbation ``captures'' the correlated signal, accumulating higher attribution through subsequent epochs.
+
+Formally, we model this via a captured-feature function $d(f)$ satisfying the iterative optimizer axioms \emph{conditional on the initialization inducing a dominance structure}.
+The dominance condition---that $\varphi_{d(f)}(f) > \varphi_k(f)$ for $k \neq d(f)$ in the same group---holds when the initialization asymmetry is not erased by regularization or early stopping.
+Surjectivity follows from the symmetry of standard initialization distributions (e.g., Kaiming, Xavier): each feature has equal probability of receiving the largest initial weight.
+
+The impossibility therefore holds conditionally: whenever a neural network's training dynamics produce a dominant feature per correlated group, the Attribution Impossibility applies.
+The ratio is architecture- and initialization-dependent rather than closed-form, but the qualitative conclusion is the same.
+
+\subsection{Random Forests: Bounded Violation (Contrast)}
+\label{sec:rf}
+
+Random forests provide a revealing contrast.
+Because each tree is trained independently on a bootstrap sample, there is no shared residual stream---feature $j$ being selected in tree $t$ does not reduce feature $k$'s signal in tree $t+1$.
+
+The expected split count per feature within a group of size $m$ is $T/m$ for all features, with deviations of order $O(\sqrt{T})$ from bootstrap sampling noise.
+The attribution ratio is therefore
+\[
+    \frac{\varphi_{j_1}(f)}{\varphi_k(f)} = 1 + O(1/\sqrt{T}) \;\to\; 1 \quad \text{as } T \to \infty.
+\]
+The Rashomon property may hold for finite $T$ (different bootstrap samples can produce different feature orderings), so the qualitative impossibility may apply.
+But the quantitative violation \emph{vanishes} with more trees---the opposite of the \GBDT{} regime, where more rounds compound the first-mover advantage.
+
+This contrast is the key structural insight: sequential residual-sharing creates divergent inequity, while independent aggregation creates convergent equity.
+\DASH{} exploits precisely this distinction.
+
+\paragraph{Summary.}
+Table~\ref{tab:model-comparison} collects the quantitative bounds.
+The architecture of the optimizer---sequential vs.\ independent---determines whether the attribution ratio diverges or converges, providing a formal basis for preferring ensemble-averaged explanations.
+
+\begin{table}[t]
+\centering
+\caption{Attribution ratio bounds by model class. $T$ denotes the number of boosting rounds (or trees), $\rho$ the within-group correlation.}
+\label{tab:model-comparison}
+\small
+\begin{tabular}{@{}lcll@{}}
+\toprule
+Model class & Ratio & Scaling with $T$ & Mechanism \\
+\midrule
+Gradient boosting & $1/(1-\rho^2)$ & Constant (diverges with $\rho$) & Sequential residuals \\
+Lasso & $\infty$ & Constant & Hard selection \\
+Neural network & Model-dependent & Architecture-dependent & Init.\ symmetry breaking \\
+Random forest & $1 + O(1/\sqrt{T})$ & $\to 1$ as $T \to \infty$ & Independent trees \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Resolution: Ensemble Attribution via \DASH}
 \label{sec:resolution}
