@@ -137,7 +137,7 @@ def fig_shap_instability():
     ax.errorbar(RHOS, sb_instab, yerr=sb_se, fmt="s-", color="#d62728",
                 markersize=4, capsize=3, lw=1.2, label="Single model")
     ax.errorbar(RHOS, dash_instab, yerr=dash_se, fmt="o-", color="#1f77b4",
-                markersize=4, capsize=3, lw=1.2, label=r"\textsc{Dash} ensemble")
+                markersize=4, capsize=3, lw=1.2, label="DASH ensemble")
 
     ax.set_xlabel(r"Feature correlation $\rho$")
     ax.set_ylabel("Ranking instability (1 \u2212 stability)")
@@ -193,7 +193,7 @@ def fig_dash_resolution():
     ax.plot(Ms, cv_sb, "s-", color="#d62728", markersize=4, lw=1.2,
             label="Single model", zorder=3)
     ax.plot(Ms, cv_dash, "o-", color="#1f77b4", markersize=4, lw=1.2,
-            label=r"\textsc{Dash} ensemble", zorder=3)
+            label="DASH ensemble", zorder=3)
 
     ax.axhline(0.01, color="#2ca02c", linestyle="--", lw=0.9,
                label="1% threshold", zorder=2)
