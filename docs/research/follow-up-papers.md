@@ -341,3 +341,22 @@ would be Papers 3b/3c — extensions of the impossibility program.
 2. Case study where DASH prevents a real decision error
 3. EU AI Act compliance template using DASH
 
+
+---
+
+## Library Status (assessed 2026-03-31)
+
+### dash-shap installability
+- **pyproject.toml EXISTS** — pip-installable via `pip install -e .`
+- **Package name:** `dash-shap` v0.1.0
+- **Core API:** `DASHPipeline` in `dash_shap/core/pipeline.py`
+- **Existing diagnostics:** `bootstrap_stability_test` in `dash_shap/evaluation/`
+- **MISSING:** F5 split-frequency diagnostic (`check_split_stability()`)
+- **MISSING:** F1 attribution diagnostic (`check_attribution_stability()`)
+- **Action needed:** Add F1/F5 diagnostics to the library, then publish to PyPI
+
+### Lean variance bound feasibility
+- **Mathlib HAS:** `IndepFun.variance_sum` (the key theorem)
+- **MISSING:** `MeasureSpace` on our axiom `Model` type
+- **Needs 4 new axioms:** measurableSpace, measure, attribution_measurable, models_indep
+- **Estimated effort:** 1-2 days once axioms added
