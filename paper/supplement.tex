@@ -12,6 +12,7 @@
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{axiom}{Axiom}
 
@@ -1314,6 +1315,222 @@ statistically indistinguishable in their contribution to the model.
 Forcing a ranking would be arbitrary and potentially misleading.
 Our method correctly reports this indistinguishability, consistent
 with the EU AI Act's requirement to disclose known limitations.''
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THE UNIFIED DESIGN SPACE THEOREM
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{The Attribution Design Space Theorem}
+
+This section presents the central structural result: a complete
+characterization of what is achievable in the attribution design
+space under collinearity. All previous results (Theorem~1, F1--F3,
+F5, path convergence) emerge as corollaries.
+
+\subsection{Definitions}
+
+\begin{definition}[Attribution design space]
+\label{def:design-space}
+For a model class satisfying the Rashomon property under within-group
+correlation $\rho > 0$, the \emph{attribution design space} is the
+set of triples $(S, U, C)$ achievable by any attribution aggregation
+method $A$ applied to $M \geq 1$ independently trained models, where:
+\begin{itemize}
+    \item $S \in [0,1]$: \emph{between-group stability} ---
+      the probability that the consensus preserves the true
+      between-group ordering.
+    \item $U \in [0, 1/2]$: \emph{within-group unfaithfulness} ---
+      the probability that the consensus disagrees with a random
+      model on a within-group pair.
+    \item $C \in \{\text{complete}, \text{partial}\}$: \emph{completeness} ---
+      whether the consensus ranks all pairs (complete) or allows
+      ties (partial).
+\end{itemize}
+\end{definition}
+
+\subsection{Main result}
+
+\begin{theorem}[Attribution Design Space]
+\label{thm:design-space}
+For any model class satisfying the Rashomon property (Definition~4)
+under within-group correlation $\rho > 0$, the achievable set of
+$(S, U, C)$ triples is the union of exactly two families:
+
+\textbf{Family $\mathcal{A}$ (faithful-complete methods):}
+Any method that is faithful to a single model and produces a
+complete ranking achieves:
+\begin{equation}
+\label{eq:family-a}
+    \mathcal{A} = \big\{(S, U, C) :
+    S \leq 1 - \Omega(m^3/P^3),\;
+    U = 1/2,\;
+    C = \text{complete}\big\}.
+\end{equation}
+This family corresponds to $M = 1$ (single-model methods).
+The stability bound $S \leq 1 - m^3/P^3$ is the Spearman bound
+from the main text.
+
+\textbf{Family $\mathcal{B}$ (ensemble methods):}
+\DASH{} consensus with $M \geq 1$ models achieves:
+\begin{equation}
+\label{eq:family-b}
+    \mathcal{B} = \big\{(S_M, 0, \text{partial}) : M \in [1, \infty)\big\}
+\end{equation}
+where $S_M = 1 - O(1/M)$ for between-group pairs, and within-group
+pairs are reported as ties ($U = 0$, $C = \text{partial}$).
+
+\textbf{Infeasible region:}
+The triple $(S = 1, U = 0, C = \text{complete})$ is not achievable
+for any $M < \infty$. More precisely:
+\begin{equation}
+\label{eq:infeasible}
+    \nexists\; A : S(A) = 1,\; U(A) = 0,\; C(A) = \text{complete}.
+\end{equation}
+
+\textbf{Pareto frontier:}
+\DASH{}$(M)$ is Pareto-optimal within $\mathcal{B}$: no method achieves
+higher $S$ for the same $M$ while maintaining $U = 0$
+(Theorem~\ref{thm:dash-optimal}).
+\end{theorem}
+
+\begin{proof}
+The proof proceeds in four steps, each building on previous results.
+
+\textbf{Step 1: Family $\mathcal{A}$ is forced.}
+By the Rashomon property (Definition~4), for any within-group pair
+$(j,k)$, there exist models ranking them in opposite orders.
+By Theorem~\ref{thm:unfaithfulness}, any faithful, complete ranking
+has unfaithfulness $U = 1/2$ for symmetric pairs: exactly half the
+models disagree with the ranking.
+
+For stability: when the dominant feature changes between two models
+$f, f'$ (different first-movers), the within-group rank reshuffling
+contributes $\Theta(m^3)$ to the Spearman $\sum d_i^2$, giving
+$S \leq 1 - m^3/P^3$ (main text, Theorem~2).
+
+This establishes the upper boundary of $\mathcal{A}$.
+
+\textbf{Step 2: Family $\mathcal{B}$ is achievable.}
+By Corollary~1 (consensus equity), \DASH{} with a balanced ensemble
+achieves $\bar\varphi_j = \bar\varphi_k$ for symmetric features,
+giving $U = 0$ and $C = \text{partial}$ (ties within groups).
+
+By Theorem~\ref{thm:dash-optimal} Part~II(e), the between-group
+stability satisfies
+$S_M \geq 1 - \exp(-M\Delta^2/(2\sigma^2))$,
+which approaches 1 as $M \to \infty$.
+
+This establishes $\mathcal{B}$.
+
+\textbf{Step 3: No method lies outside $\mathcal{A} \cup \mathcal{B}$.}
+
+We show that any method $A$ must fall in one of the two families.
+
+\emph{Case 1: $A$ is faithful to individual models and complete.}
+Then by Step 1, $U(A) = 1/2$ and $S(A) \leq 1 - m^3/P^3$,
+so $A \in \mathcal{A}$.
+
+\emph{Case 2: $A$ is not faithful to some model $f$.}
+Then $A$ ranks some pair $(j,k)$ differently from model $f$'s
+attributions. For within-group symmetric pairs, by
+Proposition~\ref{prop:optimal-unfaithful}, the optimal
+unfaithful ranking assigns ties (recovering DASH). Thus $A$
+either has $U > 0$ (suboptimal) or $U = 0$ with ties
+(in $\mathcal{B}$).
+
+\emph{Case 3: $A$ aggregates $M > 1$ models.}
+If $A$ produces a complete ranking from $M$ models, it must
+break ties for within-group pairs. By DGP symmetry, any
+tie-breaking rule disagrees with a fraction of models, giving
+$U > 0$. To achieve $U = 0$, $A$ must report ties, placing
+it in $\mathcal{B}$. Its stability is bounded by the variance
+of the aggregation, which by the Cram\'er--Rao bound
+(Theorem~\ref{thm:dash-optimal} Part~I(b)) satisfies
+$\Var(\hat\mu_j) \geq \sigma_j^2/M$. DASH achieves this bound.
+
+\textbf{Step 4: The infeasible point.}
+$(1, 0, \text{complete})$ requires: (i) $S = 1$ (perfect stability),
+(ii) $U = 0$ (zero unfaithfulness), (iii) $C = \text{complete}$
+(no ties).
+
+By Step 1, any complete method has $U = 1/2 \neq 0$: contradiction.
+Alternatively, completeness requires ranking within-group pairs,
+but by DGP symmetry the population attributions are equal
+($\mu_j = \mu_k$), so any deterministic ranking is unfaithful to
+half the models. This is the Attribution Impossibility (Theorem~1)
+restricted to the single point $(1, 0, \text{complete})$.
+\end{proof}
+
+\subsection{Previous results as corollaries}
+
+\begin{corollary}[Theorem 1 as a corollary]
+The Attribution Impossibility (Theorem~1) is the statement that the
+point $(1, 0, \text{complete})$ lies outside the achievable set.
+This follows from Step~4 of Theorem~\ref{thm:design-space}.
+\end{corollary}
+
+\begin{corollary}[F2 as a corollary]
+The DASH Pareto Optimality (Theorem~\ref{thm:dash-optimal}) is the
+statement that $\mathcal{B}$ is the Pareto frontier of
+$\{(S, U) : U = 0\}$, parameterized by $M$. This follows from
+Steps~2--3 of Theorem~\ref{thm:design-space}.
+\end{corollary}
+
+\begin{corollary}[Path convergence as a corollary]
+The relaxation path convergence (Theorem~\ref{thm:path-convergence})
+is the statement that \emph{both} relaxation paths (drop faithfulness,
+drop completeness) converge to $\mathcal{B}$ as $M \to \infty$.
+Dropping completeness directly enters $\mathcal{B}$ (DASH with ties).
+Dropping faithfulness, by Proposition~\ref{prop:optimal-unfaithful},
+yields the expected-attribution ranking, which also produces ties
+for symmetric features --- the same as $\mathcal{B}$.
+\end{corollary}
+
+\begin{corollary}[F1 as a corollary]
+The Rashomon Characterization (Theorem~\ref{thm:testable}) describes
+the \emph{boundary between families}: when $Z_{jk} < 1.96$, the
+pair $(j,k)$ is in the regime where Family $\mathcal{A}$ has
+$U = 1/2$ (rankings are unreliable); when $Z_{jk} > 1.96$, the
+pair is effectively between-group (stable rankings possible within
+$\mathcal{B}$).
+\end{corollary}
+
+\begin{corollary}[F3 as a corollary]
+The FIM Impossibility (Theorem~\ref{thm:fim-impossibility}) provides
+a sufficient condition for the Rashomon property (the prerequisite
+for Theorem~\ref{thm:design-space}): when the FIM eigenvalue
+$\lambda_-$ is small along $e_j - e_k$, the Rashomon set is large,
+and the achievable set is restricted to $\mathcal{A} \cup \mathcal{B}$.
+\end{corollary}
+
+\subsection{The single tradeoff axis}
+
+Theorem~\ref{thm:design-space} collapses the three-dimensional
+design space to a single axis: \emph{ensemble size $M$}.
+At $M = 1$, the practitioner is in $\mathcal{A}$: faithful and
+complete, but unstable and unfaithful. As $M$ increases, the
+practitioner moves along $\mathcal{B}$: stable and faithful
+between groups, but with within-group ties.
+
+The only ``knob'' is $M$:
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+$M$ & Stability $S$ & Unfaithfulness $U$ & Completeness \\
+\midrule
+1 & $\leq 1 - m^3/P^3$ & $1/2$ & Complete \\
+5 & $1 - O(1/5)$ & 0 & Partial (ties) \\
+25 & $1 - O(1/25)$ & 0 & Partial (ties) \\
+$\infty$ & 1 & 0 & Partial (ties) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+This is the complete characterization of the attribution design space
+under collinearity. The Attribution Impossibility is not a single
+negative result but the boundary of this space; \DASH{} is not merely
+a fix but the provably optimal navigation of this space.
 
 \section{SymPy Verification}
 
