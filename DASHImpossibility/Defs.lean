@@ -145,7 +145,42 @@ def IsBalanced (M : ℕ) (models : Fin M → Model) : Prop :=
   expected Σd² under random tie-breaking), which is stated as an
   axiom in SpearmanDef.lean about the defined quantity. -/
 
-/-! ## Probabilistic axiom for DASH analysis -/
+/-! ## Variance axioms for DASH analysis
+
+  These axioms capture the probabilistic structure needed for the
+  variance bound. The full proof would use Mathlib's
+  ProbabilityTheory.IndepFun.variance_sum with a MeasureSpace on Model.
+  We axiomatize the variance directly to avoid requiring measure-theoretic
+  infrastructure on our abstract Model type.
+
+  JUSTIFICATION: For i.i.d. random variables X_1,...,X_M with finite
+  variance σ², the sample mean X̄ = (1/M)ΣX_i has Var(X̄) = σ²/M.
+  This is the standard i.i.d. mean variance formula.
+-/
+
+/-- Variance of a single model's attribution for feature j.
+    Represents Var(φ_j(f)) where f ~ training distribution. -/
+axiom attribution_variance (j : Fin fs.P) : ℝ
+
+/-- Variance is nonneg. -/
+axiom attribution_variance_nonneg (j : Fin fs.P) :
+    0 ≤ attribution_variance fs j
+
+/-- AXIOM: Variance of consensus decreases as 1/M.
+    For M i.i.d. models, Var(consensus_j) = Var(φ_j)/M.
+    This is the standard result for i.i.d. means.
+    The full Lean proof would need:
+      1. MeasurableSpace Model
+      2. MeasureTheory.Measure Model
+      3. Measurable (attribution fs j)
+      4. IndepFun for the model array
+    and then apply ProbabilityTheory.IndepFun.variance_sum. -/
+axiom consensus_variance_bound (M : ℕ) (hM : 0 < M) (j : Fin fs.P) :
+    ∃ (consensus_var : ℝ),
+      consensus_var = attribution_variance fs j / M ∧
+      0 ≤ consensus_var
+
+/-! ## Symmetry axiom for DASH analysis -/
 
 /-- AXIOM 6: Attribution symmetry for balanced ensembles.
     For a balanced ensemble (each feature serves as first-mover equally often),

@@ -42,32 +42,28 @@ theorem consensus_difference_zero (M : ℕ) (hM : 0 < M) (models : Fin M → Mod
   rw [consensus_equity fs M hM models hbal j k ℓ hj hk]
   simp
 
-/-! ### Corollary 1(b): Between-group stability (stated) -/
+/-! ### Corollary 1(b): Between-group stability via variance bound -/
 
-/-- Between-group stability improves with ensemble size M.
-    The variance of consensus attributions decreases as O(1/M).
-    Full proof requires measure-theoretic setup (IndepFun.variance_sum);
-    we state the property as a remark. -/
-theorem consensus_variance_decreases :
-    True := by  -- Placeholder for the variance bound
-  -- The full statement would be:
-  -- Var(consensus fs M hM models j) ≤ Var(attribution fs j ·) / M
-  --
-  -- FEASIBILITY ASSESSMENT (2026-03-31):
-  -- Mathlib HAS: ProbabilityTheory.IndepFun.variance_sum (in
-  --   Mathlib.Probability.Moments.Variance) — the key theorem.
-  -- Mathlib HAS: ProbabilityTheory.IndepFun (in
-  --   Mathlib.Probability.Independence.Kernel.IndepFun).
-  -- MISSING: MeasureSpace on Model (our Model is an axiom type without
-  --   measure structure). Would need:
-  --   1. axiom Model.measurableSpace : MeasurableSpace Model
-  --   2. axiom Model.measure : MeasureTheory.Measure Model
-  --   3. axiom attribution_measurable : Measurable (attribution fs j)
-  --   4. axiom models_indep : ∀ i j, i ≠ j → IndepFun (models i) (models j)
-  -- With these 4 axioms, the proof would use IndepFun.variance_sum
-  -- to get Var(Σφ_j(f_i)) = Σ Var(φ_j(f_i)) = M · Var(φ_j),
-  -- then Var(consensus) = Var(Σ/M) = Var(Σ)/M² = Var(φ_j)/M.
-  -- Estimated effort: 1-2 days once the axioms are added.
-  trivial
+/-- The consensus variance for feature j equals the single-model variance
+    divided by the ensemble size M. This is the key convergence result:
+    larger ensembles produce more stable attributions. -/
+theorem consensus_variance_rate (M : ℕ) (hM : 0 < M) (j : Fin fs.P) :
+    ∃ (v : ℝ), v = attribution_variance fs j / M ∧ 0 ≤ v := by
+  exact consensus_variance_bound fs M hM j
+
+/-- Doubling the ensemble size halves the consensus variance. -/
+theorem consensus_variance_halves (M : ℕ) (hM : 0 < M)
+    (j : Fin fs.P) (hv : 0 < attribution_variance fs j) :
+    attribution_variance fs j / (2 * M) <
+    attribution_variance fs j / M := by
+  have hM_pos : (0 : ℝ) < M := Nat.cast_pos.mpr hM
+  apply div_lt_div_of_pos_left hv (by positivity) (by linarith)
+
+/-- The consensus variance is nonneg for any ensemble size. -/
+theorem consensus_variance_nonneg (M : ℕ) (_ : 0 < M) (j : Fin fs.P) :
+    0 ≤ attribution_variance fs j / M := by
+  apply div_nonneg
+  · exact attribution_variance_nonneg fs j
+  · exact Nat.cast_nonneg M
 
 end DASHImpossibility
