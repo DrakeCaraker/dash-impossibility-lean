@@ -78,40 +78,57 @@ def fig_ratio_divergence():
     rho_dense = np.linspace(0.0, 0.98, 300)
     theory = 1.0 / (1.0 - rho_dense ** 2)
 
-    # Empirical ratio: for each rho and seed, compute
-    # max_importance / second_max_importance from imp_runs.
-    # imp_runs[seed_i][member_j] captures individual model importances.
-    # We use the ratio of the top-1 to top-2 values within each seed
-    # as an approximate empirical first-mover ratio.
-    emp_means, emp_ses = [], []
-    for rk, rho_f in zip(RHO_KEYS, RHOS):
-        imp = np.array(raw[rk][SB]["imp_runs"])  # shape (50, 50)
-        seed_ratios = []
-        for row in imp:
-            sorted_row = np.sort(row)[::-1]
-            if sorted_row[1] > 1e-8:
-                seed_ratios.append(sorted_row[0] / sorted_row[1])
-        emp_means.append(np.mean(seed_ratios))
-        emp_ses.append(np.std(seed_ratios) / np.sqrt(len(seed_ratios)))
-
-    emp_means = np.array(emp_means)
-    emp_ses = np.array(emp_ses)
+    # Load within-group validation results if available
+    val_path = os.path.join(os.path.dirname(__file__), "..", "results_validation.json")
+    has_validation = os.path.exists(val_path)
 
     fig, ax = plt.subplots()
 
     ax.plot(rho_dense, theory, color="#d62728", linestyle="--", lw=1.4,
-            label=r"Theory: $1/(1-\rho^2)$", zorder=3)
-    ax.errorbar(RHOS, emp_means, yerr=emp_ses, fmt="o", color="#1f77b4",
-                markersize=4, capsize=3, lw=1.0, label="Empirical (mean ± SE)",
-                zorder=4)
+            label=r"Leading-order theory: $1/(1-\rho^2)$", zorder=3)
+
+    if has_validation:
+        with open(val_path) as vf:
+            val = json.load(vf)
+        # Extract within-group split count ratios from validation experiments
+        val_rhos, val_means, val_ses = [], [], []
+        for key, data in val.items():
+            if key.startswith("depth1_rho"):
+                val_rhos.append(data["rho"])
+                val_means.append(data["split_ratio_mean"])
+                val_ses.append(data["split_ratio_se"])
+        # Sort by rho
+        order = np.argsort(val_rhos)
+        val_rhos = np.array(val_rhos)[order]
+        val_means = np.array(val_means)[order]
+        val_ses = np.array(val_ses)[order]
+
+        ax.errorbar(val_rhos, val_means, yerr=val_ses, fmt="s", color="#1f77b4",
+                    markersize=4, capsize=3, lw=1.0,
+                    label="Within-group ratio (XGBoost stumps)", zorder=4)
+    else:
+        # Fallback: use dash-shap data (global top-1/top-2, less precise)
+        emp_means, emp_ses = [], []
+        for rk, rho_f in zip(RHO_KEYS, RHOS):
+            imp = np.array(raw[rk][SB]["imp_runs"])
+            seed_ratios = []
+            for row in imp:
+                sorted_row = np.sort(row)[::-1]
+                if sorted_row[1] > 1e-8:
+                    seed_ratios.append(sorted_row[0] / sorted_row[1])
+            emp_means.append(np.mean(seed_ratios))
+            emp_ses.append(np.std(seed_ratios) / np.sqrt(len(seed_ratios)))
+        ax.errorbar(RHOS, np.array(emp_means), yerr=np.array(emp_ses),
+                    fmt="o", color="#1f77b4", markersize=4, capsize=3, lw=1.0,
+                    label="Empirical (mean ± SE)", zorder=4)
 
     ax.set_xlabel(r"Feature correlation $\rho$")
-    ax.set_ylabel("Attribution ratio")
+    ax.set_ylabel("Within-group attribution ratio")
     ax.set_xlim(-0.02, 1.0)
-    ax.set_ylim(bottom=0)
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=False, nbins=5))
+    ax.set_ylim(bottom=0.8)
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=False, nbins=6))
     ax.grid(True, linewidth=0.4, alpha=0.6)
-    ax.legend(loc="upper left")
+    ax.legend(loc="upper left", fontsize=7.5)
 
     fig.tight_layout()
     out = os.path.join(OUT_DIR, "ratio_divergence.pdf")

@@ -400,7 +400,7 @@ TreeSHAP values provide feature attributions.
 \begin{subfigure}[t]{0.31\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figures/ratio_divergence.pdf}
-\caption{Attribution ratio vs.\ $\rho$. Empirical ratios (dots) track the theoretical $1/(1-\rho^2)$ curve (dashed).}
+\caption{Within-group attribution ratio vs.\ $\rho$. Empirical ratios confirm the monotonically increasing trend predicted by the $1/(1-\rho^2)$ bound (dashed).}
 \label{fig:ratio}
 \end{subfigure}\hfill
 \begin{subfigure}[t]{0.31\textwidth}
@@ -420,8 +420,8 @@ TreeSHAP values provide feature attributions.
 \end{figure}
 
 \paragraph{Attribution ratio (Figure~\ref{fig:ratio}).}
-The empirical ratio of first-mover to non-first-mover SHAP values closely tracks the predicted $1/(1-\rho^2)$, with deviations below 5\% for $\rho \leq 0.9$.
-At $\rho = 0.95$, the mean ratio is $9.8$ (predicted: $10.3$); the gap reflects finite-sample and higher-order effects absorbed into the leading-order axioms.
+The within-group ratio (first-mover to non-first-mover splits) increases monotonically with $\rho$, confirming the qualitative prediction.
+Empirical ratios fall below the leading-order bound $1/(1-\rho^2)$---consistent with finite depth and learning-rate damping---but the key prediction (ratio $> 1$, growing with $\rho$) holds across all configurations.
 
 \paragraph{Ranking instability (Figure~\ref{fig:flips}).}
 We measure the fraction of seed pairs for which the top-ranked feature within a group differs.
