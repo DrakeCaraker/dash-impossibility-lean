@@ -7,6 +7,7 @@
 -/
 import DASHImpossibility.Trilemma
 import DASHImpossibility.SplitGap
+import DASHImpossibility.Iterative
 
 set_option autoImplicit false
 
@@ -90,5 +91,17 @@ theorem gbdt_trilemma (ℓ : Fin fs.L) (j k : Fin fs.P)
       ranking j k ↔ attribution fs j f > attribution fs k f) :
     False :=
   attribution_trilemma fs (gbdt_rashomon fs) ℓ j k hj hk hjk ranking h_faithful
+
+/-! ### GBDT as an Iterative Optimizer -/
+
+/-- Sequential gradient boosting is an iterative optimizer where the
+    dominant feature is the first-mover (root split of tree 1). -/
+noncomputable def gbdtOptimizer : IterativeOptimizer fs where
+  dominant := firstMover fs
+  dominant_gt := by
+    intro f ℓ k h_dom_in hk hne
+    have hjk : firstMover fs f ≠ k := Ne.symm hne
+    exact attribution_firstMover_gt fs f (firstMover fs f) k ℓ h_dom_in hk rfl hjk
+  dominant_surjective := firstMover_surjective fs
 
 end DASHImpossibility
