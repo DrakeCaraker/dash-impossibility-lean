@@ -786,7 +786,9 @@ ranking disagrees with exactly half the models.
 are i.i.d.\ with mean $\mu_j$ and variance $\sigma_j^2$, the
 Cram\'er--Rao lower bound for estimating the mean of a location
 family gives $\Var(\hat\mu_j) \geq \sigma_j^2/M$ for any unbiased
-estimator $\hat\mu_j$.
+estimator $\hat\mu_j$ whose distribution satisfies standard regularity
+(differentiable density with support independent of the parameter;
+satisfied by SHAP values under continuous training randomness).
 (More precisely: the Fisher information for the mean of a distribution
 with variance $\sigma_j^2$ is $1/\sigma_j^2$ per observation, so $M$
 observations give total information $M/\sigma_j^2$, and the Cram\'er--Rao
@@ -1252,13 +1254,18 @@ flagged by F5 can then be validated with the full F1 test.
 
 \paragraph{Practitioner algorithm.}
 \begin{enumerate}
-    \item Train one model. Compute $Z^{\text{split}}_{jk}$ for all
+    \item[\textbf{Step 0.}] \textbf{Identify correlated groups.}
+          Compute the $P \times P$ absolute correlation matrix.
+          Group features with $|\rho_{jk}| > 0.5$ (a conservative
+          threshold; practitioners may use $0.7$ for high-dimensional
+          settings). Features not in any group are stable by default.
+    \item[\textbf{Step 1.}] Train one model. Compute $Z^{\text{split}}_{jk}$ for all
           feature pairs in correlated groups. Cost: $O(P^2 T)$.
-    \item If $Z^{\text{split}}_{jk} < 1.96$ for any pair: flag as
+    \item[\textbf{Step 2.}] If $Z^{\text{split}}_{jk} < 1.96$ for any pair: flag as
           potentially unstable.
-    \item For flagged pairs: train $M = 5$ models, compute $Z_{jk}$
+    \item[\textbf{Step 3.}] For flagged pairs: train $M = 5$ models, compute $Z_{jk}$
           (F1 test). If $Z_{jk} < 1.96$: use \DASH{} with $M \geq 25$.
-    \item If no pairs are flagged: single-model SHAP is reliable.
+    \item[\textbf{Step 4.}] If no pairs are flagged: single-model SHAP is reliable.
 \end{enumerate}
 
 \paragraph{F5 screening accuracy.}
@@ -1464,9 +1471,14 @@ which approaches 1 as $M \to \infty$.
 
 This establishes $\mathcal{B}$.
 
-\textbf{Step 3: No method lies outside $\mathcal{A} \cup \mathcal{B}$.}
+\textbf{Step 3: No method operating on per-model attributions lies outside $\mathcal{A} \cup \mathcal{B}$.}
 
-We show that any method $A$ must fall in one of the two families.
+We show that any method $A$ that computes consensus from per-model
+attributions $(\varphi_j(f_1), \ldots, \varphi_j(f_M))$ must fall
+in one of the two families. (Methods that pool training data across
+models and train a single combined model fall outside this scope;
+such methods face different tradeoffs related to data leakage and
+are not standard attribution aggregation methods.)
 
 \emph{Case 1: $A$ is faithful to individual models and complete.}
 Then by Step 1, $U(A) = 1/2$ and $S(A) \leq 1 - m^3/P^3$,
