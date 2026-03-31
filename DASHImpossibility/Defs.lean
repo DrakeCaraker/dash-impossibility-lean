@@ -55,19 +55,8 @@ end FeatureSpace
 
 /-! ## Model and attribution types -/
 
-/-- Abstract type for random seeds -/
-axiom Seed : Type
-/-- Seeds are nonempty (we can always draw one) -/
-axiom Seed.nonempty : Nonempty Seed
-instance : Nonempty Seed := Seed.nonempty
-
-/-- A trained model, parameterized by its random seed -/
+/-- A trained model (abstract type). -/
 axiom Model : Type
-axiom Model.nonempty : Nonempty Model
-instance : Nonempty Model := Model.nonempty
-
-/-- Train a model from a seed -/
-axiom train : Seed → Model
 
 /-- Number of boosting rounds -/
 axiom numTrees : ℕ
@@ -77,9 +66,6 @@ variable (fs : FeatureSpace)
 
 /-- Attribution (global feature importance) for feature j in model f -/
 axiom attribution : Fin fs.P → Model → ℝ
-
-/-- Attribution is nonnegative -/
-axiom attribution_nonneg : ∀ (j : Fin fs.P) (f : Model), 0 ≤ attribution fs j f
 
 /-- Split count for feature j in model f.
     Returns ℝ (not ℕ) to avoid inconsistency: the axiomatized values T/(2-ρ²)
