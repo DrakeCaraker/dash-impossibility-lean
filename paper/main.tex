@@ -371,6 +371,8 @@ The tie is not a deficiency---it faithfully reflects the DGP symmetry.
 \label{sec:experiments}
 
 We validate the theoretical predictions on synthetic Gaussian data.
+(A real-world validation on the Breast Cancer dataset, confirming
+instability for naturally collinear features, is in the supplement.)
 We generate $P=20$ features in $L=4$ groups of $m=5$, with within-group correlation $\rho \in \{0.1, 0.3, 0.5, 0.7, 0.9, 0.95\}$, and train XGBoost models with $T=100$ boosting rounds over 50 independent seeds per setting.
 TreeSHAP values provide feature attributions.
 

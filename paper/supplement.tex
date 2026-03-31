@@ -96,6 +96,34 @@ The first two are genuine logical inconsistencies that would have been
 difficult to detect by inspection of an informal proof. The third is a
 modeling assumption made explicit by the type system.
 
+\section{Real-World Validation: Breast Cancer (Wisconsin)}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/real_world_instability.pdf}
+\caption{SHAP ranking instability on the Breast Cancer (Wisconsin) dataset.
+Each dot is one of the 435 feature pairs; the $x$-axis is the absolute
+pairwise correlation. Highly correlated feature pairs with similar
+true importance (e.g., worst perimeter $\leftrightarrow$ worst area,
+$|\rho|{=}0.98$, flip rate 48\%) exhibit near-maximal instability,
+while correlated pairs with distinct importance remain stable.
+50 XGBoost models with independent random seeds.}
+\label{fig:real-world}
+\end{figure}
+
+We validate the impossibility on the Breast Cancer (Wisconsin) dataset
+(30 features, 569 samples), which exhibits natural collinearity among
+measurements of cell nuclei (radius, perimeter, area at mean/SE/worst levels).
+Figure~\ref{fig:real-world} plots the SHAP ranking flip rate for each
+feature pair against their absolute correlation.
+Pairs measuring the same underlying quantity---such as worst perimeter
+and worst area ($|\rho| = 0.98$, flip rate 48\%)---approach the
+theoretical maximum of 50\% predicted by our DGP symmetry argument.
+Pairs with high correlation but distinct importance (e.g., mean area and
+mean concave points, $|\rho| = 0.82$, flip rate 2\%) remain stable, confirming
+that the impossibility requires both collinearity \emph{and} similar
+true importance.
+
 \section{Gaussian Conditioning Argument}
 
 The split count formulas (Axioms~2--3) are justified by the following
