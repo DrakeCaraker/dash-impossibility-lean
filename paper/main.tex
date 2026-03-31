@@ -49,7 +49,7 @@
 
 \begin{abstract}
 SHAP values are widely used for feature attribution in machine learning, yet practitioners routinely observe that feature rankings become unstable under collinearity---small perturbations to training data can invert the apparent importance ordering of correlated features.
-We prove an \emph{attribution impossibility}: no single model can simultaneously produce feature attributions that are faithful (reflecting true model reliance), stable (robust to retraining), and complete (summing to the prediction).
+We prove an \emph{attribution impossibility}: no single model can simultaneously produce feature attributions that are faithful (reflecting true model reliance), stable (robust to retraining), and complete (ranking all feature pairs).
 The proof proceeds in two layers.
 First, a model-agnostic argument shows that the Rashomon property of collinear designs forces symmetric features into conflicting orderings across near-optimal models.
 Second, model-specific bounds quantify the severity: for gradient-boosted trees the attribution ratio follows $1/(1-\alpha\rho^2)$ ($\alpha \approx 2/\pi$, validated empirically); for Lasso it is infinite; while random forests remain bounded at $O(1/\sqrt{T})$.
