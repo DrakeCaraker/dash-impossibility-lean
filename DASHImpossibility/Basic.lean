@@ -3,6 +3,7 @@
 -/
 import DASHImpossibility.Defs
 import DASHImpossibility.Trilemma
+import DASHImpossibility.Iterative
 import DASHImpossibility.SplitGap
 import DASHImpossibility.Ratio
 import DASHImpossibility.General
