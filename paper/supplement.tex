@@ -56,7 +56,13 @@ Consensus variance bound & \texttt{consensus\_variance\_bound} & $\Var(\bar\varp
 
 \section{Proof Architecture}
 
-The formalization comprises 14 Lean~4 files (15 axioms, 33 substantive theorems):
+The formalization comprises 14 Lean~4 files (15 axioms, 24 substantive
+theorems + 9 convenience lemmas, 0 \texttt{sorry}).
+The core impossibility (\texttt{attribution\_impossibility}) depends on
+zero axioms---only the Rashomon property as hypothesis.
+The DASH resolution (\texttt{consensus\_equity}) depends on the
+\texttt{attribution\_sum\_symmetric} axiom; the variance convergence
+depends on the \texttt{consensus\_variance\_bound} axiom.
 
 \begin{verbatim}
 Defs.lean (15 axioms, type definitions)
@@ -1155,6 +1161,17 @@ The result also holds for gain-based importance (non-SHAP):
 $r = -0.83$ overall, $r = -0.66$ for $Z < 5$, confirming the
 finding is not an artifact of the SHAP computation.
 
+\paragraph{Structural correlation baseline.}
+Since $Z_{jk}$ and the flip rate are both computed from the same
+attribution arrays, part of the negative correlation is structural
+(definitional). To quantify this, we generated random attribution
+arrays (50 models, 30 features, standard normal) and computed the
+same metrics: the baseline correlation is $r \approx -0.56$
+($R^2 = 0.32$). The observed $r = -0.89$ ($R^2 = 0.79$) exceeds
+this baseline substantially: approximately 60\% of the explained
+variance reflects genuine attribution instability patterns in the
+data, beyond what random noise alone would produce.
+
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/f1_f5_diagnostic.pdf}
@@ -1583,9 +1600,11 @@ correlation $\rho > 0$, the \emph{attribution design space} is the
 set of triples $(S, U, C)$ achievable by any attribution aggregation
 method $A$ applied to $M \geq 1$ independently trained models, where:
 \begin{itemize}
-    \item $S \in [0,1]$: \emph{between-group stability} ---
-      the probability that the consensus preserves the true
-      between-group ordering.
+    \item $S \in [0,1]$: \emph{ranking stability} ---
+      the expected Spearman correlation between the consensus
+      rankings produced by two independent draws of $M$ models.
+      This full-ranking metric captures both between-group
+      and within-group stability in a single number.
     \item $U \in [0, 1/2]$: \emph{within-group unfaithfulness} ---
       the probability that the consensus disagrees with a random
       model on a within-group pair.
