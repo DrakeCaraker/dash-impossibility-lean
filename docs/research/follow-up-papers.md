@@ -321,3 +321,23 @@ R1 would add a NEW proof path to `RashimonProperty` — complementary to
 
 The follow-up papers (Rashomon inevitability, design space characterization)
 would be Papers 3b/3c — extensions of the impossibility program.
+
+---
+
+## Appendix: Reviewer Guidance on Foundational Path
+
+### R1 (Skeptic): What would make you cite this?
+1. Derive α from XGBoost splitting criterion (α(1)=2/π proved, not fitted)
+2. Prove Rashomon inevitability via Fisher information rank deficiency
+3. Demonstrate on regulatory-relevant datasets (FICO, MIMIC, COMPAS)
+
+### R2 (Theorist): What would make this Arrow's theorem of XAI?
+1. Prove Rashomon for ε-balls around Bayes optimum (near-optimality → permutation closure)
+2. Complete characterization: Pareto frontier of (stability, equity) parameterized by M
+3. Unifying meta-theorem subsuming Bilodeau, Huang, and our result
+
+### R3 (Engineer): What would change industry practice?
+1. pip-installable DASH library with auto-M selection and diagnostics
+2. Case study where DASH prevents a real decision error
+3. EU AI Act compliance template using DASH
+
