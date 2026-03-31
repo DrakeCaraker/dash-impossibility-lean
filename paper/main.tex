@@ -69,8 +69,10 @@ Several recent results have established fundamental limits on feature attributio
 None of these results analyze \emph{stability}---the robustness of attributions to retraining---none provide quantitative architecture-discriminating bounds, and none offer a constructive resolution.
 
 This paper fills these gaps.
-We prove an \emph{Attribution Impossibility}: for any single model trained on collinear features, faithfulness, stability, and completeness are mutually incompatible.
-The result has two layers.
+Our main result is the \emph{Attribution Design Space Theorem} (\S\ref{sec:design-space}): a complete characterization of what is achievable when explaining models with collinear features.
+The achievable set consists of exactly two families---faithful-complete methods (unstable, unfaithful to half the models) and ensemble methods like \DASH{} (stable, with within-group ties)---and \DASH{} is Pareto-optimal.
+The theorem rests on an \emph{Attribution Impossibility}: for any single model trained on collinear features, faithfulness, stability, and completeness are mutually incompatible.
+The impossibility has two layers.
 The first is model-agnostic: formalizing the Rashomon property \citep{rudin2024amazing}, we show symmetric features are necessarily ranked in opposite orders by different near-optimal models.
 The second is model-specific: we derive quantitative bounds on the attribution ratio (the factor by which the dominant feature is overweighted).
 For \GBDT{}, this ratio follows $1/(1-\alpha\rho^2)$ where $\alpha$ captures the per-tree signal fraction; for Lasso it is infinite at any $\rho > 0$; for neural networks it depends on the initialization; and for random forests it is $O(1/\sqrt{T})$---converging rather than diverging.
@@ -485,6 +487,9 @@ The variance bound is axiomatized and its consequences (variance rate, monotonic
 Decorrelating via PCA removes collinearity but destroys the original feature semantics---the impossibility applies to original features, which are what practitioners want to explain.
 \DASH{} requires $M\times$ training cost; $M{=}25$ brings the flip rate below 1\%, while $M{=}5$ provides a substantial improvement (variance reduced $5\times$) at modest cost.
 \DASH{} consensus achieves stability by discarding model-specific within-group information: when individual models disagree on $j$ vs.\ $k$, \DASH{} reports a tie rather than picking a side.
+The information cost is exactly $\log_2(m!)$ bits per group of $m$ symmetric features---the bits that encode which model-specific ordering happened to emerge, which would differ under retraining.
+Between-group information is \emph{sharpened}: the mutual information between the consensus ranking and the true ordering approaches 1~bit per pair as $M \to \infty$ (supplement).
+The net effect: \DASH{} loses the unreliable information and sharpens the reliable information.
 For safety-critical applications deploying a specific model $f$, practitioners should report both the single-model SHAP values (with an instability caveat) and the \DASH{} consensus (stable but reporting ties).
 
 \paragraph{Broader implications.}
@@ -492,8 +497,16 @@ Our theorem proves that attribution instability under collinearity is a ``known 
 Beyond regulatory compliance, the impossibility affects model debugging (the wrong feature may be blamed for errors), fairness audits (protected-feature effects may be misattributed to correlated proxies), and scientific discovery (spurious feature importance may drive false hypotheses).
 In each case, \DASH{} provides a principled mitigation by reporting honest uncertainty rather than arbitrary distinctions.
 
+\paragraph{Proof status transparency.}
+The core impossibility (Theorem~\ref{thm:impossibility}) is Lean-verified with zero axiom dependencies.
+The GBDT ratio and Spearman bounds are Lean-derived from 15 explicit axioms.
+The DASH equity result (Corollary~\ref{cor:equity}) is axiom-derived: the \texttt{attribution\_sum\_symmetric} axiom essentially encodes the conclusion for balanced ensembles.
+The Design Space Theorem, DASH optimality (F2), and FIM impossibility (F3) are proved in the supplement but not in Lean.
+The F1 diagnostic, information loss analysis, and 11-dataset validation are empirical.
+Table~S1 in the supplement provides the full axiom inventory.
+
 \paragraph{Open problems.}
-Quantifying the information loss from \DASH{} averaging (bits lost as a function of $M$ and $\rho$), deriving split-count axioms algorithmically in Lean~4, formalizing the Design Space Theorem (Theorem~\ref{thm:design-space-main}) in Lean, and generalizing from $\rho > 0$ to $I(X_j; X_k) > 0$ remain open.
+Formalizing the Design Space Theorem exhaustiveness proof in Lean, deriving split-count axioms algorithmically, proving the proportionality axiom for TreeSHAP, and generalizing from $\rho > 0$ to $I(X_j; X_k) > 0$ remain open.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
