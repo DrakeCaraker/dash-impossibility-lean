@@ -3,3 +3,25 @@
 *.ilean
 *.trace
 lake-packages/
+
+# OS
+.DS_Store
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+paper/main.pdf
+
+# Claude Code / Alfred
+.claude/.onboarding-state.json
+.claude/.session-bookmark.json
+.claude/.pilot-consent.json
+.claude/.pilot-identity.json
+.claude/settings.local.json
+.claude/worktrees/
