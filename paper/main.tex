@@ -471,10 +471,8 @@ Our theorem proves that feature attribution instability under collinearity is pr
 As CEN-CENELEC JTC~21 drafts harmonised standards for AI transparency, this class of limitation warrants explicit acknowledgment.
 
 \paragraph{Open problems.}
-Three directions merit further investigation.
-First, characterize all three relaxation paths of the trilemma: we resolve via relaxing completeness, but what is achievable by relaxing faithfulness or stability instead?
-Second, derive the split-count axioms from algorithmic definitions of gradient boosting within Lean~4, closing the gap between axiomatic and algorithmic formalization.
-Third, generalize the collinearity condition beyond linear correlation to mutual information $I(X_j; X_k) > 0$, which would extend the impossibility to nonlinear dependencies.
+We resolve the impossibility by dropping completeness, but in the supplementary we show that dropping faithfulness \emph{converges} to the same solution, collapsing the trilemma to a single axis parameterized by ensemble size~$M$.
+Characterizing the stability--equity Pareto frontier across architectures, deriving the split-count axioms from algorithmic definitions in Lean~4, and generalizing from linear correlation~$\rho$ to mutual information $I(X_j; X_k) > 0$ all remain open.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
