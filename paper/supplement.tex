@@ -654,6 +654,22 @@ on the Breast Cancer dataset (435 feature pairs, 50 seeds).
 The correlation between $Z_{jk}$ and the empirical flip rate is
 $r = -0.89$: low $Z_{jk}$ accurately predicts high instability.
 
+\paragraph{Restricted-range robustness.}
+The $r = -0.89$ correlation includes many ``easy'' pairs with
+$Z \gg 10$ and flip rate~$= 0$, which could inflate the headline
+figure.
+To address this, we report the correlation restricted to the
+diagnostically interesting range:
+$r = -0.78$ for $Z < 5$ ($n = 118$ pairs),
+$r = -0.61$ for $Z < 3$ ($n = 74$ pairs), and
+$r = -0.53$ for $Z < 2$ ($n = 49$ pairs).
+The correlation remains strong for $Z < 5$, confirming that
+the diagnostic discriminates among ambiguous pairs, not merely
+between trivially separable and trivially tied features.
+The result also holds for gain-based importance (non-SHAP):
+$r = -0.83$ overall, $r = -0.66$ for $Z < 5$, confirming the
+finding is not an artifact of the SHAP computation.
+
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/f1_f5_diagnostic.pdf}
