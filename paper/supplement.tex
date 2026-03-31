@@ -18,7 +18,13 @@
 
 \section{Complete Axiom System}
 
-Table~\ref{tab:axioms} lists all axioms in the Lean~4 formalization.
+Table~\ref{tab:axioms} lists the 6 property axioms in the formalization
+(the core impossibility theorem requires none of them---only the Rashomon
+property as hypothesis).
+The formalization uses 12 axioms total: 5 type/constant declarations
+(\texttt{Model}, \texttt{numTrees}, \texttt{numTrees\_pos}, \texttt{attribution},
+\texttt{splitCount}, \texttt{firstMover}), the 5 property axioms below,
+the DASH symmetry axiom, and one quantitative Spearman bound.
 
 \begin{table}[h]
 \centering
@@ -32,7 +38,7 @@ First-mover surjectivity & \texttt{firstMover\_surjective} & DGP symmetry: each 
 Split count (first-mover) & \texttt{splitCount\_firstMover} & Gaussian conditioning (Lemma~1 in main text) \\
 Split count (non-first-mover) & \texttt{splitCount\_nonFirstMover} & Residual signal after first-mover absorbs $\rho$-component \\
 Proportionality & \texttt{attribution\_proportional} & Uniform contribution model (Assumption~7) \\
-Spearman bound & \texttt{spearman\_bound} & Combinatorial rank argument: tied non-first-movers \\
+Spearman bound & \texttt{spearman\_classical\_bound} & Combinatorial rank argument: tied non-first-movers \\
 Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & DGP symmetry + balanced ensemble hypothesis \\
 \bottomrule
 \end{tabular}
@@ -40,10 +46,10 @@ Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & DGP symmetry +
 
 \section{Proof Architecture}
 
-The formalization comprises 12 Lean~4 files with 29 theorems:
+The formalization comprises 13 Lean~4 files (12 axioms, 28 substantive theorems):
 
 \begin{verbatim}
-Defs.lean (6 axioms, type definitions)
+Defs.lean (11 axioms, type definitions)
   |
   +-- Trilemma.lean (RashimonProperty, attribution_impossibility)
   |     |
@@ -55,6 +61,7 @@ Defs.lean (6 axioms, type definitions)
   |
   +-- SplitGap.lean (split_gap_exact, split_gap_ge_half)
   +-- Ratio.lean (attribution_ratio, ratio_tendsto_atTop)
+  +-- SpearmanDef.lean (spearmanCorr definition, derived bound)
   |
   +-- Impossibility.lean (not_equitable, not_stable, impossibility)
   +-- Corollary.lean (consensus_equity, consensus_difference_zero)
