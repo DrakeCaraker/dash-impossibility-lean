@@ -126,4 +126,116 @@ All algebraic consequences have been independently verified:
 # Result: ALL CHECKS PASS
 \end{verbatim}
 
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\section{Extended Results: Universality and Relaxation Characterization}
+
+The results in this section extend the main paper's impossibility theorem
+in two directions: (i) showing the Rashomon property is inevitable for
+symmetric model classes, making the impossibility inescapable; and
+(ii) partially characterizing the remaining two relaxation paths.
+
+\subsection{Rashomon Inevitability Under Symmetry}
+
+The Attribution Impossibility (Theorem~1 in the main text) holds for
+any model class satisfying the Rashomon property. We now show this
+property is inevitable for symmetric model classes.
+
+\begin{definition}[Permutation closure]
+\label{def:perm-closure}
+A model class $\mathcal{F}$ is \emph{permutation-closed} within
+group $\ell$ if for any $f \in \mathcal{F}$ and any permutation
+$\pi$ of features within group $\ell$, the composed model
+$f \circ \pi \in \mathcal{F}$.
+\end{definition}
+
+This condition is satisfied by any model class without built-in
+feature ordering: neural networks (permute input neurons),
+gradient-boosted trees (permute split features), Lasso (permute
+covariates), and random forests. It fails only for model classes
+with hard-coded feature preferences.
+
+\begin{theorem}[Rashomon from symmetry]
+\label{thm:rashomon-symmetry}
+Let the DGP be symmetric within group $\ell$ (permuting features
+$j \leftrightarrow k$ leaves the population loss invariant).
+Let $\mathcal{F}$ be permutation-closed within group $\ell$.
+Then for any model $f \in \mathcal{F}$ with
+$\varphi_j(f) \neq \varphi_k(f)$, the permuted model
+$f' = f \circ \pi_{jk}$ satisfies:
+\begin{enumerate}
+    \item $L(f') = L(f)$ (same population loss),
+    \item $\varphi_k(f') = \varphi_j(f)$ and
+          $\varphi_j(f') = \varphi_k(f)$ (attributions swap).
+\end{enumerate}
+In particular, if $\varphi_j(f) > \varphi_k(f)$, then
+$\varphi_k(f') > \varphi_j(f')$, and the Rashomon property holds.
+\end{theorem}
+
+\begin{proof}
+By DGP symmetry, the joint distribution of $(X, Y)$ is invariant
+under permutation of features $j$ and $k$ within group $\ell$.
+Therefore $L(f') = L(f \circ \pi_{jk}) = L(f)$, since the
+population loss depends only on the joint distribution.
+By construction, $f'$ applies $f$ to permuted inputs, so its
+reliance on feature $k$ equals $f$'s reliance on feature $j$:
+$\varphi_k(f') = \varphi_j(f)$ and vice versa.
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:rashomon-symmetry} shows that the models
+in the main text's instantiations (the ``permuted model'' with
+opposite feature utilization) are not hypothetical---they exist in
+any permutation-closed model class. Combined with the observation
+that any stochastic, symmetric training algorithm reaches both
+sides with positive probability (by algorithmic symmetry,
+$\Pr[\varphi_j > \varphi_k] = \Pr[\varphi_k > \varphi_j] = 1/2$),
+this makes the impossibility inescapable for essentially any
+standard ML pipeline under collinearity.
+\end{remark}
+
+\subsection{The Price of Dropping Faithfulness}
+
+The main text resolves the impossibility by dropping completeness
+(DASH: ties for symmetric features). What if we instead drop
+faithfulness---allowing a stable, complete ranking that does not
+reflect any specific model?
+
+\begin{theorem}[Unfaithfulness lower bound]
+\label{thm:unfaithfulness}
+Let $j, k$ be symmetric features (same group, same population-level
+relationship with $Y$). Any stable, complete ranking $\succ$ has
+expected unfaithfulness at least $1/2$ for the pair $(j,k)$:
+\[
+    \Pr_f\bigl[\, j \succ k \;\text{but}\;
+    \varphi_k(f) > \varphi_j(f) \,\bigr] \;=\; \frac{1}{2},
+\]
+where the probability is over models $f$ drawn from the symmetric
+training distribution.
+\end{theorem}
+
+\begin{proof}
+By DGP symmetry, the distribution of $\varphi_j(f) - \varphi_k(f)$
+is symmetric about zero:
+$\Pr[\varphi_j(f) > \varphi_k(f)] = \Pr[\varphi_k(f) > \varphi_j(f)] = 1/2$.
+Any stable ranking must fix $j \succ k$ or $k \succ j$ independently
+of $f$. Whichever it chooses disagrees with exactly half the models.
+\end{proof}
+
+\begin{remark}
+The optimal unfaithful ranking is the population-level ranking:
+$j \succ^* k \Leftrightarrow \mathbb{E}[\varphi_j] > \mathbb{E}[\varphi_k]$.
+For symmetric features, $\mathbb{E}[\varphi_j] = \mathbb{E}[\varphi_k]$,
+so $\succ^*$ assigns a tie---recovering the ``drop completeness''
+solution. Thus \textbf{the ``drop faithfulness'' and ``drop completeness''
+relaxation paths converge}: both lead to population-level attributions
+with ties for symmetric features. The trilemma collapses to a single
+tradeoff axis parameterized by ensemble size $M$: at $M = 1$, one has
+faithfulness and completeness but no stability; as $M \to \infty$, one
+gains stability at the cost of within-group completeness. Between-group
+faithfulness is preserved at all $M$.
+\end{remark}
+
 \end{document}
