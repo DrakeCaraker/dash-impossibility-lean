@@ -423,6 +423,29 @@ Pairs with $Z_{jk} < 1.96$ have unreliable rankings; pairs above this threshold 
 A single-model screening variant using split frequencies achieves 94\% precision.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Attribution Design Space}
+\label{sec:design-space}
+
+The impossibility, the quantitative bounds, and the \DASH{} resolution are not isolated results---they are facets of a single structural theorem characterizing the complete attribution design space.
+
+\begin{theorem}[Attribution Design Space]
+\label{thm:design-space-main}
+For any model class satisfying the Rashomon property under within-group correlation $\rho > 0$, the achievable set of (stability~$S$, unfaithfulness~$U$, completeness~$C$) triples, over all methods operating on per-model attributions, is the union of exactly two families:
+\begin{itemize}
+    \item \textbf{Family $\mathcal{A}$ (single-model):} $S \leq 1 - m^3/P^3$, $U = 1/2$, $C = \text{complete}$. Any method faithful to an individual model falls here.
+    \item \textbf{Family $\mathcal{B}$ (ensemble):} $S_M = 1 - O(1/M)$, $U = 0$, $C = \text{partial (ties)}$. \DASH{}$(M)$ achieves this and is Pareto-optimal.
+\end{itemize}
+The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. The design space collapses to a single axis: ensemble size $M$.
+\end{theorem}
+
+All previous results are corollaries: Theorem~\ref{thm:impossibility} is the infeasibility of the $(1,0,\text{complete})$ point; Corollary~\ref{cor:equity} is the achievability of $\mathcal{B}$; the path convergence (supplement) is the collapse of both relaxation paths to $\mathcal{B}$.
+The full proof, with the Pareto optimality argument and five formal corollaries, is in the supplement.
+
+This characterization parallels Arrow's landscape: Arrow's theorem restricts the space of social welfare functions; our theorem restricts the space of attribution aggregation methods.
+But unlike Arrow's setting---where the three relaxation paths yield distinct solutions (Borda count, majority rule, single-peaked preferences)---our relaxation paths \emph{converge}: the optimal ``drop faithfulness'' method equals the optimal ``drop completeness'' method (\DASH{}).
+The M-axis is the unique design dimension.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Work}
 \label{sec:related}
 
@@ -464,8 +487,7 @@ Beyond regulatory compliance, the impossibility affects model debugging (the wro
 In each case, \DASH{} provides a principled mitigation by reporting honest uncertainty rather than arbitrary distinctions.
 
 \paragraph{Open problems.}
-In the supplement we prove the Attribution Design Space Theorem: the achievable set of (stability, unfaithfulness, completeness) triples consists of exactly two families, with \DASH{} Pareto-optimal on the ensemble branch.
-Quantifying the information loss from \DASH{} averaging (bits lost as a function of $M$ and $\rho$), deriving split-count axioms algorithmically in Lean~4, formalizing the Design Space Theorem in Lean, and generalizing from $\rho > 0$ to $I(X_j; X_k) > 0$ remain open.
+Quantifying the information loss from \DASH{} averaging (bits lost as a function of $M$ and $\rho$), deriving split-count axioms algorithmically in Lean~4, formalizing the Design Space Theorem (Theorem~\ref{thm:design-space-main}) in Lean, and generalizing from $\rho > 0$ to $I(X_j; X_k) > 0$ remain open.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
