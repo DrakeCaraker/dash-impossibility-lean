@@ -45,6 +45,8 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, comprehensive)
 ```
 
+## Lean State: 14 files, 15 axioms, 33 theorems, 0 sorry
+
 ## Axiom Inventory (15 total)
 
 | Category | Axioms | Used by |
