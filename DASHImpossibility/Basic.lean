@@ -9,5 +9,6 @@ import DASHImpossibility.NeuralNet
 import DASHImpossibility.SplitGap
 import DASHImpossibility.Ratio
 import DASHImpossibility.General
+import DASHImpossibility.SpearmanDef
 import DASHImpossibility.Impossibility
 import DASHImpossibility.Corollary

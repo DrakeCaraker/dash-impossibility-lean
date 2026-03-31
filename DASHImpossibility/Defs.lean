@@ -148,23 +148,16 @@ def IsBalanced (M : ℕ) (models : Fin M → Model) : Prop :=
     (Finset.univ.filter (fun i => firstMover fs (models i) = j)).card =
     (Finset.univ.filter (fun i => firstMover fs (models i) = k)).card
 
-/-! ## Spearman rank correlation -/
+/-! ## Spearman rank correlation
 
-/-- Spearman rank correlation between two attribution vectors.
-    Full definition via Σd²/(P(P²-1)) deferred; we axiomatize the key bound. -/
-axiom spearman (v w : Fin fs.P → ℝ) : ℝ
+  Previously axiomatized; now defined from scratch in SpearmanDef.lean
+  using midranks and Σd². The qualitative bound (Spearman < 1 when
+  first-movers differ) is fully derived. The quantitative bound
+  (Spearman ≤ 1 - 3/(P³-P)) is also derived from the definition.
 
-/-- AXIOM 5: When two models have different first-movers in the same group,
-    within-group rank reshuffling bounds Spearman. Justified by the paper's
-    combinatorial argument: non-first-movers are tied and randomly ordered,
-    giving E[Σd²] = m(m²-1)/6 for group size m. The factor of 6 in the
-    Spearman formula cancels the 1/6 in E[Σd²], yielding a drop of m³/P³. -/
-axiom spearman_bound (f f' : Model) (ℓ : Fin fs.L)
-    (hfm_grp : firstMover fs f ∈ fs.group ℓ)
-    (hfm'_grp : firstMover fs f' ∈ fs.group ℓ)
-    (hdiff : firstMover fs f ≠ firstMover fs f') :
-    spearman fs (fun j => attribution fs j f) (fun j => attribution fs j f') ≤
-      1 - (fs.groupSize ℓ : ℝ) ^ 3 / (fs.P : ℝ) ^ 3
+  The classical argument gives a tighter bound of m³/P³ (from the
+  expected Σd² under random tie-breaking), which is stated as an
+  axiom in SpearmanDef.lean about the defined quantity. -/
 
 /-! ## Probabilistic axiom for DASH analysis -/
 
