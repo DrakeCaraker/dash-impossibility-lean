@@ -30,7 +30,7 @@ structure IterativeOptimizer where
   dominant_surjective : ∀ (ℓ : Fin fs.L) (j : Fin fs.P),
     j ∈ fs.group ℓ → ∃ f : Model, dominant f = j
 
-/-! ### Iterative Optimizer → Rashomon Property → Trilemma -/
+/-! ### Iterative Optimizer → Rashomon Property → Impossibility -/
 
 /-- Any iterative optimizer satisfies the Rashomon property. -/
 theorem iterative_rashomon (opt : IterativeOptimizer fs) :
@@ -48,14 +48,14 @@ theorem iterative_rashomon (opt : IterativeOptimizer fs) :
     have h := opt.dominant_gt f' ℓ j h_dom_in hj (by rw [hfm']; exact hjk)
     rwa [hfm'] at h
 
-/-- The Attribution Trilemma holds for any iterative optimizer. -/
-theorem iterative_trilemma (opt : IterativeOptimizer fs)
+/-- The Attribution Impossibility holds for any iterative optimizer. -/
+theorem iterative_impossibility (opt : IterativeOptimizer fs)
     (ℓ : Fin fs.L) (j k : Fin fs.P)
     (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
     (ranking : Fin fs.P → Fin fs.P → Prop)
     (h_faithful : ∀ f : Model,
       ranking j k ↔ attribution fs j f > attribution fs k f) :
     False :=
-  attribution_trilemma fs (iterative_rashomon fs opt) ℓ j k hj hk hjk ranking h_faithful
+  attribution_impossibility fs (iterative_rashomon fs opt) ℓ j k hj hk hjk ranking h_faithful
 
 end DASHImpossibility

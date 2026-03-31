@@ -1,5 +1,5 @@
 /-
-  Neural networks: the Attribution Trilemma holds when initialization-dependent
+  Neural networks: the Attribution Impossibility holds when initialization-dependent
   feature utilization produces a dominant feature per correlated group.
 
   Properties are theorem hypotheses, not global axioms. The classical
@@ -14,9 +14,9 @@ namespace DASHImpossibility.NeuralNet
 
 variable (fs : FeatureSpace)
 
-/-- Neural networks inherit the Attribution Trilemma when initialization
+/-- Neural networks inherit the Attribution Impossibility when initialization
     symmetry-breaking produces a dominant feature per correlated group. -/
-theorem nn_trilemma
+theorem nn_impossibility
     (captured : Model → Fin fs.P)
     (captured_gt : ∀ (f : Model) (ℓ : Fin fs.L) (k : Fin fs.P),
       captured f ∈ fs.group ℓ → k ∈ fs.group ℓ → k ≠ captured f →
@@ -34,6 +34,6 @@ theorem nn_trilemma
     dominant_gt := captured_gt
     dominant_surjective := captured_surjective
   }
-  exact iterative_trilemma fs opt ℓ j k hj hk hjk ranking h_faithful
+  exact iterative_impossibility fs opt ℓ j k hj hk hjk ranking h_faithful
 
 end DASHImpossibility.NeuralNet

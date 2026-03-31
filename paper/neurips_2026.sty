@@ -1,0 +1,31 @@
+%% neurips_2026.sty — PLACEHOLDER
+%% The real NeurIPS 2026 style file was not yet available at time of writing.
+%% Replace this file with the official style from:
+%%   https://media.neurips.cc/Conferences/NeurIPS2026/Styles/neurips_2026.sty
+%% once it is published.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{neurips_2026}[2026/01/01 NeurIPS 2026 placeholder]
+
+\DeclareOption{preprint}{}
+\DeclareOption{final}{}
+\DeclareOption{nonatbib}{}
+\ProcessOptions\relax
+
+%% Basic geometry approximating NeurIPS layout
+\RequirePackage[letterpaper, margin=1in]{geometry}
+\RequirePackage{times}
+\RequirePackage{natbib}
+
+%% NeurIPS uses 10pt text with specific line spacing
+\renewcommand{\normalsize}{\fontsize{10}{12}\selectfont}
+
+%% Title formatting
+\renewcommand{\maketitle}{%
+  \begin{center}
+    {\Large\bfseries\@title\par}
+    \vskip 1em
+    {\normalsize\@author\par}
+    \vskip 1em
+  \end{center}%
+}

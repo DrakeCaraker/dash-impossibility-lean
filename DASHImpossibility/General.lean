@@ -82,15 +82,15 @@ theorem gbdt_rashomon : RashimonProperty fs := by
     attribution_firstMover_gt fs f j k ℓ hj hk hfm hjk,
     attribution_firstMover_gt fs f' k j ℓ hk hj hfm' (Ne.symm hjk)⟩
 
-/-- The Attribution Trilemma instantiated for gradient boosting:
+/-- The Attribution Impossibility instantiated for gradient boosting:
     no stable faithful ranking exists for sequential GBDT under collinearity. -/
-theorem gbdt_trilemma (ℓ : Fin fs.L) (j k : Fin fs.P)
+theorem gbdt_impossibility (ℓ : Fin fs.L) (j k : Fin fs.P)
     (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
     (ranking : Fin fs.P → Fin fs.P → Prop)
     (h_faithful : ∀ f : Model,
       ranking j k ↔ attribution fs j f > attribution fs k f) :
     False :=
-  attribution_trilemma fs (gbdt_rashomon fs) ℓ j k hj hk hjk ranking h_faithful
+  attribution_impossibility fs (gbdt_rashomon fs) ℓ j k hj hk hjk ranking h_faithful
 
 /-! ### GBDT as an Iterative Optimizer -/
 

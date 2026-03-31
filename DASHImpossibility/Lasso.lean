@@ -1,5 +1,5 @@
 /-
-  Lasso / sparse regression: the Attribution Trilemma holds with
+  Lasso / sparse regression: the Attribution Impossibility holds with
   INFINITE attribution ratio. Under collinearity, Lasso selects
   one feature per correlated group and zeros out the rest.
 
@@ -13,10 +13,10 @@ namespace DASHImpossibility.Lasso
 
 variable (fs : FeatureSpace)
 
-/-- Lasso inherits the Attribution Trilemma. The selected feature gets
+/-- Lasso inherits the Attribution Impossibility. The selected feature gets
     positive attribution; all other same-group features get zero.
     The attribution ratio is literally infinite (positive vs zero). -/
-theorem lasso_trilemma
+theorem lasso_impossibility
     (selected : Model → Fin fs.P)
     (selected_pos : ∀ (f : Model), 0 < attribution fs (selected f) f)
     (non_selected_zero : ∀ (f : Model) (ℓ : Fin fs.L) (k : Fin fs.P),
@@ -38,7 +38,7 @@ theorem lasso_trilemma
       exact selected_pos f
     dominant_surjective := selected_surjective
   }
-  exact iterative_trilemma fs opt ℓ j k hj hk hjk ranking h_faithful
+  exact iterative_impossibility fs opt ℓ j k hj hk hjk ranking h_faithful
 
 /-- The Lasso attribution ratio is infinite: selected feature has
     positive attribution while others have zero. -/
