@@ -396,20 +396,20 @@ TreeSHAP values provide feature attributions.
 \centering
 \begin{subfigure}[t]{0.31\textwidth}
 \centering
-\fbox{\parbox{\textwidth}{\centering\vspace{1.2cm}Figure placeholder\vspace{1.2cm}}}
+\includegraphics[width=\textwidth]{figures/ratio_divergence.pdf}
 \caption{Attribution ratio vs.\ $\rho$. Empirical ratios (dots) track the theoretical $1/(1-\rho^2)$ curve (dashed).}
 \label{fig:ratio}
 \end{subfigure}\hfill
 \begin{subfigure}[t]{0.31\textwidth}
 \centering
-\fbox{\parbox{\textwidth}{\centering\vspace{1.2cm}Figure placeholder\vspace{1.2cm}}}
-\caption{Within-group ranking flip rate across seeds. Flip rate increases with $\rho$; between-group ranking remains stable.}
+\includegraphics[width=\textwidth]{figures/shap_instability.pdf}
+\caption{Ranking instability vs.\ $\rho$. Single-model instability grows with correlation; \DASH{} remains consistently low.}
 \label{fig:flips}
 \end{subfigure}\hfill
 \begin{subfigure}[t]{0.31\textwidth}
 \centering
-\fbox{\parbox{\textwidth}{\centering\vspace{1.2cm}Figure placeholder\vspace{1.2cm}}}
-\caption{\DASH{} consensus convergence. Within-group flip rate drops below 1\% at $M \approx 25$ ensemble members.}
+\includegraphics[width=\textwidth]{figures/dash_resolution.pdf}
+\caption{\DASH{} consensus convergence. Attribution CV drops toward the 1\% threshold near $M=25$ ensemble members.}
 \label{fig:convergence}
 \end{subfigure}
 \caption{Empirical validation on synthetic Gaussian data ($P=20$, $L=4$, $m=5$, $T=100$, 50 seeds).}
