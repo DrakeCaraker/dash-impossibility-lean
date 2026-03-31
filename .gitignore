@@ -18,6 +18,7 @@ lake-packages/
 *.synctex.gz
 paper/main.pdf
 paper/supplement.pdf
+paper/submission/
 
 # Claude Code / Alfred
 .claude/.onboarding-state.json
