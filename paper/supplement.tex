@@ -715,6 +715,29 @@ Both diagnostics are conservative: they rarely flag stable pairs but
 miss moderate-instability pairs. For production use, the high precision
 is the key property---a flagged pair is almost certainly unstable.
 
+\paragraph{Multi-dataset generality.}
+Table~\ref{tab:f1-generality} shows the F1 diagnostic across two datasets.
+On Breast Cancer (many near-symmetric features), F1 detects instability
+with $r = -0.89$. On California Housing (features have distinct importance),
+F1 correctly predicts stability: zero false alarms out of 28~pairs,
+with only one mildly unstable pair (MedInc $\leftrightarrow$ Latitude,
+flip rate $0.32$, $Z = 3.4$).
+
+\begin{table}[h]
+\centering
+\caption{F1 diagnostic generality across datasets.}
+\label{tab:f1-generality}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Dataset & Pairs & Unstable & F1 flagged & $r(Z, \text{flip})$ \\
+\midrule
+Breast Cancer & 435 & 168 & 47 (precision 100\%) & $-0.89$ \\
+California Housing & 28 & 1 & 0 (no false alarms) & $-0.58$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{Ensemble size guidance.}
 The required $M$ depends on the between-group gap $\Delta_{jk} = |E[\varphi_j] - E[\varphi_k]|$:
 $M \geq (z_{\alpha/2} \cdot \sigma_{jk} / \Delta_{jk})^2$.
