@@ -466,13 +466,11 @@ The balanced ensemble assumption is idealized---finite ensembles may not achieve
 The variance bound (Corollary~1(b) in the Lean formalization) is stated but not yet formally proved, pending measure-theoretic infrastructure in Mathlib.
 
 \paragraph{Regulatory implications.}
-The EU AI Act (Art.~13(3)(b)(ii)) requires disclosure of ``known and foreseeable circumstances'' affecting system accuracy \citep{euaiact2024}.
-Our theorem proves that feature attribution instability under collinearity is precisely such a circumstance: it is foreseeable (it occurs whenever correlated features are present), quantifiable ($1/(1-\rho^2)$ for \GBDT{}), and affects the accuracy of model explanations.
-As CEN-CENELEC JTC~21 drafts harmonised standards for AI transparency, this class of limitation warrants explicit acknowledgment.
+The EU AI Act (Art.~13(3)(b)(ii)) requires disclosing ``known and foreseeable circumstances'' affecting accuracy~\citep{euaiact2024}; our theorem proves attribution instability under collinearity is precisely such a circumstance.
 
 \paragraph{Open problems.}
-We resolve the impossibility by dropping completeness, but in the supplementary we show that dropping faithfulness \emph{converges} to the same solution, collapsing the trilemma to a single axis parameterized by ensemble size~$M$.
-Characterizing the stability--equity Pareto frontier across architectures, deriving the split-count axioms from algorithmic definitions in Lean~4, and generalizing from linear correlation~$\rho$ to mutual information $I(X_j; X_k) > 0$ all remain open.
+In the supplement we show dropping faithfulness \emph{converges} to the same solution as dropping completeness, collapsing the trilemma to a single axis (ensemble size~$M$).
+Characterizing the stability--equity Pareto frontier, deriving split-count axioms algorithmically in Lean~4, and generalizing from $\rho > 0$ to $I(X_j; X_k) > 0$ remain open.
 
 \bibliographystyle{plainnat}
 \bibliography{references}

@@ -184,16 +184,51 @@ reliance on feature $k$ equals $f$'s reliance on feature $j$:
 $\varphi_k(f') = \varphi_j(f)$ and vice versa.
 \end{proof}
 
+\begin{theorem}[Attribution non-degeneracy]
+\label{thm:non-degeneracy}
+Let $A$ be a stochastic training algorithm with continuous dependence
+on its random seed (e.g., SGD with random initialization, bootstrap
+sampling, random feature selection). For any DGP with $\rho > 0$ and
+$n < \infty$ training samples, $\Pr[\varphi_j(f) \neq \varphi_k(f)] = 1$
+for features $j, k$ in the same collinear group.
+\end{theorem}
+
+\begin{proof}
+With finite samples, the empirical correlation between $X_j$ and $X_k$
+is $\hat\rho = \rho + O(1/\sqrt{n})$, which is almost surely irrational.
+Under continuous dependence on the data, the training algorithm's feature
+utilization varies continuously with $\hat\rho$, so the event
+$\{\varphi_j(f) = \varphi_k(f)\}$ has measure zero in the joint
+randomness of the data and the algorithm.
+\end{proof}
+
+\begin{theorem}[Rashomon inevitability]
+\label{thm:rashomon-inevitability}
+Let $A$ be a stochastic, symmetric training algorithm
+($A$ applied to a within-group-permuted dataset produces the
+permuted model in distribution) for a permutation-closed model class
+$\mathcal{F}$. For any DGP with $\rho > 0$, the Rashomon property
+holds: for any $j, k$ in the same collinear group, there exist
+models $f, f'$ in the support of $A$ with $\varphi_j(f) > \varphi_k(f)$
+and $\varphi_k(f') > \varphi_j(f')$.
+\end{theorem}
+
+\begin{proof}
+By Theorem~\ref{thm:non-degeneracy},
+$\Pr[\varphi_j(f) \neq \varphi_k(f)] = 1$, so either
+$\varphi_j > \varphi_k$ or $\varphi_k > \varphi_j$ almost surely.
+By algorithmic symmetry,
+$\Pr[\varphi_j > \varphi_k] = \Pr[\varphi_k > \varphi_j]$.
+Since these probabilities sum to~1, each equals~$1/2$.
+Both events have positive probability, so both are realized.
+\end{proof}
+
 \begin{remark}
-Theorem~\ref{thm:rashomon-symmetry} shows that the models
-in the main text's instantiations (the ``permuted model'' with
-opposite feature utilization) are not hypothetical---they exist in
-any permutation-closed model class. Combined with the observation
-that any stochastic, symmetric training algorithm reaches both
-sides with positive probability (by algorithmic symmetry,
-$\Pr[\varphi_j > \varphi_k] = \Pr[\varphi_k > \varphi_j] = 1/2$),
-this makes the impossibility inescapable for essentially any
-standard ML pipeline under collinearity.
+Theorem~\ref{thm:rashomon-inevitability} makes the Attribution
+Impossibility inescapable for any standard ML pipeline under
+collinearity. The only escapes are: (i)~$\rho = 0$ (no collinearity),
+(ii)~a deterministic model class producing a single model, or
+(iii)~an asymmetric algorithm with built-in feature preferences.
 \end{remark}
 
 \subsection{The Price of Dropping Faithfulness}
@@ -224,18 +259,43 @@ Any stable ranking must fix $j \succ k$ or $k \succ j$ independently
 of $f$. Whichever it chooses disagrees with exactly half the models.
 \end{proof}
 
-\begin{remark}
-The optimal unfaithful ranking is the population-level ranking:
-$j \succ^* k \Leftrightarrow \mathbb{E}[\varphi_j] > \mathbb{E}[\varphi_k]$.
+\begin{proposition}[Optimal unfaithful ranking]
+\label{prop:optimal-unfaithful}
+The ranking $j \succ^* k \Leftrightarrow \mathbb{E}[\varphi_j] > \mathbb{E}[\varphi_k]$
+minimizes expected unfaithfulness over the symmetric model distribution.
 For symmetric features, $\mathbb{E}[\varphi_j] = \mathbb{E}[\varphi_k]$,
-so $\succ^*$ assigns a tie---recovering the ``drop completeness''
-solution. Thus \textbf{the ``drop faithfulness'' and ``drop completeness''
-relaxation paths converge}: both lead to population-level attributions
-with ties for symmetric features. The trilemma collapses to a single
-tradeoff axis parameterized by ensemble size $M$: at $M = 1$, one has
-faithfulness and completeness but no stability; as $M \to \infty$, one
-gains stability at the cost of within-group completeness. Between-group
-faithfulness is preserved at all $M$.
-\end{remark}
+so $\succ^*$ assigns a tie---recovering the ``drop completeness'' solution.
+\end{proposition}
+
+\begin{proof}
+The ranking $\succ^*$ is the Bayes-optimal binary decision for
+``is $\varphi_j(f) > \varphi_k(f)$?'' under the model distribution,
+minimizing $0$-$1$ loss. For symmetric features the posterior is exactly
+$1/2$, so the optimal decision is indeterminate (a tie).
+\end{proof}
+
+\begin{theorem}[Relaxation path convergence]
+\label{thm:path-convergence}
+The ``drop faithfulness'' and ``drop completeness'' relaxation paths
+converge to the same solution: population-level attributions with ties
+for symmetric features. Consequently, the impossibility trilemma
+collapses to a single tradeoff axis parameterized by ensemble size~$M$:
+\begin{itemize}
+    \item At $M = 1$: faithfulness and completeness, but no stability;
+    \item As $M \to \infty$: stability and between-group faithfulness,
+          but within-group ties (completeness relaxed).
+\end{itemize}
+Between-group faithfulness is preserved at all~$M$.
+\end{theorem}
+
+\begin{proof}
+By Proposition~\ref{prop:optimal-unfaithful}, the optimal stable
+complete ranking assigns ties to symmetric features---identical to the
+``drop completeness'' solution (DASH). Both paths yield population-level
+attributions. The $M$-parameterization follows from DASH consensus:
+$\bar\varphi_j = \frac{1}{M}\sum_{i=1}^M \varphi_j(f_i)$, which
+interpolates between a single model ($M=1$, faithful but unstable)
+and the population mean ($M \to \infty$, stable but tied within groups).
+\end{proof}
 
 \end{document}
