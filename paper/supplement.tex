@@ -56,8 +56,9 @@ Consensus variance bound & \texttt{consensus\_variance\_bound} & $\Var(\bar\varp
 
 \section{Proof Architecture}
 
-The formalization comprises 14 Lean~4 files (15 axioms, 24 substantive
-theorems + 9 convenience lemmas, 0 \texttt{sorry}).
+The formalization comprises 14 Lean~4 files with 15 axioms and
+42 type-checked declarations (33 theorems + 9 lemmas, of which
+24 are substantive proofs; 0 \texttt{sorry}).
 The core impossibility (\texttt{attribution\_impossibility}) depends on
 zero axioms---only the Rashomon property as hypothesis.
 The DASH resolution (\texttt{consensus\_equity}) depends on the
@@ -808,17 +809,26 @@ The method is:
 $w_i = 1/M$ for all $i$.
 \end{definition}
 
-\begin{definition}[Stability and unfaithfulness]
+\begin{definition}[Pairwise stability and unfaithfulness]
 For features $j, k$ in different groups with $\mu_j > \mu_k$:
 \begin{itemize}
-    \item \emph{Stability}: $S_{jk}(A) = \Pr[\hat\varphi_j > \hat\varphi_k]$
-      (probability that the consensus preserves the true ordering).
+    \item \emph{Pairwise stability}: $S_{jk}(A) = \Pr[\hat\varphi_j > \hat\varphi_k]$
+      (probability that the consensus preserves the true ordering
+      for this pair).
     \item \emph{Between-group flip rate}: $1 - S_{jk}(A)$.
 \end{itemize}
 For features $j, k$ in the same group with $\mu_j = \mu_k$ (DGP symmetry):
 \begin{itemize}
     \item \emph{Unfaithfulness}: $U_{jk}(A) = \Pr[\hat\varphi_j \neq \hat\varphi_k \text{ and the ordering disagrees with } f]$ for a random model $f$.
 \end{itemize}
+
+\emph{Relationship to ranking stability $S$.} The Design Space Theorem
+(\S\ref{sec:design-space-thm}) uses the full-ranking stability $S$ (expected
+Spearman correlation). The pairwise stability $S_{jk}$ here is a
+per-pair component: high $S_{jk}$ for all between-group pairs is
+necessary (but not sufficient) for high $S$. Within-group pairs
+contribute to $S$ through their random ordering, which is why
+$S \leq 1 - m^3/P^3$ even when all between-group $S_{jk}$ are high.
 \end{definition}
 
 \subsection{Main result}
@@ -987,7 +997,7 @@ mean provides robustness at the cost of requiring more models.
 \begin{enumerate}
     \item Achieves zero within-group unfaithfulness (ties for symmetric features).
     \item Achieves the Cram\'er--Rao variance bound $\sigma^2/M$ for
-      between-group stability.
+      ranking stability (consensus variance).
     \item Is the minimum-variance unbiased estimator of
       $\mathbb{E}[\varphi_j]$ among all estimators (not just linear ones),
       by the Rao--Blackwell theorem: since the sufficient statistic for
@@ -1598,6 +1608,7 @@ single-model SHAP values with an instability warning alongside the
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{The Attribution Design Space Theorem}
+\label{sec:design-space-thm}
 
 This section presents the central structural result: a complete
 characterization of what is achievable in the attribution design

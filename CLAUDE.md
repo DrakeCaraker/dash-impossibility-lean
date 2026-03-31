@@ -17,6 +17,7 @@ Level 2 (instantiation):  General.lean (GBDT), Lasso.lean, NeuralNet.lean
 Level 3 (quantitative):   SplitGap.lean, Ratio.lean (1/(1-ρ²) divergence)
 Level 4 (Spearman):       SpearmanDef.lean (defined from scratch, qualitative bound derived)
 Level 5 (resolution):     Corollary.lean (DASH equity), Impossibility.lean (combined)
+Level 6 (design space):   DesignSpace.lean (design_space_theorem, Pareto structure)
 Contrast:                 RandomForest.lean (bounded violations, no formal proofs)
 ```
 
@@ -24,7 +25,7 @@ Contrast:                 RandomForest.lean (bounded violations, no formal proof
 
 ```
 DASHImpossibility/
-  Defs.lean          — FeatureSpace, 12 axioms, stability/equity defs, consensus
+  Defs.lean          — FeatureSpace, 14 axioms, stability/equity defs, consensus
   Trilemma.lean      — RashimonProperty, attribution_impossibility (model-agnostic)
   Iterative.lean     — IterativeOptimizer abstraction
   General.lean       — GBDT instance, gbdt_impossibility, gbdtOptimizer
@@ -35,17 +36,18 @@ DASHImpossibility/
   NeuralNet.lean     — nn_impossibility (conditional on captured feature)
   RandomForest.lean  — Contrast case (documentation, no formal proofs)
   Impossibility.lean — Combined: equity violation + stability bound
-  Corollary.lean     — DASH consensus equity, consensus_difference_zero
+  Corollary.lean     — DASH consensus equity, variance convergence
+  DesignSpace.lean   — Design Space Theorem (composite), DASH ties
   Basic.lean         — Import hub
 paper/
   main.tex           — NeurIPS 2026 paper (9 pages)
-  supplement.tex     — Supplementary (24 pages)
-  references.bib     — 14 citations
+  supplement.tex     — Supplementary (29 pages)
+  references.bib     — 17 citations
   scripts/           — Figure generation + validation scripts
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, comprehensive)
 ```
 
-## Lean State: 14 files, 15 axioms, 33 theorems, 0 sorry
+## Lean State: 14 files, 15 axioms, 42 declarations (33 theorems + 9 lemmas), 0 sorry
 
 ## Axiom Inventory (15 total)
 
@@ -78,6 +80,6 @@ lake build     # compile everything (~1988 jobs)
 - Use `sorry` without a `-- TODO:` comment explaining what's needed
 - Change axioms without re-running the SymPy verification (`dash-shap/paper/proofs/verify_lemma6_algebra.py`)
 - Add `autoImplicit true` — all variables must be explicit
-- Claim "N theorems" without verifying — `consensus_variance_decreases` proves `True` (placeholder)
+- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma"` (currently 42)
 - Run parallel subagents that both modify the same file (causes build cache corruption)
 - Axiomatize quantities that can be defined — prefer definitions with axiomatized bounds (see SpearmanDef.lean pattern)
