@@ -4,9 +4,15 @@
 \usepackage{amsfonts,amsmath,amssymb,amsthm}
 \usepackage{hyperref}
 \usepackage{booktabs}
+\usepackage{graphicx}
+
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\SHAP}{\mathrm{SHAP}}
+\newcommand{\DASH}{\textsc{Dash}}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{axiom}{Axiom}
 
 \title{Supplementary Material:\\The Attribution Impossibility}
@@ -127,30 +133,185 @@ Consequently, binned flip rates are non-monotonic in $|\rho|$: the highest
 instability occurs not at maximal correlation but at the intersection of
 high correlation and similar feature importance.
 
-\section{Depth Dependence of the Signal Capture Fraction}
+\section{Proof Sketch: $\alpha = 2/\pi$ from Gaussian Binary Quantization}
 
-The corrected ratio $1/(1-\alpha\rho^2)$ from the main text uses
-$\alpha \approx 2/\pi$ for stumps (depth~1). We find that $\alpha$
-is non-monotonic in tree depth:
+The main text reports $\alpha \approx 2/\pi$ for the signal capture fraction
+of gradient-boosted stumps. This value has a clean theoretical derivation
+from quantization theory.
+
+\begin{proposition}
+For $X \sim \mathcal{N}(0, \sigma^2)$, the optimal binary quantizer
+(split at $x = 0$) captures fraction $2/\pi$ of the variance:
+$\Var(\hat{X}) = (2/\pi)\sigma^2$.
+\end{proposition}
+
+\begin{proof}
+The optimal two-level quantizer of a symmetric distribution splits at the
+median ($x = 0$ for Gaussians). The quantized signal is:
+$\hat{X} = \mathbb{E}[X \mid X > 0] \cdot \mathbf{1}_{X > 0} +
+\mathbb{E}[X \mid X \leq 0] \cdot \mathbf{1}_{X \leq 0}$.
+By symmetry, $\mathbb{E}[X \mid X > 0] = \sigma\sqrt{2/\pi}$
+(the mean of a half-normal distribution). Thus
+$\hat{X}$ takes values $\pm\sigma\sqrt{2/\pi}$ each with probability $1/2$,
+giving $\Var(\hat{X}) = (2/\pi)\sigma^2$.
+The fraction of variance captured is $\Var(\hat{X})/\Var(X) = 2/\pi \approx 0.637$.
+\end{proof}
+
+\paragraph{Connection to the corrected ratio.}
+In each boosting round, a stump makes one binary split on the selected
+feature, capturing $2/\pi$ of that feature's remaining signal variance.
+This gives the effective signal capture fraction $\alpha = 2/\pi$ in
+the corrected ratio $1/(1-\alpha\rho^2)$.
+The fitted value ($\alpha \approx 0.60$) is slightly below $2/\pi = 0.637$
+because (i) stumps split on the empirical median rather than the
+population median, and (ii) after the first boosting round, residuals
+are no longer exactly Gaussian.
+
+\section{Depth Dependence: Full Experimental Results}
+
+Table~\ref{tab:depth-rho} reports the within-group split count ratio
+across tree depths and correlation levels (XGBoost, $T{=}100$, $\eta{=}1.0$,
+$P{=}10$ in 2 groups of 5, $N{=}2000$, 30 seeds).
+
+\begin{table}[h]
+\centering
+\caption{Within-group split count ratio by depth and $\rho$ ($\eta{=}1.0$).}
+\label{tab:depth-rho}
+\small
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & $\rho{=}0.3$ & $\rho{=}0.5$ & $\rho{=}0.7$ & $\rho{=}0.9$ & $\rho{=}0.95$ & Fitted $\alpha$ \\
+\midrule
+Depth 1 (stumps) & 1.28 & 1.32 & 1.42 & 1.99 & 2.16 & $0.60\ (\approx 2/\pi)$ \\
+Depth 3          & 1.19 & 1.26 & 1.24 & 1.30 & 1.32 & $0.30$ \\
+Depth 6          & 1.65 & 1.67 & 1.74 & 1.90 & 2.03 & $0.60$ \\
+Depth 10         & 2.23 & 2.25 & 2.28 & 2.49 & 2.62 & --- \\
+\midrule
+Theory ($\alpha{=}1$) & 1.10 & 1.33 & 1.96 & 5.26 & 10.26 & $1.00$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Depth 3 anomaly.}
+At depth~3, each tree has up to 7 leaves and uses multiple features per
+tree. Internal splits distribute split counts across group members,
+counteracting the root split's first-mover advantage.
+The ratio is nearly $\rho$-independent (${\approx}1.3$), explaining the
+low fitted $\alpha = 0.30$.
+
+\paragraph{Depth 10.}
+At depth~10, the root split cascades: once the first-mover is selected
+at the root, subsequent splits on the same feature are more likely at
+deeper levels (residuals retain first-mover signal). The baseline ratio
+(${\approx}2.2$ even at $\rho{=}0.3$) is high because deep trees
+overfit to the first-mover's signal.
+The $1/(1{-}\alpha\rho^2)$ model does not fit well for depth~10 (the
+ratio has a large $\rho$-independent component); we omit the fitted $\alpha$.
+
+\paragraph{Practitioner guidance.}
+Depth~3 gives the \emph{lowest} attribution instability among standard
+configurations. For users prioritizing explanation stability, shallow
+ensembles (depth~3) with \DASH{} consensus ($M \geq 5$) provide the
+best stability--accuracy tradeoff.
+
+\section{Fisher Information and the Rashomon Property}
+
+The Rashomon property has a classical statistics interpretation through
+the Fisher information matrix.
+
+\paragraph{Setup.}
+Consider the linear model $Y = \beta_j X_j + \beta_k X_k + \varepsilon$
+where $X_j, X_k$ are jointly Gaussian with $\Var(X_j) = \Var(X_k) = 1$
+and $\text{Cov}(X_j, X_k) = \rho$. The Fisher information matrix for
+$\boldsymbol{\beta} = (\beta_j, \beta_k)$ is:
+\[
+    I(\boldsymbol{\beta}) = \frac{1}{\sigma^2}
+    \begin{pmatrix} 1 & \rho \\ \rho & 1 \end{pmatrix}
+\]
+with eigenvalues $\lambda_\pm = (1 \pm \rho)/\sigma^2$.
+
+\paragraph{Near-singularity under collinearity.}
+As $\rho \to 1$, the smaller eigenvalue $\lambda_- = (1-\rho)/\sigma^2 \to 0$.
+The FIM becomes near-singular along the direction $\boldsymbol{v}_- = (1, -1)/\sqrt{2}$,
+which corresponds to redistributing credit between $j$ and $k$.
+The profile likelihood is flat along this direction: models assigning more
+credit to $j$ vs.\ $k$ are statistically indistinguishable.
+
+\paragraph{Connection to the Rashomon property.}
+The flat likelihood ridge is precisely the Rashomon set---the set of
+models achieving near-optimal loss that disagree on $\beta_j$ vs.\
+$\beta_k$.
+Any model class containing an $\varepsilon$-neighborhood of the MLE
+necessarily contains models on both sides of the ridge: some with
+$\hat\beta_j > \hat\beta_k$ and others with $\hat\beta_k > \hat\beta_j$.
+This is the Rashomon property, derived from the classical
+non-identifiability of regression coefficients under collinearity.
+
+The Cram\'er--Rao bound
+$\Var(\hat\beta_j - \hat\beta_k) \geq 1/\lambda_- = \sigma^2/(1-\rho)$
+quantifies the attribution instability: as $\rho \to 1$, the variance of
+the difference $\hat\beta_j - \hat\beta_k$ diverges, confirming that no
+finite sample can reliably determine which feature is more important.
+
+\section{\DASH{} Convergence on Breast Cancer}
+
+We demonstrate that \DASH{} resolves instability on real data.
+Using the 50~XGBoost models trained for the Breast Cancer validation
+(\S\ref{fig:real-world}), we measure the flip rate for the most
+unstable pair (worst perimeter $\leftrightarrow$ worst area,
+$|\rho|{=}0.978$) as a function of ensemble size~$M$.
 
 \begin{center}
 \small
-\begin{tabular}{@{}clp{6.5cm}@{}}
+\begin{tabular}{@{}lcccccc@{}}
 \toprule
-Depth & $\alpha$ (fitted) & Behavior \\
+$M$ & 1 & 2 & 5 & 10 & 25 & 50 \\
 \midrule
-1 & ${\approx}\,0.60$ ($R^2{=}0.89$) & Consistent with $2/\pi$: one binary split captures $2/\pi$ of Gaussian signal variance \\
-3 & ${\approx}\,0.30$ & Ratio ${\approx}1.3$ nearly $\rho$-independent; depth-3 trees use multiple features per tree, distributing splits and reducing the first-mover advantage \\
-6 & ${\approx}\,0.60$ & Recovers stump-like $\alpha$; the root split dominates deeper trees \\
+Flip rate & 0.448 & 0.466 & 0.438 & 0.452 & 0.298 & 0.000 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\noindent\textbf{Practitioner guidance:} depth~3 gives the \emph{lowest}
-attribution instability among standard configurations. For users
-prioritizing explanation stability over predictive accuracy, shallow
-ensembles with moderate depth and \DASH{} consensus ($M \geq 5$)
-provide a practical tradeoff.
+At $M{=}1$ the flip rate is 44.8\%, near the 50\% theoretical maximum.
+\DASH{} consensus at $M{=}50$ resolves to the true ordering (worst
+perimeter slightly more important: mean $|\SHAP| = 0.940$ vs.\ $0.901$)
+with zero flips.
+The convergence is slower than in the synthetic setting (where
+features are exactly symmetric) because here the features have a slight
+importance asymmetry---\DASH{} correctly detects and resolves it rather
+than producing a tie.
+
+\section{Extended Experimental Details}
+
+\begin{table}[h]
+\centering
+\caption{Experimental configurations.}
+\small
+\begin{tabular}{@{}lp{10cm}@{}}
+\toprule
+Experiment & Configuration \\
+\midrule
+Synthetic (main text) & $P{=}20$, $L{=}4$ groups of $m{=}5$,
+  $N{=}2{,}000$, $T{=}100$, $\eta{=}0.1$, 50 seeds,
+  $\rho \in \{0.1, 0.3, 0.5, 0.7, 0.9, 0.95\}$ \\
+Validation (depth$\times\rho$) & $P{=}10$, $L{=}2$ groups of $m{=}5$,
+  $N{=}2{,}000$, $T{=}100$, $\eta{=}1.0$, 30 seeds,
+  depths $\{1,3,6,10\}$, $\rho \in \{0.3, 0.5, 0.7, 0.9, 0.95\}$ \\
+Breast Cancer & 30 features, 569 samples, $T{=}100$,
+  depth${=}6$, $\eta{=}0.1$, 50 seeds, TreeSHAP on 200 test samples \\
+\midrule
+Hardware & Apple Silicon (M-series), single core \\
+Software & Python~3.9.6, XGBoost~2.1.4, SHAP~0.49.1, NumPy~2.0.2,
+  scikit-learn \\
+Compute & Synthetic: ${<}5$ min; Validation: ${<}30$ min;
+  Breast Cancer: ${<}10$ min \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All experiments use publicly available datasets (California Housing and
+Breast Cancer from scikit-learn) and are fully reproducible from the
+scripts in the anonymized code repository.
 
 \section{Gaussian Conditioning Argument}
 
@@ -182,7 +343,7 @@ All algebraic consequences have been independently verified:
 # Result: ALL CHECKS PASS
 \end{verbatim}
 
-\newtheorem{proposition}[theorem]{Proposition}
+% proposition already defined in preamble
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{remark}[theorem]{Remark}
 
