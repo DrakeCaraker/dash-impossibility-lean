@@ -265,7 +265,7 @@ For any \GBDT{} model $f$ with first-mover $j_1$ in group $\ell$ and any non-fir
 \[
     \frac{\varphi_{j_1}(f)}{\varphi_k(f)} = \frac{1}{1 - \rho^2}.
 \]
-Moreover, this ratio diverges: $1/(1-\rho^2) \to \infty$ as $\rho \to 1^-$.
+Under full signal capture ($\alpha{=}1$), this ratio diverges: $1/(1-\rho^2) \to \infty$ as $\rho \to 1^-$.
 \end{theorem}
 
 \begin{proof}
@@ -326,7 +326,7 @@ The architecture of the optimizer---sequential vs.\ independent---determines whe
 \toprule
 Model class & Ratio & Scaling with $T$ & Mechanism \\
 \midrule
-Gradient boosting & $1/(1-\rho^2)$ & Constant (diverges with $\rho$) & Sequential residuals \\
+Gradient boosting & $1/(1-\alpha\rho^2)$ & Increases with $\rho$ & Sequential residuals \\
 Lasso & $\infty$ & Constant & Hard selection \\
 Neural network & Model-dependent & Architecture-dependent & Init.\ symmetry breaking \\
 Random forest & $1 + O(1/\sqrt{T})$ & $\to 1$ as $T \to \infty$ & Independent trees \\
