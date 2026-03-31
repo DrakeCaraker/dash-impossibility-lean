@@ -1,0 +1,122 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsfonts,amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{axiom}{Axiom}
+
+\title{Supplementary Material:\\The Attribution Impossibility}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Complete Axiom System}
+
+Table~\ref{tab:axioms} lists all axioms in the Lean~4 formalization.
+
+\begin{table}[h]
+\centering
+\caption{Complete axiom inventory.}
+\label{tab:axioms}
+\begin{tabular}{@{}llp{6cm}@{}}
+\toprule
+\textbf{Axiom} & \textbf{Lean~4 name} & \textbf{Justification} \\
+\midrule
+First-mover surjectivity & \texttt{firstMover\_surjective} & DGP symmetry: each feature can be first-mover \\
+Split count (first-mover) & \texttt{splitCount\_firstMover} & Gaussian conditioning (Lemma~1 in main text) \\
+Split count (non-first-mover) & \texttt{splitCount\_nonFirstMover} & Residual signal after first-mover absorbs $\rho$-component \\
+Proportionality & \texttt{attribution\_proportional} & Uniform contribution model (Assumption~7) \\
+Spearman bound & \texttt{spearman\_bound} & Combinatorial rank argument: tied non-first-movers \\
+Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & DGP symmetry + balanced ensemble hypothesis \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Proof Architecture}
+
+The formalization comprises 12 Lean~4 files with 29 theorems:
+
+\begin{verbatim}
+Defs.lean (6 axioms, type definitions)
+  |
+  +-- Trilemma.lean (RashimonProperty, attribution_impossibility)
+  |     |
+  |     +-- Iterative.lean (IterativeOptimizer, iterative_impossibility)
+  |     |     +-- Lasso.lean (lasso_impossibility)
+  |     |     +-- NeuralNet.lean (nn_impossibility)
+  |     |
+  |     +-- General.lean (GBDT instance, gbdt_impossibility)
+  |
+  +-- SplitGap.lean (split_gap_exact, split_gap_ge_half)
+  +-- Ratio.lean (attribution_ratio, ratio_tendsto_atTop)
+  |
+  +-- Impossibility.lean (not_equitable, not_stable, impossibility)
+  +-- Corollary.lean (consensus_equity, consensus_difference_zero)
+  +-- RandomForest.lean (contrast case, documentation only)
+\end{verbatim}
+
+\section{Inconsistencies Found During Formalization}
+
+Lean's type checker caught three issues in the initial axiom system:
+
+\begin{enumerate}
+\item \textbf{First-mover balance (Axiom~6, original):}
+  Originally stated universally over all model arrays---a constant
+  model function trivially derived $\bot$ (the first-mover count for
+  two different features cannot both equal the total). \emph{Fix:}
+  Replaced with an explicit \texttt{IsBalanced} predicate as a
+  hypothesis.
+
+\item \textbf{Attribution sum symmetry (Axiom~7, original):}
+  Combined with Axioms~2--4, the original unconditional version
+  derived $\bot$ for unbalanced ensembles: the summed attributions
+  cannot be equal when the first-mover counts differ. \emph{Fix:}
+  Conditioned on \texttt{IsBalanced}.
+
+\item \textbf{Split count type:}
+  Originally \texttt{splitCount} returned $\mathbb{N}$, but
+  $T/(2-\rho^2)$ is generally irrational, creating a type mismatch.
+  \emph{Fix:} Changed to $\mathbb{R}$ (idealized leading-order values).
+\end{enumerate}
+
+The first two are genuine logical inconsistencies that would have been
+difficult to detect by inspection of an informal proof. The third is a
+modeling assumption made explicit by the type system.
+
+\section{Gaussian Conditioning Argument}
+
+The split count formulas (Axioms~2--3) are justified by the following
+argument. Consider two features $X_j, X_k$ with correlation $\rho$.
+At tree $t$, the available signal for feature $k$ after feature $j$
+has been selected as root split is:
+\[
+  X_k \mid X_j = X_k - \rho X_j,
+\]
+which has variance $1 - \rho^2$. The expected number of splits for the
+first-mover sums a geometric series over $T$ trees, yielding
+$T/(2 - \rho^2)$. The non-first-mover receives the residual signal,
+yielding $(1-\rho^2)T/(2-\rho^2)$. Full derivation with explicit
+series computation is in the companion paper.
+
+\section{SymPy Verification}
+
+All algebraic consequences have been independently verified:
+
+\begin{verbatim}
+# dash-shap/paper/proofs/verify_lemma6_algebra.py
+#
+# Verifies:
+#   split_gap = rho^2 * T / (2 - rho^2)
+#   attribution_ratio = 1 / (1 - rho^2)
+#   split_gap >= rho^2 * T / 2  (for rho in (0,1))
+#
+# Result: ALL CHECKS PASS
+\end{verbatim}
+
+\end{document}

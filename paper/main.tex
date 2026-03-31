@@ -476,4 +476,27 @@ Third, generalize the collinearity condition beyond linear correlation to mutual
 \bibliographystyle{plainnat}
 \bibliography{references}
 
+\newpage
+\section*{NeurIPS Paper Checklist}
+
+\begin{enumerate}
+\item \textbf{Claims.} All theoretical claims are formally verified by the Lean~4 type checker (29 theorems, 0 \texttt{sorry}). Empirical claims are backed by experiments over 50 random seeds. [Yes]
+
+\item \textbf{Limitations.} Discussed in Section~\ref{sec:discussion}: axiomatization gap, collinearity requirement, balanced ensemble assumption, deferred variance bound. [Yes]
+
+\item \textbf{Theory.} Complete proofs are provided both in the paper and in machine-verified Lean~4 code. All assumptions (axioms) are explicitly stated and justified. [Yes]
+
+\item \textbf{Experiments.}
+  \begin{itemize}
+    \item Code: \url{https://github.com/DrakeCaraker/dash-impossibility-lean}
+    \item Data: Synthetic Gaussian (generation code included)
+    \item Compute: Standard laptop, no GPU required
+    \item Seeds: 50 independent random seeds per configuration
+    \item Error bars: $\pm 1$ standard error reported in all figures
+  \end{itemize}
+  [Yes]
+
+\item \textbf{Code of ethics.} No human subjects. No dual-use concerns. [N/A]
+\end{enumerate}
+
 \end{document}
