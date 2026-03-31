@@ -5,6 +5,7 @@
   This is the Arrow-type layer — model-agnostic in principle, instantiated
   here via our gradient boosting axioms.
 -/
+import DASHImpossibility.Trilemma
 import DASHImpossibility.SplitGap
 
 set_option autoImplicit false
@@ -64,5 +65,30 @@ theorem no_stable_ranking (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
   have hrank : ranking j k := h_faithful_f.mpr h1
   have hnotrank : ¬ (attribution fs k f' < attribution fs j f') := by linarith
   exact hnotrank (h_faithful_f'.mp hrank)
+
+/-! ### GBDT satisfies the Rashomon Property -/
+
+/-- Sequential gradient boosting satisfies the Rashomon property:
+    for any two features in the same group, Axiom 1 (firstMover_surjective)
+    provides models ranking them in opposite orders, and Axiom 4
+    (attribution_proportional) translates split-count dominance to
+    attribution dominance. -/
+theorem gbdt_rashomon : RashimonProperty fs := by
+  intro ℓ j k hj hk hjk
+  obtain ⟨f, hfm⟩ := firstMover_surjective fs ℓ j hj
+  obtain ⟨f', hfm'⟩ := firstMover_surjective fs ℓ k hk
+  exact ⟨f, f',
+    attribution_firstMover_gt fs f j k ℓ hj hk hfm hjk,
+    attribution_firstMover_gt fs f' k j ℓ hk hj hfm' (Ne.symm hjk)⟩
+
+/-- The Attribution Trilemma instantiated for gradient boosting:
+    no stable faithful ranking exists for sequential GBDT under collinearity. -/
+theorem gbdt_trilemma (ℓ : Fin fs.L) (j k : Fin fs.P)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
+    (ranking : Fin fs.P → Fin fs.P → Prop)
+    (h_faithful : ∀ f : Model,
+      ranking j k ↔ attribution fs j f > attribution fs k f) :
+    False :=
+  attribution_trilemma fs (gbdt_rashomon fs) ℓ j k hj hk hjk ranking h_faithful
 
 end DASHImpossibility
