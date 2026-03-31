@@ -52,9 +52,22 @@ theorem consensus_variance_decreases :
     True := by  -- Placeholder for the variance bound
   -- The full statement would be:
   -- Var(consensus fs M hM models j) ≤ Var(attribution fs j ·) / M
-  -- Proof uses IndepFun.variance_sum from Mathlib.Probability.Moments.Variance
-  -- with independence from i.i.d. seeds and bounded variance.
-  -- Deferred: requires MeasureSpace on Seed.
+  --
+  -- FEASIBILITY ASSESSMENT (2026-03-31):
+  -- Mathlib HAS: ProbabilityTheory.IndepFun.variance_sum (in
+  --   Mathlib.Probability.Moments.Variance) — the key theorem.
+  -- Mathlib HAS: ProbabilityTheory.IndepFun (in
+  --   Mathlib.Probability.Independence.Kernel.IndepFun).
+  -- MISSING: MeasureSpace on Model (our Model is an axiom type without
+  --   measure structure). Would need:
+  --   1. axiom Model.measurableSpace : MeasurableSpace Model
+  --   2. axiom Model.measure : MeasureTheory.Measure Model
+  --   3. axiom attribution_measurable : Measurable (attribution fs j)
+  --   4. axiom models_indep : ∀ i j, i ≠ j → IndepFun (models i) (models j)
+  -- With these 4 axioms, the proof would use IndepFun.variance_sum
+  -- to get Var(Σφ_j(f_i)) = Σ Var(φ_j(f_i)) = M · Var(φ_j),
+  -- then Var(consensus) = Var(Σ/M) = Var(Σ)/M² = Var(φ_j)/M.
+  -- Estimated effort: 1-2 days once the axioms are added.
   trivial
 
 end DASHImpossibility
