@@ -102,6 +102,30 @@ harder to audit (they assert abstract mathematical structure on our
 and (iii) the derived theorems (variance halving, nonnegativity) are
 genuine Lean proofs, not tautologies from the axiom.
 
+\paragraph{Spearman bound: axiomatized vs.\ derived.}
+The Lean formalization contains two Spearman bounds:
+(i)~\texttt{spearmanCorr\_bound}, fully derived from the definition of
+Spearman correlation, giving the weaker bound
+$\rho_S \leq 1 - 3/(P^3 - P)$; and
+(ii)~\texttt{spearman\_classical\_bound}, axiomatized, giving the
+tighter $\rho_S \leq 1 - m^3/P^3$ from the classical combinatorial
+argument. The paper's stability results use the tighter axiomatized
+bound. The derived bound is available but superseded. We chose to
+axiomatize the tighter constant rather than derive it because the
+full combinatorial proof (bounding the expected $\sum d_i^2$ under
+random tie-breaking) requires counting arguments not yet available
+in our Lean framework.
+
+\paragraph{Variance sub-system.}
+The three variance axioms (\texttt{attribution\_variance},
+\texttt{attribution\_variance\_nonneg}, \texttt{consensus\_variance\_bound})
+produce convenience results (variance nonnegativity, halving) rather than
+deep mathematical consequences. Their primary role is to support the
+Design Space Theorem's stability convergence claim. A deeper formalization
+would derive the variance bound from Mathlib's
+\texttt{IndepFun.variance\_sum}, but this requires connecting our abstract
+\texttt{Model} type to a measure space (see above).
+
 \section{Inconsistencies Found During Formalization}
 
 Lean's type checker caught three issues in the initial axiom system:
