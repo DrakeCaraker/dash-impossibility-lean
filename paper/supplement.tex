@@ -1365,6 +1365,37 @@ Forcing a ranking would be arbitrary and potentially misleading.
 Our method correctly reports this indistinguishability, consistent
 with the EU AI Act's requirement to disclose known limitations.''
 
+\subsection{Financial case study: German Credit}
+
+We demonstrate the full F5~$\to$~F1~$\to$~DASH workflow on the
+German Credit dataset (1000 samples, 20 features, binary credit
+risk outcome). This dataset exhibits the correlation patterns common
+in financial modeling (duration~$\leftrightarrow$~credit amount,
+$|\rho| = 0.63$; job~$\leftrightarrow$~own telephone, $|\rho| = 0.37$).
+
+\paragraph{Step 0.} The correlation matrix identifies 4 correlated groups
+at threshold $|\rho| > 0.3$.
+
+\paragraph{Step 1 (F5).} A single XGBoost model flags 1 pair as
+potentially unstable: job~$\leftrightarrow$~own telephone
+($Z^{\text{split}} = 0.69 < 1.96$).
+
+\paragraph{Step 2 (F1).} Training 5 models confirms the instability:
+$Z_{\text{F1}} = 0.64$, flip rate 40\%.
+
+\paragraph{Step 3 (DASH).} With $M = 25$ models, the flip rate drops
+from 40\% to 0\%. The consensus ranking is stable: checking status
+(0.87), duration (0.44), credit amount (0.43), purpose (0.35).
+
+\paragraph{Practitioner output.} 18/20 features have stable
+single-model rankings. 2 features (job, own telephone) require
+DASH consensus. For regulatory reporting (ECOA adverse action
+reasons, SR~11-7 model risk management), the DASH ranking provides
+a defensible explanation.
+
+The full output (Step 0--4 with numbers) is in the code supplement
+(\texttt{financial\_case\_study.py}).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INFORMATION LOSS ANALYSIS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
