@@ -185,10 +185,10 @@ $|\hat{m}| = O_p(\sigma/\sqrt{n})$. The variance captured by a split
 at $\hat{m}$ instead of $0$ is:
 \[
     \alpha_1(n) = \frac{2}{\pi}\left(1 -
-    \frac{\pi - 2}{n} + O(n^{-2})\right)
+    \frac{\pi(\pi - 2)}{2n} + O(n^{-2})\right)
 \]
 For $n = 2000$ (our synthetic setting), the correction is
-$\Delta\alpha_1 \approx 0.0004$---negligible.
+$\Delta\alpha_1 \approx 0.0009$---negligible.
 \end{proposition}
 
 \begin{proof}
@@ -675,11 +675,13 @@ We need $L(\theta_\delta) \leq L(\theta^*) + \varepsilon$, i.e.,
 Choose $\delta^* = \sqrt{\varepsilon / \lambda_-}$.
 Then the quadratic term is $\varepsilon/2$ and the cubic term is
 $\frac{K_3}{6}(\varepsilon/\lambda_-)^{3/2}$.
-Condition \eqref{eq:epsilon-bound} ensures
+Condition \eqref{eq:epsilon-bound} ensures, via $\varepsilon \leq 2\lambda_-^3/K_3^2$:
 $\frac{K_3}{6}(\varepsilon/\lambda_-)^{3/2}
-\leq \frac{K_3}{6} \cdot \frac{\lambda_-^{9/2}}{K_3^3 \lambda_-^{3/2}}
-= \frac{\lambda_-^3}{6K_3^2} \leq \varepsilon/2$,
-so \eqref{eq:delta-condition} holds:
+\leq \frac{K_3}{6} \cdot \frac{2^{3/2}\lambda_-^3}{K_3^3}
+= \frac{2\sqrt{2}\,\lambda_-^3}{6K_3^2}
+\leq \frac{\lambda_-^3}{K_3^2} = \varepsilon/2$,
+where the last step uses $2\sqrt{2}/6 \approx 0.47 < 1$.
+So \eqref{eq:delta-condition} holds:
 $\theta_{\delta^*} \in R_\varepsilon$.
 
 By the same argument, $\theta_{-\delta^*} = \theta^* - \delta^* v

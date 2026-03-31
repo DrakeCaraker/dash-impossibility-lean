@@ -434,9 +434,9 @@ The impossibility, the quantitative bounds, and the \DASH{} resolution are not i
 For any model class satisfying the Rashomon property under within-group correlation $\rho > 0$, the achievable set of (ranking stability~$S$, unfaithfulness~$U$, completeness~$C$) triples, over all methods operating on per-model attributions, is the union of exactly two families (where $S$ is the expected Spearman correlation between independent evaluations of the method):
 \begin{itemize}
     \item \textbf{Family $\mathcal{A}$ (single-model):} $S \leq 1 - m^3/P^3$, $U = 1/2$, $C = \text{complete}$. Any method faithful to an individual model falls here.
-    \item \textbf{Family $\mathcal{B}$ (ensemble):} $S_M = 1 - O(1/M)$, $U = 0$, $C = \text{partial (ties)}$. \DASH{}$(M)$ achieves this and is Pareto-optimal.
+    \item \textbf{Family $\mathcal{B}$ (ensemble):} $S_M = 1 - O(1/M)$, $U = 0$, $C = \text{partial (ties)}$. \DASH{}$(M)$ achieves this and is Pareto-optimal among unbiased aggregations of per-model attributions.
 \end{itemize}
-The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. The design space collapses to a single axis: ensemble size $M$.
+The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. At the extremes---full completion ($C{=}\text{complete}$, Family~$\mathcal{A}$) or full ties ($C{=}\text{partial}$, Family~$\mathcal{B}$)---the design space collapses to a single axis: ensemble size $M$. Intermediate methods (partial completion: rank some within-group pairs, tie others) form a second dimension parameterized by a completion threshold.
 \end{theorem}
 
 All previous results are corollaries: Theorem~\ref{thm:impossibility} is the infeasibility of the $(1,0,\text{complete})$ point; Corollary~\ref{cor:equity} is the achievability of $\mathcal{B}$; the path convergence (supplement) is the collapse of both relaxation paths to $\mathcal{B}$.
@@ -453,6 +453,8 @@ The M-axis is the unique design dimension.
 \paragraph{Attribution impossibility results.}
 \citet{bilodeau2024impossibility} prove completeness and linearity cannot coexist; \citet{huang2024failings} show SHAP can misrank features in Boolean settings; \citet{srinivas2019full} prove complete attributions cannot be weakly input-dependent; \citet{rao2025limits} establishes Kolmogorov complexity barriers.
 Our result is the first to address cross-model \emph{stability}, give quantitative architecture-dependent bounds, and provide a constructive resolution.
+\citet{decker2024provably} optimize aggregation across attribution \emph{methods} for a single model; we aggregate across \emph{models} via \DASH{}.
+\citet{jin2025probabilistic} give constructive stability certificates; we give the impossibility that necessitates them.
 
 \paragraph{Rashomon effect and model multiplicity.}
 \citet{laberge2023partial} find that attribution rankings across Rashomon sets are inherently partial orders; \citet{rudin2024amazing} advocate embracing model multiplicity.
