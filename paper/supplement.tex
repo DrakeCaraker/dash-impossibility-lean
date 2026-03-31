@@ -1366,6 +1366,99 @@ Our method correctly reports this indistinguishability, consistent
 with the EU AI Act's requirement to disclose known limitations.''
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INFORMATION LOSS ANALYSIS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{DASH Information Loss}
+
+\DASH{} achieves stability by discarding model-specific within-group
+information. Here we quantify exactly how much information is lost.
+
+\subsection{Within-group: $\log_2(m!)$ bits lost per group}
+
+For a group of $m$ symmetric features, a single model produces a
+complete ranking (one of $m!$ possible orderings). Since the features
+are symmetric under the DGP, each of the $m!$ orderings is equally
+likely---the ranking carries $\log_2(m!)$ bits of information about
+the specific model.
+
+\DASH{} reports a tie for all within-group features, discarding the
+entire $\log_2(m!)$ bits. For typical group sizes:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+Group size $m$ & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\midrule
+Bits lost ($\log_2 m!$) & 1.0 & 2.6 & 4.6 & 6.9 & 9.7 & 12.9 & 15.3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Crucially, these are the bits that are \emph{unreliable}: by DGP
+symmetry, the within-group ordering is uniformly random across
+models. The information DASH discards is exactly the information
+that would be different if the model were retrained.
+
+\subsection{Between-group: information preserved and sharpened}
+
+For features $j, k$ in different groups with population gap
+$\Delta_{jk} = |\mu_j - \mu_k|$ and noise $\sigma_{jk}$, the
+mutual information between the consensus ranking and the true
+ordering is:
+\[
+    I_{\text{between}}(M) = 1 - H_2\!\left(
+    \Phi\!\left(-\frac{\Delta_{jk}\sqrt{M}}{\sigma_{jk}}\right)
+    \right)
+\]
+where $H_2(p) = -p\log_2 p - (1-p)\log_2(1-p)$ is binary entropy.
+As $M \to \infty$, $I_{\text{between}} \to 1$ bit (perfect
+determination). \DASH{} \emph{increases} between-group information
+relative to a single model.
+
+\subsection{Net information tradeoff}
+
+The total information change from using \DASH{}$(M)$ instead of a
+single model is:
+\[
+    \Delta I = \underbrace{-L \cdot \log_2(m!)}_{\text{within-group loss}}
+    + \underbrace{\binom{L}{2} \cdot \big(I_{\text{between}}(M) -
+    I_{\text{between}}(1)\big)}_{\text{between-group gain}}
+\]
+For moderate $\rho$ (e.g., $\rho \leq 0.7$), the between-group gain
+dominates quickly: $M = 25$ achieves near-perfect between-group
+determination ($I \approx 1$ bit per pair) while the within-group
+loss is a fixed cost independent of $M$. For high $\rho$ ($\geq 0.9$),
+the between-group gain is slower because the noise $\sigma_{jk}$ is
+large.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/information_loss.pdf}
+\caption{\textbf{Left:} Within-group information lost by \DASH{}
+($\log_2 m!$ bits per group, independent of $M$ and $\rho$).
+\textbf{Right:} Between-group information per pair as a function of
+$M$. \DASH{} sharpens between-group rankings with increasing $M$.
+At high $\rho$ ($\geq 0.9$), convergence requires larger $M$.}
+\label{fig:information-loss}
+\end{figure}
+
+\paragraph{Interpretation for safety-critical applications.}
+For a system with $L = 4$ groups of $m = 5$ features: \DASH{} loses
+$4 \times 6.9 = 27.6$ bits (within-group) but gains up to
+$6 \times 1 = 6$ bits (between-group). The net loss is
+${\approx}21.6$ bits at $M = \infty$. These lost bits are the
+within-group orderings that were random anyway---\DASH{} honestly
+reports their unreliability rather than presenting arbitrary
+information as reliable.
+
+For applications requiring model-specific within-group explanations
+(e.g., debugging a deployed model), practitioners should report the
+single-model SHAP values with an instability warning alongside the
+\DASH{} consensus.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % THE UNIFIED DESIGN SPACE THEOREM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
