@@ -551,12 +551,20 @@ cannot distinguish the two features. The Cram\'er--Rao bound
 $\Var(\hat\theta_j - \hat\theta_k) \geq 1/\lambda_- = \sigma^2/(1-\rho)$
 quantifies this: the variance of the coefficient difference diverges.
 
+\paragraph{Scope of the approximation.}
+For large $\varepsilon$, the ellipsoidal approximation may not hold;
+Theorem~1 (Rashomon-based) handles the general case without this assumption.
+The FIM argument extends naturally to overparameterized neural networks
+via the neural tangent kernel (NTK), which serves as the FIM analogue
+for infinite-width networks: if the NTK has a small eigenvalue along
+within-group directions, the same ellipsoidal argument applies.
+
 \section{Theorem F2: DASH Pareto Optimality}
 
 \begin{theorem}[Optimal Attribution]
 \label{thm:dash-optimal}
-Among attribution methods mapping models to feature rankings, \DASH{}
-consensus with ensemble size $M$ achieves:
+Among unbiased linear attribution aggregations mapping models to
+feature rankings, \DASH{} consensus with ensemble size $M$ achieves:
 \begin{enumerate}
     \item \textbf{Within-group:} unfaithfulness $= 0$ (ties for
           symmetric features, by Corollary~\ref{cor:equity}).
@@ -592,6 +600,14 @@ is the minimum-variance unbiased estimator of $E[\varphi_j]$. Any other
 unbiased linear aggregation has variance $\geq \Var(\varphi_j)/M$
 (Gauss--Markov theorem applied to the model-averaging setting).
 \end{proof}
+
+\paragraph{Scope and uniqueness.}
+Nonlinear aggregations (median, trimmed mean) are not covered by this
+guarantee. By Theorem~\ref{thm:path-convergence} (path convergence),
+all stable methods minimizing unfaithfulness converge to population-level
+attributions. \DASH{} (the sample mean) is the minimum-variance member
+of this class; weighted means are also Pareto-optimal but less efficient
+for the same~$M$.
 
 \section{Theorem F1: Statistical Indistinguishability Characterization}
 
@@ -687,6 +703,26 @@ flagged by F5 can then be validated with the full F1 test.
           (F1 test). If $Z_{jk} < 1.96$: use \DASH{} with $M \geq 25$.
     \item If no pairs are flagged: single-model SHAP is reliable.
 \end{enumerate}
+
+\paragraph{Ensemble size guidance.}
+The required $M$ depends on the between-group gap $\Delta_{jk} = |E[\varphi_j] - E[\varphi_k]|$:
+$M \geq (z_{\alpha/2} \cdot \sigma_{jk} / \Delta_{jk})^2$.
+For $\rho \leq 0.7$, $M = 10$ typically suffices ($<5\%$ flip rate);
+for $\rho > 0.9$, $M \geq 25$ is recommended.
+
+\paragraph{Sub-sampling requirement.}
+The theoretical guarantee (exchangeability of per-tree indicators)
+requires \texttt{colsample\_bytree} $< 1$ or \texttt{subsample} $< 1$.
+In practice, the diagnostic performs well even without sub-sampling:
+our validation uses \texttt{colsample\_bytree=1.0} and achieves
+$r = -0.78$ (Figure~\ref{fig:f1-diagnostic}, right).
+
+\paragraph{Regulatory response for ties.}
+If a regulator asks why features are tied: ``These features are
+statistically indistinguishable in their contribution to the model.
+Forcing a ranking would be arbitrary and potentially misleading.
+Our method correctly reports this indistinguishability, consistent
+with the EU AI Act's requirement to disclose known limitations.''
 
 \section{SymPy Verification}
 
