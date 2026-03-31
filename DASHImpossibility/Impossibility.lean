@@ -7,6 +7,7 @@
 -/
 import DASHImpossibility.Ratio
 import DASHImpossibility.General
+import DASHImpossibility.SpearmanDef
 
 set_option autoImplicit false
 
@@ -47,11 +48,11 @@ theorem not_stable (f f' : Model) (ℓ : Fin fs.L)
     (hfm'_grp : firstMover fs f' ∈ fs.group ℓ)
     (hdiff : firstMover fs f ≠ firstMover fs f')
     (δ : ℝ) (hδ : δ < (fs.groupSize ℓ : ℝ) ^ 3 / (fs.P : ℝ) ^ 3) :
-    ¬ isStable δ (spearman fs (fun j => attribution fs j f)
+    ¬ isStable δ (spearmanCorr fs (fun j => attribution fs j f)
                                 (fun j => attribution fs j f')) := by
   unfold isStable
   push Not
-  have h := spearman_bound fs f f' ℓ hfm_grp hfm'_grp hdiff
+  have h := spearman_classical_bound fs f f' ℓ hfm_grp hfm'_grp hdiff
   linarith
 
 /-! ### Combined impossibility -/
@@ -65,11 +66,11 @@ theorem impossibility (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
     -- Equity is violated:
     attribution fs j f / attribution fs k f ≥ 1 + fs.ρ ^ 2 / (1 - fs.ρ ^ 2) ∧
     -- AND stability is bounded:
-    spearman fs (fun i => attribution fs i f) (fun i => attribution fs i f') ≤
+    spearmanCorr fs (fun i => attribution fs i f) (fun i => attribution fs i f') ≤
       1 - (fs.groupSize ℓ : ℝ) ^ 3 / (fs.P : ℝ) ^ 3 := by
   refine ⟨?_, ?_⟩
   · exact attribution_ratio_ge fs f j k ℓ hj hk hfm (by rw [hfm]; exact hjk)
-  · exact spearman_bound fs f f' ℓ (by rw [hfm]; exact hj) (by rw [hfm']; exact hk)
+  · exact spearman_classical_bound fs f f' ℓ (by rw [hfm]; exact hj) (by rw [hfm']; exact hk)
       (by rw [hfm, hfm']; exact hjk)
 
 end DASHImpossibility
