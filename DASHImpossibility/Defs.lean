@@ -118,7 +118,7 @@ def isEquitable (γ : ℝ) (maxMinRatio : ℝ) : Prop :=
 /-! ## Consensus (DASH) definition -/
 
 /-- DASH consensus attribution: average over M independently trained models. -/
-noncomputable def consensus (M : ℕ) (hM : 0 < M) (models : Fin M → Model)
+noncomputable def consensus (M : ℕ) (_hM : 0 < M) (models : Fin M → Model)
     (j : Fin fs.P) : ℝ :=
   (1 / (M : ℝ)) * (Finset.univ.sum (fun i => attribution fs j (models i)))
 

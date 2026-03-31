@@ -52,7 +52,7 @@ SHAP values are widely used for feature attribution in machine learning, yet pra
 We prove an \emph{attribution impossibility}: no single model can simultaneously produce feature attributions that are faithful (reflecting true model reliance), stable (robust to retraining), and complete (ranking all feature pairs).
 The proof proceeds in two layers.
 First, a model-agnostic argument shows that the Rashomon property of collinear designs forces symmetric features into conflicting orderings across near-optimal models.
-Second, model-specific bounds quantify the severity: for gradient-boosted trees the attribution ratio follows $1/(1-\alpha\rho^2)$ ($\alpha \approx 2/\pi$, validated empirically); for Lasso it is infinite; while random forests remain bounded at $O(1/\sqrt{T})$.
+Second, model-specific bounds quantify the severity: under full signal capture, the gradient-boosted tree attribution ratio is $1/(1-\rho^2)$ (Lean-verified); for finite-depth trees, the empirically corrected $1/(1-\alpha\rho^2)$ with $\alpha \approx 2/\pi$ matches data ($R^2{=}0.89$); for Lasso the ratio is infinite; while random forests remain bounded at $O(1/\sqrt{T})$.
 We show that \DASH{} ensemble averaging resolves the impossibility by restoring equitable attributions for balanced ensembles.
 The proof is mechanically verified in Lean~4: 33 theorems and 9 technical lemmas (42 total, of which 24 are substantive proofs) type-checked from 15 axioms with no unresolved goals---to our knowledge, the first formally verified impossibility result in explainable AI.
 \end{abstract}
@@ -89,10 +89,11 @@ The formalization also proved valuable beyond certification: during translation 
 
 \paragraph{Contributions.}
 \begin{enumerate}
-    \item \textbf{The Attribution Impossibility framework}: a model-agnostic impossibility (Theorem~\ref{thm:impossibility}) requiring only the Rashomon property, instantiated with quantitative severity bounds across four model classes (\S\ref{sec:bounds}), and constructively resolved via \DASH{} (\S\ref{sec:resolution}). The contribution is the complete framework---from impossibility through architecture discrimination to resolution---not any single theorem.
-    \item \textbf{Architecture discrimination}: We derive attribution ratios for \GBDT{} ($1/(1-\alpha\rho^2)$, empirically validated), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$), explaining why some architectures exhibit more severe instability than others.
-    \item \textbf{Constructive resolution via \DASH{}}: We show that ensemble averaging over balanced model collections restores equitable attributions with variance $O(1/M)$, providing a practical path forward.
-    \item \textbf{Machine-verified proof}: The argument is formalized in Lean~4 (42 type-checked declarations from 15 axioms, 0 \texttt{sorry}), publicly available at \url{[anonymized for review]}.
+    \item \textbf{The Attribution Design Space Theorem} (\S\ref{sec:design-space}): a complete characterization of achievable (stability, unfaithfulness, completeness) triples, showing the design space consists of exactly two families with \DASH{} Pareto-optimal on the ensemble branch. All other results are corollaries.
+    \item \textbf{The Attribution Impossibility} (Theorem~\ref{thm:impossibility}): the base case of the Design Space Theorem---a model-agnostic impossibility requiring only the Rashomon property, with zero axiom dependencies in the Lean formalization.
+    \item \textbf{Architecture discrimination}: attribution ratios for \GBDT{} ($1/(1{-}\rho^2)$ Lean-verified; $1/(1{-}\alpha\rho^2)$ empirically corrected), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$, informal).
+    \item \textbf{Constructive resolution via \DASH{}}: ensemble averaging restores equitable attributions (axiom-derived for balanced ensembles) with variance $O(1/M)$.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (42 type-checked declarations from 15 axioms, 0 \texttt{sorry}), publicly available at \url{[anonymized for review]}.
 \end{enumerate}
 
 \section{Setup}
@@ -331,9 +332,10 @@ Model class & Ratio & Scaling with $T$ & Mechanism \\
 Gradient boosting & $1/(1-\alpha\rho^2)$ & Increases with $\rho$ & Sequential residuals \\
 Lasso & $\infty$ & Constant & Hard selection \\
 Neural network & Model-dependent & Architecture-dependent & Init.\ symmetry breaking \\
-Random forest & $1 + O(1/\sqrt{T})$ & $\to 1$ as $T \to \infty$ & Independent trees \\
+Random forest\footnotemark & $1 + O(1/\sqrt{T})$ & $\to 1$ as $T \to \infty$ & Independent trees \\
 \bottomrule
 \end{tabular}
+\footnotetext{The RF bound is informal (standard $O(\sqrt{T})$ deviation argument). The GBDT and Lasso bounds are Lean-verified; the NN bound is conditional on the dominance hypothesis.}
 \end{table}
 
 \section{Resolution: Ensemble Attribution via \DASH}
@@ -349,7 +351,7 @@ $\bar{\varphi}_j = \frac{1}{M} \sum_{i=1}^{M} \varphi_j(f_i)$.
 An ensemble is \emph{balanced} if, within each group, every feature serves as first-mover in exactly $M/m$ models.
 \end{definition}
 
-\begin{corollary}[\DASH{} achieves equity]
+\begin{corollary}[\DASH{} achieves equity (axiom-derived)]
 \label{cor:equity}
 For a balanced ensemble and any two features $j, k$ in the same group $\ell$,
 $\bar{\varphi}_j = \bar{\varphi}_k$.
@@ -419,7 +421,7 @@ We compute $\bar{\varphi}_j$ for ensemble sizes $M \in \{1, 5, 10, 15, 20, 25, 5
 The within-group flip rate---measured as the frequency with which $\bar{\varphi}_j \neq \bar{\varphi}_k$ by more than 1\% of the group mean---drops below 1\% at $M = 25$, consistent with the $O(1/M)$ variance bound.
 
 \paragraph{Testable condition (supplement).}
-We derive a test statistic $Z_{jk} = |\bar\varphi_j - \bar\varphi_k| / (\hat\sigma_{jk}/\sqrt{M})$ that predicts ranking instability: on Breast Cancer (435 feature pairs, 50 seeds), $Z_{jk}$ correlates with the empirical flip rate at $r = -0.89$ ($r = -0.78$ for $Z < 5$, confirming robustness in the diagnostically interesting range).
+We derive a test statistic $Z_{jk} = |\bar\varphi_j - \bar\varphi_k| / (\hat\sigma_{jk}/\sqrt{M})$ that predicts ranking instability: on Breast Cancer (435 feature pairs, 50 seeds), $Z_{jk}$ correlates with the empirical flip rate at $r = -0.89$ (structural baseline on random data: $r \approx -0.56$; the excess reflects genuine attribution instability; $r = -0.78$ for $Z < 5$).
 Pairs with $Z_{jk} < 1.96$ have unreliable rankings; pairs above this threshold are stable.
 A single-model screening variant using split frequencies achieves 94\% precision.
 
@@ -463,7 +465,7 @@ Our theorem shows the partial order is not a pragmatic choice but a mathematical
 
 \paragraph{Fairness impossibility.}
 \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove calibration, balance, and equal false positive rates cannot coexist.
-Our trilemma (faithfulness, stability, completeness) is structurally identical, making the fairness--explainability parallel explicit.
+Our trilemma (faithfulness, stability, completeness) is structurally analogous, making the fairness--explainability parallel explicit.
 
 \paragraph{Formal verification for ML.}
 \citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} recently formalized statistical learning theory in Lean~4.

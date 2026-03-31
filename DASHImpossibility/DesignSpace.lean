@@ -125,7 +125,7 @@ theorem design_space_theorem
         j ∈ fs.group ℓ → k ∈ fs.group ℓ →
         consensus fs M hM models j = consensus fs M hM models k) ∧
     -- Part 3: DASH variance decreases as 1/M
-    (∀ (M : ℕ) (hM : 0 < M) (j : Fin fs.P),
+    (∀ (M : ℕ) (_hM : 0 < M) (j : Fin fs.P),
       ∃ v : ℝ, v = attribution_variance fs j / M ∧ 0 ≤ v) := by
   exact ⟨
     fun ℓ j k hj hk hjk ranking hfaith =>
