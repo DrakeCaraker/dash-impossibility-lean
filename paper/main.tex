@@ -31,9 +31,10 @@
 \title{The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity}
 
 \author{
-  Drake Caraker \\
-  \texttt{drake@example.com} \\
-  %% Add co-authors here
+  Drake Caraker\thanks{Corresponding author: \texttt{drakecaraker@gmail.com}} \quad
+  Bryan Arnold \quad
+  David Rhoads \\[4pt]
+  \textit{Independent Researchers}
 }
 
 \begin{document}
@@ -54,43 +55,30 @@ The entire proof---28 substantive theorems with no unresolved goals---is mechani
 \label{sec:intro}
 
 Feature attribution methods assign importance scores to input variables, enabling practitioners to understand which features drive a model's predictions.
-Among these, SHAP values \citep{lundberg2017unified} have become the dominant framework, offering a principled connection to cooperative game theory and satisfying desirable axiomatic properties.
-Yet a persistent empirical frustration undermines their utility: under feature collinearity, SHAP-based rankings are unstable.
-Retraining the same model architecture on bootstrap samples of the same data can invert the apparent importance ordering of correlated features \citep{hwang2025shap}.
-This instability is not merely cosmetic---it erodes trust in model explanations, complicates regulatory compliance, and can lead to contradictory scientific conclusions when feature importance is used for variable selection or causal discovery.
+SHAP values \citep{lundberg2017unified} have become the dominant framework, offering a principled connection to cooperative game theory.
+Yet under feature collinearity, SHAP-based rankings are unstable: retraining on bootstrap samples can invert the importance ordering of correlated features \citep{hwang2025shap}, eroding trust in explanations, complicating regulatory compliance, and producing contradictory conclusions in variable selection and causal discovery.
 
 Several recent results have established fundamental limits on feature attribution.
-\citet{bilodeau2024impossibility} prove that no attribution method can simultaneously satisfy completeness and a natural linearity axiom, revealing a tension within the Shapley value framework itself.
-\citet{huang2024failings} show that SHAP values can misrank features in Boolean domains, and \citet{srinivas2019full} demonstrate that complete attributions cannot be weakly input-dependent for neural networks.
-\citet{rao2025limits} establishes Kolmogorov complexity barriers to explainability, showing that no algorithm can produce faithful explanations for all models.
-These results illuminate important structural constraints.
-However, none of them analyze \emph{stability}---the robustness of attributions to retraining---and none provide quantitative bounds that discriminate between model architectures.
-Moreover, no prior impossibility result offers a constructive resolution.
+\citet{bilodeau2024impossibility} prove that completeness and linearity cannot coexist; \citet{huang2024failings} show SHAP can misrank features in Boolean domains; \citet{srinivas2019full} show complete attributions cannot be weakly input-dependent; and \citet{rao2025limits} establishes Kolmogorov complexity barriers to explainability.
+None of these results analyze \emph{stability}---the robustness of attributions to retraining---none provide quantitative architecture-discriminating bounds, and none offer a constructive resolution.
 
 This paper fills these gaps.
-We prove an \emph{Attribution Impossibility}: for any single model trained on collinear features, the three desiderata of faithfulness, stability, and completeness are mutually incompatible.
-The result has a two-layer architecture.
-The first layer is model-agnostic: we formalize the Rashomon property \citep{rudin2024amazing} of collinear designs, showing that symmetric features are necessarily ranked in opposite orders by different near-optimal models, so no single model's ranking can be both faithful and stable.
-The second layer is model-specific: we derive quantitative bounds on the attribution ratio---the factor by which the first-selected feature is overweighted relative to its symmetric partner.
-For gradient-boosted decision trees (\GBDT{}), this ratio is $1/(1-\rho^2)$, diverging as $\rho \to 1$.
-For Lasso, the ratio is infinite at any correlation $\rho > 0$ due to the $\ell_1$ penalty's symmetry-breaking selection.
-For neural networks with ReLU activations, the ratio is unbounded in depth.
-Random forests, by contrast, achieve a bounded ratio of $O(1/\sqrt{T})$ via independent bootstrap sampling---a structural distinction our framework makes precise.
+We prove an \emph{Attribution Impossibility}: for any single model trained on collinear features, faithfulness, stability, and completeness are mutually incompatible.
+The result has two layers.
+The first is model-agnostic: formalizing the Rashomon property \citep{rudin2024amazing}, we show symmetric features are necessarily ranked in opposite orders by different near-optimal models.
+The second is model-specific: we derive quantitative bounds on the attribution ratio (the factor by which the dominant feature is overweighted).
+For \GBDT{}, this ratio is $1/(1-\rho^2)$, diverging as $\rho \to 1$; for Lasso it is infinite at any $\rho > 0$; for neural networks it is unbounded in depth; and for random forests it is $O(1/\sqrt{T})$---converging rather than diverging.
 
-The impossibility has a natural parallel in the fairness literature: \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} proved that calibration, balance, and equal false positive rates cannot coexist when base rates differ, fundamentally reshaping how the community approaches algorithmic fairness.
-Our result plays an analogous role for explainability: it establishes that instability under collinearity is not an algorithmic deficiency to be engineered away, but a mathematical inevitability of single-model attribution.
-This has direct regulatory implications.
-The EU AI Act \citep{euaiact2024} requires high-risk AI systems to disclose ``known and foreseeable circumstances'' affecting accuracy (Art.~13(3)(b)(ii)), and feature attribution instability under common data conditions is precisely such a circumstance.
+The impossibility parallels fairness: \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} proved that calibration, balance, and equal false positive rates cannot coexist when base rates differ.
+Our result plays the same role for explainability---instability under collinearity is not an engineering deficiency but a mathematical inevitability---with direct implications for the EU AI Act \citep{euaiact2024} (Art.~13(3)(b)(ii)), which requires disclosing ``known and foreseeable circumstances'' affecting accuracy.
 
 The impossibility also admits a resolution.
-We show that \DASH{} (Distributed Adaptive SHAP) ensemble averaging circumvents the impossibility by breaking the sequential dependence that drives attribution concentration in single models.
-For balanced ensembles---those sampling each feature ordering with equal probability---the expected attribution is equitable across symmetric features, with variance decreasing as $O(1/M)$ in the number of ensemble members.
-The resolution is constructive: rather than accepting that faithful, stable, and complete attributions are impossible, practitioners can achieve all three by aggregating across the Rashomon set.
+\DASH{} ensemble averaging breaks the sequential dependence that drives attribution concentration: for balanced ensembles, expected attributions are equitable across symmetric features with variance $O(1/M)$.
+Practitioners can effectively achieve all three desiderata by aggregating across the Rashomon set.
 
-The complete proof is mechanically verified in Lean~4 using the Mathlib library, comprising 28 substantive theorems with no unresolved goals, plus one stated property (variance bound) awaiting measure-theoretic infrastructure in Mathlib.
-This constitutes, to our knowledge, the first formally verified impossibility result in explainable AI.
-The formalization effort itself proved valuable beyond mere certification: during the translation from paper proofs to Lean~4, we discovered two logical inconsistencies and one type mismatch in the original axiom system, all of which were corrected before the formal proof compiled.
-This echoes experiences in other domains where formalization has uncovered subtle errors in published proofs \citep{nipkow2009social}, and aligns with recent efforts to bring formal methods to statistical learning theory \citep{zhang2026statistical}.
+The proof is mechanically verified in Lean~4 using Mathlib: 28 substantive theorems with no unresolved goals, plus one stated variance bound awaiting Mathlib infrastructure.
+This is, to our knowledge, the first formally verified impossibility result in explainable AI.
+The formalization also proved valuable beyond certification: during translation to Lean~4 we discovered two logical inconsistencies and one type mismatch in the original axiom system, echoing prior experiences where formalization uncovered subtle proof errors \citep{nipkow2009social,zhang2026statistical}.
 
 \paragraph{Contributions.}
 \begin{enumerate}
@@ -293,43 +281,28 @@ This bound follows from the combinatorial argument that non-first-mover features
 \subsection{Lasso: Infinite Violation}
 \label{sec:lasso}
 
-The $\ell_1$ penalty in Lasso regression produces an extreme form of dominance: among a group of correlated features, it selects exactly one and sets all others' coefficients to zero.
-
-Under the iterative optimizer framework (Definition~\ref{def:iterative}), the selected feature $d(f)$ receives all attribution ($\varphi_{d(f)}(f) > 0$) while $\varphi_k(f) = 0$ for all other $k$ in the same group.
-By surjectivity---which holds because regularization path tie-breaking and data perturbation can make any feature the selected one---the Rashomon property is satisfied.
-
-The attribution ratio is infinite: $\varphi_{d(f)}/\varphi_k = \infty$ for $k \neq d(f)$.
-This is the most severe possible violation, and it holds at \emph{any} correlation $\rho > 0$.
+The $\ell_1$ penalty selects exactly one feature from each correlated group and zeros all others, so $\varphi_{d(f)} > 0$ and $\varphi_k(f) = 0$ for $k \neq d(f)$.
+Surjectivity holds because regularization-path tie-breaking and data perturbation can make any feature the selected one.
+The attribution ratio is therefore infinite at \emph{any} $\rho > 0$---the most severe possible violation.
 
 \subsection{Neural Networks: Conditional Violation}
 \label{sec:nn}
 
-Neural networks with random initialization exhibit a form of symmetry breaking analogous to the \GBDT{} first-mover effect.
-When correlated features compete for gradient flow early in training, the feature that receives the largest initial weight perturbation ``captures'' the correlated signal, accumulating higher attribution through subsequent epochs.
-
-Formally, we model this via a captured-feature function $d(f)$ satisfying the iterative optimizer axioms \emph{conditional on the initialization inducing a dominance structure}.
-The dominance condition---that $\varphi_{d(f)}(f) > \varphi_k(f)$ for $k \neq d(f)$ in the same group---holds when the initialization asymmetry is not erased by regularization or early stopping.
-Surjectivity follows from the symmetry of standard initialization distributions (e.g., Kaiming, Xavier): each feature has equal probability of receiving the largest initial weight.
-
-The impossibility therefore holds conditionally: whenever a neural network's training dynamics produce a dominant feature per correlated group, the Attribution Impossibility applies.
-The ratio is architecture- and initialization-dependent rather than closed-form, but the qualitative conclusion is the same.
+Neural networks exhibit symmetry breaking analogous to the \GBDT{} first-mover effect: the feature receiving the largest initial weight perturbation captures correlated signal and accumulates disproportionate attribution.
+We model this via a captured-feature function $d(f)$ satisfying the iterative optimizer axioms conditional on the initialization inducing a dominance structure---a condition that holds unless regularization or early stopping erases the initialization asymmetry.
+Surjectivity follows from the symmetry of standard initializations (Kaiming, Xavier).
+The attribution ratio is architecture-dependent rather than closed-form, but the impossibility holds conditionally whenever training dynamics produce a dominant feature per group.
 
 \subsection{Random Forests: Bounded Violation (Contrast)}
 \label{sec:rf}
 
-Random forests provide a revealing contrast.
-Because each tree is trained independently on a bootstrap sample, there is no shared residual stream---feature $j$ being selected in tree $t$ does not reduce feature $k$'s signal in tree $t+1$.
-
-The expected split count per feature within a group of size $m$ is $T/m$ for all features, with deviations of order $O(\sqrt{T})$ from bootstrap sampling noise.
-The attribution ratio is therefore
+Because each tree trains independently on a bootstrap sample, there is no shared residual stream.
+The expected split count is $T/m$ for every feature in a group, with $O(\sqrt{T})$ deviations, giving
 \[
     \frac{\varphi_{j_1}(f)}{\varphi_k(f)} = 1 + O(1/\sqrt{T}) \;\to\; 1 \quad \text{as } T \to \infty.
 \]
-The Rashomon property may hold for finite $T$ (different bootstrap samples can produce different feature orderings), so the qualitative impossibility may apply.
-But the quantitative violation \emph{vanishes} with more trees---the opposite of the \GBDT{} regime, where more rounds compound the first-mover advantage.
-
-This contrast is the key structural insight: sequential residual-sharing creates divergent inequity, while independent aggregation creates convergent equity.
-\DASH{} exploits precisely this distinction.
+The qualitative impossibility may still apply for finite $T$, but the violation \emph{vanishes} with more trees---the opposite of \GBDT{}, where more rounds compound the first-mover advantage.
+Sequential residual-sharing creates divergent inequity; independent aggregation creates convergent equity---the structural distinction \DASH{} exploits.
 
 \paragraph{Summary.}
 Table~\ref{tab:model-comparison} collects the quantitative bounds.
@@ -436,37 +409,33 @@ The within-group flip rate---measured as the frequency with which $\bar{\varphi}
 \label{sec:related}
 
 \paragraph{Attribution impossibility results.}
-\citet{bilodeau2024impossibility} prove that completeness and linearity cannot coexist for feature attributions.
-\citet{huang2024failings} show SHAP values can misrank features, though only in Boolean settings.
-\citet{srinivas2019full} prove that complete attributions cannot be weakly input-dependent, and \citet{rao2025limits} establishes Kolmogorov complexity barriers to explainability.
-Our result is the first to address cross-model \emph{stability}, provide quantitative architecture-dependent bounds on the severity of violation, and offer a constructive resolution.
+\citet{bilodeau2024impossibility} prove completeness and linearity cannot coexist; \citet{huang2024failings} show SHAP can misrank features in Boolean settings; \citet{srinivas2019full} prove complete attributions cannot be weakly input-dependent; \citet{rao2025limits} establishes Kolmogorov complexity barriers.
+Our result is the first to address cross-model \emph{stability}, give quantitative architecture-dependent bounds, and provide a constructive resolution.
 
 \paragraph{Rashomon effect and model multiplicity.}
-\citet{laberge2023partial} study feature attribution consensus across Rashomon sets, concluding that rankings are inherently partial orders.
-\citet{rudin2024amazing} advocate embracing model multiplicity rather than selecting a single ``best'' model.
-Our theorem formalizes the consequences: the partial order structure is not an artifact of insufficient search but a mathematical inevitability under collinearity, and \DASH{} provides a principled aggregation over the Rashomon set.
+\citet{laberge2023partial} find that attribution rankings across Rashomon sets are inherently partial orders; \citet{rudin2024amazing} advocate embracing model multiplicity.
+Our theorem shows the partial order is not an artifact of insufficient search but a mathematical necessity, and \DASH{} provides a principled aggregation.
 
 \paragraph{Fairness impossibility.}
-\citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove that calibration, balance, and equal false positive rates cannot coexist when base rates differ.
-Our result has the same trilemma structure---faithfulness, stability, and completeness cannot coexist under collinearity---making the parallel between fairness and explainability impossibilities explicit for the first time.
+\citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove calibration, balance, and equal false positive rates cannot coexist.
+Our trilemma (faithfulness, stability, completeness) is structurally identical, making the fairness--explainability parallel explicit.
 
 \paragraph{Formal verification for ML.}
-\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL, demonstrating that social choice impossibilities benefit from machine verification.
-\citet{zhang2026statistical} recently brought statistical learning theory into Lean~4.
-Our work contributes the first formally verified result in explainable AI, with 29 theorems compiled against Mathlib.
+\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} recently formalized statistical learning theory in Lean~4.
+Our 29-theorem Lean~4 formalization is the first formally verified result in explainable AI.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Discussion}
 \label{sec:discussion}
 
 \paragraph{Limitations.}
-Our proof axiomatizes gradient boosting at the level of split-count formulas rather than deriving them from algorithmic definitions; the axioms are justified by Gaussian conditioning arguments verified in SymPy, but extending the formalization to derive axioms from first principles remains open.
-The impossibility requires non-negligible collinearity ($\rho > 0$); the practical impact is minor when $\rho$ is small, as the attribution ratio approaches 1.
-The balanced ensemble assumption is idealized---finite ensembles may not achieve exact balance, though the $O(1/M)$ convergence is robust to approximate balance.
-The variance bound (Corollary~1(b) in the Lean formalization) is stated but not yet formally proved, pending measure-theoretic infrastructure in Mathlib.
+The proof axiomatizes gradient boosting via split-count formulas (SymPy-verified) rather than deriving them from algorithmic definitions; deriving the axioms in Lean~4 remains open.
+The impossibility requires $\rho > 0$, with minor practical impact when $\rho$ is small.
+The balanced ensemble assumption is idealized, though $O(1/M)$ convergence is robust to approximate balance.
+The variance bound is stated but not yet formally proved, pending Mathlib infrastructure.
 
 \paragraph{Regulatory implications.}
-The EU AI Act (Art.~13(3)(b)(ii)) requires disclosing ``known and foreseeable circumstances'' affecting accuracy~\citep{euaiact2024}; our theorem proves attribution instability under collinearity is precisely such a circumstance.
+Our theorem proves that attribution instability under collinearity is a ``known and foreseeable circumstance'' affecting accuracy under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}.
 
 \paragraph{Open problems.}
 In the supplement we show dropping faithfulness \emph{converges} to the same solution as dropping completeness, collapsing the trilemma to a single axis (ensemble size~$M$).
