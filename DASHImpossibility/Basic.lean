@@ -12,3 +12,4 @@ import DASHImpossibility.General
 import DASHImpossibility.SpearmanDef
 import DASHImpossibility.Impossibility
 import DASHImpossibility.Corollary
+import DASHImpossibility.DesignSpace
