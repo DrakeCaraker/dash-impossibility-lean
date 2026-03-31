@@ -403,7 +403,7 @@ TreeSHAP values provide feature attributions.
 
 \paragraph{Attribution ratio (Figure~\ref{fig:ratio}).}
 The within-group ratio increases monotonically with $\rho$.
-The corrected model $1/(1-\alpha\rho^2)$ with fitted $\alpha = 0.62$ matches the data closely ($R^2 = 0.96$), confirming both the functional form and the signal-capture interpretation.
+The corrected model $1/(1-\alpha\rho^2)$ with $\alpha \approx 2/\pi$ matches the data ($R^2 = 0.89$), confirming the functional form and the binary-quantization interpretation.
 The idealized bound $1/(1-\rho^2)$ ($\alpha = 1$) serves as an upper bound.
 
 \paragraph{Ranking instability (Figure~\ref{fig:flips}).}
@@ -439,8 +439,9 @@ Our Lean~4 formalization is the first formally verified result in explainable AI
 \label{sec:discussion}
 
 \paragraph{Limitations.}
-The split-count axioms assume full signal capture ($\alpha = 1$); for finite-depth trees, $\alpha < 1$ and the corrected ratio $1/(1{-}\alpha\rho^2)$ matches empirical data ($\alpha \approx 0.62$, $R^2 = 0.96$).
+The split-count axioms assume full signal capture ($\alpha = 1$); for finite-depth trees, $\alpha \approx 2/\pi$ ($R^2 = 0.89$).
 The impossibility holds for any $\alpha > 0$.
+A simple diagnostic: train 5 models with different seeds and check whether within-group feature rankings flip; if so, use \DASH{}.
 The impossibility requires $\rho > 0$, with minor practical impact when $\rho$ is small.
 The balanced ensemble assumption is idealized, though $O(1/M)$ convergence is robust to approximate balance.
 The variance bound is stated but not yet formally proved, pending Mathlib infrastructure.
