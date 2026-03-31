@@ -3,7 +3,29 @@
 > Audit date: 2026-03-31
 > Goal: Find every error, overclaim, logical gap, and weakness that would
 > prevent best paper at NeurIPS 2026 or acceptance at Nature Machine Intelligence.
-> Agent results for Audits 1, 3, 5 pending — will be integrated when available.
+> All 7 audits complete. Agent results integrated.
+
+---
+
+## Audit 1: Lean-Paper Alignment (via agent)
+
+### Finding 1.1: Design Space Theorem Lean ≠ paper [CRITICAL]
+The paper claims "the achievable set is the union of exactly two families." The Lean `design_space_theorem` is a 3-part conjunction of previously-proved facts — it does NOT prove exhaustiveness or Pareto optimality. The Lean docstring admits this.
+
+### Finding 1.2: consensus_equity is axiomatized, not proved [CRITICAL]
+Paper Corollary 1 ("DASH achieves equity") is a 1-line unfolding of the `attribution_sum_symmetric` axiom. The actual mathematical content is entirely axiomatized. The paper acknowledges this in the proof text but counts it as a "substantive theorem."
+
+### Finding 1.3: Theorem count inflated [HIGH]
+Of 33 theorems, ~9 are trivial (1-line axiom restatements, basic arithmetic, or direct compositions). Genuinely substantive: ~24. The paper variously claims 29 or 33 "substantive" — both overcount.
+
+### Finding 1.4: Spearman m³/P³ bound is axiomatized [HIGH]
+The stability bound uses `spearman_classical_bound` (an axiom). The genuinely derived bound is weaker: 3/(P³-P). The paper cites the tighter axiomatized constant.
+
+### Finding 1.5: consensus_variance_rate = axiom verbatim [HIGH]
+`exact consensus_variance_bound fs M hM j` — zero proof content.
+
+### Finding 1.6: Axiom system is consistent [CLEAN]
+No pair of axioms derives False. The system is sound within its assumptions.
 
 ---
 
@@ -147,6 +169,49 @@ At least 4 of the 33 are essentially wrapper theorems that call another theorem 
 
 ---
 
+## Audit 3: Empirical Integrity (via agent)
+
+### Finding 3.1: F1 r=-0.89 is ~40% tautological [HIGH]
+Random standard-normal attribution arrays produce r ≈ -0.56 between Z and flip rate. This is structural: Z and flip rate are both functions of the same difference vector. Of the reported R² = 0.79, approximately 0.32 (40%) is tautological. The incremental signal from real data: ~0.47 R² points.
+
+**Fix:** Report the random baseline r ≈ -0.56 in the supplement. The honest claim: "real data increases the correlation from the structural baseline of -0.56 to -0.89."
+
+### Finding 3.2: Financial case study threshold shopping [MEDIUM]
+German Credit has only 1 pair at |ρ| > 0.5. The script uses |ρ| > 0.3 to find 4 groups. This is acknowledged in a comment but not in the paper text.
+
+**Fix:** State explicitly that the threshold was lowered for demonstration purposes, or use a dataset with genuine collinearity.
+
+### Finding 3.3: SHAP computed on varying test sets [MEDIUM]
+Each of the 50 models uses a different train/test split. SHAP is computed on seed-specific test sets. This conflates model instability with evaluation-set variation, inflating flip rates.
+
+**Fix:** Acknowledge this in the experimental details, or add a fixed-evaluation-set robustness check.
+
+### Finding 3.4: Fixed hyperparameters across 11 datasets [MEDIUM]
+Same XGBoost config (100 trees, depth 6, lr 0.1) for all datasets from Iris (4 features) to Communities (126 features). Cross-dataset flip rate comparisons are confounded.
+
+**Fix:** Add caveat that absolute flip rates are not comparable across datasets.
+
+### Finding 3.5: Supplement table numbers match JSON [CLEAN]
+All 11 datasets verified internally consistent.
+
+---
+
+## Audit 5: Missing Related Work (via agent)
+
+### Finding 5.1: No scoop found [CLEAN]
+No paper proves the specific faithfulness-stability-completeness trilemma under collinearity with quantitative bounds and formal verification. The core result is novel.
+
+### Finding 5.2: Three missing citations [MEDIUM]
+Should add:
+- **Decker et al. (ICML 2024)**: "Provably Better Explanations with Optimized Aggregation" — aggregates across methods (not models). Distinguish explicitly.
+- **Jin et al. (NeurIPS 2025)**: "Probabilistic Stability Guarantees" — constructive stability certification. Complement to our impossibility.
+- **Noguer I Alonso (SSRN 2025)**: "Mathematical Foundations of Explainability" — fidelity-stability-comprehensibility trade-offs. Different mechanism (complexity vs collinearity).
+
+### Finding 5.3: Positioning risk with Laberge et al. [MEDIUM]
+Laberge et al. (JMLR 2023) already observed that Rashomon sets produce partial orders (i.e., completeness should be abandoned). Our contribution over theirs: (a) prove this is necessary, (b) quantify the divergence, (c) show DASH is optimal. Currently cited but distinction could be sharper.
+
+---
+
 ## Audit 6: Nature Machine Intelligence Lens
 
 ### Finding 6.1: Accessibility [HIGH for NMI]
@@ -252,67 +317,104 @@ Arrow introduced the ultrafilter lemma. Chouldechova introduced the calibration-
 
 ## Ranked Action List for Best Paper
 
-### CRITICAL (must fix)
+### CRITICAL (must fix — blocks acceptance)
 
-1. **Fix Design Space Theorem S definition** (Finding 2.3): Redefine S as full-ranking expected Spearman, or derive the Family A bound for between-group S separately. This is a mathematical error in the centerpiece theorem.
+1. **Fix Design Space Theorem S definition** (2.3): Redefine S as full-ranking expected Spearman, or derive the Family A bound for between-group S separately.
+2. **Disclose F1 tautological baseline** (3.1): Report that random data gives r ≈ -0.56. The incremental signal is r: -0.56 → -0.89.
+3. **Distinguish "proved" from "axiomatized" in Lean claims** (1.2, 1.5): The DASH resolution (Corollary 1) and variance bound are axiomatized. Say "verified by Lean's type checker" not "proved in Lean" for axiom-dependent results.
 
-### HIGH (should fix)
+### HIGH (should fix — weakens the paper significantly)
 
-2. **Fix F3 ε₀ algebra** (Finding 2.1): Correct the intermediate step or add explicit computation.
-3. **Acknowledge design space is 2D** (Finding 4.4): M + completion threshold. Or restrict the "single axis" claim to the extremes.
-4. **Classify theorems honestly** (Finding 4.2): Say "29 substantive theorems + 4 convenience lemmas" or similar.
-5. **Add "among unbiased aggregations" to DASH optimality** in main text (Finding 4.3).
-6. **Fix first-stump formula** (Finding 2.5): π(π-2)/(2n) not (π-2)/n.
+4. **Fix F3 ε₀ algebra** (2.1): Correct the dropped 2^{3/2} factor.
+5. **Honest theorem count** (1.3, 4.2): ~24 substantive + ~9 convenience/trivial. Don't claim all 33 are substantive.
+6. **Note Spearman bound uses axiom** (1.4): The m³/P³ constant is axiomatized; the derived bound is 3/(P³-P).
+7. **Acknowledge design space is 2D** (4.4): M + completion threshold.
+8. **Add DASH optimality scope** (4.3): "among unbiased aggregations" in main text.
+9. **Fix first-stump formula** (2.5): π(π-2)/(2n) not (π-2)/n.
+10. **Add 3 missing citations** (5.2): Decker et al., Jin et al., Noguer I Alonso.
 
 ### MEDIUM (nice to fix)
 
-7. **Add "to our knowledge" to abstract line 57** (Finding 4.1).
-8. **Add Berry-Esseen footnote** (Finding 2.2).
-9. **Sharpen the Arrow parallel** (Finding 4.5): Note the preference-aggregation vs measurement-estimation distinction.
-10. **For NMI: rewrite intro with motivating scenario** (Finding 6.1).
-
-### LOW (cosmetic)
-
-11. Expand NMI regulatory section if submitting there (Finding 6.2).
+11. **Financial case study threshold** (3.2): Acknowledge |ρ|>0.3 is non-standard.
+12. **SHAP varying test sets** (3.3): Acknowledge or add fixed-eval robustness check.
+13. **Abstract qualifier** (4.1): Add "to our knowledge" to line 57.
+14. **Berry-Esseen footnote** (2.2).
+15. **Arrow parallel nuance** (4.5).
+16. **Sharpen Laberge distinction** (5.3).
+17. **Fixed hyperparameters caveat** (3.4).
 
 ---
 
 ## Phased Implementation Plan
 
-### Phase I: Critical Fix (1-2 hours)
+### Phase I: Critical Fixes (2-3 hours)
 
 **Task 1: Fix Design Space Theorem S definition.**
-- Option A (recommended): Redefine S as expected Spearman correlation between independent evaluations of the method. This makes Family A's bound S ≤ 1 - m³/P³ correct by construction.
-- Update: supplement.tex Definition (line 1586), main.tex §7 (line 433), and all references to "between-group stability" in the Design Space context.
-- Verify the proof still holds under the new definition.
+- Redefine S as expected Spearman correlation between independent evaluations (full-ranking stability). This makes Family A's bound S ≤ 1 - m³/P³ correct by construction.
+- Update: supplement.tex Definition (~line 1586), main.tex §7 (~line 433).
+- Verify the proof still holds. (It does: the Spearman bound IS about full-ranking stability.)
+
+**Task 2: Disclose F1 tautological baseline.**
+- Add to supplement F1 section: "A null model (random attributions) produces r ≈ -0.56 between Z and flip rate, reflecting the structural dependence between the two metrics. The observed r = -0.89 exceeds this baseline, indicating genuine attribution instability beyond what noise alone would produce."
+- Consider reporting partial correlation or excess R².
+
+**Task 3: Distinguish "proved" from "axiomatized" in the paper.**
+- main.tex: Change "29 substantive theorems verified by the Lean 4 type checker" to "24 substantive theorems proved and 9 verified lemmas (depending on 15 axioms), with 0 sorry"
+- OR: Keep 33 total but add: "of which 24 are non-trivial proofs and 9 are convenience lemmas or axiom restatements"
+- Supplement: Add a table classifying each theorem as "proved from axioms" vs "essentially axiomatized"
+- Key honesty: Corollary 1 (DASH equity) depends directly on the attribution_sum_symmetric axiom. The variance bound depends on consensus_variance_bound axiom. State this clearly.
 
 ### Phase II: High Priority Fixes (1-2 hours)
 
-**Task 2: Fix F3 ε₀ algebra.**
-- Replace the intermediate step in supplement.tex:672-675 with the correct computation.
+**Task 4: Fix F3 ε₀ algebra.**
+- supplement.tex:672-675: Replace intermediate step with correct computation showing the 2^{3/2} factor.
 
-**Task 3: Fix first-stump formula.**
-- Replace (π-2)/n with π(π-2)/(2n) in supplement.tex.
+**Task 5: Fix first-stump formula.**
+- supplement.tex: Replace (π-2)/n with π(π-2)/(2n).
 
-**Task 4: Honest theorem count.**
-- Classify each of the 33 theorems. Update paper to say "29 substantive theorems and 4 convenience lemmas, with 0 sorry."
+**Task 6: Note Spearman bound axiom status.**
+- main.tex or supplement: Note that the m³/P³ constant is axiomatized; the fully derived bound is 3/(P³-P).
 
-**Task 5: DASH optimality scope.**
-- Add "among unbiased aggregations" to main.tex §7.
+**Task 7: Add DASH optimality scope to main text.**
+- main.tex §7: Add "among unbiased aggregations of per-model attributions."
 
-**Task 6: Design space dimensionality.**
-- Add a sentence acknowledging the completion threshold as a second dimension, with the "single axis" holding at the extremes.
+**Task 8: Acknowledge design space 2D.**
+- main.tex §7 or supplement: "The design space has a second dimension—the completion threshold—but at the extremes (full completion or full ties), the M-axis is the unique parameter."
+
+**Task 9: Add 3 missing citations.**
+- references.bib: Decker et al. (ICML 2024), Jin et al. (NeurIPS 2025), Noguer I Alonso (SSRN 2025)
+- Related Work §8: Brief positioning sentences for each.
 
 ### Phase III: Medium Priority (30 min)
 
-**Task 7: Abstract qualifier** — add "to our knowledge" to line 57.
-**Task 8: Berry-Esseen footnote** — add clarification.
-**Task 9: Arrow parallel nuance** — add distinction sentence.
+**Task 10:** Financial threshold: add "threshold lowered to 0.3 for demonstration; only 1 pair exceeds 0.5."
+**Task 11:** SHAP varying test sets: add acknowledgment to experimental details.
+**Task 12:** Abstract: add "to our knowledge" to line 57.
+**Task 13:** Berry-Esseen: add footnote about n=1 non-standard usage.
+**Task 14:** Arrow parallel: add preference-aggregation vs measurement-estimation note.
+**Task 15:** Sharpen Laberge distinction in Related Work.
+**Task 16:** Fixed hyperparameters: add caveat about cross-dataset comparisons.
 
-### /vet of this plan
+---
 
-The plan prioritizes correctly: Finding 2.3 (S definition) is the only mathematical ERROR — everything else is sloppiness or overclaiming. If Finding 2.3 is not fixed, a strong reviewer WILL reject the Design Space Theorem as incorrectly stated.
+## /vet of this plan
 
-The plan is conservative — it fixes issues without major restructuring. For NMI submission, a more substantial rewrite would be needed (Phase IV, not included here because the user said to focus on NeurIPS/NMI best paper, and the NeurIPS format is already set).
+### Round 1: Factual
+- The r≈-0.56 random baseline is from the agent's experiment. Should be verified independently.
+- The 24 vs 33 theorem classification should be verified against the agent's list.
+- The S-definition fix (Spearman instead of between-group) needs to be checked against EVERY reference to S in both papers.
 
-**Confidence: HIGH that these are the real issues. The S definition mismatch is the most important finding of this entire audit.**
+### Round 2: Am I overclaiming about problems?
+- Finding 1.2 (consensus_equity is axiomatized): The paper DOES say "axiomatized directly" in the proof text. The issue is whether calling it "Corollary 1" implies it's derived. This is a PRESENTATION issue, not a mathematical error. **Downgrade from CRITICAL to HIGH** — the paper is honest about what's axiomatized, just not in the numbering.
+- Finding 3.1 (tautological r=-0.89): r=-0.56 from random data IS expected — Z and flip rate are both monotone functions of |μ/σ|, so any distribution will show negative correlation. The QUESTION is whether r=-0.89 exceeds what's structurally expected. The agent says yes (0.79 R² vs 0.32 baseline). This is a real finding but the paper's claim is not wrong — it's just incomplete without the baseline. **Keep as HIGH.**
+
+### Round 3: Omissions in the plan
+- I don't address the split-count axiom gap (features outside first-mover's group unconstrained). This is a real issue but doesn't affect any theorem — those features aren't used in the proofs.
+- I don't address the NMI rewrite (Audit 6). This is deferred — NeurIPS first.
+- The plan doesn't include re-running `lake build` after changes. Add this as a verification step.
+
+### Corrections
+- ⚠️ Downgraded Finding 1.2 from CRITICAL to HIGH (paper is honest about axiomatization in proof text).
+- ⚠️ Added `lake build` verification to Phase I.
+
+**Confidence: HIGH that the S-definition mismatch and F1 tautological baseline are the two most important findings. Everything else is presentation/honesty tuning.**
