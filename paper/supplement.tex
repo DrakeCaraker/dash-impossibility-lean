@@ -1304,30 +1304,30 @@ Diabetes & 10 & 45 & 15 & $-0.89$ & 0.50 \\
 Wine & 13 & 78 & 24 & $-0.81$ & 1.00 \\
 Heart Disease & 13 & 78 & 27 & $-0.91$ & 1.00 \\
 Credit-g & 20 & 190 & 47 & $-0.90$ & 0.67 \\
-Communities & 8 & 28 & 10 & $-0.96$ & 1.00 \\
+Adult Income & 14 & 91 & 10 & $-0.90$ & --- \\
 Ames Housing & 76 & 2850 & 643 & $-0.85$ & 0.48 \\
+Communities \& Crime & 126 & 7875 & 2975 & $-0.88$ & 0.67 \\
 Digits (0 vs 1) & 64 & 2016 & 572 & $-0.42$ & 0.58 \\
-Adult Income & 38 & 703 & 128 & $-0.29$ & 0.23 \\
 Iris (binary) & 4 & 6 & 0 & --- & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Interpretation.}
-The F1 diagnostic achieves $|r| > 0.8$ on 7/10 datasets with unstable
-pairs (all except Digits, Adult, and Iris). The weaker correlations on
-Digits ($r = -0.42$) and Adult ($r = -0.29$) reflect a floor effect:
-these high-dimensional datasets have many features with near-zero
+The F1 diagnostic achieves $|r| > 0.8$ on 9/10 datasets with unstable
+pairs (all except Digits). The weaker correlation on
+Digits ($r = -0.42$) reflects a floor effect:
+this high-dimensional image dataset has many features with near-zero
 importance, producing many pairs where both $Z$ and flip rate are near
-zero (contributing noise to the correlation). Restricting to pairs with
-$Z < 5$ (the diagnostically interesting range) would improve these
-correlations, as demonstrated for Breast Cancer in the restricted-range
+zero. Restricting to pairs with
+$Z < 5$ (the diagnostically interesting range) would improve this
+correlation, as demonstrated for Breast Cancer in the restricted-range
 analysis above.
 
 F5 precision is 94--100\% on small/clean datasets (Breast Cancer, Wine,
-Heart Disease, Communities) where split counts are reliable, but drops to
-23--58\% on high-dimensional datasets (Adult, Digits, Ames) where split
-counts are sparse and noisy. This confirms F5 as a conservative
+Heart Disease) where split counts are reliable, but drops to
+48--67\% on high-dimensional datasets (Ames, Communities) where split
+counts are sparse. This confirms F5 as a conservative
 \emph{screening} tool: it works well for moderate-$P$ datasets but
 should be supplemented by the full F1 test for high-dimensional settings.
 

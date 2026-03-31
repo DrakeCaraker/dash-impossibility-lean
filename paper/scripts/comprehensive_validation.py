@@ -107,7 +107,7 @@ def load_dataset(name):
 
     elif name == "Adult Income":
         from sklearn.datasets import fetch_openml
-        d = fetch_openml(data_id=2, as_frame=True, parser="auto")
+        d = fetch_openml(data_id=1590, as_frame=True, parser="auto")
         df = d.data.copy()
         y = LabelEncoder().fit_transform(d.target)
         for col in df.select_dtypes(include=["category", "object"]).columns:
@@ -160,7 +160,7 @@ def load_dataset(name):
 
     elif name == "Communities and Crime":
         from sklearn.datasets import fetch_openml
-        d = fetch_openml(data_id=183, as_frame=True, parser="auto")
+        d = fetch_openml(data_id=42730, as_frame=True, parser="auto")
         df = d.data.copy()
         y = d.target.values.astype(np.float64)
         for col in df.select_dtypes(include=["category", "object"]).columns:
