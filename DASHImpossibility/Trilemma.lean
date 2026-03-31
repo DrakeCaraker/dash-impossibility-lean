@@ -1,10 +1,10 @@
 /-
-  The Attribution Trilemma: no single-model feature ranking can simultaneously
+  The Attribution Impossibility: no single-model feature ranking can simultaneously
   be faithful (reflect the model's attributions), stable (model-independent),
   and complete (decide all pairs).
 
   This is the model-agnostic layer. The GBDT-specific axioms instantiate
-  the Rashomon property, but the trilemma holds for ANY attribution method
+  the Rashomon property, but the impossibility holds for ANY attribution method
   satisfying it.
 
   Analogue of Arrow's impossibility theorem for social choice:
@@ -38,9 +38,9 @@ def RashimonProperty : Prop :=
       attribution fs j f > attribution fs k f ∧
       attribution fs k f' > attribution fs j f'
 
-/-! ### The Attribution Trilemma -/
+/-! ### The Attribution Impossibility -/
 
-/-- **The Attribution Trilemma.** No model-independent ranking can faithfully
+/-- **The Attribution Impossibility.** No model-independent ranking can faithfully
     represent all models' feature attributions when symmetric features exist.
 
     A ranking that is:
@@ -60,7 +60,7 @@ def RashimonProperty : Prop :=
     Population-level explanations (expected attributions over an ensemble)
     are not subject to it, because E[φ_j] = E[φ_k] under DGP symmetry —
     the ranking is correctly undetermined. -/
-theorem attribution_trilemma
+theorem attribution_impossibility
     (hrash : RashimonProperty fs)
     (ℓ : Fin fs.L) (j k : Fin fs.P)
     (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)

@@ -1,5 +1,5 @@
 /-
-  Random forests: contrast case. The Attribution Trilemma may hold weakly,
+  Random forests: contrast case. The Attribution Impossibility may hold weakly,
   but the mechanism differs fundamentally from sequential methods.
 
   Key difference: trees are trained INDEPENDENTLY (no shared residuals).
@@ -55,7 +55,7 @@ preference reversal is bounded:
 
 ### Implication for the research program
 
-The Attribution Trilemma's QUALITATIVE conclusion (impossible to be
+The Attribution Impossibility's QUALITATIVE conclusion (impossible to be
 faithful + stable + complete) may hold for RF under finite T, but its
 PRACTICAL significance vanishes with more trees. For GBDT, more trees
 makes the violation WORSE (cumulative bias). For RF, more trees makes
