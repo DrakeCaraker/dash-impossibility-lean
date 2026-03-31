@@ -283,6 +283,7 @@ For stability, when two models $f, f'$ have different first-movers within the sa
     \rho_S(f, f') \;\leq\; 1 - \frac{m^3}{P^3}.
 \]
 This bound follows from the combinatorial argument that non-first-mover features are tied in split count and therefore randomly ordered, contributing $\Theta(m^3)$ to $\sum d_i^2$ in the Spearman formula.
+(In the Lean~4 formalization, a weaker bound $3/(P^3-P)$ is derived from the defined Spearman correlation; the $m^3/P^3$ constant is axiomatized.)
 
 \subsection{Lasso: Infinite Violation}
 \label{sec:lasso}
@@ -370,9 +371,7 @@ The tie is not a deficiency---it faithfully reflects the DGP symmetry.
 \section{Empirical Validation}
 \label{sec:experiments}
 
-We validate the theoretical predictions on synthetic Gaussian data.
-(A real-world validation on the Breast Cancer dataset, confirming
-instability for naturally collinear features, is in the supplement.)
+We validate the theoretical predictions on synthetic Gaussian data and on the Breast Cancer (Wisconsin) dataset (supplement): features measuring the same underlying quantity---e.g., worst perimeter and worst area ($|\rho|{=}0.98$)---exhibit a 48\% flip rate across seeds, near the 50\% theoretical maximum.
 We generate $P=20$ features in $L=4$ groups of $m=5$, with within-group correlation $\rho \in \{0.1, 0.3, 0.5, 0.7, 0.9, 0.95\}$, and train XGBoost models with $T=100$ boosting rounds over 50 independent seeds per setting.
 TreeSHAP values provide feature attributions.
 
