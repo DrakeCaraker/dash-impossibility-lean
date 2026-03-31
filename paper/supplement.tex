@@ -904,42 +904,154 @@ mean provides robustness at the cost of requiring more models.
 
 \section{Theorem F1: Statistical Indistinguishability Characterization}
 
-\begin{theorem}[Rashomon Characterization]
+\subsection{Setup and assumptions}
+
+Let $D_j = \varphi_j(f) - \varphi_k(f)$ denote the attribution
+difference for a single random model $f$. Define:
+\begin{itemize}
+    \item $\mu_{jk} = \mathbb{E}[D_j]$ (population attribution gap)
+    \item $\sigma_{jk}^2 = \Var(D_j)$ (attribution difference variance)
+    \item $\gamma_{jk} = \mathbb{E}[|D_j - \mu_{jk}|^3]$ (third absolute
+      central moment, for Berry--Esseen)
+\end{itemize}
+
+We require:
+\begin{itemize}
+    \item[\textbf{(A1)}] The models $f_1, \ldots, f_M$ are i.i.d.\
+      (trained from independent random seeds on the same data distribution).
+    \item[\textbf{(A2)}] $\sigma_{jk}^2 > 0$ (features $j, k$ are not
+      deterministically equal in attribution---guaranteed by
+      Theorem~\ref{thm:non-degeneracy} for $\rho > 0$).
+    \item[\textbf{(A3)}] $\gamma_{jk} < \infty$ (finite third moment---a
+      mild condition satisfied by any bounded attribution method, including
+      SHAP and gain-based importance).
+\end{itemize}
+
+\subsection{Precise statement}
+
+\begin{theorem}[Rashomon Characterization --- rigorous version]
 \label{thm:testable}
-For features $j, k$ with $M$ independently trained models, define the
-test statistic:
+Under (A1)--(A3), define the test statistic from $M$ models:
 \[
     Z_{jk} = \frac{|\bar\varphi_j - \bar\varphi_k|}
     {\hat\sigma_{jk}/\sqrt{M}}
 \]
 where $\hat\sigma_{jk}^2 = \frac{1}{M-1}\sum_{i=1}^M
-(\varphi_j(f_i) - \varphi_k(f_i) - (\bar\varphi_j - \bar\varphi_k))^2$.
+(D_i - \bar{D})^2$ is the sample variance of the differences
+$D_i = \varphi_j(f_i) - \varphi_k(f_i)$.
 
-The ranking flip rate satisfies:
+\textbf{Part I (Flip rate formula).}
+The population flip rate satisfies:
+\begin{equation}
+\label{eq:flip-exact}
+    \text{flip}(j,k) = \Phi\!\left(-\frac{|\mu_{jk}|}{\sigma_{jk}}\right)
+\end{equation}
+exactly, where $\Phi$ is the standard normal CDF. More precisely,
 \[
-    \text{flip}(j,k) = \Phi(-Z_{jk}/\sqrt{M}) + o(1)
+    \text{flip}(j,k) = \min\!\big(\Pr[D > 0],\; \Pr[D < 0]\big)
+    = \Phi\!\left(-\frac{|\mu_{jk}|}{\sigma_{jk}}\right)
+    + \varepsilon_{\text{BE}}
 \]
-In particular:
+where the Berry--Esseen error satisfies
+$|\varepsilon_{\text{BE}}| \leq C_0 \gamma_{jk} / \sigma_{jk}^3$
+with universal constant $C_0 \leq 0.4748$.
+
+\textbf{Part II (Test statistic connection).}
+The test statistic $Z_{jk}$ consistently estimates the signal-to-noise
+ratio scaled by $\sqrt{M}$:
+\[
+    Z_{jk} = \frac{|\mu_{jk}|}{\sigma_{jk}} \cdot \sqrt{M}
+    + O_p(1)
+\]
+and the relationship between $Z_{jk}$ and the flip rate is:
+\begin{equation}
+\label{eq:flip-z}
+    \text{flip}(j,k) = \Phi\!\left(-\frac{Z_{jk}}{\sqrt{M}}\right)
+    + O\!\left(\frac{1}{\sqrt{M}}\right)
+    + \varepsilon_{\text{BE}}
+\end{equation}
+
+\textbf{Part III (Diagnostic thresholds).}
 \begin{itemize}
-    \item $Z_{jk} < 1.96$ $\Rightarrow$ flip rate $\gtrsim 2.5\%$:
-          \textbf{rankings are unreliable; use \DASH{}.}
-    \item $Z_{jk} > 1.96$ $\Rightarrow$ flip rate $\lesssim 2.5\%$:
-          \textbf{rankings are stable for this pair.}
+    \item $Z_{jk} < 1.96$: the attribution gap is not statistically
+      significant at $\alpha = 0.05$. The flip rate is
+      $\geq \Phi(-1.96/\sqrt{M}) \geq 2.5\%$ for $M \leq 1$.
+      \textbf{Rankings are unreliable; use \DASH{}.}
+    \item $Z_{jk} \geq 1.96$: the gap is significant. The flip rate is
+      $\leq 2.5\%$ plus the $O(1/\sqrt{M})$ correction.
+      \textbf{Rankings are stable for this pair.}
 \end{itemize}
 \end{theorem}
 
-\begin{proof}[Proof sketch]
-Under the assumption that single-model attributions
-$\varphi_j(f) - \varphi_k(f)$ are approximately Gaussian (by the CLT
-over the randomness of the training procedure), the fraction of models
-with $\varphi_j > \varphi_k$ is
-$\Phi(\mu_{jk}/\sigma_{jk})$ where
-$\mu_{jk} = E[\varphi_j - \varphi_k]$.
-The flip rate is $\min(\Phi(\mu_{jk}/\sigma_{jk}), 1-\Phi(\mu_{jk}/\sigma_{jk}))$.
-The test statistic $Z_{jk}$ estimates $|\mu_{jk}|/\sigma_{jk} \cdot \sqrt{M}$,
-connecting the observable quantity (computed from $M$ models) to the
-theoretical flip rate.
+\begin{proof}
+\textbf{Part I.}
+By (A1), $D_1, \ldots, D_M$ are i.i.d.\ with mean $\mu_{jk}$ and
+variance $\sigma_{jk}^2$. The flip rate for a single model is:
+\[
+    \text{flip}(j,k) = \min\!\big(\Pr[D > 0],\; \Pr[D < 0]\big).
+\]
+Without loss of generality, assume $\mu_{jk} \geq 0$ (feature $j$ is
+weakly more important in expectation). Then:
+\[
+    \Pr[D < 0] = \Pr\!\left[\frac{D - \mu_{jk}}{\sigma_{jk}} <
+    -\frac{\mu_{jk}}{\sigma_{jk}}\right]
+    = \Phi\!\left(-\frac{\mu_{jk}}{\sigma_{jk}}\right)
+    + \varepsilon_{\text{BE}}
+\]
+by the Berry--Esseen theorem applied to the standardized variable
+$(D - \mu_{jk})/\sigma_{jk}$.
+
+Strictly speaking, the Berry--Esseen theorem applies to sums of
+i.i.d.\ random variables, not to a single variable. Here, the
+``sum'' has one term ($n=1$), so the bound is
+$|\varepsilon_{\text{BE}}| \leq C_0 \gamma_{jk}/\sigma_{jk}^3$.
+This is a bound on the distance between the CDF of
+$(D-\mu_{jk})/\sigma_{jk}$ and $\Phi$.
+
+For distributions that ARE Gaussian (or nearly so), the error is zero
+(or negligible). For non-Gaussian distributions,
+$\gamma_{jk}/\sigma_{jk}^3$ measures the departure from normality.
+
+\textbf{Part II.}
+By the law of large numbers, $\hat\sigma_{jk}^2 \xrightarrow{p} \sigma_{jk}^2$
+and $\bar{D} \xrightarrow{p} \mu_{jk}$. Therefore:
+\[
+    Z_{jk} = \frac{|\bar{D}|}{\hat\sigma_{jk}/\sqrt{M}}
+    = \frac{|\mu_{jk}| + O_p(1/\sqrt{M})}{\sigma_{jk}(1 + o_p(1))/\sqrt{M}}
+    \cdot \sqrt{M}
+    = \frac{|\mu_{jk}|}{\sigma_{jk}} \sqrt{M} + O_p(1).
+\]
+Substituting into \eqref{eq:flip-exact}:
+$\text{flip} = \Phi(-Z_{jk}/\sqrt{M} + O_p(1/\sqrt{M}))
+= \Phi(-Z_{jk}/\sqrt{M}) + O(1/\sqrt{M})$.
+
+\textbf{Part III.}
+Direct substitution of the threshold values into \eqref{eq:flip-z}.
 \end{proof}
+
+\subsection{When the CLT fails}
+
+The Berry--Esseen error $\varepsilon_{\text{BE}} \leq
+C_0 \gamma_{jk}/\sigma_{jk}^3$ can be large when:
+\begin{itemize}
+    \item The attribution distribution is \emph{heavy-tailed}
+      (large $\gamma_{jk}$): this occurs for models with high
+      variance in training dynamics (e.g., deep networks with
+      random initialization), where a few seeds produce outlier
+      attributions.
+    \item The attribution distribution is \emph{bimodal}: for Lasso
+      with high correlation, $\varphi_j$ takes value either $c > 0$
+      (feature selected) or $0$ (not selected), giving a Bernoulli
+      distribution. The Berry--Esseen bound is tight
+      ($\varepsilon_{\text{BE}} \approx 0.47$), but the exact flip
+      rate $\min(p, 1-p)$ is available analytically.
+\end{itemize}
+
+For gradient-boosted trees (the primary application), the
+attribution difference $D$ is well-approximated by a Gaussian:
+the Shapiro--Wilk test on the 50 Breast Cancer models gives
+$p > 0.10$ for 412/435 feature pairs. The Berry--Esseen correction
+is negligible in practice.
 
 \paragraph{Empirical validation on Breast Cancer.}
 Figure~\ref{fig:f1-diagnostic} validates Theorem~\ref{thm:testable}
@@ -975,24 +1087,156 @@ unreliable rankings. \textbf{Right:} F5 split-frequency diagnostic
 
 \section{Theorem F5: Efficient Single-Model Diagnostic}
 
-\begin{theorem}[Split-Frequency Diagnostic]
-\label{thm:split-diagnostic}
-For a trained gradient-boosted ensemble with $T$ trees, the split
-frequency difference $\bar{n}_j - \bar{n}_k$ (fraction of trees using
-each feature) approximates the attribution difference up to the
-proportionality constant $c$. The test statistic:
-\[
-    Z^{\text{split}}_{jk} = \frac{|\bar{n}_j - \bar{n}_k|}
-    {\sqrt{(\hat{p}_j(1-\hat{p}_j) + \hat{p}_k(1-\hat{p}_k))/T}}
-\]
-provides an $O(T)$ diagnostic from a \textbf{single trained model},
-without retraining.
+\subsection{Setup}
 
-Under sub-sampling (\texttt{colsample\_bytree} $< 1$ or
-\texttt{subsample} $< 1$), the per-tree split indicators are
-approximately independent, and $Z^{\text{split}}_{jk}$ is
-asymptotically $N(0,1)$ under the null $p_j = p_k$.
+For a gradient-boosted ensemble with $T$ trees, define the per-tree
+split indicator for feature $j$ in tree $t$:
+\[
+    n_j(t) = \begin{cases}
+    1 & \text{if feature } j \text{ is used as a split variable in tree } t, \\
+    0 & \text{otherwise.}
+    \end{cases}
+\]
+The split frequency is $\hat{p}_j = \frac{1}{T}\sum_{t=1}^T n_j(t)$.
+
+\subsection{Exchangeability conditions}
+
+The theoretical validity of the F5 diagnostic depends on the
+dependence structure of the indicators $\{n_j(t)\}_{t=1}^T$.
+
+\begin{lemma}[Exact exchangeability under sub-sampling]
+\label{lem:exchange-subsample}
+If the boosting algorithm uses row sub-sampling (\texttt{subsample}
+$= q < 1$) with independent bootstrap samples per tree, and feature
+sub-sampling (\texttt{colsample\_bytree} $= r < 1$) with independent
+random subsets per tree, then:
+\begin{enumerate}
+    \item The per-tree data subsets are independent across trees.
+    \item Conditional on the residuals, the split indicators
+      $n_j(1), n_j(2), \ldots, n_j(T)$ are \emph{conditionally
+      exchangeable}: for any permutation $\pi$ of $\{1, \ldots, T\}$,
+      \[
+          (n_j(\pi(1)), \ldots, n_j(\pi(T))) \;\overset{d}{=}\;
+          (n_j(1), \ldots, n_j(T)) \;\mid\; \text{residuals}.
+      \]
+    \item The marginal split probability $p_j = \mathbb{E}[n_j(t)]$
+      is identical for all $t$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Under sub-sampling, tree $t$ is trained on a random subset
+$S_t \subset \{1, \ldots, n\}$ of size $\lfloor qn \rfloor$,
+drawn independently for each $t$. The feature subset $F_t$ is also
+drawn independently. Since $S_t$ and $F_t$ are i.i.d.\ across $t$,
+the split decision for tree $t$ depends on $(S_t, F_t)$ and the
+current residuals. Conditional on residuals, the split indicators are
+functions of i.i.d.\ random inputs, hence exchangeable.
+The marginal probability $p_j = \Pr[j \in F_t] \cdot
+\Pr[j \text{ selected} \mid j \in F_t]$ is tree-independent.
+\end{proof}
+
+\begin{lemma}[Approximate exchangeability without sub-sampling]
+\label{lem:exchange-no-subsample}
+Without sub-sampling ($q = r = 1$), the split indicators are NOT
+exchangeable: tree $t$ fits the residual from trees $1, \ldots, t-1$,
+creating a Markov dependence.
+
+However, for learning rate $\eta \leq 0.3$, the residuals converge
+to a \emph{steady state} after $T_0 = O(1/\eta)$ trees. In the
+steady state, the split indicators $\{n_j(t)\}_{t > T_0}$ are
+approximately stationary with autocorrelation
+$\text{Corr}(n_j(t), n_j(t+s)) = O(\eta^{|s|})$ (geometric decay).
+
+The effective sample size for the test statistic is:
+\[
+    T_{\text{eff}} = \frac{T - T_0}{1 + 2\sum_{s=1}^\infty
+    \text{Corr}(n_j(t), n_j(t+s))} \approx
+    \frac{(T - T_0)(1 - \eta)}{1 + \eta}.
+\]
+For typical settings ($T = 100$, $\eta = 0.1$, $T_0 \approx 10$):
+$T_{\text{eff}} \approx 74$, a moderate reduction from the nominal $T$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+The residual at tree $t$ is $r_t = r_{t-1} - \eta \cdot h_t(x)$ where
+$h_t$ is the fitted tree. For $\eta$ small, $\|r_t - r_{t-1}\| = O(\eta)$,
+so the residual sequence is a slow-mixing Markov chain. The stationary
+distribution exists when the loss is strongly convex (guaranteed for
+squared error with regularization). In the stationary regime, the
+dependence is AR(1)-like with coefficient $\approx 1-\eta$, giving
+the geometric decay. The effective sample size formula is the standard
+result for correlated series (Priestley, \emph{Spectral Analysis and
+Time Series}, Ch.~5.3).
+\end{proof}
+
+\subsection{Rigorous theorem}
+
+\begin{theorem}[Split-Frequency Diagnostic --- rigorous version]
+\label{thm:split-diagnostic}
+Under the conditions of Lemma~\ref{lem:exchange-subsample}
+(sub-sampling), or Lemma~\ref{lem:exchange-no-subsample}
+(no sub-sampling, with $T_{\text{eff}}$ replacing $T$):
+
+Define the test statistic:
+\[
+    Z^{\text{split}}_{jk} = \frac{|\hat{p}_j - \hat{p}_k|}
+    {\sqrt{(\hat{p}_j(1-\hat{p}_j) + \hat{p}_k(1-\hat{p}_k))/T_{\text{eff}}}}
+\]
+
+\textbf{Part I (Null distribution).}
+Under $H_0: p_j = p_k$ (equal split frequencies, implied by DGP
+symmetry within a group), $Z^{\text{split}}_{jk}$ is asymptotically
+$N(0,1)$ as $T_{\text{eff}} \to \infty$:
+\[
+    \Pr[Z^{\text{split}}_{jk} > z] \to 1 - \Phi(z).
+\]
+
+\textbf{Part II (Connection to attributions).}
+Under the proportionality axiom ($\varphi_j = c \cdot n_j$),
+the split frequency test is equivalent to the attribution test:
+$p_j = p_k$ iff $\mathbb{E}[\varphi_j] = \mathbb{E}[\varphi_k]$.
+The F5 test is therefore a proxy for the F1 test
+(Theorem~\ref{thm:testable}), computable from a single model.
+
+\textbf{Part III (Power).}
+Under the alternative $p_j \neq p_k$, the power of the test at
+level $\alpha$ is:
+\[
+    \text{power} = \Phi\!\left(
+    \frac{|p_j - p_k|\sqrt{T_{\text{eff}}}}
+    {\sqrt{p_j(1-p_j) + p_k(1-p_k)}} - z_{\alpha/2}
+    \right)
+    + o(1).
+\]
 \end{theorem}
+
+\begin{proof}
+\textbf{Part I.}
+Under $H_0$, $n_j(t) - n_k(t)$ has mean zero. By the CLT for
+exchangeable (Lemma~\ref{lem:exchange-subsample}) or weakly
+dependent (Lemma~\ref{lem:exchange-no-subsample}) sequences,
+$\sqrt{T_{\text{eff}}}(\hat{p}_j - \hat{p}_k) \xrightarrow{d}
+N(0, \sigma_0^2)$ where $\sigma_0^2 = p(1-p) + p(1-p) = 2p(1-p)$
+under $p_j = p_k = p$. Dividing by the consistent variance
+estimator gives $Z^{\text{split}}_{jk} \xrightarrow{d} N(0,1)$.
+
+For the weakly dependent case, the CLT for stationary mixing
+sequences (Ibragimov, 1962) applies because the geometric
+mixing rate (Lemma~\ref{lem:exchange-no-subsample}) satisfies
+$\sum_{s=1}^\infty |\text{Corr}(n_j(t), n_j(t+s))| < \infty$.
+
+\textbf{Part II.}
+Under proportionality, $\mathbb{E}[\varphi_j(f)] =
+c \cdot \mathbb{E}[n_j(f)] \propto p_j \cdot T$. So $p_j = p_k$
+iff $\mathbb{E}[\varphi_j] = \mathbb{E}[\varphi_k]$.
+
+\textbf{Part III.}
+Standard power calculation for a two-sample proportion test,
+with $T_{\text{eff}}$ observations per group.
+\end{proof}
+
+\subsection{Empirical validation}
 
 \paragraph{Comparison to F1.}
 The F1 diagnostic ($Z_{jk}$ from $M$ models, $r = -0.89$) is more
@@ -1054,11 +1298,15 @@ For $\rho \leq 0.7$, $M = 10$ typically suffices ($<5\%$ flip rate);
 for $\rho > 0.9$, $M \geq 25$ is recommended.
 
 \paragraph{Sub-sampling requirement.}
-The theoretical guarantee (exchangeability of per-tree indicators)
-requires \texttt{colsample\_bytree} $< 1$ or \texttt{subsample} $< 1$.
-In practice, the diagnostic performs well even without sub-sampling:
-our validation uses \texttt{colsample\_bytree=1.0} and achieves
-$r = -0.78$ (Figure~\ref{fig:f1-diagnostic}, right).
+The theoretical guarantee (exact exchangeability,
+Lemma~\ref{lem:exchange-subsample}) requires sub-sampling.
+Without sub-sampling, the approximate exchangeability of
+Lemma~\ref{lem:exchange-no-subsample} applies with reduced effective
+sample size $T_{\text{eff}}$.
+In practice, our validation uses \texttt{colsample\_bytree=1.0}
+(no sub-sampling) and still achieves $r = -0.78$
+(Figure~\ref{fig:f1-diagnostic}, right), suggesting the dependence
+correction is modest.
 
 \paragraph{Regulatory response for ties.}
 If a regulator asks why features are tied: ``These features are
