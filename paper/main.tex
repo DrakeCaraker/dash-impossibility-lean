@@ -94,7 +94,7 @@ This echoes experiences in other domains where formalization has uncovered subtl
 
 \paragraph{Contributions.}
 \begin{enumerate}
-    \item \textbf{The Attribution Impossibility} (Theorem~\ref{thm:impossibility}): We prove that no single model can simultaneously produce faithful, stable, and complete feature attributions under collinearity. The model-agnostic layer requires only the Rashomon property; the model-specific layer provides quantitative severity bounds.
+    \item \textbf{The Attribution Impossibility} (Theorem~\ref{thm:impossibility}): a model-agnostic theorem requiring only the Rashomon property---no model-specific axioms---showing faithfulness, stability, and completeness cannot coexist under collinearity. Model-specific instantiations (\S\ref{sec:bounds}) provide quantitative severity bounds.
     \item \textbf{Architecture discrimination}: We derive closed-form attribution ratios for \GBDT{} ($1/(1-\rho^2)$), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$), explaining why some architectures exhibit more severe instability than others.
     \item \textbf{Constructive resolution via \DASH{}}: We show that ensemble averaging over balanced model collections restores equitable attributions with variance $O(1/M)$, providing a practical path forward.
     \item \textbf{Machine-verified proof}: The entire argument is formalized in Lean~4 (28 substantive theorems, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
@@ -238,6 +238,9 @@ By surjectivity, there exist models $f, f'$ with $d(f) = j$ and $d(f') = k$.
 By dominance, $\varphi_j(f) > \varphi_k(f)$ and $\varphi_k(f') > \varphi_j(f')$.
 This is exactly the Rashomon property.
 \end{proof}
+
+\paragraph{Generality.}
+Theorem~\ref{thm:impossibility} requires no model-specific axioms---only that the Rashomon property holds---and applies to \emph{any} model class satisfying Definition~\ref{def:rashomon}; the Lean~4 proof depends on zero axioms beyond this hypothesis.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Quantitative Bounds by Model Class}
