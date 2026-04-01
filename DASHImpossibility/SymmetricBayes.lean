@@ -134,6 +134,82 @@ theorem tie_is_stable (P : SymmetricDecisionProblem) (est : Estimator P)
     (d₁ d₂ : P.D) (h : ReportsTie P est d₁ d₂) :
     est d₁ = est d₂ := h
 
+/-! ### Quantitative orbit cardinality bounds -/
+
+/-- A stable estimator is faithful to at most one element of an orbit.
+    If it's faithful at d₁ (optimal = θ₁), then for any d₂ with a different
+    optimal and the same estimator output (stability), it's NOT faithful at d₂.
+    This is pure logic: no orbit hypothesis needed. -/
+theorem sbd_faithful_at_most_one
+    (P : SymmetricDecisionProblem)
+    (est : Estimator P)
+    (d₁ d₂ : P.D)
+    (hne : P.optimal d₁ ≠ P.optimal d₂)
+    (h_stable : est d₁ = est d₂)
+    (h_faith₁ : IsFaithfulAt P est d₁) :
+    ¬ IsFaithfulAt P est d₂ := by
+  intro h_faith₂
+  unfold IsFaithfulAt at h_faith₁ h_faith₂
+  exact hne (h_faith₁.symm.trans (h_stable.trans h_faith₂))
+
+/-- The estimator's output uniquely determines which orbit-mate it can be
+    faithful to. If faithful at d₁ and at d₂ with stable output, then
+    the optima must agree. Contrapositive of sbd_faithful_at_most_one. -/
+theorem sbd_faithful_unique
+    (P : SymmetricDecisionProblem)
+    (est : Estimator P)
+    (d₁ d₂ : P.D)
+    (h_stable : est d₁ = est d₂)
+    (h_faith₁ : IsFaithfulAt P est d₁)
+    (h_faith₂ : IsFaithfulAt P est d₂) :
+    P.optimal d₁ = P.optimal d₂ := by
+  unfold IsFaithfulAt at h_faith₁ h_faith₂
+  exact h_faith₁.symm.trans (h_stable.trans h_faith₂)
+
+/-- Binary orbit special case (k=2): a stable estimator is unfaithful to
+    at least one of two instances with distinct optima. This is exactly the
+    attribution and model selection impossibility pattern.
+    Direct corollary of sbd_faithful_at_most_one. -/
+theorem sbd_binary_orbit_half_unfaithful
+    (P : SymmetricDecisionProblem)
+    (est : Estimator P)
+    (d₁ d₂ : P.D)
+    (hne : P.optimal d₁ ≠ P.optimal d₂)
+    (h_stable : est d₁ = est d₂) :
+    ¬ IsFaithfulAt P est d₁ ∨ ¬ IsFaithfulAt P est d₂ := by
+  by_contra h
+  push Not at h
+  exact hne (sbd_faithful_unique P est d₁ d₂ h_stable h.1 h.2)
+
+/-- Ternary orbit case (k=3): a stable estimator is unfaithful to at least
+    two of three instances with pairwise-distinct optima. This captures the
+    CPDAG 3-node impossibility pattern (where k=6 gives 5/6 unfaithfulness,
+    but the core pigeonhole already manifests at k=3). -/
+theorem sbd_ternary_orbit_unfaithful
+    (P : SymmetricDecisionProblem)
+    (est : Estimator P)
+    (d₁ d₂ d₃ : P.D)
+    (hne12 : P.optimal d₁ ≠ P.optimal d₂)
+    (hne13 : P.optimal d₁ ≠ P.optimal d₃)
+    (hne23 : P.optimal d₂ ≠ P.optimal d₃)
+    (h_stable12 : est d₁ = est d₂)
+    (h_stable13 : est d₁ = est d₃) :
+    -- At least two of the three are unfaithful
+    (¬ IsFaithfulAt P est d₁ ∧ ¬ IsFaithfulAt P est d₂) ∨
+    (¬ IsFaithfulAt P est d₁ ∧ ¬ IsFaithfulAt P est d₃) ∨
+    (¬ IsFaithfulAt P est d₂ ∧ ¬ IsFaithfulAt P est d₃) := by
+  -- Case split: is the estimator faithful at d₁?
+  by_cases hf₁ : IsFaithfulAt P est d₁
+  · -- Faithful at d₁ → not faithful at d₂ and d₃
+    have hf₂ := sbd_faithful_at_most_one P est d₁ d₂ hne12 h_stable12 hf₁
+    have hf₃ := sbd_faithful_at_most_one P est d₁ d₃ hne13 h_stable13 hf₁
+    exact Or.inr (Or.inr ⟨hf₂, hf₃⟩)
+  · -- Not faithful at d₁ → pair with whichever of d₂, d₃ is also unfaithful
+    by_cases hf₂ : IsFaithfulAt P est d₂
+    · exact Or.inr (Or.inl ⟨hf₁, sbd_faithful_at_most_one P est d₂ d₃ hne23
+        (h_stable12.symm.trans h_stable13) hf₂⟩)
+    · exact Or.inl ⟨hf₁, hf₂⟩
+
 /-! ### Instances -/
 
 -- The Attribution Impossibility is an instance:

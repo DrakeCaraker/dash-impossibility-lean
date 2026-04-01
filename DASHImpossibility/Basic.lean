@@ -32,3 +32,6 @@ import DASHImpossibility.Efficiency
 import DASHImpossibility.CausalDiscovery
 import DASHImpossibility.FairnessAudit
 import DASHImpossibility.Consistency
+import DASHImpossibility.GaussianFlipRate
+import DASHImpossibility.FIMImpossibility
+import DASHImpossibility.QueryComplexity
