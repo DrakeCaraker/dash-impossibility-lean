@@ -47,7 +47,7 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, comprehensive)
 ```
 
-## Lean State: 14 files, 15 axioms, 44 declarations (35 theorems + 9 lemmas, 26 substantive), 0 sorry
+## Lean State: 14 files, 15 axioms, 44 declarations (35 theorems + 9 lemmas), 0 sorry
 
 ## Axiom Inventory (15 total)
 

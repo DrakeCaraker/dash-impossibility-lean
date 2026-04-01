@@ -50,10 +50,10 @@
 \begin{abstract}
 Every feature attribution method is either unstable or honest about uncertainty---there is no third option.
 We prove this as a theorem: under feature collinearity, no method can produce rankings that are simultaneously faithful (reflecting the model), stable (robust to retraining), and complete (deciding all pairs).
-In a survey of 37 public datasets, 60\% are affected.
+In a survey of 37 public datasets, at least 60\% are affected.
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
 The design space has exactly two modes: rank using a single model (faithful but unstable---rankings flip 50\% of the time) or average across an ensemble (stable but reporting ties for symmetric features).
-\DASH{} ensemble averaging is provably Pareto-optimal on the stable branch.
+\DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, with direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
 These results are instances of a general \emph{symmetric Bayes dichotomy}: any statistical decision problem with symmetric alternatives admits exactly two operating modes, demonstrated here for feature attribution, model selection, and causal edge orientation under Markov equivalence.
 The framework is mechanically verified in Lean~4 (44 declarations, 15 axioms, 0 \texttt{sorry})---to our knowledge, the first formally verified impossibility in explainable AI.
 \end{abstract}
@@ -85,7 +85,7 @@ The impossibility also admits a resolution.
 \DASH{} ensemble averaging breaks the sequential dependence that drives attribution concentration: for balanced ensembles, expected attributions are equitable across symmetric features with variance $O(1/M)$.
 Practitioners can effectively achieve all three desiderata by aggregating across the Rashomon set.
 
-The proof is mechanically verified in Lean~4 using Mathlib: 44 type-checked declarations (35 theorems + 9 lemmas, of which 26 are substantive proofs from 15 explicit axioms) with no unresolved goals.
+The proof is mechanically verified in Lean~4 using Mathlib: 44 type-checked declarations (35 theorems + 9 lemmas from 15 explicit axioms) with no unresolved goals.
 The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero axioms beyond the Rashomon property; the DASH equity result (Corollary~\ref{cor:equity}) depends on the \texttt{attribution\_sum\_symmetric} axiom for balanced ensembles.
 This is, to our knowledge, the first formally verified impossibility result in explainable AI.
 The formalization also proved valuable beyond certification: during translation to Lean~4 we discovered two logical inconsistencies and one type mismatch in the original axiom system, echoing prior experiences where formalization uncovered subtle proof errors \citep{nipkow2009social,zhang2026statistical}.
@@ -504,7 +504,7 @@ The net effect: \DASH{} loses the unreliable information and sharpens the reliab
 For safety-critical applications deploying a specific model $f$, practitioners should report both the single-model SHAP values (with an instability caveat) and the \DASH{} consensus (stable but reporting ties).
 
 \paragraph{Broader implications.}
-In a survey of 37 public datasets (supplement), 92\% have feature pairs with $|\rho| > 0.5$ and 60\% exhibit attribution instability (ranking flip rate $> 10\%$) --- the impossibility is not a theoretical curiosity but a practical reality affecting the majority of real-world data.
+In a survey of 37 public datasets (supplement), 92\% have feature pairs with $|\rho| > 0.5$ and at least 60\% exhibit attribution instability (ranking flip rate $> 10\%$; conservative lower bound---survey power 32\% at the 10\% threshold) --- the impossibility is not a theoretical curiosity but a practical reality affecting the majority of real-world data.
 Our theorem proves that this instability is a ``known and foreseeable circumstance'' affecting accuracy under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}.
 The consequences are concrete.
 A hospital that uses SHAP to identify blood pressure as the top readmission risk factor may invest in blood pressure monitoring---but under retraining with a different random seed, BMI becomes the top factor, and the investment targeted the wrong intervention.
@@ -513,7 +513,7 @@ Published scientific studies that report ``Feature~X is the most important predi
 More broadly, AI safety certification under the EU AI Act cannot guarantee that explanations reflect the model's true reliance without ensemble methods: the impossibility makes single-model certification of feature attributions formally infeasible.
 The impossibility has a direct consequence for fairness auditing (supplement): when a protected proxy (e.g., zip code) is collinear with a non-protected feature (e.g., income), a single-model SHAP audit concludes ``proxy reliance'' with probability exactly $1/2$---the audit outcome is a coin flip across training seeds, not a reliable determination of discrimination.
 In each case, \DASH{} provides a principled mitigation by reporting honest uncertainty rather than arbitrary distinctions.
-The expected fraction of non-replicable pairwise rankings is bounded below by $R/2$, where $R$ is the \emph{Rashomon coefficient}---the fraction of feature pairs that are within collinear groups---computable from the correlation matrix alone without training any models (supplement).
+The expected fraction of non-replicable pairwise rankings is bounded below by $R/2$, where $R$ is the \emph{Rashomon coefficient}---the fraction of feature pairs that are within collinear groups---computable from the correlation matrix alone without training any models (a loose worst-case bound; a per-pair refinement achieves 27\% prediction error on Breast Cancer; supplement).
 
 \paragraph{The symmetric Bayes dichotomy.}
 In the supplement, we prove a general theorem: for \emph{any} statistical decision problem where the population distribution is symmetric over discrete alternatives and finite-sample noise can reverse the optimal choice, the achievable set consists of exactly two families---instance-specific (faithful but unstable) and population-averaged (stable with ties).
