@@ -428,7 +428,7 @@ The within-group flip rate---measured as the frequency with which $\bar{\varphi}
 \paragraph{Testable condition (supplement).}
 We derive a test statistic $Z_{jk} = |\bar\varphi_j - \bar\varphi_k| / (\hat\sigma_{jk}/\sqrt{M})$ that predicts ranking instability: on Breast Cancer (435 feature pairs, 50 seeds), $Z_{jk}$ correlates with the empirical flip rate at $r = -0.89$ (structural baseline on random data: $r \approx -0.56$; the excess reflects genuine attribution instability; $r = -0.78$ for $Z < 5$).
 Pairs with $Z_{jk} < 1.96$ have unreliable rankings; pairs above this threshold are stable.
-A single-model screening variant using split frequencies achieves 94\% precision.
+A single-model screening variant using per-tree split frequencies achieves 94\% precision on Breast Cancer (supplement \S F5; implementation-specific calibration required).
 The instability and diagnostics generalize to LightGBM and CatBoost ($|r| > 0.89$ for all three implementations; supplement).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
