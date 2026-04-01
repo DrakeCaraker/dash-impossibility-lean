@@ -847,6 +847,40 @@ making it the natural choice for empirical demonstration.
     Estimate $\sigma$ and $\Delta$ from a pilot run of 5 models.
 \end{itemize}
 
+\section{Non-SHAP Attribution Validation}
+
+The impossibility applies to any attribution method satisfying
+proportionality, not only to TreeSHAP. To confirm this empirically,
+we validate on permutation importance---a model-agnostic method with
+no SHAP machinery---using the Breast Cancer dataset (50~XGBoost
+models, same configuration as the main experiments).
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Metric & TreeSHAP & Permutation Importance \\
+\midrule
+Unstable pairs (flip $>10\%$) & 180 (41\%) & 396 (91\%) \\
+Max flip rate & 0.500 & 0.500 \\
+F1 correlation $r(Z, \text{flip})$ & $-0.895$ & $-0.927$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Permutation importance shows \emph{more} instability than TreeSHAP
+(91\% vs.\ 41\% of pairs), because permutation-based scores have
+higher variance across seeds than SHAP values. Both methods hit the
+theoretical maximum flip rate (0.500). The F1 diagnostic achieves
+$|r| > 0.89$ for both, confirming the diagnostic is method-agnostic.
+
+The cross-method correlation of flip rates is $r = 0.46$
+($p < 10^{-23}$): the \emph{same pairs} tend to be unstable under
+both methods, confirming the instability is driven by feature
+collinearity, not by the attribution algorithm. Of the 180
+SHAP-unstable pairs, 175 (97\%) are also unstable under permutation
+importance.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FOUNDATIONAL EXTENSIONS (F1-F3, F5)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2944,12 +2978,32 @@ under realistic training variation: specific token pairs (e.g.,
 fine-tuned models. The perturbation result establishes an upper
 bound on Rashomon set diversity; the fine-tuning result confirms
 the effect persists under standard training.
-The 14.5\% after 1-epoch fine-tuning is a lower bound on attention
-instability: longer training (more epochs) or larger learning rates
-would explore more of the Rashomon set and likely produce higher
-flip rates. The true instability under standard fine-tuning practice
-(3--5 epochs) likely lies between the fine-tuning lower bound (14.5\%)
-and the perturbation upper bound (88\%).
+To test whether longer training increases instability, we repeat the
+experiment with 3~epochs. The instability rate is unchanged:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Method & Epochs & \% Pairs unstable & Mean Spearman \\
+\midrule
+Weight perturbation & --- & 88\% & 0.637 \\
+Fine-tuning & 1 & 14.5\% & 0.956 \\
+Fine-tuning & 3 & 14.5\% & 0.965 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The identical 14.5\% across 1 and 3 epochs indicates the instability
+is structural (driven by collinearity in the attention patterns), not
+a training-depth artifact. The same three token pairs remain unstable
+at both training lengths (``not/bad,'' ``particularly/sharp,''
+``surprisingly/low''). The gap between fine-tuning (14.5\%) and
+perturbation (88\%) reflects the difference in weight divergence:
+fine-tuning updates parameters by $O(0.001)$ via gradient descent,
+while perturbation adds $O(0.02)$ noise to all parameters. The
+perturbation result represents the full Rashomon set; the fine-tuning
+result represents the subset explored by standard training.
 
 \section{Replication Study: Published SHAP Rankings Are Unstable}
 

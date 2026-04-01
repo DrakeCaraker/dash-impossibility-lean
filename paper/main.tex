@@ -429,7 +429,7 @@ The within-group flip rate---measured as the frequency with which $\bar{\varphi}
 We derive a test statistic $Z_{jk} = |\bar\varphi_j - \bar\varphi_k| / (\hat\sigma_{jk}/\sqrt{M})$ that predicts ranking instability: on Breast Cancer (435 feature pairs, 50 seeds), $Z_{jk}$ correlates with the empirical flip rate at $r = -0.89$ (structural baseline on random data: $r \approx -0.56$; the excess reflects genuine attribution instability; $r = -0.78$ for $Z < 5$).
 Pairs with $Z_{jk} < 1.96$ have unreliable rankings; pairs above this threshold are stable.
 A single-model screening variant using per-tree split frequencies achieves 94\% precision on Breast Cancer (supplement \S F5; implementation-specific calibration required).
-The instability and diagnostics generalize to LightGBM and CatBoost ($|r| > 0.89$ for all three implementations; supplement).
+The instability and diagnostics generalize to LightGBM and CatBoost ($|r| > 0.89$ for all three implementations; supplement) and to non-SHAP attributions: permutation importance shows even higher instability (91\% of pairs vs.\ 41\% for SHAP), confirming the phenomenon is about collinearity, not the attribution algorithm.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The Attribution Design Space}
@@ -474,7 +474,8 @@ Our result is the first to address cross-model \emph{stability}, give quantitati
 
 \paragraph{Rashomon effect and model multiplicity.}
 \citet{laberge2023partial} find that attribution rankings across Rashomon sets are inherently partial orders; \citet{rudin2024amazing} advocate embracing model multiplicity.
-Our theorem shows the partial order is not a pragmatic choice but a mathematical necessity: completeness is formally incompatible with faithfulness and stability. \DASH{} provides the provably optimal aggregation within this partial-order framework.
+Our theorem shows the partial order is not a pragmatic choice but a mathematical necessity: completeness is formally incompatible with faithfulness and stability.
+Concretely, we add four things Laberge et al.\ do not provide: (i)~a formal impossibility proof (they observe partial orders empirically; we prove they are \emph{unavoidable}), (ii)~quantitative architecture-discriminating bounds, (iii)~a provably optimal resolution (\DASH{}), and (iv)~machine-verified formalization.
 
 \paragraph{Fairness impossibility.}
 \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove calibration, balance, and equal false positive rates cannot coexist.
@@ -493,6 +494,8 @@ The split-count axioms assume full signal capture ($\alpha = 1$); for finite-dep
 The impossibility holds for any $\alpha > 0$.
 A simple diagnostic: train 5 models with different seeds and check whether within-group feature rankings flip; if so, use \DASH{}.
 The impossibility requires $\rho > 0$, with minor practical impact when $\rho$ is small.
+The equicorrelation assumption (all within-group pairs share the same $\rho$) simplifies the axioms; the Rashomon property holds pairwise---any pair $(j,k)$ with $|\rho_{jk}| > 0$ and similar importance admits models ranking them in opposite orders, regardless of other features' correlations.
+The F1 and F5 diagnostics operate on individual pairs and do not require equicorrelation.
 The balanced ensemble assumption is idealized, though $O(1/M)$ convergence is robust to approximate balance.
 The variance bound is axiomatized and its consequences (variance rate, monotonicity) are formally proved; the full measure-theoretic derivation from Mathlib's \texttt{IndepFun.variance\_sum} is deferred.
 Switching to conditional SHAP \citep{janzing2020feature} does not universally resolve the instability: in the supplement we prove the impossibility extends to conditional attributions whenever features have equal causal effects (the causal graph preserves the symmetry).
@@ -516,12 +519,20 @@ The impossibility has a direct consequence for fairness auditing (supplement): w
 In each case, \DASH{} provides a principled mitigation by reporting honest uncertainty rather than arbitrary distinctions.
 The expected fraction of non-replicable pairwise rankings is bounded below by $R/2$, where $R$ is the \emph{Rashomon coefficient}---the fraction of feature pairs that are within collinear groups---computable from the correlation matrix alone without training any models (a loose worst-case bound; a per-pair refinement achieves 27\% prediction error on Breast Cancer; supplement).
 
+\paragraph{Rashomon set vs.\ deployed model.}
+The impossibility characterizes the \emph{Rashomon set}---the population of models that could have been trained---not a single deployed model.
+A fixed pipeline with a fixed seed produces a deterministic, reproducible ranking.
+The instability arises when: (a)~the model is retrained (data refresh, library update, hyperparameter sweep), (b)~the explanation is audited by a different party (different seed), or (c)~the model is compared to a successor version.
+In regulated settings, all three are routine: model risk management under SR~11-7 requires periodic revalidation, and fairness audits under ECOA involve independent testing.
+The impossibility guarantees that these standard practices will produce contradictory explanations for collinear features.
+For a single frozen deployment, the ranking is correct \emph{for that model}---but cannot be interpreted as a property of the data or the model class.
+
 \paragraph{The symmetric Bayes dichotomy.}
 In the supplement, we prove a general theorem: for \emph{any} statistical decision problem where the population distribution is symmetric over discrete alternatives and finite-sample noise can reverse the optimal choice, the achievable set consists of exactly two families---instance-specific (faithful but unstable) and population-averaged (stable with ties).
 We call this the \emph{symmetric Bayes dichotomy}.
 Feature attribution, model selection, and causal edge orientation are all instances; the third---causal discovery under Markov equivalence (supplement)---has a structurally different symmetry group (CPDAG automorphisms with orbits of variable size $\geq 2$, not just binary transpositions), confirming the technique applies beyond pairwise symmetry.
 The dichotomy is related to classical invariant decision theory \citep{lehmann2005testing}; our contribution is the reduction template: checking $G$-invariance suffices to establish a two-family impossibility with explicit bounds.
-We also show empirically (supplement) that DistilBERT attention-based token importance rankings are unstable under both weight perturbation (88\% of adjacent token pairs, upper bound) and actual fine-tuning on SST-2 with different seeds (14.5\% of pairs after 1 epoch, a lower bound), confirming that the impossibility extends to transformer attention.
+We also show empirically (supplement) that DistilBERT attention-based token importance rankings are unstable under both weight perturbation (88\% of adjacent token pairs, upper bound) and actual fine-tuning on SST-2 with different seeds (14.5\% of pairs, stable across 1 and 3 epochs), confirming that the impossibility extends to transformer attention.
 
 \paragraph{Formalization as methodology.}
 Beyond certifying correctness, the Lean formalization served as a \emph{bug-finding methodology}: it caught two logical inconsistencies and one type mismatch that survived informal review.

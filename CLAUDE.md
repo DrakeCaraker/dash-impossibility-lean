@@ -41,7 +41,7 @@ DASHImpossibility/
   Basic.lean         — Import hub
 paper/
   main.tex           — NeurIPS 2026 paper (13 pages incl. refs+checklist)
-  supplement.tex     — Supplementary (52 pages)
+  supplement.tex     — Supplementary (53 pages)
   references.bib     — 22 citations
   scripts/           — 21 scripts (figure generation, validation, diagnostics)
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, design space, SNR calibration, conditional threshold, etc.)
