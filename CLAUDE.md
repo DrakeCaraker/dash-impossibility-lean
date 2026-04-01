@@ -77,6 +77,7 @@ lake build     # compile everything (~1988 jobs)
 
 ## Do NOT
 
+- Commit paper changes without verifying paper-code consistency: theorem count (`grep -c "^theorem\|^lemma" DASHImpossibility/*.lean`), axiom count (`grep -c "^axiom" DASHImpossibility/*.lean`), page counts (`pdfinfo paper/main.pdf`, `pdfinfo paper/supplement.pdf`), and sorry count all match what the paper text claims
 - Use `sorry` without a `-- TODO:` comment explaining what's needed
 - Change axioms without re-running the SymPy verification (`dash-shap/paper/proofs/verify_lemma6_algebra.py`)
 - Add `autoImplicit true` — all variables must be explicit
