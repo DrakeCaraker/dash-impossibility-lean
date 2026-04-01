@@ -1563,6 +1563,25 @@ near-identical predictive signal, and the attribution ranking across
 these features is genuinely unstable.
 The full output is in \texttt{lending\_club\_case\_study.py}.
 
+\subsection{Synthetic credit data: income $\leftrightarrow$ DTI $\leftrightarrow$ credit score}
+
+To validate on the exact collinearity pattern common in US credit
+models, we generate a synthetic dataset with 10{,}000 samples and
+5 features driven by a latent ``creditworthiness'' factor:
+income ($\rho = 0.99$ with DTI), DTI, credit score ($\rho = 0.98$
+with income), loan amount (independent), and employment years
+($\rho = 0.94$ with income).
+
+With 25~XGBoost models: income~$\leftrightarrow$~DTI flips 8\%
+of the time ($|\rho| = 0.99$); credit score~$\leftrightarrow$~employment
+years flips 12\% ($|\rho| = 0.92$). Pairs where one feature clearly
+dominates (income vs.\ credit score) show 0\% flips despite
+$|\rho| = 0.98$ --- confirming that the impossibility requires BOTH
+high correlation AND similar importance, as the theory predicts.
+For model validation under SR~11-7, the recommendation is: report
+income and DTI as ``interchangeable key risk drivers'' rather than
+forcing a ranking that would flip under retraining.
+
 \subsection{Proportionality axiom validation}
 
 The proportionality axiom ($\varphi_j = c \cdot n_j$ for a
