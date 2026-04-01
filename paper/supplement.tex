@@ -1920,6 +1920,32 @@ under collinearity. The Attribution Impossibility is not a single
 negative result but the boundary of this space; \DASH{} is not merely
 a fix but the provably optimal navigation of this space.
 
+\section{Prevalence Survey: How Common Is Attribution Instability?}
+
+To assess how frequently the impossibility applies in practice, we
+surveyed 37 public datasets (7 from scikit-learn, 30 from OpenML).
+For each, we computed the correlation matrix, identified pairs with
+$|\rho| > 0.5$, trained 20 XGBoost models with different seeds, and
+checked whether any correlated pair has a ranking flip rate exceeding
+10\%.
+
+\paragraph{Results.}
+Of 37 datasets, 34 (92\%) have at least one feature pair with
+$|\rho| > 0.5$, and 26 (70\%) exhibit attribution instability (flip
+rate $> 10\%$ for at least one pair). The impossibility is not a
+theoretical curiosity: it affects the majority of real-world datasets
+across domains including medical, financial, image, and tabular data.
+
+\paragraph{Methodology.}
+Each dataset was trained with 20 XGBoost models
+(\texttt{n\_estimators=50}, \texttt{max\_depth=4}, \texttt{lr=0.1},
+\texttt{subsample=0.8}, \texttt{colsample\_bytree=0.8}) with
+different random seeds. SHAP TreeExplainer computed mean $|\text{SHAP}|$
+per feature on a fixed 500-sample evaluation slice. Flip rate was
+measured as $\min(\#(j{>}k), \#(k{>}j)) / 20$ for each correlated pair.
+Datasets with $> 10{,}000$ samples were subsampled to 10{,}000.
+Full results in \texttt{prevalence\_survey.py}.
+
 \section{Extension to Conditional and Causal Attributions}
 
 A common response to attribution instability is to switch from
