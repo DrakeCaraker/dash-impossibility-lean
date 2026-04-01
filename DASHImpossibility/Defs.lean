@@ -148,14 +148,22 @@ def IsBalanced (M : ℕ) (models : Fin M → Model) : Prop :=
 /-! ## Variance axioms for DASH analysis
 
   These axioms capture the probabilistic structure needed for the
-  variance bound. The full proof would use Mathlib's
-  ProbabilityTheory.IndepFun.variance_sum with a MeasureSpace on Model.
-  We axiomatize the variance directly to avoid requiring measure-theoretic
-  infrastructure on our abstract Model type.
+  variance bound. The derivation path via Mathlib is:
+    Mathlib.Probability.Moments.Variance.IndepFun.variance_sum
+  which proves Var(∑X_i) = ∑Var(X_i) for pairwise independent X_i.
 
-  JUSTIFICATION: For i.i.d. random variables X_1,...,X_M with finite
-  variance σ², the sample mean X̄ = (1/M)ΣX_i has Var(X̄) = σ²/M.
-  This is the standard i.i.d. mean variance formula.
+  However, using this requires reformulating our axiom system to
+  include a probability space (Ω, μ) with modelSample : Ω → Model,
+  measurability of attributions, and independence of ensemble members.
+  This is a fundamental architectural change (adding ~6 axioms for
+  measure-theoretic infrastructure) that we defer to future work.
+
+  We axiomatize the variance directly because:
+  (i) Var(X̄) = Var(X)/M for i.i.d. variables is textbook;
+  (ii) the measure-theoretic axioms are harder to audit than
+       the single intuitive axiom;
+  (iii) the derived theorems (variance halving, nonnegativity)
+       are genuine proofs from this axiom, not tautologies.
 -/
 
 /-- Variance of a single model's attribution for feature j.

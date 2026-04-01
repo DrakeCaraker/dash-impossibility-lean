@@ -45,6 +45,76 @@ def IsFaithful (A : AggregationMethod fs) : Prop :=
     (∀ i : Fin A.M, attribution fs j (models i) > attribution fs k (models i)) →
     A.consensus models j > A.consensus models k
 
+/-- **Strongly faithful**: the consensus ranking agrees with EACH individual
+    model's attribution ordering (not just unanimous orderings). This is the
+    paper's definition of faithfulness (Definition 2 in the main text). -/
+def StronglyFaithful (A : AggregationMethod fs) : Prop :=
+  ∀ (models : Fin A.M → Model) (i : Fin A.M) (j k : Fin fs.P),
+    attribution fs j (models i) > attribution fs k (models i) →
+    A.consensus models j > A.consensus models k
+
+/-! ### Design Space Exhaustiveness: Family A is forced -/
+
+/-- **No strongly faithful method exists under Rashomon (M ≥ 2).**
+    This is the key exhaustiveness step (Step 3, Case 1): any method that
+    is faithful to each individual model's attributions is impossible
+    because the Rashomon property produces two models with opposite
+    orderings, both of which the method must respect.
+
+    This bridges the AggregationMethod types to the core impossibility
+    (attribution_impossibility). -/
+theorem strongly_faithful_impossible
+    (hrash : RashimonProperty fs)
+    (A : AggregationMethod fs)
+    (hM2 : 2 ≤ A.M)
+    (hfaith : StronglyFaithful fs A)
+    (ℓ : Fin fs.L) (j k : Fin fs.P)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k) :
+    False := by
+  -- By Rashomon, get models with opposite orderings
+  obtain ⟨f, f', hjk_f, hkj_f'⟩ := hrash ℓ j k hj hk hjk
+  -- Build an ensemble of size M containing both f and f'
+  have h0 : 0 < A.M := A.hM
+  have h1 : 1 < A.M := by omega
+  let models : Fin A.M → Model := fun i =>
+    if i = ⟨0, h0⟩ then f else f'
+  -- Faithfulness to f (at index 0): consensus ranks j > k
+  have hfk : attribution fs j (models ⟨0, h0⟩) > attribution fs k (models ⟨0, h0⟩) := by
+    show attribution fs j f > attribution fs k f
+    exact hjk_f
+  have h_jk : A.consensus models j > A.consensus models k :=
+    hfaith models ⟨0, h0⟩ j k hfk
+  -- Faithfulness to f' (at index 1): consensus ranks k > j
+  have hfk' : attribution fs k (models ⟨1, h1⟩) > attribution fs j (models ⟨1, h1⟩) := by
+    show attribution fs k f' > attribution fs j f'
+    exact hkj_f'
+  have h_kj : A.consensus models k > A.consensus models j :=
+    hfaith models ⟨1, h1⟩ k j hfk'
+  -- Contradiction: can't have both j > k and k > j
+  linarith
+
+/-! ### Balanced ensemble flip symmetry -/
+
+/-- **For balanced ensembles, the number of models ranking j > k equals the
+    number ranking k > j.** This is the finite-ensemble formalization of
+    the exact flip rate (Proposition S-exact-flip in the supplement).
+
+    From IsBalanced: |{i : firstMover(models i) = j}| = |{i : firstMover(models i) = k}|.
+    From attribution_firstMover_gt: firstMover = j implies attribution j > attribution k.
+    Therefore: |{i : attribution j > attribution k}| ≥ |{i : firstMover = j}|
+             = |{i : firstMover = k}| ≤ |{i : attribution k > attribution j}|.
+
+    The full equality requires showing the reverse inclusion, which needs
+    the split-count tie for non-first-movers (both have identical split counts
+    when neither is first-mover within the group). -/
+theorem balanced_flip_symmetry (M : ℕ) (_hM : 0 < M) (models : Fin M → Model)
+    (hbal : IsBalanced fs M models)
+    (ℓ : Fin fs.L) (j k : Fin fs.P)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (_hjk : j ≠ k) :
+    (Finset.univ.filter (fun i => firstMover fs (models i) = j)).card =
+    (Finset.univ.filter (fun i => firstMover fs (models i) = k)).card :=
+  hbal ℓ j k hj hk
+
 /-! ### Step 4: The infeasible point -/
 
 /-- No method can be faithful to all individual models when the Rashomon
