@@ -57,7 +57,10 @@ DASHImpossibility/
   FlipRate.lean          — Exact GBDT flip rate, binary group = coin flip (S8)
   Efficiency.lean        — SHAP efficiency amplification m/(m-1) (S12-S14)
   LocalGlobal.lean       — Local ≥ global instability (S35)
-  SymmetricBayes.lean    — General Symmetric Bayes Dichotomy (S49-S50)
+  SymmetricBayes.lean    — General SBD: orbit bounds, trichotomy, exhaustiveness (S49-S50)
+  GaussianFlipRate.lean  — Standard normal CDF Φ, flip rate formula (S31 Gaussian)
+  FIMImpossibility.lean  — Gaussian FIM impossibility, Rashomon ellipsoid (S16-S17)
+  QueryComplexity.lean   — Query complexity Ω(σ²/Δ²), Le Cam axiomatized (S28)
   CausalDiscovery.lean   — Causal discovery impossibility (S53-S55)
   SBDInstances.lean      — SBD instances + abstract aggregation (S51-S52, S58)
   FairnessAudit.lean     — Fairness audit impossibility (S56)
@@ -71,9 +74,9 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, design space, SNR calibration, conditional threshold, etc.)
 ```
 
-## Lean State: 32 files, 14 axioms, 129+ theorems+lemmas, 0 sorry
+## Lean State: 36 files, 17 axioms, 180 theorems+lemmas, 2 sorry (Gaussian CDF symmetry — Mathlib gap)
 
-## Axiom Inventory (14 total)
+## Axiom Inventory (17 total)
 
 | Category | Axioms | Used by |
 |----------|--------|---------|
@@ -81,6 +84,7 @@ paper/
 | Core properties | firstMover_surjective, splitCount_firstMover, splitCount_nonFirstMover, proportionality_global, splitCount_crossGroup_symmetric | GBDT bounds |
 | Measure infrastructure | modelMeasurableSpace, modelMeasure | Variance (Mathlib connection) |
 | Spearman | spearman_classical_bound (about defined quantity) | Quantitative stability |
+| Query complexity | testing_constant, testing_constant_pos, le_cam_lower_bound | Query complexity (Le Cam) |
 
 **Formerly axiomatized, now derived:**
 - `consensus_variance_bound` — theorem in Defs.lean (from attribution_variance_nonneg + Nat.cast_nonneg; existential witness is trivial)
@@ -111,7 +115,7 @@ lake build     # compile everything (~2500 jobs)
 - Use `sorry` without a `-- TODO:` comment explaining what's needed
 - Change axioms without re-running the SymPy verification (`dash-shap/paper/proofs/verify_lemma6_algebra.py`)
 - Add `autoImplicit true` — all variables must be explicit
-- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma"` (currently 128)
+- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma"` (currently 180)
 - Run parallel subagents that both modify the same file (causes build cache corruption)
 - Axiomatize quantities that can be defined — prefer definitions with axiomatized bounds (see SpearmanDef.lean pattern)
 - Claim empirical results as "proved" or "Lean-verified" — distinguish: **proved** (zero axiom deps), **derived** (from axioms), **argued** (supplement proof only), **empirical** (experiments). The paper's "Proof status transparency" paragraph is the reference.

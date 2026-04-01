@@ -28,18 +28,20 @@
 Table~\ref{tab:axioms} lists all property axioms in the formalization
 (the core impossibility theorem requires none of them---only the Rashomon
 property as hypothesis).
-The formalization uses 15 axioms total: 6 type/constant declarations
+The formalization uses 17 axioms total: 6 type/constant declarations
 (\texttt{Model}, \texttt{numTrees}, \texttt{numTrees\_pos}, \texttt{attribution},
 \texttt{splitCount}, \texttt{firstMover}), 2 measure-theoretic infrastructure
-axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}), and the
-7 domain-specific property axioms below. Two former axioms
-(\texttt{attribution\_sum\_symmetric}, \texttt{attribution\_variance\_nonneg})
+axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}),
+6 domain-specific property axioms, and
+3 query-complexity axioms from Le~Cam's method. Three former axioms
+(\texttt{attribution\_sum\_symmetric}, \texttt{attribution\_variance\_nonneg},
+\texttt{consensus\_variance\_bound})
 are now derived theorems; \texttt{attribution\_variance} is now a definition
 from Mathlib's \texttt{ProbabilityTheory.variance}.
 
 \begin{table}[h]
 \centering
-\caption{Complete axiom inventory (15 total).}
+\caption{Complete axiom inventory (17 total).}
 \label{tab:axioms}
 \small
 \begin{tabular}{@{}llp{5.5cm}@{}}
@@ -52,22 +54,27 @@ Split count (non-first-mover) & \texttt{splitCount\_nonFirstMover} & Residual si
 Global proportionality & \texttt{proportionality\_global} & Uniform contribution model with constant $c$ across models \\
 Cross-group symmetry & \texttt{splitCount\_crossGroup\_symmetric} & DGP symmetry: equal split counts when first-mover elsewhere \\
 Spearman bound & \texttt{spearman\_classical\_bound} & Combinatorial rank argument: tied non-first-movers \\
-Consensus variance bound & \texttt{consensus\_variance\_bound} & $\Var(\bar\varphi_j) = \Var(\varphi_j)/M$ (i.i.d.\ mean) \\
 Model measurable space & \texttt{modelMeasurableSpace} & Mathlib infrastructure: $\sigma$-algebra on Model \\
 Model measure & \texttt{modelMeasure} & Mathlib infrastructure: probability measure on Model \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Query complexity (Le~Cam's method, axiomatized):}} \\
+Testing constant & \texttt{testing\_constant} & Universal constant $C \geq 1/8$ from Tsybakov (2009) \\
+Constant positivity & \texttt{testing\_constant\_pos} & $C > 0$ \\
+Testing lower bound & \texttt{le\_cam\_lower\_bound} & $n \geq C\sigma^2/\Delta^2$ for reliable testing \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Formerly axiomatized, now derived:}} \\
 Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & \textbf{Theorem} in \texttt{SymmetryDerive.lean} (from axioms above) \\
 Attribution variance & \texttt{attribution\_variance} & \textbf{Definition} from \texttt{ProbabilityTheory.variance} \\
 Variance nonnegativity & \texttt{attribution\_variance\_nonneg} & \textbf{Theorem} from Mathlib's \texttt{variance\_nonneg} \\
+Consensus variance bound & \texttt{consensus\_variance\_bound} & \textbf{Theorem} in \texttt{Defs.lean} (algebraic) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \section{Proof Architecture}
 
-The formalization comprises 32 Lean~4 files with 15 axioms and
-128 type-checked theorems and lemmas across 32 files (
+The formalization comprises 36 Lean~4 files with 17 axioms and
+180 type-checked theorems and lemmas (
 0 \texttt{sorry}). Of these, 43 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or
 single-step applications.
