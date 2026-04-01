@@ -86,7 +86,7 @@ The impossibility also admits a principled relaxation.
 Practitioners can achieve between-group faithfulness and stability by aggregating across the Rashomon set, sacrificing within-group completeness (reporting ties for symmetric features).
 
 The proof is mechanically verified in Lean~4 using Mathlib: 49 type-checked declarations (40 theorems + 9 lemmas from 15 explicit axioms) with no unresolved goals.
-The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero axioms beyond the Rashomon property; the DASH equity result (Corollary~\ref{cor:equity}) depends on the \texttt{attribution\_sum\_symmetric} axiom for balanced ensembles.
+The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero axioms beyond the Rashomon property; the DASH equity result (Corollary~\ref{cor:equity}) depends on the \texttt{attribution\_sum\_symmetric} theorem (derived in \texttt{SymmetryDerive.lean} from the proportionality and split-count axioms).
 This is, to our knowledge, the first formally verified impossibility result in explainable AI (the core impossibility uses zero axioms; quantitative bounds are conditional on 7 domain-specific axioms).
 The formalization also proved valuable beyond certification: during translation to Lean~4 we discovered two logical inconsistencies and one type mismatch in the original axiom system, echoing prior experiences where formalization uncovered subtle proof errors \citep{nipkow2009social,zhang2026statistical}.
 
@@ -562,7 +562,7 @@ This paper contributes three reusable techniques: (1)~the \emph{Rashomon reducti
 \paragraph{Proof status transparency.}
 The core impossibility (Theorem~\ref{thm:impossibility}) is Lean-verified with zero axiom dependencies.
 The GBDT ratio and Spearman bounds are Lean-derived from 15 explicit axioms.
-The DASH equity result (Corollary~\ref{cor:equity}) is axiom-derived: the \texttt{attribution\_sum\_symmetric} axiom essentially encodes the conclusion for balanced ensembles.
+The DASH equity result (Corollary~\ref{cor:equity}) follows from \texttt{attribution\_sum\_symmetric}, which is now a derived theorem (proved in \texttt{SymmetryDerive.lean} from the proportionality, split-count, and cross-group symmetry axioms).
 The Design Space Theorem, DASH optimality (F2), and FIM impossibility (F3) are proved in the supplement; the impossibility of consensus-value-faithful methods is formalized in Lean (\texttt{strongly\_faithful\_impossible}; this proves a stronger property than the supplement's Step~3, which places ranking-faithful methods in Family~$\mathcal{A}$ with $U{=}1/2$ rather than deriving contradiction); the Bayes-optimality half (optimal unfaithful ranking assigns ties) requires probability theory beyond the current axiom system.
 The F1 diagnostic, information loss analysis, and 11-dataset validation are empirical.
 Table~S1 in the supplement provides the full axiom inventory.
