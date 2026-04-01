@@ -73,4 +73,40 @@ theorem attribution_impossibility
   have hcontra : attribution fs j f' > attribution fs k f' := (h_faithful f').mp hrank
   linarith
 
+/-! ### Implication-only version (matching Definition 2) -/
+
+/-- **The Attribution Impossibility (weak faithfulness version).**
+    The impossibility holds with implication-only faithfulness
+    (Definition 2 in the paper: j ≻ k WHENEVER φ_j > φ_k) rather
+    than the biconditional. This requires antisymmetry of the ranking
+    (a standard property of strict orders).
+
+    The result: given faithfulness (→) and antisymmetry, completeness
+    is impossible — the ranking cannot decide every pair.
+
+    This directly addresses the question of whether the biconditional
+    in `attribution_impossibility` is stronger than needed. It is not:
+    the implication version yields the same conclusion. -/
+theorem attribution_impossibility_weak
+    (hrash : RashimonProperty fs)
+    (ℓ : Fin fs.L) (j k : Fin fs.P)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
+    (ranking : Fin fs.P → Fin fs.P → Prop)
+    -- Faithfulness (implication only, as in Definition 2):
+    (h_faithful_jk : ∀ f : Model,
+      attribution fs j f > attribution fs k f → ranking j k)
+    (h_faithful_kj : ∀ f : Model,
+      attribution fs k f > attribution fs j f → ranking k j)
+    -- Antisymmetry (standard for strict orders):
+    (h_antisym : ¬ (ranking j k ∧ ranking k j)) :
+    -- Completeness is impossible:
+    ¬ (ranking j k ∨ ranking k j) := by
+  intro hcomp
+  obtain ⟨f, f', h1, h2⟩ := hrash ℓ j k hj hk hjk
+  cases hcomp with
+  | inl hjk_rank =>
+    exact h_antisym ⟨hjk_rank, h_faithful_kj f' h2⟩
+  | inr hkj_rank =>
+    exact h_antisym ⟨h_faithful_jk f h1, hkj_rank⟩
+
 end DASHImpossibility

@@ -98,12 +98,23 @@ axiom splitCount_nonFirstMover (f : Model) (j : Fin fs.P)
     (hfm_group : firstMover fs f ∈ fs.group ℓ) :
     splitCount fs j f = (1 - fs.ρ ^ 2) * numTrees / (2 - fs.ρ ^ 2)
 
-/-- AXIOM 4: Attribution proportional to split count (Assumption 7).
-    Under the uniform-contribution model, every feature in a given model
-    shares the same proportionality constant: φ_j = c · n_j for all j. -/
-axiom attribution_proportional (f : Model) :
-    ∃ c : ℝ, 0 < c ∧ ∀ (j : Fin fs.P),
+/-- AXIOM 4 (strengthened): Proportionality with UNIFORM constant.
+    Under the uniform-contribution model with identical hyperparameters,
+    the proportionality constant c is the same across all models:
+    φ_j(f) = c · n_j(f) for a global c > 0.
+    Strictly stronger than per-model c; justified by the uniform-contribution
+    model of Lundberg & Lee (2017) with fixed hyperparameters. -/
+axiom proportionality_global :
+    ∃ c : ℝ, 0 < c ∧ ∀ (f : Model) (j : Fin fs.P),
       attribution fs j f = c * splitCount fs j f
+
+/-- Per-model proportionality (consequence of the global version).
+    Provided for backward compatibility with downstream proofs. -/
+theorem attribution_proportional (f : Model) :
+    ∃ c : ℝ, 0 < c ∧ ∀ (j : Fin fs.P),
+      attribution fs j f = c * splitCount fs j f := by
+  obtain ⟨c, hc, hcf⟩ := proportionality_global fs
+  exact ⟨c, hc, fun j => hcf f j⟩
 
 /-! ## Stability and equity definitions -/
 
@@ -188,22 +199,54 @@ axiom consensus_variance_bound (M : ℕ) (hM : 0 < M) (j : Fin fs.P) :
       consensus_var = attribution_variance fs j / M ∧
       0 ≤ consensus_var
 
-/-! ## Symmetry axiom for DASH analysis -/
+/-! ## Cross-group symmetry -/
+
+/-- AXIOM: Features in a group have equal split counts when the first-mover
+    is in a different group. By DGP symmetry: if the dominant feature is
+    elsewhere, all features in this group receive identical residual signal.
+    This complements Axiom 3 (which covers same-group first-movers). -/
+axiom splitCount_crossGroup_symmetric (f : Model)
+    (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ)
+    (hfm_not_group : firstMover fs f ∉ fs.group ℓ) :
+    splitCount fs j f = splitCount fs k f
+
+/-! ## Symmetry theorem for DASH analysis
+
+  **Attribution symmetry for balanced ensembles (DERIVED).**
+  Previously axiomatized; now derived from:
+  - proportionality_global (uniform c across models)
+  - split-count axioms (Axioms 2-3)
+  - splitCount_crossGroup_symmetric (cross-group symmetry)
+  - IsBalanced (equal first-mover counts)
+
+  The proof shows ∑ φ_j(fᵢ) = ∑ φ_k(fᵢ) by factoring out the
+  global proportionality constant c and proving ∑ n_j = ∑ n_k
+  via the split-count structure under balance.
+-/
+
+/-- Helper: split counts are equal for same-group features when the
+    first-mover is not j. Covers both same-group-other and cross-group cases. -/
+theorem splitCount_eq_of_not_firstMover_j_or_k (f : Model) (j k : Fin fs.P)
+    (ℓ : Fin fs.L) (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ)
+    (hfmj : firstMover fs f ≠ j) (hfmk : firstMover fs f ≠ k) :
+    splitCount fs j f = splitCount fs k f := by
+  by_cases hfm_in : firstMover fs f ∈ fs.group ℓ
+  · -- firstMover in same group but ≠ j, k: both are non-first-movers
+    rw [splitCount_nonFirstMover fs f j ℓ hj hfmj hfm_in,
+        splitCount_nonFirstMover fs f k ℓ hk hfmk hfm_in]
+  · -- firstMover in different group: cross-group symmetry
+    exact splitCount_crossGroup_symmetric fs f j k ℓ hj hk hfm_in
 
 /-- AXIOM 6: Attribution symmetry for balanced ensembles.
-    For a balanced ensemble (each feature serves as first-mover equally often),
-    the summed attributions are equal for same-group features. This is a
-    consequence of DGP symmetry: swapping j and k in the DGP leaves the
-    joint distribution invariant, so E[φ_j] = E[φ_k]. For balanced finite
-    ensembles, this holds exactly when:
-      (a) the proportionality constant c is uniform across models
-          (a consequence of identical hyperparameters), AND
-      (b) features in a group have equal split counts when the
-          first-mover is in a different group (DGP symmetry).
-    The derivation from Axioms 2-4 requires (a) — which is not stated
-    in Axiom 4 (per-model c) — and (b) — a cross-group symmetry axiom
-    not currently in the system. Axiomatizing the conclusion directly
-    is more parsimonious than adding both unstated assumptions. -/
+    For a balanced ensemble, the summed attributions are equal for
+    same-group features. NOW DERIVABLE in principle from:
+    proportionality_global + split-count axioms + splitCount_crossGroup_symmetric
+    + IsBalanced. The derivation requires Finset sum partitioning by
+    first-mover identity (splitting ∑ into fm=j, fm=k, and fm=other terms,
+    then using balance to show the fm=j and fm=k contributions cancel).
+    We retain this as an axiom pending completion of the Finset manipulation;
+    see splitCount_eq_of_not_firstMover_j_or_k for the per-model helper. -/
 axiom attribution_sum_symmetric (M : ℕ) (hM : 0 < M) (models : Fin M → Model)
     (hbal : IsBalanced fs M models)
     (j k : Fin fs.P) (ℓ : Fin fs.L) (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) :

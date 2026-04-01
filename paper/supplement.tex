@@ -28,13 +28,13 @@
 Table~\ref{tab:axioms} lists all 9 property axioms in the formalization
 (the core impossibility theorem requires none of them---only the Rashomon
 property as hypothesis).
-The formalization uses 15 axioms total: 6 type/constant declarations
+The formalization uses 16 axioms total: 6 type/constant declarations
 (\texttt{Model}, \texttt{numTrees}, \texttt{numTrees\_pos}, \texttt{attribution},
-\texttt{splitCount}, \texttt{firstMover}), and the 9 property axioms below.
+\texttt{splitCount}, \texttt{firstMover}), and the 10 property axioms below.
 
 \begin{table}[h]
 \centering
-\caption{Complete axiom inventory (15 total).}
+\caption{Complete axiom inventory (16 total).}
 \label{tab:axioms}
 \small
 \begin{tabular}{@{}llp{5.5cm}@{}}
@@ -44,7 +44,8 @@ The formalization uses 15 axioms total: 6 type/constant declarations
 First-mover surjectivity & \texttt{firstMover\_surjective} & DGP symmetry: each feature can be first-mover \\
 Split count (first-mover) & \texttt{splitCount\_firstMover} & Gaussian conditioning (Lemma~1 in main text) \\
 Split count (non-first-mover) & \texttt{splitCount\_nonFirstMover} & Residual signal after first-mover absorbs $\rho$-component \\
-Proportionality & \texttt{attribution\_proportional} & Uniform contribution model (Assumption~7) \\
+Global proportionality & \texttt{proportionality\_global} & Uniform contribution model with constant $c$ across models \\
+Cross-group symmetry & \texttt{splitCount\_crossGroup\_symmetric} & DGP symmetry: equal split counts when first-mover elsewhere \\
 Spearman bound & \texttt{spearman\_classical\_bound} & Combinatorial rank argument: tied non-first-movers \\
 Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & DGP symmetry + balanced ensemble + uniform $c$ + cross-group symmetry \\
 Attribution variance & \texttt{attribution\_variance} & Defines $\Var(\varphi_j(f))$ for single models \\
@@ -56,9 +57,9 @@ Consensus variance bound & \texttt{consensus\_variance\_bound} & $\Var(\bar\varp
 
 \section{Proof Architecture}
 
-The formalization comprises 14 Lean~4 files with 15 axioms and
-44 type-checked declarations (35 theorems + 9 lemmas;
-0 \texttt{sorry}). Of these, 38 require multi-line proofs
+The formalization comprises 14 Lean~4 files with 16 axioms and
+47 type-checked declarations (38 theorems + 9 lemmas;
+0 \texttt{sorry}). Of these, 41 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or
 single-step applications.
 The core impossibility (\texttt{attribution\_impossibility}) depends on
@@ -68,7 +69,7 @@ The DASH resolution (\texttt{consensus\_equity}) depends on the
 depends on the \texttt{consensus\_variance\_bound} axiom.
 
 \begin{verbatim}
-Defs.lean (15 axioms, type definitions)
+Defs.lean (16 axioms, type definitions, derived theorems)
   |
   +-- Trilemma.lean (RashimonProperty, attribution_impossibility)
   |     |
@@ -127,17 +128,21 @@ full combinatorial proof (bounding the expected $\sum d_i^2$ under
 random tie-breaking) requires counting arguments not yet available
 in our Lean framework.
 
-\paragraph{Attribution sum symmetry: why it remains an axiom.}
-Deriving \texttt{attribution\_sum\_symmetric} from Axioms~2--4
-requires two unstated assumptions: (a)~the proportionality constant
-$c$ is uniform across models (Axiom~4 allows per-model $c$), and
-(b)~features in a group have equal split counts when the first-mover
-is in a different group (Axiom~3 only covers same-group first-movers).
-Adding both as explicit axioms would increase the axiom count from~9
-to~10 while eliminating only~1 axiom---a net increase. We chose to
-axiomatize the conclusion directly as the most parsimonious encoding.
-The justification (DGP symmetry under identical hyperparameters) is
-independently verifiable empirically.
+\paragraph{Attribution sum symmetry: derivation infrastructure.}
+In v2, we made the two previously unstated assumptions explicit:
+(a)~\texttt{proportionality\_global} states the proportionality
+constant $c$ is uniform across models (replacing the per-model
+Axiom~4), and (b)~\texttt{splitCount\_crossGroup\_symmetric} states
+that features in a group have equal split counts when the first-mover
+is in a different group. Both are DGP-structural axioms.
+The per-model helper \texttt{splitCount\_eq\_of\_not\_firstMover\_j\_or\_k}
+proves that $n_j(f) = n_k(f)$ whenever the first-mover is neither $j$
+nor $k$. The full derivation of \texttt{attribution\_sum\_symmetric}
+from these axioms requires Finset sum partitioning by first-mover identity;
+the axiom is retained pending this Lean infrastructure.
+The derivation path is: factor out $c$ (uniform proportionality),
+show $\sum n_j = \sum n_k$ by decomposing into fm$=$j, fm$=$k,
+and fm$=$other terms, then use balance to show the first two cancel.
 
 \paragraph{Variance sub-system.}
 The three variance axioms (\texttt{attribution\_variance},
