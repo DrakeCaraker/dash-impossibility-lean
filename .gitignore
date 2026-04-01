@@ -29,3 +29,10 @@ paper/submission/
 .claude/worktrees/
 .claude/.pilot-session-start
 .claude/.session-count
+
+# CatBoost training artifacts
+catboost_info/
+
+# Failed experiment artifacts
+paper/figures/alpha_precision.pdf
+paper/scripts/alpha_precision_validation.py

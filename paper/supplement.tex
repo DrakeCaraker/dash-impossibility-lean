@@ -108,21 +108,22 @@ in Lean. \texttt{strongly\_faithful\_impossible} formalizes the
 impossibility of consensus-value-faithful methods (a stronger result
 than the supplement's Step~3, which uses ranking-faithfulness).
 
-\paragraph{Variance axiom design choice.}
+\paragraph{Variance: partially grounded in Mathlib.}
+The single-model variance \texttt{attribution\_variance} is now
+\emph{defined} from Mathlib's \texttt{ProbabilityTheory.variance},
+and its nonnegativity is \emph{derived} from Mathlib's
+\texttt{variance\_nonneg}. This required adding two infrastructure
+axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}) to
+connect the abstract \texttt{Model} type to Mathlib's measure theory.
+
 The consensus variance bound ($\Var(\bar\varphi_j) = \Var(\varphi_j)/M$)
-is axiomatized directly rather than derived from Mathlib's measure-theoretic
-infrastructure (\texttt{IndepFun.variance\_sum}). The alternative would
-require 4 additional axioms (\texttt{MeasurableSpace Model},
-\texttt{MeasureTheory.Measure Model}, \texttt{Measurable (attribution fs j)},
-and an independence axiom), increasing the total axiom count from 15 to 19
-while adding significant type-theoretic boilerplate. We chose the single
-intuitive axiom because: (i) $\Var(\bar{X}) = \Var(X)/M$ for i.i.d.\
-random variables is a textbook identity requiring no justification beyond
-the independence assumption; (ii) the 4 measure-theoretic axioms are
-harder to audit (they assert abstract mathematical structure on our
-\texttt{Model} type, which has no natural measurable-space interpretation);
-and (iii) the derived theorems (variance halving, nonnegativity) are
-genuine Lean proofs, not tautologies from the axiom.
+remains axiomatized: the full derivation via \texttt{IndepFun.variance\_sum}
+would require a product measure formulation and independence axioms for
+ensemble draws --- a fundamental architectural change deferred to
+future work (see \texttt{docs/jmlr-variance-derivation-plan.md}).
+The textbook identity $\Var(\bar{X}) = \Var(X)/M$ for i.i.d.\ variables
+is the justification; the derived theorems (variance halving,
+monotonicity) are genuine Lean proofs from this axiom.
 
 \paragraph{Spearman bound: axiomatized vs.\ derived.}
 The Lean formalization contains two Spearman bounds:

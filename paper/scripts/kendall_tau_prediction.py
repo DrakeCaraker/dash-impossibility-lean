@@ -27,10 +27,11 @@ from itertools import combinations
 from scipy.stats import norm
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
+import os
 import xgboost as xgb
 import shap
 
-RESULTS_PATH = "/Users/drake.caraker/ds_projects/dash-impossibility-lean/paper/results_kendall_prediction.txt"
+RESULTS_PATH = os.path.join(os.path.dirname(__file__), "..", "results_kendall_prediction.txt")
 
 # ── reproducibility ──────────────────────────────────────────────────────────
 MASTER_SEED = 42

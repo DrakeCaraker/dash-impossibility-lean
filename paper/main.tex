@@ -95,7 +95,7 @@ The formalization also proved valuable beyond certification: during translation 
     \item \textbf{The Attribution Design Space Theorem} (\S\ref{sec:design-space}): a complete characterization of achievable (stability, unfaithfulness, completeness) triples, showing the design space consists of exactly two families with \DASH{} Pareto-optimal on the ensemble branch. All other results are corollaries.
     \item \textbf{The Attribution Impossibility} (Theorem~\ref{thm:impossibility}): the base case of the Design Space Theorem---a model-agnostic impossibility requiring only the Rashomon property, with zero axiom dependencies in the Lean formalization.
     \item \textbf{Architecture discrimination}: attribution ratios for \GBDT{} ($1/(1{-}\rho^2)$ Lean-verified; $1/(1{-}\alpha\rho^2)$ empirically corrected), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$, informal).
-    \item \textbf{Constructive resolution via \DASH{}}: ensemble averaging restores equitable attributions (axiom-derived for balanced ensembles) with variance $O(1/M)$.
+    \item \textbf{Constructive relaxation via \DASH{}}: ensemble averaging restores equitable attributions (derived for balanced ensembles) with variance $O(1/M)$, sacrificing within-group completeness.
     \item \textbf{The symmetric Bayes dichotomy} (supplement): a proof technique from invariant decision theory \citep{lehmann2005testing}, demonstrated across three structurally distinct instances (feature attribution, model selection, and causal discovery under Markov equivalence) with different symmetry groups.
     \item \textbf{Machine-verified proof}: formalized in Lean~4 (49 type-checked declarations from 15 axioms, 0 \texttt{sorry}), publicly available at \url{[anonymized for review]}.
 \end{enumerate}
@@ -372,7 +372,7 @@ $\bar{\varphi}_j = \bar{\varphi}_k$.
 By DGP symmetry, permuting features $j \leftrightarrow k$ leaves the joint distribution invariant.
 For a balanced ensemble, each feature serves as first-mover equally often, so the summed split counts satisfy $\sum_i n_j(f_i) = \sum_i n_k(f_i)$.
 When the proportionality constant $c$ is uniform across models (a consequence of identical hyperparameters), this gives $\sum_i \varphi_j(f_i) = \sum_i \varphi_k(f_i)$.
-In the Lean~4 formalization, this equality is axiomatized directly for balanced ensembles.
+In the Lean~4 formalization, this equality is derived from the proportionality and split-count axioms (\texttt{SymmetryDerive.lean}).
 \end{proof}
 
 \paragraph{Between-group stability.}
