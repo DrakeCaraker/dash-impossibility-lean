@@ -40,14 +40,14 @@ DASHImpossibility/
   DesignSpace.lean   — Design Space Theorem (composite), DASH ties
   Basic.lean         — Import hub
 paper/
-  main.tex           — NeurIPS 2026 paper (9 pages)
-  supplement.tex     — Supplementary (29 pages)
-  references.bib     — 17 citations
+  main.tex           — NeurIPS 2026 paper (12 pages incl. refs+checklist)
+  supplement.tex     — Supplementary (39 pages)
+  references.bib     — 18 citations
   scripts/           — Figure generation + validation scripts
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, comprehensive)
 ```
 
-## Lean State: 14 files, 15 axioms, 42 declarations (33 theorems + 9 lemmas), 0 sorry
+## Lean State: 14 files, 15 axioms, 42 declarations (33 theorems + 9 lemmas, 24 substantive), 0 sorry
 
 ## Axiom Inventory (15 total)
 
