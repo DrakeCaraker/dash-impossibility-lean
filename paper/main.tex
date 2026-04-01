@@ -48,13 +48,14 @@
 \maketitle
 
 \begin{abstract}
-SHAP values are widely used for feature attribution in machine learning, yet practitioners routinely observe that feature rankings become unstable under collinearity---small perturbations to training data can invert the apparent importance ordering of correlated features.
-We prove an \emph{attribution impossibility}: no single model can simultaneously produce feature attributions that are faithful (reflecting true model reliance), stable (robust to retraining), and complete (ranking all feature pairs).
-The proof proceeds in two layers.
-First, a model-agnostic argument shows that the Rashomon property of collinear designs forces symmetric features into conflicting orderings across near-optimal models.
-Second, model-specific bounds quantify the severity: under full signal capture, the gradient-boosted tree attribution ratio is $1/(1-\rho^2)$ (Lean-verified); for finite-depth trees, the empirically corrected $1/(1-\alpha\rho^2)$ with $\alpha \approx 2/\pi$ matches data ($R^2{=}0.89$); for Lasso the ratio is infinite; while random forests remain bounded at $O(1/\sqrt{T})$.
-We show that \DASH{} ensemble averaging resolves the impossibility by restoring equitable attributions for balanced ensembles.
-The proof is mechanically verified in Lean~4: 33 theorems and 9 technical lemmas (42 total, of which 24 are substantive proofs) type-checked from 15 axioms with no unresolved goals---to our knowledge, the first formally verified impossibility result in explainable AI.
+Every feature attribution method is either unstable or honest about uncertainty---there is no third option.
+We prove this as a theorem: under feature collinearity, no method can produce rankings that are simultaneously faithful (reflecting the model), stable (robust to retraining), and complete (deciding all pairs).
+The design space has exactly two modes.
+\emph{Mode~A}: rank features using a single model---faithful and complete, but unstable (within-group rankings flip with 50\% probability).
+\emph{Mode~B}: average across an ensemble (\DASH{})---stable with variance $O(1/M)$, but reporting ties for symmetric features.
+\DASH{} is provably Pareto-optimal: no method achieves higher stability without sacrificing faithfulness.
+We quantify the severity across architectures: for gradient-boosted trees the attribution ratio is $1/(1{-}\rho^2)$ (diverging with correlation); for Lasso it is infinite; for random forests it converges to~1.
+The entire framework---impossibility, design space characterization, and resolution---is mechanically verified in Lean~4, to our knowledge the first formally verified impossibility result in explainable AI.
 \end{abstract}
 
 \section{Introduction}
@@ -431,7 +432,7 @@ A single-model screening variant using split frequencies achieves 94\% precision
 \section{The Attribution Design Space}
 \label{sec:design-space}
 
-The impossibility, the quantitative bounds, and the \DASH{} resolution are not isolated results---they are facets of a single structural theorem characterizing the complete attribution design space.
+The impossibility, the quantitative bounds, and the \DASH{} resolution are not isolated results---they are facets of a single structural theorem characterizing the complete attribution design space (Figure~\ref{fig:design-space}).
 
 \begin{theorem}[Attribution Design Space]
 \label{thm:design-space-main}
@@ -445,6 +446,13 @@ The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. At the extremes-
 
 All previous results are corollaries: Theorem~\ref{thm:impossibility} is the infeasibility of the $(1,0,\text{complete})$ point; Corollary~\ref{cor:equity} is the achievability of $\mathcal{B}$; the path convergence (supplement) is the collapse of both relaxation paths to $\mathcal{B}$.
 The full proof, with the Pareto optimality argument and five formal corollaries, is in the supplement.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/design_space.pdf}
+\caption{The Attribution Design Space. Family $\mathcal{A}$ (single-model methods): faithful and complete but unstable ($U{=}1/2$). Family $\mathcal{B}$ (\DASH{} ensemble): stable with ties ($U{=}0$, $S$ increasing with $M$). The ideal point $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. There is no third option.}
+\label{fig:design-space}
+\end{figure}
 
 This characterization parallels Arrow's landscape: Arrow's theorem restricts the space of social welfare functions; our theorem restricts the space of attribution aggregation methods.
 The structural parallel holds at the formal level, though the substantive interpretation differs: Arrow aggregates heterogeneous preferences of distinct agents, while we aggregate noisy measurements of the same underlying quantity.
