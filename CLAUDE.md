@@ -71,19 +71,19 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, design space, SNR calibration, conditional threshold, etc.)
 ```
 
-## Lean State: 32 files, 15 axioms, 128 theorems+lemmas, 0 sorry
+## Lean State: 32 files, 14 axioms, 129+ theorems+lemmas, 0 sorry
 
-## Axiom Inventory (15 total)
+## Axiom Inventory (14 total)
 
 | Category | Axioms | Used by |
 |----------|--------|---------|
 | Type declarations | Model, numTrees, numTrees_pos, attribution, splitCount, firstMover | Infrastructure |
 | Core properties | firstMover_surjective, splitCount_firstMover, splitCount_nonFirstMover, proportionality_global, splitCount_crossGroup_symmetric | GBDT bounds |
 | Measure infrastructure | modelMeasurableSpace, modelMeasure | Variance (Mathlib connection) |
-| Variance | consensus_variance_bound | Corollary stability |
 | Spearman | spearman_classical_bound (about defined quantity) | Quantitative stability |
 
 **Formerly axiomatized, now derived:**
+- `consensus_variance_bound` — theorem in Defs.lean (from attribution_variance_nonneg + Nat.cast_nonneg; existential witness is trivial)
 - `attribution_sum_symmetric` — theorem in SymmetryDerive.lean (from proportionality + split-count + cross-group + balance)
 - `attribution_variance` — noncomputable def from ProbabilityTheory.variance (Mathlib)
 - `attribution_variance_nonneg` — theorem from Mathlib's variance_nonneg

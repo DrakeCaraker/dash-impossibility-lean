@@ -31,3 +31,4 @@ import DASHImpossibility.SBDInstances
 import DASHImpossibility.Efficiency
 import DASHImpossibility.CausalDiscovery
 import DASHImpossibility.FairnessAudit
+import DASHImpossibility.Consistency

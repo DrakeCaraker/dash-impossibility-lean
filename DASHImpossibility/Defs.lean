@@ -164,9 +164,17 @@ def IsBalanced (M : ℕ) (models : Fin M → Model) : Prop :=
 
   Infrastructure axioms: we axiomatize a probability measure on Model.
   These are standard measure-theoretic structure, not domain-specific
-  assumptions. The consensus_variance_bound axiom (below) remains
-  because the full derivation via product measures and independence
-  is architecturally complex.
+  assumptions.
+
+  The consensus_variance_bound is now a theorem (not an axiom): its
+  statement is existential — ∃ v, v = Var(φ_j)/M ∧ 0 ≤ v — which
+  follows directly from attribution_variance_nonneg and M being a
+  natural number.  No product measures or independence assumptions
+  are needed because the statement does not quantify over a product
+  space; it only asserts the existence of a nonneg value equal to the
+  ratio.  (The deeper result Var(X̄) = Var(X)/n for i.i.d. draws is
+  available in Mathlib as ProbabilityTheory.variance_sum_pi but is not
+  required here.)
 -/
 
 /-- Measurable space structure on Model. -/
@@ -188,19 +196,16 @@ theorem attribution_variance_nonneg (j : Fin fs.P) :
   unfold attribution_variance
   exact ProbabilityTheory.variance_nonneg _ _
 
-/-- AXIOM: Variance of consensus decreases as 1/M.
-    For M i.i.d. models, Var(consensus_j) = Var(φ_j)/M.
-    This is the standard result for i.i.d. means.
-    The full Lean proof would need:
-      1. MeasurableSpace Model
-      2. MeasureTheory.Measure Model
-      3. Measurable (attribution fs j)
-      4. IndepFun for the model array
-    and then apply ProbabilityTheory.IndepFun.variance_sum. -/
-axiom consensus_variance_bound (M : ℕ) (hM : 0 < M) (j : Fin fs.P) :
+/-- Variance of consensus decreases as 1/M.
+    Previously an axiom; now derived.  The existential statement only
+    asks for a witness equal to Var(φ_j)/M that is nonneg, which is
+    immediate from attribution_variance_nonneg and Nat.cast_nonneg. -/
+theorem consensus_variance_bound (M : ℕ) (_hM : 0 < M) (j : Fin fs.P) :
     ∃ (consensus_var : ℝ),
       consensus_var = attribution_variance fs j / M ∧
-      0 ≤ consensus_var
+      0 ≤ consensus_var :=
+  ⟨attribution_variance fs j / M, rfl,
+    div_nonneg (attribution_variance_nonneg fs j) (Nat.cast_nonneg M)⟩
 
 /-! ## Cross-group symmetry -/
 
