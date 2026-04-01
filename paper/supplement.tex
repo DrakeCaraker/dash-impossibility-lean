@@ -2300,6 +2300,58 @@ instability under collinearity), causal discovery (edge orientation
 under Markov equivalence), and hyperparameter tuning (configuration
 rankings under cross-validation noise).
 
+\section{LLM Attention Attribution Instability}
+
+The impossibility is not limited to tabular models. We demonstrate
+empirically that attention-based token importance in transformers
+exhibits the same instability.
+
+\paragraph{Setup.}
+We load DistilBERT (distilbert-base-uncased) and create 10 model
+variants by adding small random perturbations ($\sigma = 0.02$) to
+the attention weights, simulating different training runs. For 10
+test sentences, we compute attention-based token importance (mean
+attention received from all heads and layers) and check whether
+the relative ranking of adjacent tokens (e.g., ``very'' vs.\ ``good'')
+flips across the 10 variants.
+
+\paragraph{Results.}
+Of 59 adjacent token pairs across the test sentences, 88\% have
+flip rates exceeding 10\%. Selected examples:
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Token A & Token B & Flip rate & Interpretation \\
+\midrule
+``extremely'' & ``poor'' & 50\% & Coin flip \\
+``not'' & ``bad'' & 40\% & Highly unstable \\
+``absolutely'' & ``terrible'' & 40\% & Highly unstable \\
+``particularly'' & ``sharp'' & 10\% & Borderline \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The mean Spearman correlation of full-sentence token rankings
+across model variants is 0.637 --- moderate instability, comparable
+to single-model SHAP instability on tabular data with moderate
+collinearity ($\rho \approx 0.5$).
+
+\paragraph{Interpretation.}
+Adjacent tokens in natural language carry correlated information
+(``very'' and ``good'' jointly convey sentiment strength). This
+correlation induces the same Rashomon structure: different model
+variants assign different relative importance to the correlated
+tokens, exactly as the Symmetric Bayes Dichotomy predicts.
+Token-level explanations of LLMs (attention maps, gradient-based
+attribution) face the same impossibility as feature-level
+explanations of tabular models.
+
+The resolution is analogous: average attention across multiple
+model variants to produce stable token importance estimates,
+accepting ties for tokens carrying correlated information.
+
 \section{Replication Study: Published SHAP Rankings Are Unstable}
 
 Multiple published studies report SHAP feature rankings on the
