@@ -18,6 +18,7 @@
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Real.Basic
+import Mathlib.Probability.Moments.Variance
 
 set_option autoImplicit false
 
@@ -156,34 +157,36 @@ def IsBalanced (M : ℕ) (models : Fin M → Model) : Prop :=
   expected Σd² under random tie-breaking), which is stated as an
   axiom in SpearmanDef.lean about the defined quantity. -/
 
-/-! ## Variance axioms for DASH analysis
+/-! ## Variance of attributions — derived from Mathlib
 
-  These axioms capture the probabilistic structure needed for the
-  variance bound. The derivation path via Mathlib is:
-    Mathlib.Probability.Moments.Variance.IndepFun.variance_sum
-  which proves Var(∑X_i) = ∑Var(X_i) for pairwise independent X_i.
+  We define attribution_variance via MeasureTheory.variance and
+  derive nonnegativity from MeasureTheory.variance_nonneg.
 
-  However, using this requires reformulating our axiom system to
-  include a probability space (Ω, μ) with modelSample : Ω → Model,
-  measurability of attributions, and independence of ensemble members.
-  This is a fundamental architectural change (adding ~6 axioms for
-  measure-theoretic infrastructure) that we defer to future work.
-
-  We axiomatize the variance directly because:
-  (i) Var(X̄) = Var(X)/M for i.i.d. variables is textbook;
-  (ii) the measure-theoretic axioms are harder to audit than
-       the single intuitive axiom;
-  (iii) the derived theorems (variance halving, nonnegativity)
-       are genuine proofs from this axiom, not tautologies.
+  Infrastructure axioms: we axiomatize a probability measure on Model.
+  These are standard measure-theoretic structure, not domain-specific
+  assumptions. The consensus_variance_bound axiom (below) remains
+  because the full derivation via product measures and independence
+  is architecturally complex.
 -/
 
-/-- Variance of a single model's attribution for feature j.
-    Represents Var(φ_j(f)) where f ~ training distribution. -/
-axiom attribution_variance (j : Fin fs.P) : ℝ
+/-- Measurable space structure on Model. -/
+axiom modelMeasurableSpace : MeasurableSpace Model
 
-/-- Variance is nonneg. -/
-axiom attribution_variance_nonneg (j : Fin fs.P) :
-    0 ≤ attribution_variance fs j
+/-- Probability measure on Model representing the training distribution. -/
+noncomputable instance : MeasurableSpace Model := modelMeasurableSpace
+
+axiom modelMeasure : MeasureTheory.Measure Model
+
+/-- Variance of a single model's attribution for feature j.
+    Defined as Var(φ_j(f)) where f ~ modelMeasure. -/
+noncomputable def attribution_variance (j : Fin fs.P) : ℝ :=
+  ProbabilityTheory.variance (fun f => attribution fs j f) modelMeasure
+
+/-- Variance is nonneg — derived from ProbabilityTheory.variance_nonneg. -/
+theorem attribution_variance_nonneg (j : Fin fs.P) :
+    0 ≤ attribution_variance fs j := by
+  unfold attribution_variance
+  exact ProbabilityTheory.variance_nonneg _ _
 
 /-- AXIOM: Variance of consensus decreases as 1/M.
     For M i.i.d. models, Var(consensus_j) = Var(φ_j)/M.
