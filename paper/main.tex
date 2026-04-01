@@ -96,6 +96,7 @@ The formalization also proved valuable beyond certification: during translation 
     \item \textbf{The Attribution Impossibility} (Theorem~\ref{thm:impossibility}): the base case of the Design Space Theorem---a model-agnostic impossibility requiring only the Rashomon property, with zero axiom dependencies in the Lean formalization.
     \item \textbf{Architecture discrimination}: attribution ratios for \GBDT{} ($1/(1{-}\rho^2)$ Lean-verified; $1/(1{-}\alpha\rho^2)$ empirically corrected), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$, informal).
     \item \textbf{Constructive resolution via \DASH{}}: ensemble averaging restores equitable attributions (axiom-derived for balanced ensembles) with variance $O(1/M)$.
+    \item \textbf{The symmetric Bayes dichotomy} (supplement): a general proof technique showing that ANY decision problem with a symmetric population has exactly two operating modes. Feature attribution and model selection are instances; the technique is reusable.
     \item \textbf{Machine-verified proof}: formalized in Lean~4 (42 type-checked declarations from 15 axioms, 0 \texttt{sorry}), publicly available at \url{[anonymized for review]}.
 \end{enumerate}
 
@@ -507,11 +508,10 @@ Our theorem proves that this instability is a ``known and foreseeable circumstan
 Beyond regulatory compliance, the impossibility affects model debugging (the wrong feature may be blamed for errors), fairness audits (protected-feature effects may be misattributed to correlated proxies), and scientific discovery (spurious feature importance may drive false hypotheses).
 In each case, \DASH{} provides a principled mitigation by reporting honest uncertainty rather than arbitrary distinctions.
 
-\paragraph{Generality of the pipeline.}
-The Rashomon $\to$ impossibility $\to$ design space $\to$ resolution pipeline is not specific to feature attribution.
-In the supplement, we apply the same pipeline to \emph{model selection}: when candidates have similar population loss, no selection rule can be simultaneously faithful (respect held-out performance), stable (independent of validation split), and complete (decide for every pair).
-The resolution is the same: ensemble (cross-validate) rather than select.
-We conjecture this \emph{two-families pattern}---instance-specific vs.\ population-averaged---holds generally for statistical decision problems under symmetric populations and finite-sample noise.
+\paragraph{The symmetric Bayes dichotomy.}
+In the supplement, we prove a general theorem: for \emph{any} statistical decision problem where the population distribution is symmetric over discrete alternatives and finite-sample noise can reverse the optimal choice, the achievable set consists of exactly two families---instance-specific (faithful but unstable) and population-averaged (stable with ties).
+We call this the \emph{symmetric Bayes dichotomy}.
+Feature attribution and model selection are both instances; we anticipate the technique applies to feature selection (Lasso instability), causal discovery (Markov equivalence), and hyperparameter tuning (CV noise).
 
 \paragraph{Formalization as methodology.}
 Beyond certifying correctness, the Lean formalization served as a \emph{bug-finding methodology}: it caught two logical inconsistencies and one type mismatch that survived informal review.

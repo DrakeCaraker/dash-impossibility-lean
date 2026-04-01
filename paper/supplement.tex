@@ -2124,36 +2124,122 @@ rankings are noisy for similar-performance models: it is not an
 engineering failure but a mathematical inevitability. The resolution
 is the same: average (ensemble) rather than select.
 
-\subsection{The Two-Families Meta-Pattern}
+\subsection{The Symmetric Bayes Dichotomy}
 
 The structural identity between the attribution and model selection
-impossibilities suggests a general pattern:
+impossibilities is not a coincidence. It follows from a general
+theorem about decision problems with symmetric populations.
 
-\begin{remark}[Two-Families Conjecture]
-\label{rem:two-families}
-For any statistical decision problem where:
-\begin{enumerate}
-    \item The population distribution is \emph{symmetric} over a
-      discrete choice set (which feature is dominant, which model is
-      best, which causal direction holds),
-    \item The observed data introduces \emph{finite-sample noise}
-      sufficient to reverse the optimal choice across i.i.d.\ draws,
-\end{enumerate}
-the achievable (instance-accuracy, stability) set consists of exactly
-two families:
+\begin{definition}[Symmetric Decision Problem]
+\label{def:symmetric-decision}
+A \emph{symmetric decision problem} is a tuple
+$(\Theta, \mathcal{D}, \pi, G)$ where:
 \begin{itemize}
-    \item \textbf{Instance-specific}: commit to the data-specific
-      choice (accurate for this instance, unstable across instances).
-    \item \textbf{Population-averaged}: average over instances (stable
-      but losing instance-specific information).
+    \item $\Theta$ is a finite \emph{decision set} (e.g., feature
+      orderings, model rankings).
+    \item $\mathcal{D}$ is the data space (e.g., trained models,
+      validation splits).
+    \item $\pi$ is a population distribution over $\mathcal{D}$.
+    \item $G$ is a group acting on $\Theta$ such that $\pi$ is
+      $G$-\emph{invariant}: for any $g \in G$ and measurable
+      $A \subseteq \mathcal{D}$,
+      $\pi(\{d : \theta^*(d) \in g \cdot A'\}) =
+       \pi(\{d : \theta^*(d) \in A'\})$,
+      where $\theta^*(d) \in \Theta$ is the instance-optimal decision.
 \end{itemize}
-The first instance is feature attribution (this paper). The second
-is model selection (Theorem~\ref{thm:model-selection-ds}). We
-conjecture the pattern extends to feature selection (Lasso
-instability), causal discovery (edge orientation under
-faithfulness-equivalence), and hyperparameter tuning (configuration
-rankings under CV noise).
-\end{remark}
+An \emph{$M$-sample estimator} is a function
+$\hat\theta : \mathcal{D}^M \to \Theta$ mapping $M$ i.i.d.\
+draws to a decision. It is:
+\begin{itemize}
+    \item \emph{Faithful}: $\hat\theta(d_1, \ldots, d_M)$ agrees
+      with $\theta^*(d_i)$ for each $i$.
+    \item \emph{Stable}: $\hat\theta$ does not depend on which
+      draw $d_i$ is observed.
+    \item \emph{Complete}: $\hat\theta$ selects exactly one element
+      from each $G$-orbit in $\Theta$.
+\end{itemize}
+\end{definition}
+
+\begin{theorem}[Symmetric Bayes Dichotomy]
+\label{thm:bayes-dichotomy}
+For any symmetric decision problem with $|G \cdot \theta| \geq 2$
+for some $\theta \in \Theta$:
+\begin{enumerate}
+    \item[(i)] \textbf{Instance-specific decisions are unfaithful.}
+      Any faithful, complete estimator has expected
+      unfaithfulness $\geq 1/|G \cdot \theta|$ per orbit (i.e.,
+      $\geq 1/2$ for binary orbits).
+    \item[(ii)] \textbf{Population-averaged decisions are stable.}
+      The Bayes estimator under $\pi$ reports ties within each
+      $G$-orbit (unfaithfulness $= 0$), with between-orbit
+      stability $O(1/M)$.
+    \item[(iii)] \textbf{The ideal is infeasible.}
+      No estimator achieves unfaithfulness $= 0$ AND completeness
+      (deciding within orbits).
+\end{enumerate}
+The achievable set consists of exactly two families:
+$\mathcal{A}$ (faithful + complete, $U \geq 1/|G \cdot \theta|$)
+and $\mathcal{B}$ (population-averaged, $U = 0$, ties within orbits).
+\end{theorem}
+
+\begin{proof}
+\textbf{Part (i).} By $G$-invariance, the population distribution
+$\pi$ assigns equal probability to each element of the orbit
+$G \cdot \theta$. For any fixed complete estimator $\hat\theta$
+that selects one element $\theta_0$ from the orbit, the probability
+that $\theta^*(d) = \theta_0$ is $1/|G \cdot \theta|$.
+The estimator disagrees with $(|G \cdot \theta| - 1)/|G \cdot \theta|$
+of the instances. For $|G \cdot \theta| = 2$: unfaithfulness $= 1/2$.
+
+\textbf{Part (ii).} The Bayes estimator under symmetric $\pi$
+minimizes expected loss. Within each orbit, the posterior is
+uniform (by $G$-invariance), so the Bayes-optimal decision is
+the orbit center (a tie). Unfaithfulness $= 0$ because no
+ordering is asserted within orbits.
+For between-orbit decisions with gap $\Delta$, the $M$-sample
+average has variance $\sigma^2/M$ (i.i.d.\ draws), giving
+stability $1 - O(1/M)$ by the Gaussian approximation.
+
+\textbf{Part (iii).} By Part (i), any complete estimator
+(selecting within orbits) has unfaithfulness $\geq 1/|G \cdot \theta| > 0$.
+Thus unfaithfulness $= 0$ requires giving up completeness (ties).
+
+\textbf{Exhaustiveness.} Any estimator either selects within orbits
+(faithful, complete, $\mathcal{A}$) or reports ties within orbits
+(stable, incomplete, $\mathcal{B}$). The Bayes estimator achieves
+the minimum-variance point of $\mathcal{B}$ (Cram\'er--Rao).
+\end{proof}
+
+\begin{corollary}[Feature attribution as instance]
+\label{cor:attribution-instance}
+The Attribution Impossibility (Theorem~1) and Design Space Theorem
+(Theorem~\ref{thm:design-space}) are instances of the Symmetric
+Bayes Dichotomy with $\Theta =$ within-group feature orderings,
+$G =$ the symmetric group on group members,
+$\mathcal{D} =$ trained models.
+\end{corollary}
+
+\begin{corollary}[Model selection as instance]
+\label{cor:model-selection-instance}
+The Model Selection Impossibility
+(Theorem~\ref{thm:model-selection}) is an instance with
+$\Theta =$ model rankings, $G =$ permutations of equal-loss models,
+$\mathcal{D} =$ validation splits.
+\end{corollary}
+
+\paragraph{The technique: symmetric Bayes dichotomy.}
+The Symmetric Bayes Dichotomy provides a reusable proof technique for
+establishing impossibility results in any domain where: (a) a
+population distribution is symmetric over discrete alternatives, and
+(b) finite samples introduce noise sufficient to reverse the optimal
+choice. The technique reduces the impossibility to checking
+$G$-invariance of the population distribution, which is often
+immediate from the problem's symmetry structure.
+
+We anticipate the technique applies to: feature selection (Lasso
+instability under collinearity), causal discovery (edge orientation
+under Markov equivalence), and hyperparameter tuning (configuration
+rankings under cross-validation noise).
 
 \section{SymPy Verification}
 
