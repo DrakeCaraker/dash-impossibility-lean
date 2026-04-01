@@ -517,6 +517,9 @@ Feature attribution and model selection are both instances; we anticipate the te
 Beyond certifying correctness, the Lean formalization served as a \emph{bug-finding methodology}: it caught two logical inconsistencies and one type mismatch that survived informal review.
 We recommend formalizing impossibility theorems as a general practice: (1)~state all axioms explicitly, (2)~type-check to detect hidden assumptions, (3)~verify that ``derived'' results are genuinely proved and not axiomatized.
 
+\paragraph{Named techniques.}
+This paper contributes three reusable techniques: (1)~the \emph{Rashomon reduction}---reducing a design-space question to a model-multiplicity check; (2)~the \emph{FIM-to-Rashomon bridge}---connecting Fisher information rank deficiency to the Rashomon property (supplement \S F3); and (3)~the \emph{symmetric Bayes dichotomy}---the general two-families theorem for symmetric decision problems (supplement).
+
 \paragraph{Proof status transparency.}
 The core impossibility (Theorem~\ref{thm:impossibility}) is Lean-verified with zero axiom dependencies.
 The GBDT ratio and Spearman bounds are Lean-derived from 15 explicit axioms.
