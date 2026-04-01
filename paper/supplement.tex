@@ -52,10 +52,14 @@ Split count (non-first-mover) & \texttt{splitCount\_nonFirstMover} & Residual si
 Global proportionality & \texttt{proportionality\_global} & Uniform contribution model with constant $c$ across models \\
 Cross-group symmetry & \texttt{splitCount\_crossGroup\_symmetric} & DGP symmetry: equal split counts when first-mover elsewhere \\
 Spearman bound & \texttt{spearman\_classical\_bound} & Combinatorial rank argument: tied non-first-movers \\
-Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & DGP symmetry + balanced ensemble + uniform $c$ + cross-group symmetry \\
-Attribution variance & \texttt{attribution\_variance} & Defines $\Var(\varphi_j(f))$ for single models \\
-Variance nonnegativity & \texttt{attribution\_variance\_nonneg} & Standard probability \\
 Consensus variance bound & \texttt{consensus\_variance\_bound} & $\Var(\bar\varphi_j) = \Var(\varphi_j)/M$ (i.i.d.\ mean) \\
+Model measurable space & \texttt{modelMeasurableSpace} & Mathlib infrastructure: $\sigma$-algebra on Model \\
+Model measure & \texttt{modelMeasure} & Mathlib infrastructure: probability measure on Model \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Formerly axiomatized, now derived:}} \\
+Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & \textbf{Theorem} in \texttt{SymmetryDerive.lean} (from axioms above) \\
+Attribution variance & \texttt{attribution\_variance} & \textbf{Definition} from \texttt{ProbabilityTheory.variance} \\
+Variance nonnegativity & \texttt{attribution\_variance\_nonneg} & \textbf{Theorem} from Mathlib's \texttt{variance\_nonneg} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -134,21 +138,17 @@ full combinatorial proof (bounding the expected $\sum d_i^2$ under
 random tie-breaking) requires counting arguments not yet available
 in our Lean framework.
 
-\paragraph{Attribution sum symmetry: derivation infrastructure.}
-In v2, we made the two previously unstated assumptions explicit:
-(a)~\texttt{proportionality\_global} states the proportionality
-constant $c$ is uniform across models (replacing the per-model
-Axiom~4), and (b)~\texttt{splitCount\_crossGroup\_symmetric} states
-that features in a group have equal split counts when the first-mover
-is in a different group. Both are DGP-structural axioms.
-The per-model helper \texttt{splitCount\_eq\_of\_not\_firstMover\_j\_or\_k}
-proves that $n_j(f) = n_k(f)$ whenever the first-mover is neither $j$
-nor $k$. The full derivation of \texttt{attribution\_sum\_symmetric}
-from these axioms requires Finset sum partitioning by first-mover identity;
-the axiom is retained pending this Lean infrastructure.
-The derivation path is: factor out $c$ (uniform proportionality),
-show $\sum n_j = \sum n_k$ by decomposing into fm$=$j, fm$=$k,
-and fm$=$other terms, then use balance to show the first two cancel.
+\paragraph{Attribution sum symmetry: now derived.}
+\texttt{attribution\_sum\_symmetric} is proved (not axiomatized) in
+\texttt{SymmetryDerive.lean}. The proof uses:
+(a)~\texttt{proportionality\_global} (uniform $c$ across models),
+(b)~\texttt{splitCount\_crossGroup\_symmetric} (equal split counts
+when first-mover is in a different group), and
+(c)~\texttt{IsBalanced} (equal first-mover counts).
+The derivation factors out $c$, classifies each model's split-count
+difference by first-mover identity ($+\text{gap}$ for fm$=$j,
+$-\text{gap}$ for fm$=$k, $0$ otherwise), decomposes the sum via
+\texttt{Finset.sum\_ite}, and uses balance to cancel the gap terms.
 
 \paragraph{Variance sub-system.}
 The three variance axioms (\texttt{attribution\_variance},
@@ -865,8 +865,8 @@ making it the natural choice for empirical demonstration.
 
 \paragraph{Data-level stochasticity validation.}
 To confirm the instability arises from collinearity (not from XGBoost's
-internal randomness), we train 50~models on 50 different 80\% bootstrap
-samples of the training data, with \texttt{subsample=1.0} and a fixed
+internal randomness), we train 50~models on 50 different 80\% subsamples
+of the training data (sampling without replacement), with \texttt{subsample=1.0} and a fixed
 \texttt{random\_state=42} (no internal stochasticity). The ONLY
 source of variation is which training rows each model sees.
 

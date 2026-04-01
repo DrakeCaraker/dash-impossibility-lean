@@ -48,9 +48,9 @@
 \maketitle
 
 \begin{abstract}
-Every feature attribution ranking is either unstable or honest about uncertainty---there is no third option.
+Every feature attribution ranking of collinear features is either unstable or honest about uncertainty---there is no third option.
 We prove this as a theorem: under feature collinearity, no method can produce rankings that are simultaneously faithful (reflecting the model), stable (robust to retraining), and complete (deciding all pairs).
-In a survey of 37 public datasets, at least 60\% are affected.
+In a survey of 37 public datasets, approximately 60\% are affected.
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
 The design space has exactly two modes: rank using a single model (faithful but unstable---rankings flip 50\% of the time) or average across an ensemble (stable but reporting ties for symmetric features).
 \DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, with direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
@@ -81,13 +81,13 @@ For \GBDT{}, this ratio follows $1/(1-\alpha\rho^2)$ where $\alpha$ captures the
 The impossibility parallels fairness: \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} proved that calibration, balance, and equal false positive rates cannot coexist when base rates differ.
 Our result plays the same role for explainability---instability under collinearity is not an engineering deficiency but a mathematical inevitability---with direct implications for the EU AI Act \citep{euaiact2024} (Art.~13(3)(b)(ii)), which requires disclosing ``known and foreseeable circumstances'' affecting accuracy.
 
-The impossibility also admits a resolution.
+The impossibility also admits a principled relaxation.
 \DASH{} ensemble averaging breaks the sequential dependence that drives attribution concentration: for balanced ensembles, expected attributions are equitable across symmetric features with variance $O(1/M)$.
 Practitioners can achieve between-group faithfulness and stability by aggregating across the Rashomon set, sacrificing within-group completeness (reporting ties for symmetric features).
 
 The proof is mechanically verified in Lean~4 using Mathlib: 49 type-checked declarations (40 theorems + 9 lemmas from 15 explicit axioms) with no unresolved goals.
 The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero axioms beyond the Rashomon property; the DASH equity result (Corollary~\ref{cor:equity}) depends on the \texttt{attribution\_sum\_symmetric} axiom for balanced ensembles.
-This is, to our knowledge, the first formally verified impossibility result in explainable AI (the core impossibility uses zero axioms; quantitative bounds are conditional on 8 domain-specific axioms).
+This is, to our knowledge, the first formally verified impossibility result in explainable AI (the core impossibility uses zero axioms; quantitative bounds are conditional on 7 domain-specific axioms).
 The formalization also proved valuable beyond certification: during translation to Lean~4 we discovered two logical inconsistencies and one type mismatch in the original axiom system, echoing prior experiences where formalization uncovered subtle proof errors \citep{nipkow2009social,zhang2026statistical}.
 
 \paragraph{Contributions.}
@@ -353,7 +353,7 @@ Random forest\footnotemark & $1 + O(1/\sqrt{T})$ & $\to 1$ as $T \to \infty$ & I
 \label{sec:resolution}
 
 The impossibility arises from sequential dependence: a single model's iterative optimization creates a dominant feature, and different random seeds create different dominant features.
-\DASH{} resolves this by averaging attributions across an ensemble of $M$ independently trained models.
+\DASH{} addresses this by averaging attributions across an ensemble of $M$ independently trained models, relaxing completeness in exchange for stability.
 
 \begin{definition}[\DASH{} consensus attribution]
 \label{def:dash}
@@ -518,7 +518,7 @@ The net effect: \DASH{} loses the unreliable information and sharpens the reliab
 For safety-critical applications deploying a specific model $f$, practitioners should report both the single-model SHAP values (with an instability caveat) and the \DASH{} consensus (stable but reporting ties).
 
 \paragraph{Broader implications.}
-In a survey of 37 public datasets (supplement), 92\% have feature pairs with $|\rho| > 0.5$ and at least 60\% exhibit attribution instability (ranking flip rate $> 10\%$; conservative lower bound---survey power 32\% at the 10\% threshold) --- the impossibility is not a theoretical curiosity but a practical reality affecting the majority of real-world data.
+In a survey of 37 public datasets (supplement), 92\% have feature pairs with $|\rho| > 0.5$ and approximately 60\% exhibit attribution instability (ranking flip rate $> 10\%$; conservative lower bound---survey power 32\% at the 10\% threshold) --- the impossibility is not a theoretical curiosity but a practical reality affecting the majority of real-world data.
 Our theorem proves that this instability is a ``known and foreseeable circumstance'' affecting accuracy under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}.
 The consequences are concrete.
 A hospital that uses SHAP to identify blood pressure as the top readmission risk factor may invest in blood pressure monitoring---but under retraining with a different random seed, BMI becomes the top factor, and the investment targeted the wrong intervention.
@@ -575,7 +575,7 @@ The Design Space exhaustiveness is half-formalized in Lean (faithful case proved
 \section*{NeurIPS Paper Checklist}
 
 \begin{enumerate}
-\item \textbf{Claims.} All theoretical claims are type-checked by Lean~4 (49 declarations from 15 axioms, 0 \texttt{sorry}). The core impossibility (Theorem~\ref{thm:impossibility}) has zero axiom dependencies. Empirical claims are backed by experiments over 50 random seeds. [Yes]
+\item \textbf{Claims.} Core theoretical claims are type-checked by Lean~4 (49 declarations from 15 axioms, 0 \texttt{sorry}). The core impossibility (Theorem~\ref{thm:impossibility}) has zero axiom dependencies; the Design Space Theorem and symmetric Bayes dichotomy are proved in the supplement but not in Lean. Empirical claims are backed by experiments over up to 50 random seeds. [Yes]
 
 \item \textbf{Limitations.} Discussed in Section~\ref{sec:discussion}: axiomatization gap, collinearity requirement, balanced ensemble assumption, deferred variance bound. [Yes]
 
