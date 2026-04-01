@@ -40,14 +40,14 @@ DASHImpossibility/
   DesignSpace.lean   — Design Space Theorem (composite), DASH ties
   Basic.lean         — Import hub
 paper/
-  main.tex           — NeurIPS 2026 paper (9 pages)
-  supplement.tex     — Supplementary (29 pages)
-  references.bib     — 17 citations
+  main.tex           — NeurIPS 2026 paper (12 pages incl. refs+checklist)
+  supplement.tex     — Supplementary (39 pages)
+  references.bib     — 18 citations
   scripts/           — Figure generation + validation scripts
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, comprehensive)
 ```
 
-## Lean State: 14 files, 15 axioms, 42 declarations (33 theorems + 9 lemmas), 0 sorry
+## Lean State: 14 files, 15 axioms, 42 declarations (33 theorems + 9 lemmas, 24 substantive), 0 sorry
 
 ## Axiom Inventory (15 total)
 
@@ -77,9 +77,11 @@ lake build     # compile everything (~1988 jobs)
 
 ## Do NOT
 
+- Commit paper changes without verifying paper-code consistency: theorem count (`grep -c "^theorem\|^lemma" DASHImpossibility/*.lean`), axiom count (`grep -c "^axiom" DASHImpossibility/*.lean`), page counts (`pdfinfo paper/main.pdf`, `pdfinfo paper/supplement.pdf`), and sorry count all match what the paper text claims
 - Use `sorry` without a `-- TODO:` comment explaining what's needed
 - Change axioms without re-running the SymPy verification (`dash-shap/paper/proofs/verify_lemma6_algebra.py`)
 - Add `autoImplicit true` — all variables must be explicit
 - Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma"` (currently 42)
 - Run parallel subagents that both modify the same file (causes build cache corruption)
 - Axiomatize quantities that can be defined — prefer definitions with axiomatized bounds (see SpearmanDef.lean pattern)
+- Claim empirical results as "proved" or "Lean-verified" — distinguish: **proved** (zero axiom deps), **derived** (from axioms), **argued** (supplement proof only), **empirical** (experiments). The paper's "Proof status transparency" paragraph is the reference.
