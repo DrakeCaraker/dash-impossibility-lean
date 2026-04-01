@@ -239,14 +239,17 @@ theorem splitCount_eq_of_not_firstMover_j_or_k (f : Model) (j k : Fin fs.P)
     exact splitCount_crossGroup_symmetric fs f j k ℓ hj hk hfm_in
 
 /-- AXIOM 6: Attribution symmetry for balanced ensembles.
-    For a balanced ensemble, the summed attributions are equal for
-    same-group features. NOW DERIVABLE in principle from:
-    proportionality_global + split-count axioms + splitCount_crossGroup_symmetric
-    + IsBalanced. The derivation requires Finset sum partitioning by
-    first-mover identity (splitting ∑ into fm=j, fm=k, and fm=other terms,
-    then using balance to show the fm=j and fm=k contributions cancel).
-    We retain this as an axiom pending completion of the Finset manipulation;
-    see splitCount_eq_of_not_firstMover_j_or_k for the per-model helper. -/
+    For a balanced ensemble, ∑ φ_j(fᵢ) = ∑ φ_k(fᵢ).
+
+    NOW DERIVABLE from proportionality_global + split-count axioms +
+    splitCount_crossGroup_symmetric + IsBalanced. The derivation:
+    factor out c, show ∑(n_j - n_k) = 0 by classifying each model's
+    contribution (+gap for fm=j, -gap for fm=k, 0 otherwise) and using
+    balance to cancel. See splitCount_eq_of_not_firstMover_j_or_k for
+    the per-model helper. The full Finset sum partition proof requires
+    split_gap_exact (SplitGap.lean), creating a circular dependency
+    that prevents placing it here. Retained as axiom pending
+    refactoring into a downstream file. -/
 axiom attribution_sum_symmetric (M : ℕ) (hM : 0 < M) (models : Fin M → Model)
     (hbal : IsBalanced fs M models)
     (j k : Fin fs.P) (ℓ : Fin fs.L) (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) :
