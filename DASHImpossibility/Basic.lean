@@ -7,6 +7,7 @@ import DASHImpossibility.Iterative
 import DASHImpossibility.Lasso
 import DASHImpossibility.NeuralNet
 import DASHImpossibility.SplitGap
+import DASHImpossibility.SymmetryDerive
 import DASHImpossibility.Ratio
 import DASHImpossibility.General
 import DASHImpossibility.SpearmanDef

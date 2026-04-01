@@ -7,6 +7,7 @@
   (c) Within-group ranking is undetermined by symmetry
 -/
 import DASHImpossibility.Impossibility
+import DASHImpossibility.SymmetryDerive
 
 set_option autoImplicit false
 
