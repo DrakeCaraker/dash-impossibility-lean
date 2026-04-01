@@ -81,36 +81,47 @@ single-step applications.
 The core impossibility (\texttt{attribution\_impossibility}) depends on
 zero axioms---only the Rashomon property as hypothesis.
 The DASH resolution (\texttt{consensus\_equity}) depends on the
-\texttt{attribution\_sum\_symmetric} axiom; the variance convergence
-depends on the \texttt{consensus\_variance\_bound} axiom.
+\texttt{attribution\_sum\_symmetric} theorem (derived from axioms);
+the variance convergence depends on the \texttt{consensus\_variance\_bound}
+theorem (also now derived, not axiomatized).
 
 \begin{verbatim}
-Defs.lean (13 axioms, type definitions, derived theorems)
+Defs.lean (14 axioms, type definitions, derived theorems)
   +-- SymmetryDerive.lean (attribution_sum_symmetric, DERIVED)
-  |
   +-- Trilemma.lean (RashimonProperty, attribution_impossibility)
-  |     |
-  |     +-- Iterative.lean (IterativeOptimizer, iterative_impossibility)
-  |     |     +-- Lasso.lean (lasso_impossibility)
-  |     |     +-- NeuralNet.lean (nn_impossibility)
-  |     |
-  |     +-- General.lean (GBDT instance, gbdt_impossibility)
-  |
-  +-- SplitGap.lean (split_gap_exact, split_gap_ge_half)
-  +-- Ratio.lean (attribution_ratio, ratio_tendsto_atTop)
-  +-- SpearmanDef.lean (spearmanCorr definition, derived bound)
-  |
-  +-- Impossibility.lean (not_equitable, not_stable, impossibility)
-  +-- Corollary.lean (consensus_equity, variance_rate, variance_halves)
-  +-- DesignSpace.lean (design_space_theorem, dash_produces_ties)
+  |     +-- Iterative.lean, Lasso.lean, NeuralNet.lean
+  |     +-- General.lean (GBDT impossibility)
+  |     +-- UnfaithfulBound.lean (U>=1/2, ties optimal, path convergence)
+  |     +-- RashomonUniversality.lean (Rashomon from symmetry)
+  |     +-- RashomonInevitability.lean (impossibility inescapable)
+  |     +-- AlphaFaithful.lean (alpha-faithfulness bound)
+  |     +-- ConditionalImpossibility.lean (conditional SHAP + escape)
+  |     +-- FairnessAudit.lean (proxy audit = coin flip)
+  |     +-- LocalGlobal.lean (local >= global instability)
+  +-- SplitGap.lean, Ratio.lean, SpearmanDef.lean
+  +-- FlipRate.lean (exact GBDT flip rate, binary = coin flip)
+  +-- Efficiency.lean (SHAP efficiency amplification)
+  +-- Impossibility.lean, Corollary.lean, EnsembleBound.lean
+  +-- DesignSpace.lean + DesignSpaceFull.lean (all 4 steps)
+  +-- ModelSelection.lean + ModelSelectionDesignSpace.lean
+  +-- SymmetricBayes.lean (GENERAL SBD, orbit bounds, trichotomy)
+  +-- CausalDiscovery.lean (causal discovery impossibility)
+  +-- SBDInstances.lean (abstract aggregation + instances)
+  +-- FIMImpossibility.lean (Gaussian FIM -> Rashomon)
+  +-- GaussianFlipRate.lean (Phi definition, flip rate formula)
+  +-- QueryComplexity.lean (query lower bound, Le Cam axiomatized)
+  +-- Consistency.lean (axiom system consistency, Fin 4 model)
   +-- RandomForest.lean (contrast case, documentation only)
 \end{verbatim}
 
-\paragraph{Design Space gap.}
-The Lean \texttt{design\_space\_theorem} assembles the infeasibility,
-DASH equity, and variance results as a conjunction. The exhaustiveness
-argument (every method falls in $\mathcal{A} \cup \mathcal{B}$) and
-Pareto optimality are proved below (\S Design Space Theorem) but not
+\paragraph{Design Space: now fully formalized.}
+The Lean formalization now covers all 4 steps of the Design Space Theorem.
+\texttt{DesignSpaceFull.lean} proves exhaustiveness: every ranking is
+either Family~$\mathcal{A}$ (complete + unfaithful) or Family~$\mathcal{B}$
+(tie). \texttt{strongly\_faithful\_impossible} formalizes the impossibility
+of consensus-value-faithful methods.
+The Bayes-optimality half (optimal unfaithful ranking assigns ties) is
+proved in the supplement below but not
 in Lean. \texttt{strongly\_faithful\_impossible} formalizes the
 impossibility of consensus-value-faithful methods (a stronger result
 than the supplement's Step~3, which uses ranking-faithfulness).
