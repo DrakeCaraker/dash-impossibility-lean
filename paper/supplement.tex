@@ -753,6 +753,11 @@ demonstrating the practical recommendation of \S5: train $M \geq 25$
 models, average SHAP values, and diagnose instability via ranking flips.
 The full \DASH{} pipeline (population generation, $\varepsilon$-filtering,
 deduplication) is available in the companion repository.
+The code supplement also includes the F5$\to$F1$\to$DASH diagnostic
+pipeline (\texttt{f1\_f5\_validation.py}), the cross-implementation
+validation (\texttt{cross\_implementation\_validation.py}), the SNR
+calibration (\texttt{snr\_calibration.py}), and all figure generation
+and experiment scripts.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CROSS-IMPLEMENTATION VALIDATION
@@ -2148,6 +2153,9 @@ are not standard attribution aggregation methods.)
 \emph{Case 1: $A$ is faithful to individual models and complete.}
 Then by Step 1, $U(A) = 1/2$ and $S(A) \leq 1 - m^3/P^3$,
 so $A \in \mathcal{A}$.
+(This case is formalized in Lean as \texttt{strongly\_faithful\_impossible}
+in \texttt{DesignSpace.lean}: any method faithful to each model's
+attributions contradicts the Rashomon property for $M \geq 2$.)
 
 \emph{Case 2: $A$ is not faithful to some model $f$.}
 Then $A$ ranks some pair $(j,k)$ differently from model $f$'s
@@ -2936,6 +2944,12 @@ under realistic training variation: specific token pairs (e.g.,
 fine-tuned models. The perturbation result establishes an upper
 bound on Rashomon set diversity; the fine-tuning result confirms
 the effect persists under standard training.
+The 14.5\% after 1-epoch fine-tuning is a lower bound on attention
+instability: longer training (more epochs) or larger learning rates
+would explore more of the Rashomon set and likely produce higher
+flip rates. The true instability under standard fine-tuning practice
+(3--5 epochs) likely lies between the fine-tuning lower bound (14.5\%)
+and the perturbation upper bound (88\%).
 
 \section{Replication Study: Published SHAP Rankings Are Unstable}
 

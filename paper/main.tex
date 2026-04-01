@@ -521,7 +521,7 @@ In the supplement, we prove a general theorem: for \emph{any} statistical decisi
 We call this the \emph{symmetric Bayes dichotomy}.
 Feature attribution, model selection, and causal edge orientation are all instances; the third---causal discovery under Markov equivalence (supplement)---has a structurally different symmetry group (CPDAG automorphisms with orbits of variable size $\geq 2$, not just binary transpositions), confirming the technique applies beyond pairwise symmetry.
 The dichotomy is related to classical invariant decision theory \citep{lehmann2005testing}; our contribution is the reduction template: checking $G$-invariance suffices to establish a two-family impossibility with explicit bounds.
-We also show empirically (supplement) that DistilBERT attention-based token importance rankings are unstable under both weight perturbation (88\% of adjacent token pairs, upper bound) and actual fine-tuning on SST-2 with different seeds (14.5\% of pairs, realistic estimate), confirming that the impossibility extends to transformer attention.
+We also show empirically (supplement) that DistilBERT attention-based token importance rankings are unstable under both weight perturbation (88\% of adjacent token pairs, upper bound) and actual fine-tuning on SST-2 with different seeds (14.5\% of pairs after 1 epoch, a lower bound), confirming that the impossibility extends to transformer attention.
 
 \paragraph{Formalization as methodology.}
 Beyond certifying correctness, the Lean formalization served as a \emph{bug-finding methodology}: it caught two logical inconsistencies and one type mismatch that survived informal review.
