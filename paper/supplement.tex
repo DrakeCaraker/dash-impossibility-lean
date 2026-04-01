@@ -1214,6 +1214,19 @@ no faithful, stable, complete ranking exists for any model
 class containing $R_\varepsilon$.
 \end{proof}
 
+\paragraph{Relationship to classical non-identifiability.}
+The near-singularity of the Fisher information under collinearity is
+textbook: $\Var(\hat\beta_j - \hat\beta_k) \geq \sigma^2/(n(1-\rho))$
+diverges as $\rho \to 1$ \citep{lehmann2005testing}. Our contribution is
+reframing this as an \emph{impossibility theorem} about feature rankings
+rather than a variance bound on parameter estimates. The reframing has
+two consequences: (i)~it establishes that the ranking problem is
+qualitatively different from the estimation problem---even precise
+estimates can produce unstable rankings when the gap $\Delta$ is small
+relative to $\sigma$---and (ii)~it connects to the Design Space Theorem,
+showing that the Fisher information rank deficiency determines the
+boundary between Family~$\mathcal{A}$ and Family~$\mathcal{B}$.
+
 \subsection{Explicit bounds for the Gaussian linear model}
 
 \begin{proposition}[Gaussian FIM specialization]
@@ -1312,8 +1325,7 @@ to be well-approximated by the NTK quadratic, and (iii) the
 feature collinearity to produce a small NTK eigenvalue.
 Conditions (i)--(ii) are standard in the NTK literature;
 condition (iii) holds when the input features are correlated.
-A rigorous proof requires bounding the NTK approximation error,
-which we leave to future work.
+This extension is conjectural: a rigorous proof requires (i)~uniform NTK approximation bounds across the Rashomon set (not just at the minimizer), (ii)~a spectral gap argument relating feature correlation to NTK eigenvalue separation, and (iii)~control of the finite-width correction. None of these are available in the current literature. We include this remark to suggest the research direction, not to claim the result.
 \end{remark}
 
 \section{Theorem F2: DASH Pareto Optimality}
@@ -1705,6 +1717,43 @@ power, not a certifier; the optimality result applies to the $Z$-test
 run at the information-theoretically optimal sample size.
 \end{remark}
 
+\section{DASH Robustness and Breakdown Point}
+
+\DASH{} (the sample mean) is the minimum-variance unbiased estimator
+(Theorem~\ref{thm:dash-optimal}), but it has breakdown point zero:
+a single adversarial or corrupted model can shift the consensus
+attribution arbitrarily. We compare robustness properties of three
+aggregation methods:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Method & ARE & Breakdown point & Recommendation \\
+\midrule
+Mean (\DASH{}) & 1.000 & 0\% & Standard use \\
+5\%-trimmed mean & 0.992 & 5\% & Moderate robustness \\
+Median & 0.637 & 50\% & Adversarial settings \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For production settings with potential model contamination (corrupted
+training data, adversarial seeds, or hardware failures producing
+degenerate models), the 5\%-trimmed mean provides near-optimal
+efficiency (ARE $= 0.992$, requiring only $0.8\%$ more models than
+\DASH{} for the same stability) with meaningful robustness. The
+median requires $\pi/2 \approx 57\%$ more models
+(Proposition~\ref{prop:median}) but tolerates up to 50\% corrupted
+models.
+
+\paragraph{Practical guidance.}
+For $M = 25$ models: the 5\%-trimmed mean discards the single most
+extreme model in each tail (effectively $M_{\text{eff}} = 23$), a
+negligible cost. For adversarial robustness, the median with
+$M = 40$ achieves comparable stability to \DASH{} with $M = 25$
+while tolerating up to 20 corrupted models.
+
 \section{Theorem F1: Statistical Indistinguishability Characterization}
 
 \subsection{Setup and assumptions}
@@ -1855,6 +1904,17 @@ attribution difference $D$ is well-approximated by a Gaussian:
 the Shapiro--Wilk test on the 50 Breast Cancer models gives
 $p > 0.10$ for 412/435 feature pairs. The Berry--Esseen correction
 is negligible in practice.
+
+\paragraph{Role of Berry-Esseen.}
+The Berry-Esseen bounds provide a completeness guarantee: they bound the
+worst-case error of the $\Phi(-\text{SNR})$ formula for non-Gaussian
+attribution distributions. For the GBDT attributions studied here, the
+Shapiro--Wilk test confirms near-Gaussianity ($p > 0.10$ for 412/435
+pairs), so the correction is negligible. The bounds become relevant for
+heavy-tailed distributions (e.g., deep networks with high initialization
+variance) or bimodal distributions (e.g., Lasso, where the attribution is
+either $c > 0$ or $0$). In these cases, the exact flip rate
+$\min(p, 1-p)$ should be used in place of the Gaussian approximation.
 
 \paragraph{Empirical validation on Breast Cancer.}
 Figure~\ref{fig:f1-diagnostic} validates Theorem~\ref{thm:testable}
@@ -2299,6 +2359,46 @@ bounds (Theorems~2--3); the core impossibility (Theorem~1) does not
 depend on it. The 35--66\% CV means the predicted ratio $1/(1{-}\rho^2)$
 is an order-of-magnitude guide rather than a precise prediction,
 consistent with the $\alpha$-corrected model ($R^2 = 0.89$).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LOCAL VS GLOBAL ATTRIBUTION INSTABILITY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Local vs.\ Global Attribution Instability}
+
+The impossibility as stated concerns \emph{global} attributions
+(mean $|\text{SHAP}|$ across data points). We now show that
+\emph{local} (instance-level) attributions are at least as unstable.
+
+\begin{remark}[Local instability dominates global]
+\label{rem:local-instability}
+For a fixed data point $x$, the local SHAP values
+$\varphi_j(f, x)$ depend on the model $f$, which varies across
+training seeds. The global attribution
+$\varphi_j(f) = \mathbb{E}_x[|\varphi_j(f, x)|]$ averages over
+data points, which can only reduce variance (by Jensen's inequality
+applied to the convex function $|\cdot|$):
+\[
+    \Var_f\!\big(\varphi_j(f)\big)
+    = \Var_f\!\big(\mathbb{E}_x[|\varphi_j(f,x)|]\big)
+    \leq \mathbb{E}_x\!\big[\Var_f(|\varphi_j(f,x)|)\big].
+\]
+The right side is the average local instability; the left side is the
+global instability. Since the flip rate is a monotone function of
+the variance-to-gap ratio $\sigma/\Delta$, and averaging reduces
+$\sigma$ without changing $\Delta$ (the population gap is the same
+at every $x$ under DGP symmetry), the global flip rate is a lower
+bound on the average local flip rate.
+\end{remark}
+
+\paragraph{Implication.}
+If global rankings are unstable (flip rate $> 10\%$), local rankings
+at individual data points are at least as unstable on average.
+Practitioners who report per-instance SHAP explanations (e.g.,
+``for this patient, feature X is most important'') face the same
+or worse instability as those reporting global rankings. The F1
+diagnostic (computed on global attributions) is therefore a
+conservative screen for local instability as well.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INFORMATION LOSS ANALYSIS
@@ -3088,6 +3188,7 @@ establish a two-family impossibility with explicit unfaithfulness
 and stability bounds, which we demonstrate across three structurally
 distinct instances (binary feature transpositions, binary model
 permutations, and CPDAG automorphisms of variable size).
+A general theorem proving that $G$-invariance of the decision problem always yields a two-family decomposition---with explicit conditions on the group action and tight bounds on each family's achievable set---is the natural next step; our three instances (binary transpositions for feature attribution, permutation groups for model selection, and CPDAG automorphisms for causal discovery) provide the test cases for such a generalization.
 
 \subsection{Instance 3: Causal Discovery under Markov Equivalence}
 
@@ -3332,6 +3433,18 @@ while perturbation adds $O(0.02)$ noise to all parameters. The
 perturbation result represents the full Rashomon set; the fine-tuning
 result represents the subset explored by standard training.
 
+\paragraph{Scope and limitations.}
+The attention-based instability reported here (14.5\% of adjacent token
+pairs under fine-tuning) is preliminary evidence, not a formal extension
+of the impossibility theorem. Attention weights are not SHAP values:
+they do not satisfy the proportionality axiom, and the ``collinear
+group'' structure of tree features does not map cleanly to token
+positions. The result demonstrates that attribution instability under
+model multiplicity is not unique to tree ensembles, but a formal
+impossibility for transformer attention would require different axioms
+and definitions. We report this as suggestive evidence for the
+generality of the phenomenon, not as a proved extension.
+
 \section{Replication Study: Published SHAP Rankings Are Unstable}
 
 Multiple published studies report SHAP feature rankings on the
@@ -3518,6 +3631,17 @@ retraining with a different seed could produce a model where
 zip code drops to 8th and income rises to 3rd. The \emph{audit
 conclusion about discrimination depends on the random seed},
 not on the model's actual reliance on the protected attribute.
+
+\paragraph{Intersectional considerations.}
+When multiple protected attributes (race, gender, age) are each proxied
+by collinear non-protected features, the impossibility applies
+independently to each proxy pair. The worst case is multiplicative: if
+$K$ protected attributes each have unstable proxies, the probability
+that a single-model audit correctly identifies all $K$ proxy reliance
+directions is $(1/2)^K$, exponentially vanishing in $K$. For $K = 3$
+(a common intersectional setting), the joint correctness probability is
+$1/8 = 12.5\%$. A full analysis of intersectional instability under
+model multiplicity is left to future work.
 
 \section{Expected Ranking Discordance}
 

@@ -48,14 +48,14 @@
 \maketitle
 
 \begin{abstract}
-Every feature attribution ranking of collinear features is either unstable or honest about uncertainty---there is no third option.
-We prove this as a theorem: under feature collinearity, no method can produce rankings that are simultaneously faithful (reflecting the model), stable (robust to retraining), and complete (deciding all pairs).
-In a survey of 37 public datasets, approximately 60\% are affected.
+We characterize the complete attribution design space under feature collinearity: exactly two families of methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and no method lies outside this dichotomy.
+The foundation is the \emph{Attribution Impossibility}: no feature ranking can be simultaneously faithful, stable, and complete when features are collinear.
+The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
+\DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
+In a survey of 37 public datasets, approximately 60\% exhibit attribution instability (conservative: survey power 32\% at the 10\% flip-rate threshold).
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
-The design space has exactly two modes: rank using a single model (faithful but unstable---rankings flip 50\% of the time) or average across an ensemble (stable but reporting ties for symmetric features).
-\DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, with direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
-These results are instances of a general \emph{symmetric Bayes dichotomy}: any statistical decision problem with symmetric alternatives admits exactly two operating modes, demonstrated here for feature attribution, model selection, and causal edge orientation under Markov equivalence.
-The framework is mechanically verified in Lean~4 (49 declarations, 15 axioms, 0 \texttt{sorry})---to our knowledge, the first formally verified impossibility in explainable AI.
+The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
+The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (49 declarations, 15 axioms, 0 \texttt{sorry})---to our knowledge, the first formally verified impossibility in explainable AI.
 \end{abstract}
 
 \section{Introduction}
@@ -97,8 +97,12 @@ The formalization also proved valuable beyond certification: during translation 
     \item \textbf{Architecture discrimination}: attribution ratios for \GBDT{} ($1/(1{-}\rho^2)$ Lean-verified; $1/(1{-}\alpha\rho^2)$ empirically corrected), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$, informal).
     \item \textbf{Constructive relaxation via \DASH{}}: ensemble averaging restores equitable attributions (derived for balanced ensembles) with variance $O(1/M)$, sacrificing within-group completeness.
     \item \textbf{The symmetric Bayes dichotomy} (supplement): a proof technique from invariant decision theory \citep{lehmann2005testing}, demonstrated across three structurally distinct instances (feature attribution, model selection, and causal discovery under Markov equivalence) with different symmetry groups.
-    \item \textbf{Machine-verified proof}: formalized in Lean~4 (49 type-checked declarations from 15 axioms, 0 \texttt{sorry}), publicly available at \url{[anonymized for review]}.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (49 type-checked declarations from 15 axioms, 0 \texttt{sorry}), publicly available at \url{[anonymized for review]}. The axiom system is consistent: we construct an explicit model satisfying all 15 axioms simultaneously (supplement).
 \end{enumerate}
+
+The core impossibility proof is deliberately simple---a four-line contradiction from the Rashomon property.
+Like Arrow's original argument \citep{arrow1951social}, the mathematical contribution lies not in proof complexity but in identifying the right abstraction (the Rashomon property) and characterizing the complete achievable set (the Design Space Theorem).
+The quantitative depth comes from the architecture-specific bounds (\S\ref{sec:bounds}) and the Pareto optimality proof (supplement).
 
 \section{Setup}
 \label{sec:setup}
@@ -305,8 +309,10 @@ This bound follows from the combinatorial argument that non-first-mover features
 \label{sec:lasso}
 
 The $\ell_1$ penalty selects exactly one feature from each correlated group and zeros all others, so $\varphi_{d(f)} > 0$ and $\varphi_k(f) = 0$ for $k \neq d(f)$.
-Surjectivity holds because regularization-path tie-breaking and data perturbation can make any feature the selected one.
+Lasso is an iterative optimizer (Definition~\ref{def:iterative}) with $d(f) =$ the selected feature; the dominance condition holds with infinite margin.
+Surjectivity holds because regularization-path tie-breaking and data perturbation can make any feature the selected one (the elastic net homotopy ensures every feature is selected for some $\lambda$).
 The attribution ratio is therefore infinite at \emph{any} $\rho > 0$---the most severe possible violation.
+The impossibility applies to any model class with hard feature selection, including stepwise regression and $\ell_0$-penalized methods.
 
 \subsection{Neural Networks: Conditional Violation}
 \label{sec:nn}
@@ -484,7 +490,8 @@ A method subject to both (linear SHAP on collinear features) faces the intersect
 \paragraph{Rashomon effect and model multiplicity.}
 \citet{laberge2023partial} find that attribution rankings across Rashomon sets are inherently partial orders; \citet{rudin2024amazing} advocate embracing model multiplicity.
 Our theorem shows the partial order is not a pragmatic choice but a mathematical necessity: completeness is formally incompatible with faithfulness and stability.
-Concretely, we add four things Laberge et al.\ do not provide: (i)~a formal impossibility proof (they observe partial orders empirically; we prove they are \emph{unavoidable}), (ii)~quantitative architecture-discriminating bounds, (iii)~a provably optimal resolution (\DASH{}), and (iv)~machine-verified formalization.
+Concretely, we add four things Laberge et al.\ do not provide: (i)~a formal impossibility proof (they observe partial orders empirically; we prove they are \emph{unavoidable}), (ii)~quantitative architecture-discriminating bounds, (iii)~a provably optimal resolution (\DASH{}) with tight ensemble size formulas, and (iv)~machine-verified formalization.
+The qualitative intuition that correlated features have unstable rankings is practitioner folklore; our contribution is making it \emph{precise} (exactly two families), \emph{quantitative} (architecture-discriminating bounds), and \emph{machine-verified}.
 
 \paragraph{Fairness impossibility.}
 \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove calibration, balance, and equal false positive rates cannot coexist.
@@ -510,7 +517,10 @@ Our stability definition (ranking is model-independent) is all-or-nothing, follo
 Under a weaker $\varepsilon$-stability notion (ranking agrees with $\geq 1{-}\varepsilon$ fraction of models), the impossibility extends: no faithful, complete ranking can be $\varepsilon$-stable with $\varepsilon < 1/2$ for within-group pairs under DGP symmetry (supplement, unfaithfulness $= 1/2$).
 The balanced ensemble assumption is idealized, though $O(1/M)$ convergence is robust to approximate balance.
 The variance bound is axiomatized and its consequences (variance rate, monotonicity) are formally proved; the full measure-theoretic derivation from Mathlib's \texttt{IndepFun.variance\_sum} is deferred.
-Switching to conditional SHAP \citep{janzing2020feature} does not universally resolve the instability: in the supplement we prove the impossibility extends to conditional attributions whenever features have equal causal effects (the causal graph preserves the symmetry).
+Switching to conditional SHAP \citep{janzing2020feature} does not universally resolve the instability: in the supplement we prove the impossibility extends to conditional attributions whenever features have equal causal effects ($\beta_j = \beta_k$) and symmetric causal position (the causal graph preserves the symmetry).
+The precise escape condition is $\beta_j \neq \beta_k$: when causal effects differ, conditional SHAP can resolve the pair by appealing to causal structure---for $\rho = 0.9$, a causal effect difference $|\Delta\beta| \geq 0.5$ eliminates instability (supplement).
+This connects to the causal feature relevance framework of \citet{janzing2020feature}: causal structure can break the symmetry driving the impossibility, but only when it provides genuine asymmetry.
+When features are causally interchangeable (e.g., multiple measurements of the same quantity), no attribution method---marginal or conditional---can produce stable complete rankings.
 Decorrelating via PCA removes collinearity but destroys the original feature semantics---the impossibility applies to original features, which are what practitioners want to explain.
 \DASH{} requires $M\times$ training cost; $M{=}25$ brings the flip rate below 1\%, while $M{=}5$ provides a substantial improvement (variance reduced $5\times$) at modest cost.
 \DASH{} consensus achieves stability by discarding model-specific within-group information: when individual models disagree on $j$ vs.\ $k$, \DASH{} reports a tie rather than picking a side.
@@ -519,6 +529,13 @@ Between-group information is \emph{sharpened}: the mutual information between th
 The net effect: \DASH{} loses the unreliable information and sharpens the reliable information.
 For safety-critical applications deploying a specific model $f$, practitioners should report both the single-model SHAP values (with an instability caveat) and the \DASH{} consensus (stable but reporting ties).
 
+\paragraph{Computational cost and practical deployment.}
+For batch pipelines (daily or weekly model refreshes), training $M{=}25$ models is feasible---many teams already train multiple models for hyperparameter search.
+For real-time SHAP explanations, $M{=}25$ is prohibitive; use the F5 single-model diagnostic to flag unstable pairs, then report affected features with an instability caveat rather than ensemble-averaging.
+For high-dimensional feature spaces ($P > 500$), the pairwise F1 diagnostic scales as $O(P^2)$; the correlation-based grouping step (identifying correlated groups from the correlation matrix) prunes this to $O(G \cdot m^2)$ where $G$ is the number of groups and $m$ their typical size.
+The equicorrelation assumption simplifies the axioms but is not required for the diagnostics: F1 and F5 operate on observed attribution arrays and make no distributional assumptions.
+The proportionality axiom (CV $\approx$ 0.35--0.66 depending on tree depth; supplement) affects the quantitative ratio $1/(1{-}\rho^2)$, not the qualitative impossibility or the diagnostics.
+
 \paragraph{Broader implications.}
 In a survey of 37 public datasets (supplement), 92\% have feature pairs with $|\rho| > 0.5$ and approximately 60\% exhibit attribution instability (ranking flip rate $> 10\%$; conservative lower bound---survey power 32\% at the 10\% threshold) --- the impossibility is not a theoretical curiosity but a practical reality affecting the majority of real-world data.
 Our theorem proves that this instability is a ``known and foreseeable circumstance'' affecting accuracy under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}.
@@ -526,6 +543,7 @@ The consequences are concrete.
 A hospital that uses SHAP to identify blood pressure as the top readmission risk factor may invest in blood pressure monitoring---but under retraining with a different random seed, BMI becomes the top factor, and the investment targeted the wrong intervention.
 A data scientist debugging a model pipeline who fixes the ``most important'' feature's preprocessing may be fixing the wrong feature---because the ranking was a coin flip.
 Published scientific studies that report ``Feature~X is the most important predictor'' based on a single model's SHAP values may be reporting an artifact of the specific training run, not a replicable finding---contributing to the reproducibility crisis in fields that use ML for discovery.
+The low survey power (32\%) means the true prevalence of instability is likely higher than 60\%; our theorem establishes that this instability is not a statistical accident but a mathematical inevitability under collinearity.
 More broadly, AI safety certification under the EU AI Act cannot guarantee that explanations reflect the model's true reliance without ensemble methods: the impossibility makes single-model certification of feature attributions formally infeasible.
 The impossibility has a direct consequence for fairness auditing (supplement): when a protected proxy (e.g., zip code) is collinear with a non-protected feature (e.g., income), a single-model SHAP audit concludes ``proxy reliance'' with probability exactly $1/2$---the audit outcome is a coin flip across training seeds, not a reliable determination of discrimination.
 In each case, \DASH{} provides a principled mitigation by reporting honest indistinguishability rather than arbitrary distinctions.
