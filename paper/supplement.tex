@@ -2034,6 +2034,127 @@ features are genuinely symmetric (the causal graph preserves the
 symmetry). For symmetric features, \DASH{} ensemble averaging
 remains the only principled resolution.
 
+\section{Generalization: The Model Selection Impossibility}
+
+The Rashomon $\to$ impossibility $\to$ design space pipeline is not
+specific to feature attribution. We demonstrate its reusability by
+applying it to model selection, obtaining a structurally identical
+impossibility and two-family characterization.
+
+\subsection{Setup}
+
+Consider $K$ candidate models $g_1, \ldots, g_K$ trained on the same
+data. A \emph{model selection rule} maps a validation dataset to a
+ranking of the $K$ models. We formalize three desiderata:
+
+\begin{definition}[Model selection desiderata]
+A model selection rule $R$ is:
+\begin{itemize}
+    \item \emph{Faithful}: $R$ ranks model $g_i$ above $g_j$ whenever
+      $g_i$ has lower validation loss on the observed validation set.
+    \item \emph{Stable}: $R$ produces the same ranking regardless of
+      which validation split is drawn.
+    \item \emph{Complete}: $R$ decides for every pair $(g_i, g_j)$.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Model Rashomon property]
+A model class satisfies the \emph{model Rashomon property} if for
+every pair $g_i, g_j$ with similar population loss
+($|L(g_i) - L(g_j)| < \varepsilon$), there exist validation splits
+$V, V'$ such that $g_i$ has lower loss on $V$ and $g_j$ has lower
+loss on $V'$.
+\end{definition}
+
+This property is a consequence of finite-sample noise: when the
+population loss gap is smaller than the validation noise, different
+splits rank the models differently. It is the model selection
+analogue of feature attribution's Rashomon property.
+
+\subsection{The impossibility}
+
+\begin{theorem}[Model Selection Impossibility]
+\label{thm:model-selection}
+If a model class satisfies the model Rashomon property, then no
+model selection rule can be simultaneously faithful, stable, and
+complete.
+\end{theorem}
+
+\begin{proof}
+Identical structure to Theorem~1. Let $g_i, g_j$ have similar
+population loss. By the model Rashomon property, there exist
+validation splits $V, V'$ with $g_i$ ranked above $g_j$ on $V$
+and reversed on $V'$. A faithful, stable, complete selection rule
+would need to rank $g_i > g_j$ (from $V$) and $g_j > g_i$ (from
+$V'$) simultaneously. Contradiction.
+\end{proof}
+
+\subsection{The model selection design space}
+
+\begin{theorem}[Model Selection Design Space]
+\label{thm:model-selection-ds}
+Under the model Rashomon property, the achievable model selection
+design space has the same two-family structure as attribution:
+\begin{itemize}
+    \item \textbf{Family $\mathcal{A}'$ (single-split):} Faithful
+      and complete but unstable. Any selection rule based on one
+      validation split falls here. Unfaithfulness $U' = 1/2$ for
+      similar-loss model pairs.
+    \item \textbf{Family $\mathcal{B}'$ (cross-validation / ensemble):}
+      Stable (variance $O(1/K_{\text{folds}})$) but reports ties for
+      similar-loss pairs. Model ensembling is the analogue of \DASH{}.
+\end{itemize}
+\end{theorem}
+
+\begin{proof}
+By DGP symmetry (equal-loss models have symmetric validation score
+distributions), any fixed selection of one model over an equal-loss
+competitor disagrees with half the validation splits
+($U' = 1/2$, same argument as Theorem~S6).
+Cross-validated selection averages across splits, reducing
+unfaithfulness to zero for equal-loss pairs (ties) while stabilizing
+with rate $O(1/K_{\text{folds}})$.
+Pareto optimality follows from the same Cram\'er--Rao argument as
+Theorem~F2.
+\end{proof}
+
+\paragraph{Practitioner implication.}
+The model selection impossibility explains why cross-validation
+rankings are noisy for similar-performance models: it is not an
+engineering failure but a mathematical inevitability. The resolution
+is the same: average (ensemble) rather than select.
+
+\subsection{The Two-Families Meta-Pattern}
+
+The structural identity between the attribution and model selection
+impossibilities suggests a general pattern:
+
+\begin{remark}[Two-Families Conjecture]
+\label{rem:two-families}
+For any statistical decision problem where:
+\begin{enumerate}
+    \item The population distribution is \emph{symmetric} over a
+      discrete choice set (which feature is dominant, which model is
+      best, which causal direction holds),
+    \item The observed data introduces \emph{finite-sample noise}
+      sufficient to reverse the optimal choice across i.i.d.\ draws,
+\end{enumerate}
+the achievable (instance-accuracy, stability) set consists of exactly
+two families:
+\begin{itemize}
+    \item \textbf{Instance-specific}: commit to the data-specific
+      choice (accurate for this instance, unstable across instances).
+    \item \textbf{Population-averaged}: average over instances (stable
+      but losing instance-specific information).
+\end{itemize}
+The first instance is feature attribution (this paper). The second
+is model selection (Theorem~\ref{thm:model-selection-ds}). We
+conjecture the pattern extends to feature selection (Lasso
+instability), causal discovery (edge orientation under
+faithfulness-equivalence), and hyperparameter tuning (configuration
+rankings under CV noise).
+\end{remark}
+
 \section{SymPy Verification}
 
 All algebraic consequences have been independently verified:

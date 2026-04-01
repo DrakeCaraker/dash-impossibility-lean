@@ -507,6 +507,16 @@ Our theorem proves that this instability is a ``known and foreseeable circumstan
 Beyond regulatory compliance, the impossibility affects model debugging (the wrong feature may be blamed for errors), fairness audits (protected-feature effects may be misattributed to correlated proxies), and scientific discovery (spurious feature importance may drive false hypotheses).
 In each case, \DASH{} provides a principled mitigation by reporting honest uncertainty rather than arbitrary distinctions.
 
+\paragraph{Generality of the pipeline.}
+The Rashomon $\to$ impossibility $\to$ design space $\to$ resolution pipeline is not specific to feature attribution.
+In the supplement, we apply the same pipeline to \emph{model selection}: when candidates have similar population loss, no selection rule can be simultaneously faithful (respect held-out performance), stable (independent of validation split), and complete (decide for every pair).
+The resolution is the same: ensemble (cross-validate) rather than select.
+We conjecture this \emph{two-families pattern}---instance-specific vs.\ population-averaged---holds generally for statistical decision problems under symmetric populations and finite-sample noise.
+
+\paragraph{Formalization as methodology.}
+Beyond certifying correctness, the Lean formalization served as a \emph{bug-finding methodology}: it caught two logical inconsistencies and one type mismatch that survived informal review.
+We recommend formalizing impossibility theorems as a general practice: (1)~state all axioms explicitly, (2)~type-check to detect hidden assumptions, (3)~verify that ``derived'' results are genuinely proved and not axiomatized.
+
 \paragraph{Proof status transparency.}
 The core impossibility (Theorem~\ref{thm:impossibility}) is Lean-verified with zero axiom dependencies.
 The GBDT ratio and Spearman bounds are Lean-derived from 15 explicit axioms.
