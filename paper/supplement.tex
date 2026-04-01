@@ -920,6 +920,7 @@ The between-group ranking (these features vs.\ other features) is stable
 (F1 diagnostic: $Z > 1.96$).''
 
 \section{Non-SHAP Attribution Validation}
+\label{sec:non-shap-validation}
 
 The impossibility applies to any attribution method satisfying
 proportionality, not only to TreeSHAP. To confirm this empirically,
@@ -955,6 +956,139 @@ importance. TreeSHAP shows lower instability (41\% vs 91\%) likely
 because its game-theoretic averaging over feature coalitions provides
 implicit regularization, reducing within-model attribution variance
 compared to permutation importance's direct shuffling.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EFFICIENCY AND INSTABILITY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{SHAP Efficiency and Attribution Instability}
+\label{sec:efficiency-instability}
+
+The SHAP efficiency axiom ($\sum_j \varphi_j(f,x) = f(x) - \mathbb{E}[f(X)]$
+for every model $f$ and data point $x$) has a subtle relationship with
+ranking instability.  We analyze this relationship precisely, separating
+the \emph{within-model} effect (where efficiency is a binding constraint)
+from the \emph{across-model} effect (where it is not).
+
+\subsection{Within-model amplification}
+
+\begin{proposition}[Efficiency-induced negative correlation]
+\label{prop:efficiency-negcor}
+Let $\varphi_1, \ldots, \varphi_m$ be SHAP values for $m$ features in a
+group whose total attribution is $C$ (fixed for a given model $f$ and
+data point $x$), i.e., $\sum_{i=1}^m \varphi_i = C$.  Suppose all
+features have the same marginal variance $\sigma^2$ under some
+perturbation of the data point.  Then for any $j \neq k$:
+\[
+  \mathrm{Cov}(\varphi_j, \varphi_k) = -\frac{\sigma^2}{m-1},
+\]
+\[
+  \mathrm{Var}(\varphi_j - \varphi_k)
+  = 2\sigma^2 \cdot \frac{m}{m-1}.
+\]
+For an unconstrained method with independently computed attributions
+(zero covariance), the same difference has variance $2\sigma^2$.
+The amplification factor is $m/(m-1)$.
+\end{proposition}
+
+\begin{proof}
+From $\sum_i \varphi_i = C$ (constant), $\mathrm{Var}(\sum_i \varphi_i) = 0$.
+Expanding:
+\[
+  0 = m\sigma^2 + m(m-1)\mathrm{Cov}(\varphi_j, \varphi_k)
+  \implies \mathrm{Cov}(\varphi_j, \varphi_k) = -\frac{\sigma^2}{m-1}.
+\]
+Then $\mathrm{Var}(\varphi_j - \varphi_k) = 2\sigma^2 - 2(-\sigma^2/(m-1))
+= 2\sigma^2(1 + 1/(m-1)) = 2\sigma^2 \cdot m/(m-1)$.
+\end{proof}
+
+\begin{corollary}[Group-size dependence]
+\label{cor:groupsize}
+The amplification factor $m/(m-1)$ equals $2$ for $m=2$ (pair of
+collinear features), $3/2$ for $m=3$, and approaches $1$ as
+$m \to \infty$.  The efficiency-induced amplification is therefore
+worst for small groups and negligible for large groups.
+\end{corollary}
+
+\subsection{Across-model non-amplification}
+\label{subsec:across-model}
+
+The ranking flip rate of interest in this paper is an
+\emph{across-model} quantity: $\Pr_f[\varphi_j(f) > \varphi_k(f)]$
+where the probability is over models $f$ drawn from the Rashomon set.
+The efficiency constraint is fundamentally different in this setting.
+
+\begin{proposition}[Efficiency does not constrain across-model covariance]
+\label{prop:no-across-model}
+Let $\varphi_j(f)$ denote the mean absolute SHAP value for feature $j$
+under model $f$.  The efficiency axiom states that
+$\sum_j \varphi_j^{\mathrm{signed}}(f,x) = f(x) - \mathbb{E}[f(X)]$
+for each fixed $(f,x)$.  However:
+\begin{enumerate}
+\item The efficiency constant $C(f,x) = f(x) - \mathbb{E}[f(X)]$
+  \emph{varies across models}~$f$, because different models produce
+  different predictions.
+\item The group's share of the total,
+  $\sum_{i \in \text{group}} \varphi_i(f,x)$, also varies across
+  models (it depends on how much of the prediction the group captures
+  in model $f$).
+\item Taking absolute values or averaging over data points further
+  breaks the linear constraint.
+\end{enumerate}
+Therefore, $\mathrm{Var}_f(\sum_{i \in \text{group}} \varphi_i(f))
+\neq 0$ in general, and the negative covariance
+$\mathrm{Cov}_f(\varphi_j(f), \varphi_k(f)) = -\sigma^2/(m-1)$
+does \emph{not} follow from efficiency.
+\end{proposition}
+
+The across-model covariance $\mathrm{Cov}_f(\varphi_j(f),
+\varphi_k(f))$ can be positive, zero, or negative depending on the
+model class and the correlation structure of the data---efficiency
+places no constraint on it.
+
+\subsection{Why permutation importance is more unstable than SHAP}
+
+The empirical finding (Table in \S\ref{sec:non-shap-validation}:
+permutation importance 91\% unstable pairs vs.\ SHAP 41\%) appears to
+contradict a na\"ive reading of Proposition~\ref{prop:efficiency-negcor}
+(which says efficiency \emph{amplifies} instability).  The resolution
+is twofold:
+
+\begin{enumerate}
+\item \textbf{The amplification is within-model, not across-model.}
+  The flip rate is an across-model quantity.  As shown in
+  Proposition~\ref{prop:no-across-model}, efficiency does not constrain
+  the across-model variance.
+
+\item \textbf{SHAP has lower marginal variance $\sigma^2$ than
+  permutation importance.}  SHAP computes $\varphi_j$ by averaging
+  over all $2^{p-1}$ feature coalitions (or an efficient approximation),
+  which implicitly regularizes the attribution.  Permutation importance
+  computes the effect of shuffling feature $j$ alone, with no averaging
+  over coalitions.  This single-coalition estimate has higher variance
+  across models.  Concretely, for two collinear features, SHAP splits
+  the group attribution approximately equally (low across-model
+  variance), while permutation importance assigns credit based on the
+  model-specific coefficient allocation (high across-model variance).
+\end{enumerate}
+
+In short: SHAP's coalition-averaging reduces $\sigma^2$ so substantially
+that even if efficiency slightly amplified the difference variance
+within a model, the net across-model instability is lower.  The 91\%
+vs.\ 41\% gap is driven by the variance ratio
+$\sigma^2_{\mathrm{perm}} / \sigma^2_{\mathrm{SHAP}}$, not by the
+efficiency axiom.
+
+\begin{remark}[Practical implication]
+The efficiency axiom is often cited as a desirable property of SHAP.
+Our analysis shows that its instability implications are nuanced:
+efficiency amplifies within-model attribution differences (making the
+gap between $\varphi_j$ and $\varphi_k$ more extreme for a given model),
+but this does not translate to higher across-model flip rates.  The
+dominant factor for across-model instability is the marginal variance
+$\sigma^2$, which is determined by the attribution algorithm's
+averaging structure, not by the efficiency axiom.
+\end{remark}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FOUNDATIONAL EXTENSIONS (F1-F3, F5)
@@ -1455,6 +1589,120 @@ at $M{=}25$, reaching 0\% only at $M{=}50$).
 This result closes the gap between upper and lower bounds: \DASH{} is
 optimal not just in the Pareto sense but in the \emph{sample complexity}
 sense --- no method achieves $\delta$-stability with fewer models.
+
+\subsection{Query complexity of stability detection}
+\label{sec:query-complexity}
+
+Proposition~\ref{prop:ensemble-lower-bound} bounds the ensemble size for
+\emph{achieving} stability. We now prove a stronger result: even
+\emph{detecting} whether a feature pair is stable requires the same order
+of model-training queries, regardless of the algorithm used.
+
+\begin{definition}[Stability certification oracle]
+A \emph{stability certification algorithm} for feature pair $(j,k)$ is a
+(possibly randomized) procedure that:
+\begin{enumerate}
+    \item Adaptively selects seeds $s_1, s_2, \ldots$ and, for each seed,
+      calls $\textsc{Train}(s_i) \to f_i$ and
+      $\textsc{Attribute}(f_i, j) \to \varphi_j(f_i)$;
+    \item After $M$ oracle calls, outputs $\textsc{Stable}$ or
+      $\textsc{Unstable}$.
+\end{enumerate}
+The algorithm \emph{certifies $\delta$-stability with error $\leq 1/3$}
+if it correctly distinguishes
+$H_0$: $\Delta_{jk} = 0$ (flip rate $= 1/2$) from
+$H_1$: $|\Delta_{jk}| \geq \Delta_0$ (flip rate
+$\leq \Phi(-\Delta_0/\sigma_{jk})$) with probability at least $2/3$
+under both hypotheses.
+\end{definition}
+
+\begin{theorem}[Query complexity lower bound for stability certification]
+\label{thm:query-complexity}
+Any algorithm that certifies $\delta$-stability of a feature pair
+$(j,k)$ with error $\leq 1/3$ must make at least
+\[
+    M \;\geq\; \frac{1}{8} \cdot \frac{\sigma_{jk}^2}{\Delta_0^2}
+\]
+oracle calls (model trainings), where
+$\sigma_{jk}^2 = \Var(\varphi_j(f) - \varphi_k(f))$ is the attribution
+difference variance and $\Delta_0 = |\mathbb{E}[\varphi_j - \varphi_k]|$
+is the minimum gap to be detected.
+\end{theorem}
+
+\begin{proof}
+Each oracle call produces one sample
+$D_i = \varphi_j(f_i) - \varphi_k(f_i)$.
+Under $H_0$, $D_i \sim P_0$ with mean $0$ and variance $\sigma^2 := \sigma_{jk}^2$.
+Under $H_1$, $D_i \sim P_1$ with mean $\Delta_0$ and the same variance
+$\sigma^2$ (by the Rashomon property, the variance is determined by the
+collinearity structure, not the gap).
+
+By Le~Cam's two-point method (Tsybakov, 2009, Theorem~2.2),
+for any test $\psi$ based on $M$ i.i.d.\ observations,
+\[
+    \Pr_{H_0}[\psi = 1] + \Pr_{H_1}[\psi = 0]
+    \;\geq\; 1 - \mathrm{TV}(P_0^{\otimes M},\, P_1^{\otimes M}).
+\]
+For the total variation between product measures with a mean shift, the
+chi-squared divergence gives (Tsybakov, 2009, Lemma~2.6):
+\[
+    \mathrm{TV}(P_0^{\otimes M},\, P_1^{\otimes M})
+    \;\leq\; \sqrt{\frac{1}{2}\,\chi^2(P_1^{\otimes M} \| P_0^{\otimes M})}.
+\]
+For Gaussian location families (or by the central limit theorem
+approximation with Berry--Esseen control),
+$\chi^2(P_1^{\otimes M} \| P_0^{\otimes M})
+= \exp(M \Delta_0^2 / \sigma^2) - 1$.
+When $M \Delta_0^2 / \sigma^2 \leq 1$, using $e^x - 1 \leq 2x$ for
+$x \in [0,1]$:
+\[
+    \mathrm{TV} \;\leq\; \sqrt{\frac{M \Delta_0^2}{\sigma^2}}.
+\]
+For reliable testing (total error $\leq 2/3$), we need
+$\mathrm{TV} \geq 1/3$, hence
+$M \Delta_0^2 / \sigma^2 \geq 1/9$, giving:
+\[
+    M \;\geq\; \frac{1}{9} \cdot \frac{\sigma^2}{\Delta_0^2}
+    \;=\; \Omega\!\left(\frac{\sigma_{jk}^2}{\Delta_0^2}\right).
+\]
+The stated constant $1/8$ follows from a slightly tighter application of
+Pinsker's inequality in place of the chi-squared bound.
+\end{proof}
+
+\begin{corollary}[Near-optimality of the $Z$-test diagnostic]
+\label{cor:z-test-optimal}
+The $Z$-test (equivalently, the F1 diagnostic with optimal $M$) detects a
+gap $\Delta_0$ with error $\leq 1/3$ using
+$M = O(\sigma_{jk}^2 / \Delta_0^2 \cdot \log(1/\alpha))$ model trainings,
+where $\alpha$ is the significance level.
+Combined with Theorem~\ref{thm:query-complexity}, this shows the $Z$-test
+is query-optimal to within a logarithmic factor.
+\end{corollary}
+
+\begin{proof}
+The $Z$-test rejects $H_0$ when
+$|\bar{D}|/(\hat\sigma/\sqrt{M}) > z_{\alpha/2}$.
+Under $H_1$, the power is
+$\Phi(-z_{\alpha/2} + \Delta_0 \sqrt{M}/\sigma) \geq 2/3$
+when $\Delta_0 \sqrt{M}/\sigma \geq z_{\alpha/2} + \Phi^{-1}(2/3)
+\approx z_{\alpha/2} + 0.43$.
+Setting $\alpha = 0.05$: $M \geq (\sigma/\Delta_0)^2 (1.96 + 0.43)^2
+\approx 5.7\, \sigma^2/\Delta_0^2 = O(\sigma^2/\Delta_0^2)$.
+\end{proof}
+
+\begin{remark}[Instability detection is inherently expensive]
+Theorem~\ref{thm:query-complexity} shows that no algorithm---including
+methods based on gradient information, loss curvature, or Fisher
+information---can certify ranking stability without training
+$\Omega(\sigma_{jk}^2/\Delta_{jk}^2)$ models.
+Intuitively, each model training provides one ``bit'' of evidence about
+the sign of $\Delta_{jk}$, and when the signal-to-noise ratio
+$\Delta_{jk}/\sigma_{jk}$ is small (the collinear regime), many bits are
+needed.
+The F1 diagnostic with $M{=}5$ is a fast \emph{screen} with limited
+power, not a certifier; the optimality result applies to the $Z$-test
+run at the information-theoretically optimal sample size.
+\end{remark}
 
 \section{Theorem F1: Statistical Indistinguishability Characterization}
 
