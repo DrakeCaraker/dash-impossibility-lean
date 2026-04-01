@@ -14,3 +14,12 @@ import DASHImpossibility.SpearmanDef
 import DASHImpossibility.Impossibility
 import DASHImpossibility.Corollary
 import DASHImpossibility.DesignSpace
+import DASHImpossibility.FlipRate
+import DASHImpossibility.ModelSelection
+import DASHImpossibility.AlphaFaithful
+import DASHImpossibility.UnfaithfulBound
+import DASHImpossibility.RashomonUniversality
+import DASHImpossibility.LocalGlobal
+import DASHImpossibility.ConditionalImpossibility
+import DASHImpossibility.SymmetricBayes
+import DASHImpossibility.Efficiency
