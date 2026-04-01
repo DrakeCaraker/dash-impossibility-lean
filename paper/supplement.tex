@@ -3613,6 +3613,502 @@ have separable importance. The per-pair refinement is necessary for
 practical prediction; the Rashomon coefficient remains useful as a
 \emph{worst-case} bound computable without training any models.
 
+\section{Attempted Common Generalization with Arrow's Theorem}
+\label{sec:arrow-generalization}
+
+Arrow's impossibility theorem for social choice and our Attribution
+Impossibility share a striking surface resemblance:
+both show that three desirable properties (faithfulness/Pareto,
+stability/IIA, completeness/non-dictatorship) cannot simultaneously
+hold. We investigated whether a common abstract framework subsumes both
+as special cases. The answer is \emph{partially yes, but the unification
+is too shallow to yield new content}.
+
+\subsection{Structural comparison}
+
+The two theorems have fundamentally different mathematical structures:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+& \textbf{Arrow} & \textbf{Attribution Impossibility} \\
+\midrule
+Inputs & $n$ voters' preferences $(L_1, \ldots, L_n)$ & Models $f \in \mathcal{F}$ (one at a time) \\
+Output & Social ranking $f(L_1, \ldots, L_n)$ & Feature ranking $\sigma$ \\
+Aggregation type & Many inputs $\to$ one output & One input $\to$ one output (for each model) \\
+Key axiom & IIA: $\sigma(a,b)$ depends only on voters' $(a,b)$ rankings & Stability: $\sigma$ is model-independent \\
+Impossibility source & Preference profiles disagree & Rashomon property \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{The critical asymmetry.}
+Arrow's theorem concerns a \emph{profile aggregation} function
+$f \colon \mathcal{L}^n \to \mathcal{L}$ that takes all voters'
+preferences simultaneously. The impossibility arises because IIA,
+combined with Pareto and non-dictatorship, constrains this multi-input
+function too tightly.
+
+The Attribution Impossibility concerns a \emph{single-input} mapping:
+for each model $f$, the ranking should reflect $f$'s attributions.
+The impossibility arises because the ranking must simultaneously
+agree with all models but is supposed to be model-independent (stable).
+There is no profile aggregation---each model independently demands
+faithfulness.
+
+\subsection{Attempted common framework}
+
+\begin{definition}[Abstract Aggregation Problem]
+An \emph{abstract aggregation problem} is a tuple
+$(\mathcal{I}, \mathcal{A}, \mathcal{R}, \text{Agree})$ where:
+\begin{itemize}
+    \item $\mathcal{I}$ is a set of \emph{instances} (voters or models),
+    \item $\mathcal{A}$ is the set of alternatives (candidates or features),
+    \item $\mathcal{R}$ is the set of total orders on $\mathcal{A}$,
+    \item $\text{Agree} \colon \mathcal{I} \to \mathcal{R}$ assigns each
+      instance its ``preferred'' order.
+\end{itemize}
+An \emph{aggregation rule} $F \colon 2^{\mathcal{I}} \to \mathcal{R}$
+maps subsets of instances to a consensus order.
+\end{definition}
+
+Arrow's setup: $F$ takes the full profile $(L_1, \ldots, L_n)$ and
+IIA says $F$'s pairwise comparison of $(a,b)$ depends only on the
+restriction of each $L_i$ to $\{a,b\}$.
+
+Attribution setup: $F$ is required to be a \emph{constant function}
+(stability: the ranking does not depend on which model). Faithfulness
+says this constant ranking agrees with every instance's ordering.
+
+\paragraph{The ``common axiom'' attempt.}
+One might define \emph{locality}: the consensus ranking of $(a,b)$
+depends only on instances' rankings of $(a,b)$. Arrow's IIA is
+locality restricted to the profile. Attribution stability is locality
+taken to its extreme: the ranking depends on \emph{no} instance
+(it must be constant).
+
+But this extreme makes the attribution version trivially
+impossible---a constant ranking cannot agree with conflicting
+instances (this is just the definition of the Rashomon property).
+Arrow's theorem is much deeper: it shows that even when the
+aggregation \emph{is} allowed to depend on instances, the constraints
+are still too tight. The proofs have entirely different structures.
+
+\subsection{Assessment}
+
+\begin{remark}[No non-trivial common generalization]
+\label{rem:no-arrow-unification}
+The Attribution Impossibility and Arrow's theorem are \emph{analogous}
+but not \emph{instances of a common theorem} in any non-trivial sense.
+One can define an abstract framework that subsumes both as shown above,
+but:
+\begin{enumerate}
+    \item The common framework's ``impossibility theorem'' would be:
+      ``if instances disagree and the aggregation rule must be constant,
+      faithfulness is impossible.'' This is a one-line observation,
+      not a theorem.
+    \item Arrow's actual content (the impossibility persists even when
+      the rule \emph{is} allowed to depend on all voters) has no
+      analogue in the attribution setting.
+    \item The attribution impossibility's actual content (the
+      quantitative divergence $1/(1-\rho^2)$, the resolution via
+      ensemble averaging, the connection to the Rashomon set's geometry)
+      has no analogue in Arrow's setting.
+\end{enumerate}
+The closest true statement is: \emph{both theorems arise from the
+tension between local coherence (respecting individual views) and
+global consistency (producing a single ranking), when the individuals
+disagree}. This is a useful heuristic but not a formal unification.
+\end{remark}
+
+\paragraph{Relationship to Sen's liberalism paradox.}
+A closer structural analogue may be Sen's (1970) impossibility of a
+Paretian liberal, which also concerns a setting where individual
+``rights'' (each person's ranking of certain pairs should be
+respected) conflict with the Pareto criterion. The attribution
+impossibility can be viewed as a Sen-type result where each model
+has the ``right'' to determine the ranking of features (faithfulness),
+but these rights conflict across models.
+However, we do not pursue this further, as the connection remains
+at the level of analogy rather than formal subsumption.
+
+
+\section{Causal Identification Barrier Under Collinearity}
+\label{sec:causal-barrier}
+
+We show that the attribution instability under collinearity has a
+direct causal counterpart: distinguishing the causal effects of
+correlated features requires interventional sample complexity that
+diverges as $\Omega(1/(1-\rho^2))$---the \emph{same} rate as the
+attribution ratio.
+
+\subsection{Setup}
+
+Consider two features $X_j, X_k$ with $\text{Corr}(X_j, X_k) = \rho$,
+jointly Gaussian with unit variances. The structural equation is
+$Y = \beta_j X_j + \beta_k X_k + \varepsilon$ with
+$\varepsilon \sim \mathcal{N}(0, \sigma^2)$.
+
+\paragraph{The identification problem.}
+From observational data, one can estimate $\hat\beta_j$ and
+$\hat\beta_k$ via OLS. But when $\rho \to 1$, the OLS estimator
+variance diverges: $\Var(\hat\beta_j) = \sigma^2 / (n(1-\rho^2))$.
+This is multicollinearity in its standard form.
+
+\paragraph{Interventional experiments.}
+Under the do-calculus, $\text{do}(X_j = x)$ breaks the
+$X_j \to X_k$ correlation. The interventional distribution is:
+\[
+    \mathbb{E}[Y \mid \text{do}(X_j = x)] = \beta_j x + \beta_k \mu_k
+\]
+where $\mu_k = \mathbb{E}[X_k]$ under the intervened distribution.
+From a single-variable intervention on $X_j$, one can identify
+$\beta_j$ cleanly---\emph{if} the intervention fully breaks the
+correlation.
+
+\subsection{The barrier: soft interventions}
+
+In practice, interventions on collinear features are often
+\emph{soft}: setting $X_j = x$ does not fully break the correlation.
+Under a soft intervention with residual correlation $\rho_{\text{post}}$:
+\[
+    X_k \mid \text{do}(X_j = x) \sim
+    \mathcal{N}(\rho_{\text{post}} \cdot x, \; 1 - \rho_{\text{post}}^2).
+\]
+The observed effect of the intervention is:
+\[
+    \mathbb{E}[Y \mid \text{do}(X_j = x)] = (\beta_j + \rho_{\text{post}} \beta_k) x
+    + \text{const.}
+\]
+When $\beta_j = \beta_k = \beta$ and $\rho_{\text{post}} \approx \rho$:
+\[
+    \mathbb{E}[Y \mid \text{do}(X_j = x)] \approx \beta(1 + \rho) x
+    = \mathbb{E}[Y \mid \text{do}(X_k = x)].
+\]
+The two interventional distributions become indistinguishable.
+
+\subsection{Sample complexity}
+
+\begin{proposition}[Interventional sample complexity lower bound]
+\label{prop:causal-sample-complexity}
+Consider testing $H_0: \beta_j = \beta + \delta, \; \beta_k = \beta - \delta$
+against $H_1: \beta_j = \beta - \delta, \; \beta_k = \beta + \delta$
+for some $\delta > 0$, using do$(X_j = x)$ interventions
+with residual correlation $\rho_{\mathrm{post}}$.
+
+The number of interventional samples needed for a test with power
+$1 - \eta$ at significance $\alpha$ satisfies:
+\[
+    n_{\mathrm{int}} \geq
+    \frac{(z_\alpha + z_\eta)^2 \, \sigma^2}{4\delta^2 (1 - \rho_{\mathrm{post}})^2}.
+\]
+When $\rho_{\mathrm{post}} = \rho$ (the intervention does not
+reduce the correlation), this gives
+$n_{\mathrm{int}} = \Omega(1/(1-\rho)^2)$.
+\end{proposition}
+
+\begin{proof}
+Under $H_0$, the expected response to do$(X_j = x)$ is
+$(\beta + \delta + \rho_{\mathrm{post}}(\beta - \delta))x$, while
+under $H_1$ it is
+$(\beta - \delta + \rho_{\mathrm{post}}(\beta + \delta))x$.
+The difference in slopes is
+$2\delta(1 - \rho_{\mathrm{post}})$. With noise variance $\sigma^2$
+and $n$ observations of the slope, the standard Neyman--Pearson
+sample size formula gives the result.
+\end{proof}
+
+\begin{remark}[Comparison with the attribution ratio]
+The attribution ratio is $1/(1-\rho^2) = 1/((1-\rho)(1+\rho))$.
+The causal sample complexity scales as $1/(1-\rho_{\mathrm{post}})^2$.
+These have the same leading singularity as $\rho \to 1$ (both
+diverge as $\Omega(1/(1-\rho)^2)$ when $\rho_{\mathrm{post}} = \rho$),
+but they are \textbf{not identical}:
+\begin{itemize}
+    \item The attribution ratio is $1/(1-\rho^2)$, which diverges
+      as $1/(2(1-\rho))$ near $\rho = 1$.
+    \item The causal sample complexity is $\Omega(1/(1-\rho)^2)$
+      --- a \emph{faster} divergence.
+\end{itemize}
+This difference is meaningful: causal identification under soft
+interventions is \emph{harder} than observational attribution
+instability. The attribution ratio captures the \emph{variance
+amplification} (a ratio of quantities), while the causal barrier
+captures \emph{signal-to-noise} (which squares the denominator).
+
+The match is at the level of the singularity structure (both are
+controlled by $1-\rho$) but not at the level of exponents.
+The shared singularity at $\rho = 1$ reflects a common root cause:
+collinearity makes features observationally interchangeable, whether
+the task is attribution or causal identification.
+\end{remark}
+
+\paragraph{Hard interventions resolve both problems.}
+When the intervention fully breaks the correlation
+($\rho_{\mathrm{post}} = 0$), the sample complexity reduces to
+$n_{\mathrm{int}} = O(\sigma^2/\delta^2)$---independent of $\rho$.
+This parallels the attribution impossibility: perfect interventions
+break the symmetry (just as knowing the true causal graph breaks
+the Rashomon property), while soft interventions preserve it.
+
+
+\section{Topological Analysis of the Impossibility}
+\label{sec:topological}
+
+We investigate whether the Attribution Impossibility has a
+topological nature beyond simple connectedness arguments.
+The conclusion: for $m = 2$ and $m = 3$ features in a group,
+the topology adds \textbf{no content} beyond the intermediate
+value theorem. For $m \geq 4$, there is a mildly interesting
+observation about the permutohedron, but it does not yield
+quantitative improvements over the direct algebraic argument.
+
+\subsection{The $m = 2$ case: connectedness only}
+
+For two features $j, k$ in a group, the attribution map assigns
+to each training seed $s \in \mathcal{S}$ a sign
+$\sigma(s) = \mathrm{sign}(\varphi_j(f_s) - \varphi_k(f_s)) \in \{+1, -1\}$.
+The Rashomon property says both values are achieved.
+
+A ``stable ranking'' is a constant function
+$\sigma^* \colon \mathcal{S} \to \{+1, -1\}$.
+The impossibility: $\sigma^*$ cannot agree with $\sigma(s)$ for
+all $s$. This is immediate from the assumption that both signs
+are achieved; no topological machinery is needed.
+
+If we additionally assume $\mathcal{S}$ is connected and $\sigma$
+is continuous (both strong assumptions), then $\sigma$ must be
+constant---contradicting the Rashomon property. But the
+``continuous'' assumption is unjustified for discrete training
+algorithms, and the result is weaker than what we already have
+(we prove impossibility without any continuity assumption).
+
+\subsection{The $m = 3$ case: still just connectedness}
+
+For three features, the attribution map sends seeds to rankings
+in $S_3$ (6 elements). Again, if $\mathcal{S}$ is connected and
+the map is continuous, then the image must be a connected subset
+of $S_3$. Since $S_3$ is discrete, the image is a single point
+---contradicting Rashomon. This is the same connectedness argument;
+the symmetric group's structure plays no role.
+
+\subsection{The $m \geq 4$ case: the permutohedron}
+
+For $m$ features, the attribution vector
+$(\varphi_1(f_s), \ldots, \varphi_m(f_s))$ lives in $\mathbb{R}^m$.
+The ranking is determined by the \emph{chamber} of the
+\emph{braid arrangement} (the hyperplane arrangement
+$\{x_i = x_j : i \neq j\}$) containing the attribution vector.
+The chambers are the cones of the \emph{permutohedron}.
+
+\begin{remark}[No winding number content]
+For $m \geq 3$, one might hope that the attribution map
+$s \mapsto (\varphi_1(f_s), \ldots, \varphi_m(f_s))$ has a
+non-trivial winding number around the intersection of hyperplanes
+$\{x_j = x_k\}$, which would give a \emph{quantitative} lower
+bound on the number of chamber crossings (ranking flips).
+
+This does not work for two reasons:
+\begin{enumerate}
+    \item The complement of the braid arrangement in
+      $\mathbb{R}^m$ is simply connected for $m \geq 3$
+      (the codimension of each hyperplane is 1, so removing
+      hyperplanes from $\mathbb{R}^m$ gives a space whose
+      fundamental group is the pure braid group on $m$ strands;
+      but we would need the image to be a \emph{loop} in this
+      space, which requires additional structure not present in
+      the attribution problem).
+    \item Even if a winding number existed, it would count
+      \emph{signed} crossings. The flip rate (unsigned crossings)
+      is already captured by the direct algebraic bound
+      $1/(1-\rho^2)$ without topological machinery.
+\end{enumerate}
+\end{remark}
+
+\begin{remark}[What topology \emph{could} contribute]
+There is one setting where topology adds genuine content: if the
+model space $\mathcal{S}$ has the structure of a manifold (e.g.,
+a torus of hyperparameters) and the attribution map is smooth,
+then Morse theory could bound the number of critical points
+(ranking transitions). Specifically, if the attribution difference
+$g(s) = \varphi_j(f_s) - \varphi_k(f_s)$ is a Morse function on
+$\mathcal{S}$, the number of sign changes of $g$ is bounded below
+by the sum of Betti numbers of $\mathcal{S}$.
+
+However, this requires: (a) $\mathcal{S}$ to be a smooth manifold,
+(b) $g$ to be a Morse function, and (c) knowing the topology of
+$\mathcal{S}$. None of these hold for practical training algorithms
+(XGBoost's seed space is discrete; neural net loss landscapes are
+non-smooth). We therefore do not pursue this direction.
+\end{remark}
+
+\subsection{Assessment}
+
+\begin{remark}[Topology adds no content]
+\label{rem:topology-trivial}
+The Attribution Impossibility is fundamentally a \emph{combinatorial}
+result (conflicting preferences cannot all be respected), not a
+\emph{topological} one. The impossibility holds for arbitrary model
+spaces (including finite, discrete spaces with no topology). Attempts
+to extract topological content either reduce to the trivial
+connectedness argument or require unjustified smoothness assumptions
+that add no quantitative power beyond what the algebraic
+$1/(1-\rho^2)$ ratio already provides.
+\end{remark}
+
+
+\section{On Categorical/Axiomatic Strengthening}
+\label{sec:categorical}
+
+We investigate whether the impossibility can be strengthened to a
+metatheorem: ``no finite axiom system on attributions can
+simultaneously guarantee faithfulness and stability under
+Rashomon.'' The basic version is logically trivial; we identify
+a non-trivial quantitative extension.
+
+\subsection{The trivial version}
+
+\begin{remark}[Trivial metatheorem]
+Let $A_1, \ldots, A_n$ be any finite set of axioms on an
+attribution method $\varphi$. If $A_1 \wedge \cdots \wedge A_n$
+implies faithfulness (the ranking reflects model attributions),
+stability (the ranking is model-independent), and completeness
+(the ranking decides all pairs), then
+$A_1 \wedge \cdots \wedge A_n \to \bot$ under the Rashomon property.
+
+This is immediate: if the conjunction implies $F \wedge S \wedge C$,
+and $F \wedge S \wedge C \to \bot$ (Theorem~1), then the conjunction
+implies $\bot$. No content is added beyond Theorem~1.
+\end{remark}
+
+\subsection{The ``constant attribution'' escape}
+
+Why is a categorical strengthening difficult? Because trivial
+attribution methods escape the impossibility:
+
+\begin{itemize}
+    \item $\varphi_j(f) = 1/P$ for all $j, f$ (uniform):
+      perfectly stable, perfectly equitable, satisfies any
+      axiom system that doesn't require faithfulness.
+    \item $\varphi_j(f) = \mathbb{E}_f[\varphi_j(f)]$ (population mean):
+      stable by construction, equitable under DGP symmetry.
+\end{itemize}
+
+Any ``impossibility for all axiom systems'' must exclude these
+methods, which means it must require faithfulness (or something
+implying it). But once faithfulness is required, we are back to
+Theorem~1.
+
+\subsection{A non-trivial quantitative version}
+
+The one direction that yields genuine content is a
+\emph{quantitative} impossibility that does not require exact
+faithfulness.
+
+\begin{definition}[$\alpha$-faithfulness]
+An attribution method is \emph{$\alpha$-faithful} if for all
+models $f$ and same-group features $j, k$:
+\[
+    \Pr_{f}\!\big[\text{sign}(\varphi_j(f) - \varphi_k(f)) =
+    \text{sign}(\sigma(j) - \sigma(k))\big] \geq \alpha
+\]
+where $\sigma$ is the stable ranking and the probability is over
+the training randomness.
+\end{definition}
+
+\begin{proposition}[Approximate faithfulness--stability tradeoff]
+\label{prop:approx-tradeoff}
+Under the Rashomon property with symmetric DGP (each model
+ranks $j > k$ or $k > j$ with equal probability $1/2$), any
+$\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$.
+\end{proposition}
+
+\begin{proof}
+By DGP symmetry, for any same-group features $j, k$:
+$\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$.
+A stable ranking fixes $\sigma(j) > \sigma(k)$ or
+$\sigma(k) > \sigma(j)$.
+WLOG, suppose the stable ranking has $\sigma(j) > \sigma(k)$.
+Then $\alpha$-faithfulness requires:
+\[
+    \Pr[\varphi_j(f) > \varphi_k(f)] \geq \alpha.
+\]
+But $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$ by symmetry, so
+$\alpha \leq 1/2$.
+\end{proof}
+
+\begin{remark}
+This says: under perfect symmetry, no stable ranking can agree
+with the model's attributions more than half the time. A coin
+flip achieves $\alpha = 1/2$. The stable ranking is no better
+than random for symmetric feature pairs.
+
+This result is non-trivial in that it holds for \emph{any}
+attribution method satisfying the DGP symmetry condition, not
+just for specific axiom systems. However, it is a direct
+consequence of the symmetry---not of any deep axiomatic or
+categorical structure.
+\end{remark}
+
+\subsection{Beyond binary: the Spearman version}
+
+For $m$ features in a group under full DGP symmetry, the
+attribution ranking is a uniform random permutation. A stable
+ranking $\sigma^* \in S_m$ has expected Spearman correlation
+with a uniform random permutation of:
+\[
+    \mathbb{E}[\rho_S(\sigma^*, \pi)] = 0
+\]
+for any fixed $\sigma^*$, since $\mathbb{E}[\sum d_i^2]$
+under a uniform random permutation equals $m(m^2 - 1)/3$,
+giving $\rho_S = 1 - 6 \cdot m(m^2-1)/(3 \cdot m(m^2-1)) = -1/(m-1)$
+for $m \geq 2$ (the expectation is actually slightly negative,
+not zero, by the classical result for random permutations).
+
+\begin{proposition}[Spearman bound for stable rankings]
+\label{prop:spearman-stable}
+Under full DGP symmetry within a group of $m$ features, any
+stable ranking $\sigma^*$ has expected Spearman correlation with
+the model's attribution ranking satisfying:
+\[
+    \mathbb{E}[\rho_S(\sigma^*, \pi)] = \frac{-1}{m - 1}.
+\]
+In particular, the stable ranking is \emph{negatively correlated}
+with the model's ranking in expectation (for $m \geq 3$), and
+converges to zero correlation as $m \to \infty$.
+\end{proposition}
+
+\begin{proof}
+Fix any $\sigma^* \in S_m$. By DGP symmetry, the model's
+ranking $\pi$ is uniform on $S_m$. The expected Spearman
+correlation of a fixed permutation with a uniform random
+permutation is $-1/(m-1)$ (this is the classical result;
+see e.g., Kendall \& Gibbons, 1990, Ch.~3).
+\end{proof}
+
+\subsection{Assessment}
+
+\begin{remark}[Limited categorical content]
+\label{rem:categorical-limited}
+The ``categorical impossibility'' does not genuinely extend
+Theorem~1. The basic version (no finite axiom system implying
+$F \wedge S \wedge C$ can be consistent under Rashomon) is
+logically trivial. The quantitative version
+(Propositions~\ref{prop:approx-tradeoff} and
+\ref{prop:spearman-stable}) provides useful bounds but
+follows directly from DGP symmetry rather than from
+any categorical or axiomatic structure.
+
+The honest summary: the impossibility is a \emph{concrete}
+result about conflicting requirements, not an instance of a
+general metatheoretic pattern. Attempts to ``lift'' it to a
+categorical level either (a)~add no content, or (b)~reduce to
+direct probabilistic calculations that do not require categorical
+language.
+\end{remark}
+
+
 \section{SymPy Verification}
 
 All algebraic consequences have been independently verified:
