@@ -505,13 +505,17 @@ For safety-critical applications deploying a specific model $f$, practitioners s
 \paragraph{Broader implications.}
 In a survey of 37 public datasets (supplement), 92\% have feature pairs with $|\rho| > 0.5$ and 60\% exhibit attribution instability (ranking flip rate $> 10\%$) --- the impossibility is not a theoretical curiosity but a practical reality affecting the majority of real-world data.
 Our theorem proves that this instability is a ``known and foreseeable circumstance'' affecting accuracy under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}.
-Beyond regulatory compliance, the impossibility affects model debugging (the wrong feature may be blamed for errors), fairness audits (protected-feature effects may be misattributed to correlated proxies), and scientific discovery (spurious feature importance may drive false hypotheses).
+The consequences are concrete.
+A hospital that uses SHAP to identify blood pressure as the top readmission risk factor may invest in blood pressure monitoring---but under retraining with a different random seed, BMI becomes the top factor, and the investment targeted the wrong intervention.
+A data scientist debugging a model pipeline who fixes the ``most important'' feature's preprocessing may be fixing the wrong feature---because the ranking was a coin flip.
+Published scientific studies that report ``Feature~X is the most important predictor'' based on a single model's SHAP values may be reporting an artifact of the specific training run, not a replicable finding---contributing to the reproducibility crisis in fields that use ML for discovery.
+More broadly, AI safety certification under the EU AI Act cannot guarantee that explanations reflect the model's true reliance without ensemble methods: the impossibility makes single-model certification of feature attributions formally infeasible.
 In each case, \DASH{} provides a principled mitigation by reporting honest uncertainty rather than arbitrary distinctions.
 
 \paragraph{The symmetric Bayes dichotomy.}
 In the supplement, we prove a general theorem: for \emph{any} statistical decision problem where the population distribution is symmetric over discrete alternatives and finite-sample noise can reverse the optimal choice, the achievable set consists of exactly two families---instance-specific (faithful but unstable) and population-averaged (stable with ties).
 We call this the \emph{symmetric Bayes dichotomy}.
-Feature attribution and model selection are both instances; we anticipate the technique applies to feature selection (Lasso instability), causal discovery (Markov equivalence), and hyperparameter tuning (CV noise).
+Feature attribution and model selection are both instances; we anticipate the technique applies to feature selection (Lasso instability), causal discovery (Markov equivalence), hyperparameter tuning (CV noise), and potentially \emph{LLM interpretability}: in transformer models, correlated token representations (nearby words, repeated entities) induce the same Rashomon structure for attention-based attribution, suggesting that token-level explanations of large language models face an analogous impossibility.
 
 \paragraph{Formalization as methodology.}
 Beyond certifying correctness, the Lean formalization served as a \emph{bug-finding methodology}: it caught two logical inconsistencies and one type mismatch that survived informal review.
