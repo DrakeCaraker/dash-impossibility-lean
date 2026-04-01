@@ -212,11 +212,56 @@ theorem spearmanCorr_bound (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
 /-! ## Classical quantitative bound (axiomatized about defined quantity)
 
   The classical combinatorial argument gives Spearman ≤ 1 - m³/P³, which is
-  tighter than the derived 3/(P³-P) bound above. This follows from E[Σd²] =
-  m(m²-1)/6 under random tie-breaking of non-first-movers. We state this as
-  an axiom about the defined `spearmanCorr` (not about an opaque type).
-  Deriving it formally would require formalizing expected values of random
-  permutations, which is deferred. -/
+  tighter than the derived 3/(P³-P) bound above.
+
+  **Why this remains an axiom (derivation gap analysis):**
+
+  The bound requires showing Σd² ≥ m³(P²-1)/(6P²), i.e., that the sum of
+  squared midrank differences is Ω(m³). The natural approach is:
+
+  1. Within the group of size m, the first-mover dominates: in model f
+     (first-mover j), attr(j,f) > attr(i,f) for all i in the group; in model
+     f' (first-mover k), attr(k,f') > attr(i,f') for all i in the group.
+  2. The midrank of j changes between models: j drops from first-mover
+     position to tied-with-(m-2)-others position within the group.
+  3. One wants to conclude that d_j = midrank(v,j) - midrank(w,j) ≥ (m-1)/2,
+     and similarly d_k ≥ (m-1)/2, giving Σd² ≥ (m-1)²/2.
+
+  The obstacle is step 3: midranks are **global** (computed over all P
+  features), so the midrank of j depends on how j's attribution compares to
+  features OUTSIDE the group. The current axioms do not constrain the relative
+  ordering of cross-group attributions across different models. Specifically:
+
+  - `splitCount_crossGroup_symmetric` says features in group ℓ' have equal
+    split counts when the first-mover is NOT in ℓ', but does not say those
+    split counts are the same across models f and f' (which have different
+    first-movers, both in group ℓ).
+  - Without knowing how outside-group features interleave with group features
+    in the global ranking, we cannot bound the midrank change of any single
+    feature.
+
+  **To derive this, one would need either:**
+  (a) An axiom constraining cross-group attribution magnitudes (e.g., that
+      features outside group ℓ have the same attribution in f and f'), or
+  (b) A probabilistic framework for expected Σd² under random tie-breaking
+      of the (m-1) tied non-first-movers, requiring Lean formalization of
+      expectations over random permutations, or
+  (c) A purely combinatorial argument that the minimum Σd² over all possible
+      global interleaving patterns is still Ω(m³), which would require
+      a careful case analysis on the relative magnitudes of cross-group
+      attributions.
+
+  Approach (a) is the most tractable and would require one new axiom:
+    `splitCount_crossGroup_stable : ∀ f f' j, j ∉ fs.group ℓ →
+       firstMover fs f ∈ fs.group ℓ → firstMover fs f' ∈ fs.group ℓ →
+       splitCount fs j f = splitCount fs j f'`
+  which says changing the first-mover within a group does not affect features
+  outside the group. With this, outside-group features would have identical
+  midranks in both models, and the Σd² contribution would come purely from
+  within-group reshuffling, making the m³ bound derivable.
+
+  For now, we keep `spearman_classical_bound` as an axiom about the defined
+  `spearmanCorr` quantity (not about an opaque type). -/
 axiom spearman_classical_bound (f f' : Model) (ℓ : Fin fs.L)
     (hfm_grp : firstMover fs f ∈ fs.group ℓ)
     (hfm'_grp : firstMover fs f' ∈ fs.group ℓ)

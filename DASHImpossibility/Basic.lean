@@ -27,5 +27,7 @@ import DASHImpossibility.RashomonInevitability
 import DASHImpossibility.LocalGlobal
 import DASHImpossibility.ConditionalImpossibility
 import DASHImpossibility.SymmetricBayes
+import DASHImpossibility.SBDInstances
 import DASHImpossibility.Efficiency
 import DASHImpossibility.CausalDiscovery
+import DASHImpossibility.FairnessAudit
