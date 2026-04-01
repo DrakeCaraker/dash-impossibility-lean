@@ -195,8 +195,15 @@ axiom consensus_variance_bound (M : ℕ) (hM : 0 < M) (j : Fin fs.P) :
     the summed attributions are equal for same-group features. This is a
     consequence of DGP symmetry: swapping j and k in the DGP leaves the
     joint distribution invariant, so E[φ_j] = E[φ_k]. For balanced finite
-    ensembles, this holds exactly when the proportionality constants are
-    uniform across models (a consequence of identical hyperparameters). -/
+    ensembles, this holds exactly when:
+      (a) the proportionality constant c is uniform across models
+          (a consequence of identical hyperparameters), AND
+      (b) features in a group have equal split counts when the
+          first-mover is in a different group (DGP symmetry).
+    The derivation from Axioms 2-4 requires (a) — which is not stated
+    in Axiom 4 (per-model c) — and (b) — a cross-group symmetry axiom
+    not currently in the system. Axiomatizing the conclusion directly
+    is more parsimonious than adding both unstated assumptions. -/
 axiom attribution_sum_symmetric (M : ℕ) (hM : 0 < M) (models : Fin M → Model)
     (hbal : IsBalanced fs M models)
     (j k : Fin fs.P) (ℓ : Fin fs.L) (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) :
