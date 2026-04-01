@@ -25,16 +25,21 @@
 
 \section{Complete Axiom System}
 
-Table~\ref{tab:axioms} lists all 9 property axioms in the formalization
+Table~\ref{tab:axioms} lists all property axioms in the formalization
 (the core impossibility theorem requires none of them---only the Rashomon
 property as hypothesis).
-The formalization uses 16 axioms total: 6 type/constant declarations
+The formalization uses 15 axioms total: 6 type/constant declarations
 (\texttt{Model}, \texttt{numTrees}, \texttt{numTrees\_pos}, \texttt{attribution},
-\texttt{splitCount}, \texttt{firstMover}), and the 10 property axioms below.
+\texttt{splitCount}, \texttt{firstMover}), 2 measure-theoretic infrastructure
+axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}), and the
+7 domain-specific property axioms below. Two former axioms
+(\texttt{attribution\_sum\_symmetric}, \texttt{attribution\_variance\_nonneg})
+are now derived theorems; \texttt{attribution\_variance} is now a definition
+from Mathlib's \texttt{ProbabilityTheory.variance}.
 
 \begin{table}[h]
 \centering
-\caption{Complete axiom inventory (16 total).}
+\caption{Complete axiom inventory (15 total).}
 \label{tab:axioms}
 \small
 \begin{tabular}{@{}llp{5.5cm}@{}}
@@ -57,9 +62,9 @@ Consensus variance bound & \texttt{consensus\_variance\_bound} & $\Var(\bar\varp
 
 \section{Proof Architecture}
 
-The formalization comprises 14 Lean~4 files with 16 axioms and
-47 type-checked declarations (38 theorems + 9 lemmas;
-0 \texttt{sorry}). Of these, 41 require multi-line proofs
+The formalization comprises 15 Lean~4 files with 15 axioms and
+49 type-checked declarations (40 theorems + 9 lemmas;
+0 \texttt{sorry}). Of these, 43 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or
 single-step applications.
 The core impossibility (\texttt{attribution\_impossibility}) depends on
@@ -69,7 +74,8 @@ The DASH resolution (\texttt{consensus\_equity}) depends on the
 depends on the \texttt{consensus\_variance\_bound} axiom.
 
 \begin{verbatim}
-Defs.lean (16 axioms, type definitions, derived theorems)
+Defs.lean (13 axioms, type definitions, derived theorems)
+  +-- SymmetryDerive.lean (attribution_sum_symmetric, DERIVED)
   |
   +-- Trilemma.lean (RashimonProperty, attribution_impossibility)
   |     |
