@@ -958,6 +958,76 @@ because its game-theoretic averaging over feature coalitions provides
 implicit regularization, reducing within-model attribution variance
 compared to permutation importance's direct shuffling.
 
+\section{Neural Network Attribution Instability}
+
+The impossibility applies to any model class satisfying the Rashomon
+property, not only to gradient-boosted trees. We validate this on
+neural networks using KernelSHAP.
+
+\paragraph{Setup.}
+We train 20 MLPRegressor models (hidden layers 64--32, ReLU, 500 epochs)
+on the Breast Cancer dataset with different random seeds (the only source
+of variation). For each model, we compute KernelSHAP (50 background
+samples, 100 test samples) and extract mean $|\text{SHAP}|$ as global
+attributions. KernelSHAP is model-agnostic and does not use tree
+structure.
+
+\paragraph{Results.}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Metric & Neural Network & XGBoost (paper) \\
+\midrule
+Unstable pairs (flip $> 10\%$) & 380/435 (87\%) & 162/435 (37\%) \\
+Max flip rate & 0.500 & 0.500 \\
+Key pair flip (worst perim.\ vs.\ area) & 0.400 & 0.480 \\
+F1 correlation $r(Z, \text{flip})$ & $-0.871$ & $-0.898$ \\
+Cross-method flip correlation & \multicolumn{2}{c}{$r = 0.206$} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Key findings.}
+Neural networks exhibit \emph{more} attribution instability than XGBoost:
+87\% of feature pairs are unstable (vs.\ 37\% for XGBoost), and the
+maximum flip rate reaches the theoretical ceiling of 0.500. The key
+correlated pair (worst perimeter vs.\ worst area, $|\rho| = 0.978$)
+flips 40\% of the time, near the 50\% maximum.
+
+The F1 diagnostic transfers to neural networks: $r(Z, \text{flip}) = -0.871$,
+comparable to the XGBoost value ($r = -0.898$). This confirms the diagnostic
+is model-agnostic---it operates on attribution arrays, not tree structures.
+
+The cross-method correlation ($r = 0.206$) is lower than the
+TreeSHAP-vs-permutation-importance correlation ($r = 0.46$), indicating
+that neural networks and XGBoost have partially different instability
+patterns. This is expected: the Rashomon set of neural networks (governed
+by initialization symmetry breaking) differs from the Rashomon set of
+XGBoost (governed by first-mover dynamics), but both produce the same
+qualitative phenomenon---attribution instability under collinearity.
+
+\paragraph{Why neural networks are more unstable.}
+The higher instability (87\% vs.\ 37\%) likely reflects three factors:
+(i)~neural networks have more parameters and thus a larger Rashomon set
+(more near-optimal models with diverse feature utilization patterns);
+(ii)~KernelSHAP has higher variance than TreeSHAP (it uses a sampling
+approximation rather than exact tree-path computation);
+(iii)~the MLP architecture distributes signal across hidden units more
+diffusely than tree splits, amplifying the sensitivity to initialization.
+The first factor is the most important: the impossibility is driven by
+the Rashomon property, and larger Rashomon sets produce more instability.
+
+\paragraph{Caveat.}
+KernelSHAP is an approximation (it samples feature coalitions rather
+than enumerating all $2^P$ subsets). The reported flip rates include
+both genuine model instability and KernelSHAP sampling noise. A
+fixed-approximation design (same SHAP samples across models) would
+isolate the model effect; we leave this refinement to future work.
+The high F1 diagnostic correlation ($|r| = 0.871$) suggests the
+genuine instability signal dominates the approximation noise.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EFFICIENCY AND INSTABILITY
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1217,7 +1287,7 @@ class containing $R_\varepsilon$.
 \paragraph{Relationship to classical non-identifiability.}
 The near-singularity of the Fisher information under collinearity is
 textbook: $\Var(\hat\beta_j - \hat\beta_k) \geq \sigma^2/(n(1-\rho))$
-diverges as $\rho \to 1$ \citep{lehmann2005testing}. Our contribution is
+diverges as $\rho \to 1$ \cite{lehmann2005testing}. Our contribution is
 reframing this as an \emph{impossibility theorem} about feature rankings
 rather than a variance bound on parameter estimates. The reframing has
 two consequences: (i)~it establishes that the ranking problem is
@@ -2206,6 +2276,38 @@ depth${=}6$, $\eta{=}0.1$); absolute flip rates are therefore not
 directly comparable across datasets of different sizes and
 dimensionalities.
 
+\subsection{High-Dimensional Scalability}
+
+To validate the diagnostics at enterprise scale ($P > 500$), we generate
+synthetic data with $P \in \{100, 200, 500\}$ features in $P/10$ groups
+of 10, within-group correlation $\rho = 0.8$, $N = 2{,}000$ samples,
+and train 20 XGBoost models per setting (same hyperparameters as the
+main experiments).
+
+\begin{center}
+\small
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$P$ & Total pairs & Correlated pairs & Unstable & F1 $|r|$ & Wall time \\
+\midrule
+100 & 4{,}950 & 450 & 305 & 0.846 & 33\,s \\
+200 & 19{,}900 & 900 & 641 & 0.788 & 64\,s \\
+500 & 124{,}750 & 2{,}250 & 1{,}879 & 0.876 & 148\,s \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The F1 diagnostic maintains $|r| > 0.78$ across all dimensionalities,
+confirming it scales to enterprise-sized feature spaces. The correlation-based
+grouping step reduces the 124{,}750 total pairs at $P{=}500$ to 2{,}250
+correlated pairs---a $55\times$ reduction---making the pairwise diagnostic
+tractable. Wall-clock time for the full workflow (data generation, 20 model
+trainings, TreeSHAP, diagnostics) is under 2.5~minutes at $P{=}500$ on
+Apple Silicon, confirming the practical feasibility described in the main text.
+The fraction of unstable pairs within correlated groups is 83\% ($1{,}879/2{,}250$),
+consistent with the theoretical prediction that most within-group pairs are
+unstable when $\rho = 0.8$.
+
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/comprehensive_f1.pdf}
@@ -2971,6 +3073,64 @@ impossibility region (dark) expands with $\rho$. At $\rho \geq 0.95$,
 instability persists for all $\Delta\beta \leq 1$.}
 \label{fig:conditional-threshold}
 \end{figure}
+
+\subsection{Causal structure validation: marginal vs.\ interventional SHAP}
+
+We validate the Conditional Attribution Impossibility
+(Theorem~\ref{thm:conditional-impossibility}) by comparing marginal and
+interventional SHAP under a known causal structure.
+
+\paragraph{Setup.}
+We generate $N{=}2{,}000$ samples from
+$Y = \beta_1 X_1 + \beta_2 X_2 + 0.5\,X_3 + \varepsilon$ where
+$\text{Corr}(X_1, X_2) = \rho$ and $X_3, X_4, X_5$ are independent
+controls. Two scenarios: \emph{symmetric} ($\beta_1 = \beta_2 = 1.0$)
+and \emph{asymmetric} ($\beta_1 = 1.5$, $\beta_2 = 0.5$).
+For each $(\text{scenario}, \rho)$, we train 20 XGBoost models and compute
+both marginal TreeSHAP (\texttt{tree\_path\_dependent}) and interventional
+TreeSHAP (\texttt{interventional} with 100 background samples).
+
+\begin{center}
+\small
+\begin{tabular}{@{}llccl@{}}
+\toprule
+Scenario & $\rho$ & Marginal flip & Interventional flip & Theory \\
+\midrule
+Symmetric  & 0.50 & 0.505 & 0.479 & ${\approx}50\%$ both \\
+Symmetric  & 0.70 & 0.479 & 0.442 & ${\approx}50\%$ both \\
+Symmetric  & 0.90 & 0.521 & 0.479 & ${\approx}50\%$ both \\
+Symmetric  & 0.95 & 0.505 & 0.526 & ${\approx}50\%$ both \\
+\midrule
+Asymmetric & 0.50 & 0.000 & 0.000 & Stable \\
+Asymmetric & 0.70 & 0.000 & 0.000 & Stable \\
+Asymmetric & 0.90 & 0.000 & 0.000 & Stable \\
+Asymmetric & 0.95 & 0.000 & 0.000 & Stable \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Findings.}
+The symmetric case confirms the impossibility: both marginal and
+interventional SHAP produce flip rates near 50\% at all $\rho$ values,
+matching the theoretical prediction of
+Theorem~\ref{thm:conditional-impossibility}. Switching to interventional
+SHAP provides \emph{no benefit} when features have equal causal effects.
+
+The asymmetric case ($\Delta\beta = 1.0$) shows 0\% flips for
+\emph{both} attribution types. At this effect-size difference, even
+marginal SHAP can reliably distinguish the features---the
+signal-to-noise ratio is high enough to overcome collinearity-induced
+noise. This is consistent with the threshold analysis
+(Table~\ref{tab:conditional-threshold}): $\Delta\beta = 1.0$ exceeds
+the instability threshold at all tested $\rho$ values.
+
+\paragraph{Caveat.}
+The interventional SHAP implementation in the \texttt{shap} package
+uses a background-data approximation that does not exactly implement
+causal/conditional SHAP in the sense of \cite{janzing2020feature}.
+The results should be interpreted as evidence about the \texttt{shap}
+package's interventional mode, not as a definitive test of the
+theoretical conditional attribution.
 
 \section{Generalization: The Model Selection Impossibility}
 

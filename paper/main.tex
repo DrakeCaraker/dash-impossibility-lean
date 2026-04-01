@@ -442,6 +442,7 @@ We derive a test statistic $Z_{jk} = |\bar\varphi_j - \bar\varphi_k| / (\hat\sig
 Pairs with $Z_{jk} < 1.96$ have unreliable rankings; pairs above this threshold are stable.
 A single-model screening variant using per-tree split frequencies achieves 94\% precision on Breast Cancer (supplement \S F5; implementation-specific calibration required).
 The instability and diagnostics generalize to LightGBM and CatBoost ($|r| > 0.89$ for all three implementations; supplement) and to non-SHAP attributions: permutation importance shows even higher instability (91\% of pairs vs.\ 41\% for SHAP), confirming the phenomenon is about collinearity, not the attribution algorithm.
+The instability extends beyond tree models: on the same Breast Cancer dataset, 20 neural networks (MLPRegressor with KernelSHAP) produce 380/435 (87\%) unstable pairs with F1 diagnostic $r = -0.871$ (supplement), confirming the impossibility is about collinearity, not the model class.
 SHAP's efficiency axiom induces negative within-model correlation among collinear features' attributions (amplification factor $m/(m{-}1)$ for groups of size $m$; supplement), but this within-model effect does not increase across-model flip rates; the lower instability of SHAP relative to permutation importance is driven by coalition-averaging reducing the marginal variance $\sigma^2$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -533,6 +534,7 @@ For safety-critical applications deploying a specific model $f$, practitioners s
 For batch pipelines (daily or weekly model refreshes), training $M{=}25$ models is feasible---many teams already train multiple models for hyperparameter search.
 For real-time SHAP explanations, $M{=}25$ is prohibitive; use the F5 single-model diagnostic to flag unstable pairs, then report affected features with an instability caveat rather than ensemble-averaging.
 For high-dimensional feature spaces ($P > 500$), the pairwise F1 diagnostic scales as $O(P^2)$; the correlation-based grouping step (identifying correlated groups from the correlation matrix) prunes this to $O(G \cdot m^2)$ where $G$ is the number of groups and $m$ their typical size.
+At $P{=}500$ with 20 models, the full diagnostic workflow completes in under 2.5~minutes on commodity hardware (supplement).
 The equicorrelation assumption simplifies the axioms but is not required for the diagnostics: F1 and F5 operate on observed attribution arrays and make no distributional assumptions.
 The proportionality axiom (CV $\approx$ 0.35--0.66 depending on tree depth; supplement) affects the quantitative ratio $1/(1{-}\rho^2)$, not the qualitative impossibility or the diagnostics.
 
