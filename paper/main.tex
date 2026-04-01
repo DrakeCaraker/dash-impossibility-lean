@@ -521,6 +521,10 @@ Feature attribution and model selection are both instances; we anticipate the te
 Beyond certifying correctness, the Lean formalization served as a \emph{bug-finding methodology}: it caught two logical inconsistencies and one type mismatch that survived informal review.
 We recommend formalizing impossibility theorems as a general practice: (1)~state all axioms explicitly, (2)~type-check to detect hidden assumptions, (3)~verify that ``derived'' results are genuinely proved and not axiomatized.
 
+\paragraph{Loss landscape geometry.}
+The impossibility has a geometric interpretation (supplement): near-singular Fisher information creates \emph{ridges} in the loss landscape along which feature importance redistributes without changing model quality.
+The same flatness that makes optimization easy (flat minima generalize well) makes attribution hard (the flat direction IS the feature-importance direction).
+
 \paragraph{Named techniques.}
 This paper contributes three reusable techniques: (1)~the \emph{Rashomon reduction}---reducing a design-space question to a model-multiplicity check; (2)~the \emph{FIM-to-Rashomon bridge}---connecting Fisher information rank deficiency to the Rashomon property (supplement \S F3); and (3)~the \emph{symmetric Bayes dichotomy}---the general two-families theorem for symmetric decision problems (supplement).
 

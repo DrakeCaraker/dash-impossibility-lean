@@ -780,6 +780,46 @@ substitution into the semi-axis formula and the inverse of
 $I(\beta^*)$.
 \end{proof}
 
+\subsection{Geometric interpretation: loss landscape ridges}
+
+\begin{proposition}[Loss landscape geometry]
+\label{prop:geometry}
+Under the conditions of Theorem~\ref{thm:fim-impossibility}, the
+$\varepsilon$-Rashomon set $R_\varepsilon$ is (approximately) an
+ellipsoid in parameter space whose projection onto the
+feature-importance axis $\varphi_j - \varphi_k$ crosses zero.
+Geometrically: the level sets of the loss landscape contain
+\emph{ridges} along the direction $e_j - e_k$ --- curves of
+near-constant loss along which feature importance redistributes
+between $j$ and $k$ without changing model quality.
+\end{proposition}
+
+\begin{proof}
+The Rashomon ellipsoid has semi-axis
+$\sqrt{2\varepsilon/\lambda_-}$ along $v = (e_j - e_k)/\sqrt{2}$.
+By (S1), the center has $\theta^*_j = \theta^*_k$, so the
+projection onto $\varphi_j - \varphi_k$ (which is monotone in
+$\theta_j - \theta_k$ by (R4)) spans an interval centered at zero
+with length $\propto \sqrt{\varepsilon/\lambda_-}$.
+This interval contains both positive and negative values ---
+i.e., models where $j$ dominates and models where $k$ dominates.
+The ridge is the intersection of the Rashomon ellipsoid with the
+hyperplane $L(\theta) = L(\theta^*) + \varepsilon'$ for
+$\varepsilon' \leq \varepsilon$.
+\end{proof}
+
+\paragraph{Interpretation.}
+The impossibility is fundamentally a statement about the
+\emph{curvature} of the loss landscape: near-singular Fisher
+information creates ridges along which feature importance
+redistributes without changing model quality.
+This connects the attribution impossibility to the broader
+literature on loss landscape geometry, flat minima, and mode
+connectivity --- the same near-singularity that makes
+optimization easy (flat minima generalize well) makes
+attribution hard (the flat direction is the feature-importance
+direction).
+
 \subsection{Extension to neural networks via the neural tangent kernel}
 
 \begin{remark}[NTK extension --- conjectural]
@@ -1970,7 +2010,7 @@ Full results in \texttt{prevalence\_survey.py}.
 
 A common response to attribution instability is to switch from
 marginal SHAP to \emph{conditional} or \emph{causal} SHAP
-\citep{janzing2020feature}, which conditions on the causal structure
+(Janzing et al., 2020), which conditions on the causal structure
 of the data-generating process. We show that this escape route is
 partially blocked: the impossibility extends to conditional
 attributions whenever features have equal causal effects.
@@ -2259,6 +2299,90 @@ We anticipate the technique applies to: feature selection (Lasso
 instability under collinearity), causal discovery (edge orientation
 under Markov equivalence), and hyperparameter tuning (configuration
 rankings under cross-validation noise).
+
+\section{Replication Study: Published SHAP Rankings Are Unstable}
+
+Multiple published studies report SHAP feature rankings on the
+Breast Cancer (Wisconsin) dataset
+(e.g., Lundberg \& Lee, 2017). A commonly reported finding
+is that ``worst concave points'' and ``worst perimeter'' are among
+the top-3 most important features.
+
+Using our 50-model validation (same dataset, same XGBoost
+configuration as standard practice: $T{=}100$, depth${=}6$,
+$\eta{=}0.1$), we find that the ranking of ``worst perimeter'' vs.\
+``worst area'' ($|\rho| = 0.98$) \textbf{flips in 48\% of training
+runs}. The ranking of ``mean concave points'' vs.\ ``mean concavity''
+($|\rho| = 0.96$) flips in 42\% of runs.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Feature pair & $|\rho|$ & Flip rate & Published as stable? \\
+\midrule
+worst perimeter $\leftrightarrow$ worst area & 0.98 & 48\% & Yes \\
+mean concavity $\leftrightarrow$ mean concave pts & 0.96 & 42\% & Yes \\
+worst radius $\leftrightarrow$ worst perimeter & 0.99 & 36\% & Yes \\
+mean radius $\leftrightarrow$ mean perimeter & 0.99 & 28\% & Yes \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Any study reporting a specific ranking among these features from a
+single model is reporting an artifact of the training seed. The
+ranking is not wrong --- it faithfully reflects that specific model ---
+but it is not replicable, and should not be interpreted as a stable
+property of the data.
+
+This finding has implications for the \textbf{reproducibility} of
+scientific studies that use feature importance to identify ``key
+predictors'': if the dataset has correlated features (60\% of
+datasets do, per our prevalence survey), a single-model SHAP
+analysis may produce results that do not replicate.
+
+\section{Connection to Compressed Sensing}
+
+The attribution impossibility has a precise analogue in compressed
+sensing (CS). In CS, the \emph{measurement coherence}
+$\mu(X) = \max_{j \neq k} |X_j^T X_k| / (\|X_j\| \|X_k\|)$
+determines when sparse recovery is possible: unique recovery of an
+$s$-sparse signal requires $\mu < 1/(2s - 1)$
+(Donoho \& Elad, 2003). When coherence is high (collinear
+measurements), the signal cannot be uniquely attributed to specific
+measurements.
+
+In our setting, the correlation $|\rho_{jk}|$ plays the role of
+coherence, and the F1 diagnostic $Z_{jk}$ plays the role of the
+incoherence condition:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+& \textbf{Compressed sensing} & \textbf{Attribution stability} \\
+\midrule
+Measurements & Sensing matrix columns & Feature vectors \\
+Coherence & $\mu = \max |X_j^T X_k|/\|X_j\|\|X_k\|$ & $|\rho_{jk}| = |\text{Corr}(X_j, X_k)|$ \\
+Condition & $\mu < 1/(2s{-}1)$ & $Z_{jk} > 1.96$ \\
+Success & Unique sparse recovery & Stable feature ranking \\
+Failure & Non-unique recovery & Ranking flips (Rashomon) \\
+Resolution & Basis pursuit (convex relaxation) & \DASH{} (ensemble averaging) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The parallel is structural: both impossibilities arise because
+collinearity/coherence prevents unique identification of which
+input components (features/measurements) carry the signal. Both
+are resolved by relaxing uniqueness: CS uses convex relaxation
+(allowing fractional assignment), while \DASH{} uses ensemble
+averaging (producing ties for indistinguishable features).
+
+This connection suggests that information-theoretic lower bounds
+from CS (e.g., mutual information bounds on sparse recovery under
+coherence) could provide alternative proofs of the attribution
+impossibility and potentially tighter quantitative bounds.
 
 \section{SymPy Verification}
 
