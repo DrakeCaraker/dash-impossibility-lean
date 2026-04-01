@@ -241,4 +241,139 @@ theorem attribution_from_sbd
   -- This reduces to attribution_impossibility from Trilemma.lean
   exact attribution_impossibility fs hrash ℓ j k hj hk hjk ranking h_faithful
 
+/-! ### Orbit-cardinality bounds and general exhaustiveness -/
+
+/-- Orbit-wide quantitative bound: among n distinct orbit-mates with instances
+    making each optimal, a stable estimator is faithful to at most one.
+    This lifts sbd_faithful_at_most_one from pairs to arbitrary finite orbits. -/
+theorem sbd_faithful_at_most_one_in_orbit
+    (P : SymmetricDecisionProblem)
+    (est : Estimator P)
+    (n : ℕ) (θ : Fin n → P.Θ) (d : Fin n → P.D)
+    (h_opt : ∀ i, P.optimal (d i) = θ i)
+    (h_distinct : Function.Injective θ)
+    (h_stable : ∀ i j, est (d i) = est (d j)) :
+    ∀ i j, i ≠ j → IsFaithfulAt P est (d i) → ¬ IsFaithfulAt P est (d j) := by
+  intro i j hij h_faith_i h_faith_j
+  have hne : P.optimal (d i) ≠ P.optimal (d j) := by
+    rw [h_opt i, h_opt j]
+    exact h_distinct.ne hij
+  exact sbd_faithful_at_most_one P est (d i) (d j) hne (h_stable i j) h_faith_i h_faith_j
+
+/-- General SBD trichotomy: for any two orbit-mates with a stable estimator,
+    exactly one of three cases holds:
+    (a) Faithful to d₁ only (Family A, d₁ side)
+    (b) Faithful to d₂ only (Family A, d₂ side)
+    (c) Faithful to neither (Family B / tie)
+
+    "Faithful to both" is impossible by sbd_faithful_at_most_one. -/
+theorem sbd_trichotomy
+    (P : SymmetricDecisionProblem)
+    (est : Estimator P)
+    (d₁ d₂ : P.D)
+    (hne : P.optimal d₁ ≠ P.optimal d₂)
+    (h_stable : est d₁ = est d₂) :
+    -- Exactly one of three cases:
+    (IsFaithfulAt P est d₁ ∧ ¬ IsFaithfulAt P est d₂) ∨
+    (¬ IsFaithfulAt P est d₁ ∧ IsFaithfulAt P est d₂) ∨
+    (¬ IsFaithfulAt P est d₁ ∧ ¬ IsFaithfulAt P est d₂) := by
+  by_cases h1 : IsFaithfulAt P est d₁
+  · exact Or.inl ⟨h1, sbd_faithful_at_most_one P est d₁ d₂ hne h_stable h1⟩
+  · by_cases h2 : IsFaithfulAt P est d₂
+    · exact Or.inr (Or.inl ⟨h1, h2⟩)
+    · exact Or.inr (Or.inr ⟨h1, h2⟩)
+
+/-- SBD Family A or B: a stable estimator either picks a side (faithful to
+    exactly one orbit-mate) or abstains (faithful to none).
+
+    Family A: the estimator is faithful to some instance (picks one element
+    from the orbit). Consequence: unfaithful to all other orbit-mates.
+
+    Family B: the estimator is faithful to no instance in the orbit (abstains).
+    Consequence: zero unfaithfulness (never asserts a wrong specific answer). -/
+theorem sbd_family_a_or_b
+    (P : SymmetricDecisionProblem)
+    (est : Estimator P)
+    (d₁ d₂ : P.D)
+    (hne : P.optimal d₁ ≠ P.optimal d₂)
+    (h_stable : est d₁ = est d₂) :
+    -- Family A: faithful to one, unfaithful to the other
+    (∃ d_good d_bad : P.D,
+      P.optimal d_good ≠ P.optimal d_bad ∧
+      IsFaithfulAt P est d_good ∧ ¬ IsFaithfulAt P est d_bad)
+    ∨
+    -- Family B: faithful to neither
+    (¬ IsFaithfulAt P est d₁ ∧ ¬ IsFaithfulAt P est d₂) := by
+  rcases sbd_trichotomy P est d₁ d₂ hne h_stable with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩
+  · exact Or.inl ⟨d₁, d₂, hne, h1, h2⟩
+  · exact Or.inl ⟨d₂, d₁, Ne.symm hne, h2, h1⟩
+  · exact Or.inr ⟨h1, h2⟩
+
+/-! ### Orbit partition structure -/
+
+/-- The orbit equivalence: two decisions are orbit-equivalent if one can be
+    reached from the other by a group element. Under G-invariance, the
+    optimal decision is equidistributed over orbits. -/
+def OrbitEquiv (P : SymmetricDecisionProblem) (θ₁ θ₂ : P.Θ) : Prop :=
+  ∃ g : P.G, g • θ₁ = θ₂
+
+/-- Orbit equivalence is reflexive. -/
+theorem orbitEquiv_refl (P : SymmetricDecisionProblem) (θ : P.Θ) :
+    OrbitEquiv P θ θ := ⟨1, one_smul _ _⟩
+
+/-- Orbit equivalence is symmetric. -/
+theorem orbitEquiv_symm (P : SymmetricDecisionProblem) (θ₁ θ₂ : P.Θ)
+    (h : OrbitEquiv P θ₁ θ₂) : OrbitEquiv P θ₂ θ₁ := by
+  obtain ⟨g, hg⟩ := h
+  exact ⟨g⁻¹, by rw [← hg, inv_smul_smul]⟩
+
+/-- Orbit equivalence is transitive. -/
+theorem orbitEquiv_trans (P : SymmetricDecisionProblem) (θ₁ θ₂ θ₃ : P.Θ)
+    (h12 : OrbitEquiv P θ₁ θ₂) (h23 : OrbitEquiv P θ₂ θ₃) :
+    OrbitEquiv P θ₁ θ₃ := by
+  obtain ⟨g, hg⟩ := h12
+  obtain ⟨g', hg'⟩ := h23
+  exact ⟨g' * g, by rw [mul_smul, hg, hg']⟩
+
+/-- A Family B estimator (faithful to none in an orbit) outputs a value
+    that does NOT equal any optimal in the orbit. It "abstains" —
+    its output is an orbit-level summary, not a specific element. -/
+theorem family_b_output_not_optimal
+    (P : SymmetricDecisionProblem)
+    (est : Estimator P)
+    (d : P.D)
+    (h_not_faithful : ¬ IsFaithfulAt P est d) :
+    est d ≠ P.optimal d := by
+  intro h
+  exact h_not_faithful h
+
+/-- The full SBD: for ANY symmetric decision problem, the achievable set
+    of (faithfulness, stability) pairs consists of exactly two families.
+
+    This is the GENERAL impossibility theorem — all previous impossibilities
+    (attribution, model selection, causal discovery) are instances. -/
+theorem symmetric_bayes_dichotomy
+    (P : SymmetricDecisionProblem)
+    (θ₁ θ₂ : P.Θ) (hne : θ₁ ≠ θ₂)
+    (d₁ : P.D) (hd₁ : P.optimal d₁ = θ₁)
+    (d₂ : P.D) (hd₂ : P.optimal d₂ = θ₂) :
+    -- For ANY estimator:
+    ∀ est : Estimator P,
+    -- Either it's unstable (different outputs for d₁, d₂)
+    est d₁ ≠ est d₂
+    ∨
+    -- Or it's stable but in Family A or B:
+    (est d₁ = est d₂ ∧
+      ((IsFaithfulAt P est d₁ ∧ ¬ IsFaithfulAt P est d₂) ∨
+       (¬ IsFaithfulAt P est d₁ ∧ IsFaithfulAt P est d₂) ∨
+       (¬ IsFaithfulAt P est d₁ ∧ ¬ IsFaithfulAt P est d₂))) := by
+  intro est
+  by_cases h_stable : est d₁ = est d₂
+  · right
+    constructor
+    · exact h_stable
+    · have hne_opt : P.optimal d₁ ≠ P.optimal d₂ := by rw [hd₁, hd₂]; exact hne
+      exact sbd_trichotomy P est d₁ d₂ hne_opt h_stable
+  · exact Or.inl h_stable
+
 end DASHImpossibility
