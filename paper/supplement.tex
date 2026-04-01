@@ -1920,6 +1920,93 @@ under collinearity. The Attribution Impossibility is not a single
 negative result but the boundary of this space; \DASH{} is not merely
 a fix but the provably optimal navigation of this space.
 
+\section{Extension to Conditional and Causal Attributions}
+
+A common response to attribution instability is to switch from
+marginal SHAP to \emph{conditional} or \emph{causal} SHAP
+\citep{janzing2020feature}, which conditions on the causal structure
+of the data-generating process. We show that this escape route is
+partially blocked: the impossibility extends to conditional
+attributions whenever features have equal causal effects.
+
+\begin{definition}[Conditional attribution]
+Let $G$ be a causal graph over features $X_1, \ldots, X_P$ and
+target $Y$. The \emph{conditional attribution} for feature $j$ in
+model $f$ is:
+\[
+    \varphi_j^{\text{cond}}(f) = \mathbb{E}\big[\,
+    |f(X) - f(X^{\backslash j})| \;\big|\; \text{do}(X_{-j})\big]
+\]
+where $X^{\backslash j}$ replaces $X_j$ with a sample from its
+conditional distribution given the non-descendants of $j$ in $G$.
+\end{definition}
+
+\begin{theorem}[Conditional Attribution Impossibility]
+\label{thm:conditional-impossibility}
+Let features $j, k$ in the same collinear group satisfy:
+\begin{enumerate}
+    \item[(C1)] \textbf{Equal causal effects:}
+      $\beta_j = \beta_k$ in the structural equation
+      $Y = \sum_i \beta_i X_i + \varepsilon$.
+    \item[(C2)] \textbf{Symmetric causal position:}
+      $j$ and $k$ have the same parents and children in
+      the causal graph $G$.
+\end{enumerate}
+Then the Rashomon property holds for conditional attributions:
+for any model $f$ with
+$\varphi_j^{\text{cond}}(f) \neq \varphi_k^{\text{cond}}(f)$,
+there exists $f'$ with the reversed ordering.
+The Attribution Impossibility (Theorem~1) therefore applies to
+conditional SHAP under (C1)--(C2).
+\end{theorem}
+
+\begin{proof}
+Under (C1)--(C2), the causal graph is symmetric with respect to
+$j$ and $k$: permuting $j \leftrightarrow k$ preserves both the
+structural equations and the graph topology. The conditional
+distribution $P(X_j \mid \text{pa}(j))$ is identical to
+$P(X_k \mid \text{pa}(k))$ under this symmetry.
+
+By the DGP symmetry argument (Theorem~S3, Rashomon from symmetry),
+any model $f$ with $\varphi_j^{\text{cond}}(f) > \varphi_k^{\text{cond}}(f)$
+has a permuted counterpart $f' = f \circ \pi_{jk}$ with:
+\begin{enumerate}
+    \item $L(f') = L(f)$ (same population loss, by DGP symmetry),
+    \item $\varphi_k^{\text{cond}}(f') = \varphi_j^{\text{cond}}(f)$
+      and vice versa (attributions swap under feature permutation).
+\end{enumerate}
+This is the Rashomon property for conditional attributions.
+By Theorem~1, no faithful, stable, complete ranking of conditional
+attributions exists.
+\end{proof}
+
+\paragraph{The escape condition.}
+If $\beta_j \neq \beta_k$ (unequal causal effects), the causal
+graph breaks the DGP symmetry: conditional SHAP can identify which
+feature has a larger causal effect, and the Rashomon property fails
+for conditional attributions. In this case, conditional SHAP CAN
+produce stable rankings — it resolves the pair by appealing to
+causal structure rather than observational importance.
+
+\paragraph{When does the extension apply?}
+The extension applies whenever features in the same collinear group
+have genuinely equal roles in the data-generating process —
+e.g., multiple measurements of the same physical quantity (tumor
+radius measured by different instruments), redundant encodings
+(area vs.\ perimeter of the same shape), or features that are
+proxies for the same latent factor. In these cases, switching to
+conditional SHAP does NOT resolve the instability: the features
+are genuinely interchangeable, and any attribution method must
+report this.
+
+\paragraph{Implication for practitioners.}
+``Switch to conditional SHAP'' is not a universal fix for
+attribution instability. It works when features have different
+causal roles (the causal graph breaks the symmetry). It fails when
+features are genuinely symmetric (the causal graph preserves the
+symmetry). For symmetric features, \DASH{} ensemble averaging
+remains the only principled resolution.
+
 \section{SymPy Verification}
 
 All algebraic consequences have been independently verified:

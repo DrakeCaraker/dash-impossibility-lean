@@ -492,6 +492,7 @@ A simple diagnostic: train 5 models with different seeds and check whether withi
 The impossibility requires $\rho > 0$, with minor practical impact when $\rho$ is small.
 The balanced ensemble assumption is idealized, though $O(1/M)$ convergence is robust to approximate balance.
 The variance bound is axiomatized and its consequences (variance rate, monotonicity) are formally proved; the full measure-theoretic derivation from Mathlib's \texttt{IndepFun.variance\_sum} is deferred.
+Switching to conditional SHAP \citep{janzing2020feature} does not universally resolve the instability: in the supplement we prove the impossibility extends to conditional attributions whenever features have equal causal effects (the causal graph preserves the symmetry).
 Decorrelating via PCA removes collinearity but destroys the original feature semantics---the impossibility applies to original features, which are what practitioners want to explain.
 \DASH{} requires $M\times$ training cost; $M{=}25$ brings the flip rate below 1\%, while $M{=}5$ provides a substantial improvement (variance reduced $5\times$) at modest cost.
 \DASH{} consensus achieves stability by discarding model-specific within-group information: when individual models disagree on $j$ vs.\ $k$, \DASH{} reports a tie rather than picking a side.
