@@ -3,8 +3,8 @@
     "n_datasets": 37,
     "n_with_correlation": 34,
     "pct_with_correlation": 91.9,
-    "n_with_instability": 26,
-    "pct_with_instability": 70.3
+    "n_with_instability": 22,
+    "pct_with_instability": 59.5
   },
   "datasets": [
     {
@@ -16,7 +16,7 @@
       "n_corr_pairs": 145,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "wine",
@@ -27,7 +27,7 @@
       "n_corr_pairs": 14,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.4421
+      "max_flip_rate": 0.4
     },
     {
       "dataset": "iris",
@@ -49,7 +49,7 @@
       "n_corr_pairs": 61,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5211
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "diabetes",
@@ -60,7 +60,7 @@
       "n_corr_pairs": 6,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5211
+      "max_flip_rate": 0.3
     },
     {
       "dataset": "california_housing",
@@ -71,7 +71,7 @@
       "n_corr_pairs": 2,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.4789
+      "max_flip_rate": 0.35
     },
     {
       "dataset": "linnerud",
@@ -103,8 +103,8 @@
       "n_pairs": 21,
       "n_corr_pairs": 1,
       "has_correlated": true,
-      "has_instability": true,
-      "max_flip_rate": 0.4421
+      "has_instability": false,
+      "max_flip_rate": 0.05
     },
     {
       "dataset": "default-credit-card",
@@ -115,7 +115,7 @@
       "n_corr_pairs": 29,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5053
+      "max_flip_rate": 0.45
     },
     {
       "dataset": "adult",
@@ -137,7 +137,7 @@
       "n_corr_pairs": 1206,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "kc_house_prices",
@@ -148,7 +148,7 @@
       "n_corr_pairs": 10,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.4421
+      "max_flip_rate": 0.35
     },
     {
       "dataset": "bike_sharing",
@@ -158,8 +158,8 @@
       "n_pairs": 28,
       "n_corr_pairs": 1,
       "has_correlated": true,
-      "has_instability": true,
-      "max_flip_rate": 0.1895
+      "has_instability": false,
+      "max_flip_rate": 0.0
     },
     {
       "dataset": "phoneme",
@@ -180,8 +180,8 @@
       "n_pairs": 6,
       "n_corr_pairs": 3,
       "has_correlated": true,
-      "has_instability": true,
-      "max_flip_rate": 0.5053
+      "has_instability": false,
+      "max_flip_rate": 0.0
     },
     {
       "dataset": "vehicle",
@@ -192,7 +192,7 @@
       "n_corr_pairs": 60,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "segment",
@@ -203,7 +203,7 @@
       "n_corr_pairs": 38,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "steel-plates-fault",
@@ -213,8 +213,8 @@
       "n_pairs": 528,
       "n_corr_pairs": 55,
       "has_correlated": true,
-      "has_instability": true,
-      "max_flip_rate": 0.5263
+      "has_instability": false,
+      "max_flip_rate": 0.05
     },
     {
       "dataset": "vowel",
@@ -236,7 +236,7 @@
       "n_corr_pairs": 2138,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "analcatdata_authorship",
@@ -247,7 +247,7 @@
       "n_corr_pairs": 19,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.4421
+      "max_flip_rate": 0.4
     },
     {
       "dataset": "pc1",
@@ -258,7 +258,7 @@
       "n_corr_pairs": 145,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "kc1",
@@ -269,7 +269,7 @@
       "n_corr_pairs": 166,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "pc4",
@@ -280,7 +280,7 @@
       "n_corr_pairs": 162,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "ionosphere",
@@ -291,7 +291,7 @@
       "n_corr_pairs": 52,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "sonar",
@@ -302,7 +302,7 @@
       "n_corr_pairs": 133,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "mfeat-factors",
@@ -313,7 +313,7 @@
       "n_corr_pairs": 2582,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "mfeat-fourier",
@@ -324,7 +324,7 @@
       "n_corr_pairs": 18,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5211
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "mfeat-karhunen",
@@ -357,7 +357,7 @@
       "n_corr_pairs": 735,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.5
     },
     {
       "dataset": "spambase",
@@ -368,7 +368,7 @@
       "n_corr_pairs": 31,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.4789
+      "max_flip_rate": 0.2
     },
     {
       "dataset": "wall-robot-navigation",
@@ -379,7 +379,7 @@
       "n_corr_pairs": 6,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5263
+      "max_flip_rate": 0.3
     },
     {
       "dataset": "electricity",

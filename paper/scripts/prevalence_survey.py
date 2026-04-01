@@ -176,7 +176,11 @@ def measure_instability(X, y, task, corr_pairs, n_models=20):
     feature (TreeExplainer, 100 test samples), and check flip rate for
     correlated pairs.
 
-    Flip rate for a pair (j, k) = min(count(φ_j > φ_k), count(φ_k > φ_j)) / n_models.
+    Each model uses a different random seed AND an 80% bootstrap subsample
+    to expose the Rashomon effect (seed alone is insufficient — XGBoost is
+    near-deterministic on identical data).
+
+    Flip rate for a pair (j, k) = min(count(phi_j > phi_k), count(phi_k > phi_j)) / n_models.
     If any pair has flip rate > 10%, has_instability = True.
     """
     from xgboost import XGBClassifier, XGBRegressor
@@ -190,12 +194,19 @@ def measure_instability(X, y, task, corr_pairs, n_models=20):
 
     for seed in range(n_models):
         try:
+            rng = np.random.RandomState(seed)
+
+            # 80% bootstrap subsample — creates genuinely different models
+            n = len(y)
+            idx = rng.choice(n, size=int(0.8 * n), replace=False)
+            X_train, y_train = X[idx], y[idx]
+
             params = dict(
                 n_estimators=50, max_depth=4, learning_rate=0.1,
                 random_state=seed, n_jobs=1, verbosity=0,
             )
             if task == "clf":
-                n_classes = len(np.unique(y))
+                n_classes = len(np.unique(y_train))
                 if n_classes > 2:
                     params["objective"] = "multi:softprob"
                     params["num_class"] = n_classes
@@ -205,7 +216,7 @@ def measure_instability(X, y, task, corr_pairs, n_models=20):
             else:
                 model = XGBRegressor(**params)
 
-            model.fit(X, y)
+            model.fit(X_train, y_train)
 
             explainer = shap.TreeExplainer(model)
             shap_vals = explainer.shap_values(X_eval)
@@ -229,7 +240,7 @@ def measure_instability(X, y, task, corr_pairs, n_models=20):
         return False, 0.0
 
     # Check flip rate for correlated pairs
-    # flip_rate = min(count(φ_j > φ_k), count(φ_k > φ_j)) / n_models
+    # flip_rate = min(count(phi_j > phi_k), count(phi_k > phi_j)) / n_models
     has_instability = False
     max_flip_rate = 0.0
     n = len(rankings_list)

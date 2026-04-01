@@ -502,7 +502,7 @@ The net effect: \DASH{} loses the unreliable information and sharpens the reliab
 For safety-critical applications deploying a specific model $f$, practitioners should report both the single-model SHAP values (with an instability caveat) and the \DASH{} consensus (stable but reporting ties).
 
 \paragraph{Broader implications.}
-In a survey of 37 public datasets (supplement), 92\% have feature pairs with $|\rho| > 0.5$ and 70\% exhibit attribution instability (flip rate $> 10\%$) --- the impossibility is not a theoretical curiosity but a practical reality affecting the majority of real-world data.
+In a survey of 37 public datasets (supplement), 92\% have feature pairs with $|\rho| > 0.5$ and 60\% exhibit attribution instability (ranking flip rate $> 10\%$) --- the impossibility is not a theoretical curiosity but a practical reality affecting the majority of real-world data.
 Our theorem proves that this instability is a ``known and foreseeable circumstance'' affecting accuracy under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}.
 Beyond regulatory compliance, the impossibility affects model debugging (the wrong feature may be blamed for errors), fairness audits (protected-feature effects may be misattributed to correlated proxies), and scientific discovery (spurious feature importance may drive false hypotheses).
 In each case, \DASH{} provides a principled mitigation by reporting honest uncertainty rather than arbitrary distinctions.
