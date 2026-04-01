@@ -693,6 +693,65 @@ The full \DASH{} pipeline (population generation, $\varepsilon$-filtering,
 deduplication) is available in the companion repository.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CROSS-IMPLEMENTATION VALIDATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Cross-Implementation Validation}
+
+All experiments in this paper use XGBoost. To confirm the impossibility
+and diagnostics are implementation-independent, we validate on LightGBM
+and CatBoost using the Breast Cancer dataset (50~models per
+implementation, matching hyperparameters).
+
+\begin{table}[h]
+\centering
+\caption{Attribution instability across three GBDT implementations
+on Breast Cancer (30~features, 50~models each).}
+\label{tab:cross-impl}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Metric & XGBoost & LightGBM & CatBoost \\
+\midrule
+Unstable pairs (flip $> 10\%$) & 162 & 183 & 160 \\
+Max flip rate & 0.500 & 0.500 & 0.500 \\
+F1 correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
+F5 precision & 0.26 & 0.20 & --- \\
+\DASH{} max flip ($M{=}25$) & 0.48 & 0.48 & 0.48 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Key findings.}
+The impossibility manifests identically across implementations:
+160--183 unstable pairs, maximum flip rate 0.500 (the theoretical
+ceiling), and F1 diagnostic correlation $|r| > 0.89$ in all three.
+The instability is a property of sequential boosting under
+collinearity, not of any specific implementation.
+
+\paragraph{F5 caveat.}
+The F5 split-frequency diagnostic requires access to per-tree split
+counts. CatBoost's \texttt{get\_feature\_importance()} returns
+gain-based importance (not raw split counts), producing a different
+$Z$-statistic distribution that does not transfer the XGBoost-calibrated
+threshold. For CatBoost, the F1 multi-model diagnostic ($r = -0.892$)
+is recommended instead. LightGBM's feature importance is split-count
+based and transfers with modest precision reduction (0.20 vs.\ 0.26).
+The reference implementation of the full \DASH{} pipeline is available
+at \url{https://github.com/DrakeCaraker/dash-shap}.
+
+\paragraph{Determinism without subsampling.}
+Without row or column subsampling (\texttt{subsample=1.0},
+\texttt{colsample\_bytree=1.0}), XGBoost is fully deterministic:
+all 50~models produce identical rankings regardless of random seed.
+The Rashomon set requires a stochasticity source. In practice, this
+is not a limitation: the XGBoost default (\texttt{subsample=0.8})
+is recommended for regularization, and real-world model populations
+also arise from data drift, feature engineering changes, and
+hyperparameter sweeps. Subsampling is the most controlled source,
+making it the natural choice for empirical demonstration.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FOUNDATIONAL EXTENSIONS (F1-F3, F5)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
