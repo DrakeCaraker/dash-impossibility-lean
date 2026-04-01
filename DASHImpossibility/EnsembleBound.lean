@@ -100,9 +100,13 @@ theorem dash_achieves_minimum_variance
 theorem sum_squares_ge_inv_M (M : ℕ) (hM : 0 < M) (w : Fin M → ℝ)
     (hw_sum : Finset.univ.sum w = 1) :
     Finset.univ.sum (fun i => w i ^ 2) ≥ 1 / (M : ℝ) := by
-  -- TODO: needs Cauchy-Schwarz (inner_mul_le_norm_mul_sq) or
-  -- QM-AM inequality from Finset. The key step is:
-  -- (∑ wᵢ²) · M ≥ (∑ wᵢ)² = 1 by Cauchy-Schwarz on (w, 1).
-  sorry
+  -- Proof via Titu's lemma (Sedrakyan / Engel form of Cauchy-Schwarz):
+  -- (∑ wᵢ)² / (∑ gᵢ) ≤ ∑ (wᵢ² / gᵢ) with gᵢ = 1.
+  have h_titu := Finset.sq_sum_div_le_sum_sq_div Finset.univ w
+    (fun (i : Fin M) _ => (zero_lt_one : (0 : ℝ) < 1))
+  simp only [div_one, Finset.sum_const, Finset.card_fin, Nat.smul_one_eq_cast] at h_titu
+  rw [hw_sum, one_pow] at h_titu
+  -- h_titu : 1 / ↑M ≤ Finset.sum Finset.univ fun i => w i ^ 2
+  exact ge_iff_le.mpr h_titu
 
 end DASHImpossibility
