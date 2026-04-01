@@ -84,3 +84,4 @@ lake build     # compile everything (~1988 jobs)
 - Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma"` (currently 42)
 - Run parallel subagents that both modify the same file (causes build cache corruption)
 - Axiomatize quantities that can be defined — prefer definitions with axiomatized bounds (see SpearmanDef.lean pattern)
+- Claim empirical results as "proved" or "Lean-verified" — distinguish: **proved** (zero axiom deps), **derived** (from axioms), **argued** (supplement proof only), **empirical** (experiments). The paper's "Proof status transparency" paragraph is the reference.
