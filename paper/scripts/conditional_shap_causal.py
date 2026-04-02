@@ -31,10 +31,13 @@ Causal data generating process (DGP):
 Scenarios:
   Symmetric:   beta_1 = beta_2 = 1.0  -> equal causal effects -> instability persists
   Asymmetric:  beta_1 = 1.5, beta_2 = 0.5  -> unequal effects -> interventional SHAP stable
+  Sweep:       Delta_beta in {0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0} at rho=0.9
+               beta_1 = 1.0 + Delta_beta/2, beta_2 = 1.0 - Delta_beta/2
 
 Validation criteria:
   Symmetric,   high rho:   marginal flip rate > 20% AND interventional flip rate > 20%
   Asymmetric,  any rho:    interventional flip rate < 10% (stable)
+  Sweep crossover:         identify Delta_beta where marginal > 10% but interventional < 10%
 """
 
 import os
@@ -75,6 +78,13 @@ XGB_PARAMS = dict(
 SYMMETRIC_HIGH_RHO_THRESHOLD = 0.90   # rho >= this is "high" for the symmetric check
 SYMMETRIC_MIN_FLIP = 0.20             # both estimators should exceed this
 ASYMMETRIC_MAX_INTERVENTIONAL_FLIP = 0.10  # interventional should be below this
+
+# Sweep parameters
+SWEEP_DELTA_BETAS = [0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0]
+SWEEP_RHO = 0.9
+SWEEP_N_MODELS = 20
+SWEEP_MARGINAL_UNSTABLE_THRESHOLD = 0.10   # marginal flip > this -> unstable
+SWEEP_INTERVENTIONAL_STABLE_THRESHOLD = 0.10  # interventional flip < this -> stable
 
 # ── Data generation ────────────────────────────────────────────────────────────
 
@@ -289,6 +299,116 @@ def print_results_table(all_results: dict):
     print(sep)
 
 
+# ── Delta-beta sweep ───────────────────────────────────────────────────────────
+
+def run_sweep() -> list:
+    """
+    Sweep Delta_beta in {0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0} at rho=SWEEP_RHO.
+
+    For each Delta_beta: beta_1 = 1.0 + Delta_beta/2, beta_2 = 1.0 - Delta_beta/2
+    (centered at 1.0, so Delta_beta=0 reproduces the symmetric case and
+    Delta_beta=1.0 reproduces the asymmetric case).
+
+    Returns list of dicts with keys: delta_beta, beta_1, beta_2,
+                                     marginal_flip, interventional_flip.
+    """
+    rng_master = np.random.default_rng(99)
+    rows = []
+
+    print("\n=== Delta-beta Sweep  (rho = {:.2f}, {:d} models per setting) ===".format(
+        SWEEP_RHO, SWEEP_N_MODELS))
+    print(f"\n  {'Δβ':>5}  {'β₁':>6}  {'β₂':>6}  {'Marginal flip':>14}  {'Interventional flip':>19}")
+    print(f"  {'-'*58}")
+
+    for delta_beta in SWEEP_DELTA_BETAS:
+        beta_1 = 1.0 + delta_beta / 2.0
+        beta_2 = 1.0 - delta_beta / 2.0
+
+        marginal_rankings = []
+        interventional_rankings = []
+
+        for seed in range(SWEEP_N_MODELS):
+            local_rng = np.random.default_rng(rng_master.integers(0, 2 ** 32))
+            X, y = generate_data(SWEEP_RHO, beta_1, beta_2, N_SAMPLES, local_rng)
+
+            n_train = int(TRAIN_FRAC * N_SAMPLES)
+            X_train, y_train = X[:n_train], y[:n_train]
+            X_eval = X[n_train:]
+
+            bg_idx = np.random.default_rng(seed + 1000).choice(
+                n_train, size=N_BACKGROUND, replace=False
+            )
+            X_bg = X_train[bg_idx]
+
+            model = xgb.XGBRegressor(random_state=seed + 1000, **XGB_PARAMS)
+            model.fit(X_train, y_train)
+
+            ms_marginal = mean_abs_shap_marginal(model, X_eval)
+            marginal_rankings.append(ms_marginal[0] > ms_marginal[1])
+
+            ms_interv = mean_abs_shap_interventional(model, X_eval, X_bg)
+            interventional_rankings.append(ms_interv[0] > ms_interv[1])
+
+        # Use SWEEP_N_MODELS for pair counting
+        n_pairs = SWEEP_N_MODELS * (SWEEP_N_MODELS - 1) // 2
+        marg_flips = sum(1 for a, b in itertools.combinations(marginal_rankings, 2) if a != b)
+        interv_flips = sum(1 for a, b in itertools.combinations(interventional_rankings, 2) if a != b)
+        marg_flip = marg_flips / n_pairs if n_pairs > 0 else 0.0
+        interv_flip = interv_flips / n_pairs if n_pairs > 0 else 0.0
+
+        print(f"  {delta_beta:>5.2f}  {beta_1:>6.2f}  {beta_2:>6.2f}  "
+              f"{marg_flip:>14.3f}  {interv_flip:>19.3f}")
+
+        rows.append(dict(
+            delta_beta=delta_beta,
+            beta_1=beta_1,
+            beta_2=beta_2,
+            marginal_flip=marg_flip,
+            interventional_flip=interv_flip,
+        ))
+
+    return rows
+
+
+def print_sweep_crossover(sweep_rows: list):
+    """
+    Identify and print the crossover Delta_beta where marginal SHAP is still
+    unstable (flip rate > SWEEP_MARGINAL_UNSTABLE_THRESHOLD) but interventional
+    SHAP is already stable (flip rate < SWEEP_INTERVENTIONAL_STABLE_THRESHOLD).
+    """
+    print("\n--- Sweep crossover analysis ---")
+    print(f"  Unstable threshold (marginal):       flip rate > {SWEEP_MARGINAL_UNSTABLE_THRESHOLD:.2f}")
+    print(f"  Stable threshold (interventional):   flip rate < {SWEEP_INTERVENTIONAL_STABLE_THRESHOLD:.2f}")
+    print()
+
+    crossover_rows = [
+        r for r in sweep_rows
+        if r["marginal_flip"] > SWEEP_MARGINAL_UNSTABLE_THRESHOLD
+        and r["interventional_flip"] < SWEEP_INTERVENTIONAL_STABLE_THRESHOLD
+    ]
+
+    if crossover_rows:
+        print("  Delta_beta values where marginal is unstable BUT interventional is stable:")
+        for r in crossover_rows:
+            print(f"    Δβ={r['delta_beta']:.2f}  β₁={r['beta_1']:.2f}  β₂={r['beta_2']:.2f}"
+                  f"  marginal={r['marginal_flip']:.3f}  interventional={r['interventional_flip']:.3f}")
+        min_crossover = crossover_rows[0]["delta_beta"]
+        print(f"\n  Crossover begins at Δβ = {min_crossover:.2f}")
+    else:
+        # Report the transition point even if there is no clean crossover
+        marg_unstable = [r for r in sweep_rows if r["marginal_flip"] > SWEEP_MARGINAL_UNSTABLE_THRESHOLD]
+        interv_stable  = [r for r in sweep_rows if r["interventional_flip"] < SWEEP_INTERVENTIONAL_STABLE_THRESHOLD]
+        if marg_unstable:
+            print(f"  Last Delta_beta with marginal unstable: "
+                  f"Δβ={marg_unstable[-1]['delta_beta']:.2f}  "
+                  f"(flip={marg_unstable[-1]['marginal_flip']:.3f})")
+        if interv_stable:
+            print(f"  First Delta_beta with interventional stable: "
+                  f"Δβ={interv_stable[0]['delta_beta']:.2f}  "
+                  f"(flip={interv_stable[0]['interventional_flip']:.3f})")
+        print("  No clean crossover window found at these thresholds.")
+
+
 # ── Entry point ────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -308,4 +428,10 @@ if __name__ == "__main__":
     print_results_table(all_results)
 
     passed = run_validation(all_results)
+
+    # ── Section 3: Delta-beta sweep ───────────────────────────────────────────
+    print("\n" + "=" * 70)
+    sweep_rows = run_sweep()
+    print_sweep_crossover(sweep_rows)
+
     sys.exit(0 if passed else 1)

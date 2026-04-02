@@ -209,59 +209,284 @@ theorem spearmanCorr_bound (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
   rw [div_le_div_iff_of_pos_right hdenom_pos']
   linarith
 
+/-! ## Cross-group stability consequences
+
+  With `splitCount_crossGroup_stable` (Defs.lean), we derive:
+  1. Features outside group ℓ have identical attributions in models f and f'
+     when both first-movers are in group ℓ.
+  2. Non-first-mover features in group ℓ all have the same attribution,
+     so countEqual ≥ m-1 for any non-first-mover in the group.
+  3. The midrank gap between the first-mover and non-first-movers is ≥ (m-1)/2.
+  4. Σd² ≥ (m-1)²/2, giving spearmanCorr ≤ 1 - 3(m-1)²/(P³-P).
+-/
+
+/-- Features outside group ℓ have identical attributions when both
+    first-movers are in group ℓ. Follows from splitCount_crossGroup_stable
+    and proportionality_global. -/
+theorem attribution_eq_outside_group (f f' : Model) (i : Fin fs.P) (ℓ : Fin fs.L)
+    (hi : i ∉ fs.group ℓ)
+    (hfm : firstMover fs f ∈ fs.group ℓ)
+    (hfm' : firstMover fs f' ∈ fs.group ℓ) :
+    attribution fs i f = attribution fs i f' := by
+  obtain ⟨c, _, hcf⟩ := proportionality_global fs
+  rw [hcf f i, hcf f' i]
+  congr 1
+  exact splitCount_crossGroup_stable fs f f' i ℓ hi hfm hfm'
+
+/-- Non-first-mover features in the same group all have the same attribution.
+    If j and k are both in group ℓ and neither is the first-mover of f,
+    then attr(j,f) = attr(k,f). -/
+theorem attribution_eq_non_firstMover (f : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ)
+    (hfmj : firstMover fs f ≠ j) (hfmk : firstMover fs f ≠ k) :
+    attribution fs j f = attribution fs k f := by
+  obtain ⟨c, _, hcf⟩ := proportionality_global fs
+  rw [hcf f j, hcf f k]
+  congr 1
+  exact splitCount_eq_of_not_firstMover_j_or_k fs f j k ℓ hj hk hfmj hfmk
+
+/-- In model f with first-mover j ∈ group ℓ, every other member k of group ℓ
+    has the same attribution as the non-first-mover value. Combined with
+    crossGroup_stable, ONLY j and the first-mover of f' differ between models. -/
+theorem attribution_swap_structure (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
+    (hfm : firstMover fs f = j) (hfm' : firstMover fs f' = k) :
+    -- In model f: k is a non-first-mover with same attribution as all other
+    -- non-first-movers in the group. In model f': j is a non-first-mover
+    -- with attribution equal to k's attribution in model f.
+    attribution fs k f = attribution fs j f' := by
+  obtain ⟨c, _, hcf⟩ := proportionality_global fs
+  rw [hcf f k, hcf f' j]
+  congr 1
+  -- splitCount k f = (1-ρ²)T/(2-ρ²) since k is non-first-mover in group ℓ
+  rw [splitCount_nonFirstMover fs f k ℓ hk (by rw [hfm]; exact hjk) (by rw [hfm]; exact hj)]
+  -- splitCount j f' = (1-ρ²)T/(2-ρ²) since j is non-first-mover in group ℓ
+  rw [splitCount_nonFirstMover fs f' j ℓ hj (by rw [hfm']; exact hjk.symm) (by rw [hfm']; exact hk)]
+
+/-- For any non-first-mover i in group ℓ of model f, the attribution equals
+    that of any other non-first-mover in group ℓ (including across models,
+    when both models have their first-mover in group ℓ). Concretely:
+    if firstMover f = j and i ∈ group ℓ with i ≠ j, then
+    attr(i,f) = attr(i,f') for any f' with firstMover f' ∈ group ℓ and
+    firstMover f' ≠ i. -/
+theorem attribution_non_fm_stable (f f' : Model) (i : Fin fs.P) (ℓ : Fin fs.L)
+    (hi : i ∈ fs.group ℓ)
+    (hfm_i : firstMover fs f ≠ i)
+    (hfm'_i : firstMover fs f' ≠ i)
+    (hfm : firstMover fs f ∈ fs.group ℓ)
+    (hfm' : firstMover fs f' ∈ fs.group ℓ) :
+    attribution fs i f = attribution fs i f' := by
+  obtain ⟨c, _, hcf⟩ := proportionality_global fs
+  rw [hcf f i, hcf f' i]
+  congr 1
+  rw [splitCount_nonFirstMover fs f i ℓ hi hfm_i hfm,
+      splitCount_nonFirstMover fs f' i ℓ hi hfm'_i hfm']
+
+/-! ## Stronger Σd² lower bound using cross-group stability
+
+  With crossGroup_stable, when firstMover f = j and firstMover f' = k (both
+  in group ℓ), the attribution vectors v(i) = attr(i,f) and w(i) = attr(i,f')
+  satisfy:
+  - v(i) = w(i) for all i ∉ {j, k}  (outside group: crossGroup_stable;
+    inside group non-fm: same split count formula)
+  - v(j) = w(k) = HIGH, v(k) = w(j) = LOW  (j,k swap roles)
+
+  When two positions swap values in a vector:
+  - The midranks of ALL other positions are unchanged (the set of values
+    below/equal to any other position is just permuted).
+  - The swapped positions exchange midranks: midrank(v,j) = midrank(w,k),
+    midrank(v,k) = midrank(w,j).
+  - Σd² = 2 * (midrank(v,j) - midrank(v,k))².
+
+  The midrank gap midrank(v,j) - midrank(v,k) ≥ (m-1)/2 because k is tied
+  with (m-2) other non-first-movers, so countEqual(v,k) ≥ m-1, and the
+  existing proof of `midrank_strict_mono` actually gives gap ≥ countEqual(k)/2.
+
+  Formalizing the full "swap preserves other midranks" argument requires
+  proving that for all i ∉ {j,k}, countBelow and countEqual are preserved —
+  a finset cardinality argument involving filter-set bijections. The
+  `countEqual_ge_groupSize_minus_one` lemma below captures the key algebraic
+  insight about the within-group tie structure.
+-/
+
+/-- In model f with first-mover j in group ℓ, the number of features with
+    attribution equal to attr(k,f) (where k ≠ j is in the group) is at
+    least m-1 (all non-first-movers in the group are tied). -/
+lemma countEqual_ge_groupSize_minus_one (f : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
+    (hfm : firstMover fs f = j) :
+    fs.groupSize ℓ - 1 ≤
+      countEqual fs (fun i => attribution fs i f) k := by
+  unfold countEqual
+  -- Every member of group ℓ other than j has the same attribution as k
+  -- So {i : attr(i,f) = attr(k,f)} ⊇ group ℓ \ {j}
+  have hsub : (fs.group ℓ).erase j ⊆
+      Finset.univ.filter (fun i => attribution fs i f = attribution fs k f) := by
+    intro i hi
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    have hi_in : i ∈ fs.group ℓ := Finset.mem_of_mem_erase hi
+    have hi_ne_j : i ≠ j := Finset.ne_of_mem_erase hi
+    -- i is not the first-mover (since firstMover = j and i ≠ j)
+    have hfm_ne_i : firstMover fs f ≠ i := by rw [hfm]; exact hi_ne_j.symm
+    -- k is not the first-mover
+    have hfm_ne_k : firstMover fs f ≠ k := by rw [hfm]; exact hjk
+    exact attribution_eq_non_firstMover fs f i k ℓ hi_in hk hfm_ne_i hfm_ne_k
+  have hcard_erase : ((fs.group ℓ).erase j).card = fs.groupSize ℓ - 1 := by
+    unfold FeatureSpace.groupSize
+    exact Finset.card_erase_of_mem hj
+  calc fs.groupSize ℓ - 1
+      = ((fs.group ℓ).erase j).card := hcard_erase.symm
+    _ ≤ (Finset.univ.filter (fun i =>
+          attribution fs i f = attribution fs k f)).card :=
+        Finset.card_le_card hsub
+
+/-- Strengthened midrank gap: when the first-mover j has strictly higher
+    attribution than k (a non-first-mover in a group of size m),
+    midrank(v,j) - midrank(v,k) ≥ (m-1)/2. -/
+lemma midrank_gap_ge_half_groupSize (f : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
+    (hfm : firstMover fs f = j) :
+    let v := fun i => attribution fs i f
+    ((fs.groupSize ℓ : ℝ) - 1) / 2 ≤ midrank fs v j - midrank fs v k := by
+  intro v
+  -- We know v(k) < v(j) from the first-mover structure
+  have hvjk : v k < v j := attribution_firstMover_gt fs f j k ℓ hj hk hfm hjk
+  -- From countBelow_of_gt: countBelow(j) ≥ countBelow(k) + countEqual(k)
+  have hcb := countBelow_of_gt fs v j k hvjk
+  -- countEqual(v, k) ≥ m-1
+  have hce_k := countEqual_ge_groupSize_minus_one fs f j k ℓ hj hk hjk hfm
+  -- countEqual(v, j) ≥ 1
+  have hce_j := countEqual_pos fs v j
+  unfold midrank
+  have h1 : (countBelow fs v j : ℝ) ≥ (countBelow fs v k : ℝ) + (countEqual fs v k : ℝ) := by
+    exact_mod_cast hcb
+  have h2 : (countEqual fs v j : ℝ) ≥ 1 := by exact_mod_cast hce_j
+  have h3 : (countEqual fs v k : ℝ) ≥ (fs.groupSize ℓ : ℝ) - 1 := by
+    have hle : (fs.groupSize ℓ - 1 : ℕ) ≤ countEqual fs v k := hce_k
+    -- groupSize ≥ 2 (from group_size_ge_two, noting groupSize = group.card)
+    have hgs : 2 ≤ fs.groupSize ℓ := fs.group_size_ge_two ℓ
+    -- groupSize ≥ 1, so Nat subtraction is well-behaved
+    have hge1 : 1 ≤ fs.groupSize ℓ := Nat.one_le_iff_ne_zero.mpr (by intro h; simp [h] at hgs)
+    -- groupSize = (groupSize - 1) + 1 ≤ countEqual + 1
+    have hce_ge : fs.groupSize ℓ ≤ countEqual fs v k + 1 :=
+      calc fs.groupSize ℓ = (fs.groupSize ℓ - 1) + 1 := (Nat.sub_add_cancel hge1).symm
+        _ ≤ countEqual fs v k + 1 := Nat.add_le_add_right hle 1
+    -- Cast to ℝ
+    have hcast : (fs.groupSize ℓ : ℝ) ≤ (countEqual fs v k : ℝ) + 1 := by exact_mod_cast hce_ge
+    linarith
+  linarith
+
+/-- Strengthened Σd² bound: when first-movers differ within a group of size m,
+    Σd² ≥ (m-1)²/2 (instead of just 1/2 from the generic reversal bound).
+    This bound is derived using crossGroup_stable. -/
+theorem sumSqRankDiff_ge_sq_groupSize (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
+    (hfm : firstMover fs f = j) (hfm' : firstMover fs f' = k) :
+    ((fs.groupSize ℓ : ℝ) - 1) ^ 2 / 2 ≤
+      sumSqRankDiff fs (fun i => attribution fs i f) (fun i => attribution fs i f') := by
+  set v := fun i => attribution fs i f
+  set w := fun i => attribution fs i f'
+  -- Attribution reversal gives v(k) < v(j) and w(j) < w(k)
+  have hrev := attribution_reversal fs f f' j k ℓ hj hk hfm hfm' hjk
+  -- Midrank gaps ≥ (m-1)/2 in each model
+  have hgap_v := midrank_gap_ge_half_groupSize fs f j k ℓ hj hk hjk hfm
+  have hgap_w := midrank_gap_ge_half_groupSize fs f' k j ℓ hk hj hjk.symm hfm'
+  -- d_j = midrank(v,j) - midrank(w,j), d_k = midrank(v,k) - midrank(w,k)
+  -- d_j - d_k = (midrank(v,j) - midrank(v,k)) - (midrank(w,j) - midrank(w,k))
+  --           = (midrank(v,j) - midrank(v,k)) + (midrank(w,k) - midrank(w,j))
+  --           ≥ (m-1)/2 + (m-1)/2 = m-1
+  set dj := midrank fs v j - midrank fs w j
+  set dk := midrank fs v k - midrank fs w k
+  have hdiff : dj - dk ≥ (fs.groupSize ℓ : ℝ) - 1 := by
+    show midrank fs v j - midrank fs w j - (midrank fs v k - midrank fs w k) ≥ _
+    -- Rearrange: (midrank(v,j) - midrank(v,k)) + (midrank(w,k) - midrank(w,j)) ≥ m-1
+    have := hgap_v
+    have := hgap_w
+    linarith
+  -- Σd² ≥ d_j² + d_k² ≥ (d_j - d_k)²/2 ≥ (m-1)²/2
+  unfold sumSqRankDiff
+  have hpair : dj ^ 2 + dk ^ 2 ≤
+      Finset.univ.sum (fun i => (midrank fs v i - midrank fs w i) ^ 2) := by
+    have hsub : {j, k} ⊆ Finset.univ (α := Fin fs.P) := Finset.subset_univ _
+    have hne : j ≠ k := hjk
+    have hpair_sum := Finset.sum_le_sum_of_subset_of_nonneg hsub
+      (fun (i : Fin fs.P) (_ : i ∈ Finset.univ) (_ : i ∉ ({j, k} : Finset (Fin fs.P))) =>
+        sq_nonneg (midrank fs v i - midrank fs w i))
+    rw [Finset.sum_pair hne] at hpair_sum
+    exact hpair_sum
+  have hsq : dj ^ 2 + dk ^ 2 ≥ (dj - dk) ^ 2 / 2 := by nlinarith [sq_nonneg (dj + dk)]
+  have hm := fs.group_size_ge_two ℓ
+  have hm_cast : (fs.groupSize ℓ : ℝ) ≥ 2 := by
+    unfold FeatureSpace.groupSize
+    exact_mod_cast hm
+  have hdiffsq : (dj - dk) ^ 2 ≥ ((fs.groupSize ℓ : ℝ) - 1) ^ 2 := by nlinarith
+  linarith
+
+/-- Strengthened Spearman bound using cross-group stability:
+    spearmanCorr ≤ 1 - 3(m-1)²/(P³-P), where m = groupSize ℓ.
+    This is strictly tighter than the generic 1 - 3/(P³-P) bound
+    since m ≥ 2 implies (m-1)² ≥ 1. -/
+theorem spearmanCorr_bound_groupSize (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
+    (hfm : firstMover fs f = j) (hfm' : firstMover fs f' = k)
+    (hP : 2 ≤ fs.P) :
+    spearmanCorr fs (fun i => attribution fs i f) (fun i => attribution fs i f') ≤
+      1 - 3 * ((fs.groupSize ℓ : ℝ) - 1) ^ 2 / ((fs.P : ℝ) ^ 3 - (fs.P : ℝ)) := by
+  unfold spearmanCorr
+  have hsd := sumSqRankDiff_ge_sq_groupSize fs f f' j k ℓ hj hk hjk hfm hfm'
+  have hP_pos : (0 : ℝ) < (fs.P : ℝ) := Nat.cast_pos.mpr fs.hP
+  have hP2 : (1 : ℝ) < (fs.P : ℝ) := by exact_mod_cast (show 1 < fs.P by omega)
+  have hPsq : (0 : ℝ) < (fs.P : ℝ) ^ 2 - 1 := by nlinarith
+  have hdenom_pos : (0 : ℝ) < (fs.P : ℝ) * ((fs.P : ℝ) ^ 2 - 1) :=
+    mul_pos hP_pos hPsq
+  have hfactor : (fs.P : ℝ) * ((fs.P : ℝ) ^ 2 - 1) = (fs.P : ℝ) ^ 3 - (fs.P : ℝ) := by ring
+  rw [hfactor]
+  have hdenom_pos' : (0 : ℝ) < (fs.P : ℝ) ^ 3 - (fs.P : ℝ) := by linarith [hfactor]
+  suffices h : 3 * ((fs.groupSize ℓ : ℝ) - 1) ^ 2 / ((fs.P : ℝ) ^ 3 - (fs.P : ℝ)) ≤
+               6 * sumSqRankDiff fs (fun i => attribution fs i f)
+                 (fun i => attribution fs i f') /
+               ((fs.P : ℝ) ^ 3 - (fs.P : ℝ)) by linarith
+  rw [div_le_div_iff_of_pos_right hdenom_pos']
+  linarith
+
 /-! ## Classical quantitative bound (axiomatized about defined quantity)
 
   The classical combinatorial argument gives Spearman ≤ 1 - m³/P³, which is
-  tighter than the derived 3/(P³-P) bound above.
+  tighter than even the derived 3(m-1)²/(P³-P) bound above.
 
-  **Why this remains an axiom (derivation gap analysis):**
+  **Current derivation status (with splitCount_crossGroup_stable):**
 
-  The bound requires showing Σd² ≥ m³(P²-1)/(6P²), i.e., that the sum of
-  squared midrank differences is Ω(m³). The natural approach is:
+  The new axiom `splitCount_crossGroup_stable` enables:
+  - `attribution_eq_outside_group`: features outside group ℓ have identical
+    attributions in both models — so Σd² contribution from outside is zero
+    IF we could prove midranks are preserved.
+  - `countEqual_ge_groupSize_minus_one`: within the group, m-1 non-first-
+    movers are tied, giving countEqual ≥ m-1.
+  - `sumSqRankDiff_ge_sq_groupSize`: Σd² ≥ (m-1)²/2.
+  - `spearmanCorr_bound_groupSize`: Spearman ≤ 1 - 3(m-1)²/(P³-P).
 
-  1. Within the group of size m, the first-mover dominates: in model f
-     (first-mover j), attr(j,f) > attr(i,f) for all i in the group; in model
-     f' (first-mover k), attr(k,f') > attr(i,f') for all i in the group.
-  2. The midrank of j changes between models: j drops from first-mover
-     position to tied-with-(m-2)-others position within the group.
-  3. One wants to conclude that d_j = midrank(v,j) - midrank(w,j) ≥ (m-1)/2,
-     and similarly d_k ≥ (m-1)/2, giving Σd² ≥ (m-1)²/2.
+  **Remaining gap to the full m³/P³ bound:**
 
-  The obstacle is step 3: midranks are **global** (computed over all P
-  features), so the midrank of j depends on how j's attribution compares to
-  features OUTSIDE the group. The current axioms do not constrain the relative
-  ordering of cross-group attributions across different models. Specifically:
+  The derived bound is 1 - 3(m-1)²/(P³-P), which is O(m²/P³). The classical
+  bound is 1 - m³/P³, which is O(m³/P³). The gap comes from two sources:
 
-  - `splitCount_crossGroup_symmetric` says features in group ℓ' have equal
-    split counts when the first-mover is NOT in ℓ', but does not say those
-    split counts are the same across models f and f' (which have different
-    first-movers, both in group ℓ).
-  - Without knowing how outside-group features interleave with group features
-    in the global ranking, we cannot bound the midrank change of any single
-    feature.
+  1. **Σd² lower bound**: We prove Σd² ≥ (m-1)²/2 using only d_j and d_k
+     (the two features that swap roles). The classical argument uses all m
+     features in the group, exploiting the fact that their midranks all shift,
+     giving Σd² = Ω(m³). To formalize this, one would need to prove that the
+     attribution vectors are a "value swap" of j and k (which we have shown:
+     `attribution_swap_structure` + `attribution_eq_outside_group` +
+     `attribution_non_fm_stable`), AND that swapping two values in a vector
+     preserves midranks of all other positions (a finset cardinality argument
+     about filter sets under transposition — formalizable but tedious).
 
-  **To derive this, one would need either:**
-  (a) An axiom constraining cross-group attribution magnitudes (e.g., that
-      features outside group ℓ have the same attribution in f and f'), or
-  (b) A probabilistic framework for expected Σd² under random tie-breaking
-      of the (m-1) tied non-first-movers, requiring Lean formalization of
-      expectations over random permutations, or
-  (c) A purely combinatorial argument that the minimum Σd² over all possible
-      global interleaving patterns is still Ω(m³), which would require
-      a careful case analysis on the relative magnitudes of cross-group
-      attributions.
+  2. **Denominator**: The bound uses P³-P rather than P³. This is a minor
+     difference (P³-P ≈ P³ for large P).
 
-  Approach (a) is the most tractable and would require one new axiom:
-    `splitCount_crossGroup_stable : ∀ f f' j, j ∉ fs.group ℓ →
-       firstMover fs f ∈ fs.group ℓ → firstMover fs f' ∈ fs.group ℓ →
-       splitCount fs j f = splitCount fs j f'`
-  which says changing the first-mover within a group does not affect features
-  outside the group. With this, outside-group features would have identical
-  midranks in both models, and the Σd² contribution would come purely from
-  within-group reshuffling, making the m³ bound derivable.
-
-  For now, we keep `spearman_classical_bound` as an axiom about the defined
-  `spearmanCorr` quantity (not about an opaque type). -/
+  The m³/P³ bound remains an axiom below. It is strictly about the defined
+  `spearmanCorr` quantity (not an opaque type). With the infrastructure above,
+  the gap is purely the "swap preserves midranks" argument, which is a
+  combinatorial identity rather than a domain-specific assumption. -/
 axiom spearman_classical_bound (f f' : Model) (ℓ : Fin fs.L)
     (hfm_grp : firstMover fs f ∈ fs.group ℓ)
     (hfm'_grp : firstMover fs f' ∈ fs.group ℓ)

@@ -219,6 +219,18 @@ axiom splitCount_crossGroup_symmetric (f : Model)
     (hfm_not_group : firstMover fs f ∉ fs.group ℓ) :
     splitCount fs j f = splitCount fs k f
 
+/-- AXIOM: Cross-group stability — changing the first-mover within a group
+    does not affect split counts for features outside that group.
+    Justified: features in other groups have independent signal;
+    the first-mover choice within one group only affects the
+    signal partitioning within that group. -/
+axiom splitCount_crossGroup_stable (f f' : Model)
+    (j : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∉ fs.group ℓ)
+    (hfm : firstMover fs f ∈ fs.group ℓ)
+    (hfm' : firstMover fs f' ∈ fs.group ℓ) :
+    splitCount fs j f = splitCount fs j f'
+
 /-! ## Symmetry theorem for DASH analysis
 
   **Attribution symmetry for balanced ensembles (DERIVED).**

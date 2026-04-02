@@ -74,9 +74,9 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, design space, SNR calibration, conditional threshold, etc.)
 ```
 
-## Lean State: 36 files, 17 axioms, 180 theorems+lemmas, 2 sorry (Gaussian CDF symmetry — Mathlib gap)
+## Lean State: 36 files, 18 axioms, 188 theorems+lemmas, 2 sorry (Gaussian CDF symmetry — Mathlib gap)
 
-## Axiom Inventory (17 total)
+## Axiom Inventory (18 total)
 
 | Category | Axioms | Used by |
 |----------|--------|---------|

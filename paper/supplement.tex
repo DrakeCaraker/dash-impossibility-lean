@@ -22,13 +22,15 @@
 
 \begin{document}
 \maketitle
+\tableofcontents
+\newpage
 
 \section{Complete Axiom System}
 
 Table~\ref{tab:axioms} lists all property axioms in the formalization
 (the core impossibility theorem requires none of them---only the Rashomon
 property as hypothesis).
-The formalization uses 17 axioms total: 6 type/constant declarations
+The formalization uses 18 axioms total: 6 type/constant declarations
 (\texttt{Model}, \texttt{numTrees}, \texttt{numTrees\_pos}, \texttt{attribution},
 \texttt{splitCount}, \texttt{firstMover}), 2 measure-theoretic infrastructure
 axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}),
@@ -73,8 +75,8 @@ Consensus variance bound & \texttt{consensus\_variance\_bound} & \textbf{Theorem
 
 \section{Proof Architecture}
 
-The formalization comprises 36 Lean~4 files with 17 axioms and
-180 type-checked theorems and lemmas (
+The formalization comprises 36 Lean~4 files with 18 axioms and
+188 type-checked theorems and lemmas (
 0 \texttt{sorry}). Of these, 43 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or
 single-step applications.
@@ -113,6 +115,60 @@ Defs.lean (14 axioms, type definitions, derived theorems)
   +-- Consistency.lean (axiom system consistency, Fin 4 model)
   +-- RandomForest.lean (contrast case, documentation only)
 \end{verbatim}
+
+\subsection{Lean File Cross-Reference}
+
+Table~\ref{tab:lean-crossref} maps each Lean file to its corresponding
+supplement section and key theorem.
+
+\begin{table}[h]
+\centering
+\caption{Lean file cross-reference (36 files, 180 theorems, 18 axioms).}
+\label{tab:lean-crossref}
+\footnotesize
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{File} & \textbf{Supplement \S} & \textbf{Key Result} & \textbf{Sorry?} \\
+\midrule
+Defs.lean & \S1 (Axiom System) & 14 axioms + derived theorems & No \\
+Trilemma.lean & Theorem 1 & attribution\_impossibility & No \\
+Iterative.lean & \S3 & iterative\_impossibility & No \\
+General.lean & \S3 & gbdt\_impossibility & No \\
+SplitGap.lean & Lemma 2 & split\_gap\_exact & No \\
+Ratio.lean & Theorem 3 & ratio\_tendsto\_atTop & No \\
+SpearmanDef.lean & \S4 & spearmanCorr\_bound & No \\
+Lasso.lean & \S3.2 & lasso\_impossibility & No \\
+NeuralNet.lean & \S3.3 & nn\_impossibility & No \\
+RandomForest.lean & \S3.4 & (documentation only) & No \\
+Impossibility.lean & Combined & not\_equitable, not\_stable & No \\
+Corollary.lean & Corollary 1 & consensus\_equity & No \\
+SymmetryDerive.lean & Derived & attribution\_sum\_symmetric & No \\
+DesignSpace.lean & Theorem 5 & design\_space\_theorem & No \\
+DesignSpaceFull.lean & Theorem 5 Step 3 & family\_a\_or\_family\_b & No \\
+ModelSelection.lean & \S Model Selection & model\_selection\_impossibility & No \\
+ModelSelectionDesignSpace.lean & \S Model Selection & model\_family\_a\_or\_family\_b & No \\
+AlphaFaithful.lean & \S Approx.\ bounds & alpha\_faithful\_bound & No \\
+UnfaithfulBound.lean & \S Unfaithfulness & stable\_complete\_unfaithful & No \\
+PathConvergence.lean & \S Path convergence & relaxation\_paths\_converge & No \\
+RashomonUniversality.lean & \S Universality & rashomon\_from\_symmetry & No \\
+RashomonInevitability.lean & \S Universality & rashomon\_inevitability & No \\
+ConditionalImpossibility.lean & \S Conditional & conditional\_attribution\_impossibility & No \\
+FlipRate.lean & \S Exact flip rate & binary\_group\_flip\_rate & No \\
+Efficiency.lean & \S Efficiency & amplification\_bounds & No \\
+LocalGlobal.lean & \S Local vs.\ Global & local\_attribution\_impossibility & No \\
+SymmetricBayes.lean & \S SBD & symmetric\_bayes\_dichotomy & No \\
+CausalDiscovery.lean & \S Causal Discovery & causal\_discovery\_impossibility & No \\
+SBDInstances.lean & \S SBD Instances & abstract\_aggregation\_impossibility & No \\
+FairnessAudit.lean & \S Fairness Audit & fairness\_audit\_impossibility & No \\
+EnsembleBound.lean & \S F2 Pareto & variance\_decreases\_with\_M & No \\
+FIMImpossibility.lean & \S F3 FIM & gaussian\_rashomon\_witnesses & No \\
+GaussianFlipRate.lean & \S F1 Diagnostic & Phi, gaussianFlipRate & 2 sorry \\
+QueryComplexity.lean & \S Query complexity & query\_complexity\_lower\_bound & No \\
+Consistency.lean & \S Axiom Consistency & axiom\_system\_consistent & No \\
+Basic.lean & (import hub) & — & No \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Design Space: now fully formalized.}
 The Lean formalization now covers all 4 steps of the Design Space Theorem.
@@ -179,6 +235,34 @@ would derive the variance bound from Mathlib's
 \texttt{IndepFun.variance\_sum}, but this requires connecting our abstract
 \texttt{Model} type to a measure space (see above).
 
+\paragraph{Development methodology.}
+The initial formalization (49 theorems, 15 files) was developed by
+the first author with iterative Claude Code assistance over several
+weeks. The expansion from 49 to 180 theorems (36 files) was produced
+in a single development session by dispatching targeted Lean-writing
+agents with detailed mathematical specifications (theorem statements,
+proof strategies, and Mathlib lemma references). All proofs were
+machine-verified by \texttt{lake build} (the Lean 4 type-checker);
+no proof was accepted on the basis of AI output alone. The 75 proofs
+with ${\geq}5$ tactic lines required substantive mathematical
+reasoning; the deepest proof (\texttt{gaussian\_rashomon\_witnesses},
+36 tactic lines) constructs explicit Rashomon witnesses via
+\texttt{Real.sqrt} and \texttt{nlinarith}.
+
+\paragraph{Proof depth distribution.}
+Of 188 type-checked declarations: 75 require multi-step proofs
+(${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 3
+require ${\geq}20$ lines. The five deepest proofs are
+\texttt{gaussian\_rashomon\_witnesses} (36 lines, FIM ellipsoid
+construction), \texttt{binary\_group\_firstmover\_is\_j\_or\_k}
+(36 lines, Finset cardinality argument),
+\texttt{spearmanCorr\_bound} (33 lines, midrank algebra),
+\texttt{causal\_discovery\_impossibility} (18 lines, CPDAG
+pigeonhole), and \texttt{sumSqRankDiff\_pos\_of\_reversal}
+(16 lines, rank difference positivity). The remaining declarations
+are definitions (43), single-step applications, or wrapper theorems
+providing backward compatibility or clean API names.
+
 \section{Inconsistencies Found During Formalization}
 
 Lean's type checker caught three issues in the initial axiom system:
@@ -206,6 +290,18 @@ Lean's type checker caught three issues in the initial axiom system:
 The first two are genuine logical inconsistencies that would have been
 difficult to detect by inspection of an informal proof. The third is a
 modeling assumption made explicit by the type system.
+
+\paragraph{Joint consistency of all 18 axioms.}
+The 14 domain-specific axioms are jointly consistent: \texttt{Consistency.lean}
+constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$,
+$T{=}100$, Fin~4 models) satisfying all 14 simultaneously.
+The 3 query-complexity axioms (\texttt{testing\_constant},
+\texttt{testing\_constant\_pos}, \texttt{le\_cam\_lower\_bound})
+are independently consistent: instantiating $C := 1/8$ satisfies all three.
+The two axiom sets reside in separate Lean files
+(\texttt{Defs.lean} and \texttt{QueryComplexity.lean}) with no
+cross-dependencies, so their joint consistency follows from the
+individual consistency of each set.
 
 \section{Gaussian Conditioning Argument}
 
@@ -937,6 +1033,18 @@ Their relative ranking is unstable across training seeds
 They should be interpreted as interchangeable contributors.
 The between-group ranking (these features vs.\ other features) is stable
 (F1 diagnostic: $Z > 1.96$).''
+
+\paragraph{Group-level reporting.}
+When reporting feature importance for a model with correlated groups,
+we recommend the following format:
+``The correlated group \{X, Y, Z\} contributes a total DASH attribution
+of [value] to the prediction ($[percent]\%$ of total).
+Within this group, individual feature rankings are unstable across
+training seeds (estimated flip rate: $[X]\%$).
+The group's total importance is stable; individual feature importance
+within the group should be interpreted as interchangeable.
+For variable selection, any feature from this group may be chosen;
+the choice is arbitrary with respect to model quality.''
 
 \section{Non-SHAP Attribution Validation}
 \label{sec:non-shap-validation}
