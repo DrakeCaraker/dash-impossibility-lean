@@ -411,7 +411,9 @@ The optimal two-level quantizer of a symmetric distribution splits at the median
 In each boosting round, a stump makes one binary split on the selected feature, capturing $2/\pi$ of that feature's remaining signal variance. The fitted value ($\alpha \approx 0.60$) is below $2/\pi = 0.637$; two error sources explain the gap: (1) empirical vs.\ population split location (negligible, $\Delta\alpha_1 \approx 0.0009$ for $n = 2000$), and (2) non-Gaussian residuals after the first boosting round (dominant, accounting for $\approx 0.036$).
 
 \paragraph{Depth dependence.}
-Table~\ref{tab:depth-rho} reports the within-group split count ratio across tree depths and correlation levels.
+Table~\ref{tab:depth-rho} reports the within-group split count ratio
+across tree depths and correlation levels (XGBoost, $T{=}100$, $\eta{=}1.0$,
+$P{=}10$ in 2 groups of 5, $N{=}2000$, 30 seeds).
 
 \begin{table}[h]
 \centering
@@ -432,10 +434,27 @@ Theory ($\alpha{=}1$) & 1.10 & 1.33 & 1.96 & 5.26 & 10.26 & $1.00$ \\
 \end{tabular}
 \end{table}
 
-At depth~3, each tree has up to 7 leaves and uses multiple features per tree. Internal splits distribute split counts across group members, counteracting the root split's first-mover advantage. The ratio is nearly $\rho$-independent ($\approx 1.3$), explaining the low fitted $\alpha = 0.30$. At depth~10, the root split cascades: once the first-mover is selected at the root, subsequent splits on the same feature are more likely at deeper levels (residuals retain first-mover signal). The baseline ratio ($\approx 2.2$ even at $\rho = 0.3$) is high because deep trees overfit to the first-mover's signal. The $1/(1-\alpha\rho^2)$ model does not fit well for depth~10 (the ratio has a large $\rho$-independent component).
+\paragraph{Depth 3 anomaly.}
+At depth~3, each tree has up to 7 leaves and uses multiple features per
+tree. Internal splits distribute split counts across group members,
+counteracting the root split's first-mover advantage.
+The ratio is nearly $\rho$-independent (${\approx}1.3$), explaining the
+low fitted $\alpha = 0.30$.
+
+\paragraph{Depth 10.}
+At depth~10, the root split cascades: once the first-mover is selected
+at the root, subsequent splits on the same feature are more likely at
+deeper levels (residuals retain first-mover signal). The baseline ratio
+(${\approx}2.2$ even at $\rho{=}0.3$) is high because deep trees
+overfit to the first-mover's signal.
+The $1/(1{-}\alpha\rho^2)$ model does not fit well for depth~10 (the
+ratio has a large $\rho$-independent component); we omit the fitted $\alpha$.
 
 \paragraph{Practitioner guidance.}
-Depth~3 gives the lowest attribution instability among standard configurations. For users prioritizing explanation stability, shallow ensembles (depth~3) with \DASH{} consensus ($M \geq 5$) provide the best stability--accuracy tradeoff.
+Depth~3 gives the \emph{lowest} attribution instability among standard
+configurations. For users prioritizing explanation stability, shallow
+ensembles (depth~3) with \DASH{} consensus ($M \geq 5$) provide the
+best stability--accuracy tradeoff.
 
 \paragraph{Proportionality validation.}
 The proportionality axiom holds with CV${\approx}0.35$ for stumps and CV${\approx}0.66$ for depth-6 trees on Breast Cancer; the ratio $1/(1{-}\rho^2)$ is an order-of-magnitude bound refined by the $\alpha$-correction.
@@ -552,6 +571,30 @@ Since $\bar{\varphi}_j = \bar{\varphi}_k$ for same-group features, the consensus
 \subsection{DASH Pareto Optimality}
 \label{sec:dash-pareto}
 
+\begin{definition}[Attribution aggregation method]
+An \emph{attribution aggregation method} $A$ takes as input $M$ independently trained models $f_1, \ldots, f_M$ and produces a consensus attribution vector $\hat\varphi \in \R^P$. The method is:
+\begin{itemize}
+    \item \emph{Linear}: $\hat\varphi_j = \sum_{i=1}^M w_i \varphi_j(f_i)$ for some weights $w_1, \ldots, w_M$.
+    \item \emph{Unbiased}: $\E[\hat\varphi_j] = \mu_j := \E[\varphi_j(f)]$ for all $j$.
+    \item \emph{Symmetric}: $w_1 = \cdots = w_M$ (the models are exchangeable).
+\end{itemize}
+\DASH{} is the unique symmetric unbiased linear method: $w_i = 1/M$ for all $i$.
+\end{definition}
+
+\begin{definition}[Pairwise stability and unfaithfulness]
+For features $j, k$ in different groups with $\mu_j > \mu_k$:
+\begin{itemize}
+    \item \emph{Pairwise stability}: $S_{jk}(A) = \Pr[\hat\varphi_j > \hat\varphi_k]$ (probability that the consensus preserves the true ordering for this pair).
+    \item \emph{Between-group flip rate}: $1 - S_{jk}(A)$.
+\end{itemize}
+For features $j, k$ in the same group with $\mu_j = \mu_k$ (DGP symmetry):
+\begin{itemize}
+    \item \emph{Unfaithfulness}: $U_{jk}(A) = \Pr[\hat\varphi_j \neq \hat\varphi_k \text{ and the ordering disagrees with } f]$ for a random model $f$.
+\end{itemize}
+
+\emph{Relationship to ranking stability $S$.} The Design Space Theorem (\S\ref{sec:design-space}) uses the full-ranking stability $S$ (expected Spearman correlation). The pairwise stability $S_{jk}$ here is a per-pair component: high $S_{jk}$ for all between-group pairs is necessary (but not sufficient) for high $S$. Within-group pairs contribute to $S$ through their random ordering, which is why $S \leq 1 - m^3/P^3$ even when all between-group $S_{jk}$ are high.
+\end{definition}
+
 \begin{theorem}[DASH Pareto Optimality]
 \label{thm:dash-optimal}
 Let $f_1, \ldots, f_M$ be i.i.d.\ models with $\mu_j := \E[\varphi_j(f)]$ and $\sigma_j^2 := \Var(\varphi_j(f)) < \infty$.
@@ -588,6 +631,9 @@ No aggregation method $A'$ simultaneously achieves $U_{jk}(A') < 0$ and $S_{jk}(
 \textbf{Part III:} Unfaithfulness $U = 0$ is already minimal. Stability $S_{jk}$ is a monotone decreasing function of $\Var(\bar\varphi_j - \bar\varphi_k)$. By Part~I(b), no unbiased method achieves lower variance than $\sigma_j^2/M$. \DASH{} achieves this bound. For biased methods: any method with bias $b_j$ has MSE $= \Var(\hat\varphi_j) + b_j^2$; a bias of magnitude $|b_j - b_k| > \Delta_{jk}$ would invert the true ordering entirely.
 \end{proof}
 
+\paragraph{Summary of optimality.}
+\DASH{} is the unique method that: (1) achieves zero within-group unfaithfulness (ties for symmetric features); (2) achieves the Cram\'er--Rao variance bound $\sigma^2/M$ for ranking stability; and (3) is the minimum-variance unbiased estimator of $\E[\varphi_j]$ among \emph{all} estimators (not just linear ones), by the Rao--Blackwell theorem: since the sufficient statistic for $\mu_j$ from i.i.d.\ observations is $\sum \varphi_j(f_i)$, and $\bar\varphi_j$ is a function of this sufficient statistic, it dominates any estimator that is not.
+
 \paragraph{Comparison with nonlinear aggregations.}
 The sample median has asymptotic relative efficiency $2/\pi \approx 0.637$ relative to the mean (requiring $\pi/2 \approx 1.57$ times as many models). The 5\%-trimmed mean achieves ARE $= 0.992$ with modest robustness. For standard ML training procedures, \DASH{} (the mean) is strictly more efficient.
 
@@ -614,7 +660,20 @@ For production settings with potential model contamination (corrupted training d
 \subsection{DASH Information Loss}
 \label{sec:info-loss}
 
-\DASH{} achieves stability by discarding model-specific within-group information. For a group of $m$ symmetric features, a single model produces a complete ranking (one of $m!$ possible orderings). Since each of the $m!$ orderings is equally likely under DGP symmetry, the ranking carries $\log_2(m!)$ bits of information about the specific model. \DASH{} reports a tie, discarding the entire $\log_2(m!)$ bits. For typical group sizes: $m=2$ loses 1.0 bit; $m=3$ loses 2.6 bits; $m=5$ loses 6.9 bits; $m=8$ loses 15.3 bits. Crucially, these are the bits that are \emph{unreliable}---the within-group ordering is uniformly random across models.
+\DASH{} achieves stability by discarding model-specific within-group information. For a group of $m$ symmetric features, a single model produces a complete ranking (one of $m!$ possible orderings). Since each of the $m!$ orderings is equally likely under DGP symmetry, the ranking carries $\log_2(m!)$ bits of information about the specific model. \DASH{} reports a tie, discarding the entire $\log_2(m!)$ bits. For typical group sizes:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+Group size $m$ & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\midrule
+Bits lost ($\log_2 m!$) & 1.0 & 2.6 & 4.6 & 6.9 & 9.7 & 12.9 & 15.3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Crucially, these are the bits that are \emph{unreliable}: by DGP symmetry, the within-group ordering is uniformly random across models. The information \DASH{} discards is exactly the information that would be different if the model were retrained.
 
 For features in different groups with population gap $\Delta_{jk}$ and noise $\sigma_{jk}$, the mutual information between the consensus ranking and the true ordering is:
 \[
@@ -625,6 +684,16 @@ where $H_2(p) = -p\log_2 p - (1-p)\log_2(1-p)$ is binary entropy. As $M \to \inf
     \Delta I = \underbrace{-L \cdot \log_2(m!)}_{\text{within-group loss}} + \underbrace{\tbinom{L}{2} \cdot (I_{\text{between}}(M) - I_{\text{between}}(1))}_{\text{between-group gain}}.
 \]
 For moderate $\rho$ ($\leq 0.7$), the between-group gain dominates quickly: $M = 25$ achieves near-perfect between-group determination while the within-group loss is fixed. \DASH{} honestly reports unreliability rather than presenting arbitrary information as reliable.
+
+\paragraph{Interpretation for safety-critical applications.}
+For a system with $L = 4$ groups of $m = 5$ features: \DASH{} loses $4 \times 6.9 = 27.6$ bits (within-group) but gains up to $6 \times 1 = 6$ bits (between-group). The net loss is ${\approx}21.6$ bits at $M = \infty$. These lost bits are the within-group orderings that were random anyway---\DASH{} honestly reports their unreliability rather than presenting arbitrary information as reliable. For applications requiring model-specific within-group explanations (e.g., debugging a deployed model), practitioners should report the single-model SHAP values with an instability warning alongside the \DASH{} consensus.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/information_loss.pdf}
+\caption{\textbf{Left:} Within-group information lost by \DASH{} ($\log_2 m!$ bits per group, independent of $M$ and $\rho$). \textbf{Right:} Between-group information per pair as a function of $M$. \DASH{} sharpens between-group rankings with increasing $M$. At high $\rho$ ($\geq 0.9$), convergence requires larger $M$.}
+\label{fig:information-loss}
+\end{figure}
 
 \paragraph{Ensemble size lower bound.}
 \begin{proposition}[Ensemble size lower bound]
@@ -793,7 +862,22 @@ The Attribution Impossibility (Theorem~\ref{thm:impossibility}) and Design Space
 
 \subsection{Instance 2: Model Selection}
 
-Consider $K$ candidate models $g_1, \ldots, g_K$ trained on the same data. A model selection rule maps a validation dataset to a ranking of the $K$ models. The \emph{model Rashomon property} states: for every pair $g_i, g_j$ with similar population loss ($|L(g_i) - L(g_j)| < \varepsilon$), there exist validation splits $V, V'$ ranking them in opposite orders. This follows from finite-sample noise: when the population loss gap is smaller than the validation noise, different splits rank differently.
+Consider $K$ candidate models $g_1, \ldots, g_K$ trained on the same data. A \emph{model selection rule} maps a validation dataset to a ranking of the $K$ models. We formalize three desiderata:
+
+\begin{definition}[Model selection desiderata]
+A model selection rule $R$ is:
+\begin{itemize}
+    \item \emph{Faithful}: $R$ ranks model $g_i$ above $g_j$ whenever $g_i$ has lower validation loss on the observed validation set.
+    \item \emph{Stable}: $R$ produces the same ranking regardless of which validation split is drawn.
+    \item \emph{Complete}: $R$ decides for every pair $(g_i, g_j)$.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Model Rashomon property]
+A model class satisfies the \emph{model Rashomon property} if for every pair $g_i, g_j$ with similar population loss ($|L(g_i) - L(g_j)| < \varepsilon$), there exist validation splits $V, V'$ such that $g_i$ has lower loss on $V$ and $g_j$ has lower loss on $V'$.
+\end{definition}
+
+This property is a consequence of finite-sample noise: when the population loss gap is smaller than the validation noise, different splits rank the models differently. It is the model selection analogue of feature attribution's Rashomon property.
 
 \begin{theorem}[Model Selection Impossibility]
 \label{thm:model-selection}
@@ -819,9 +903,25 @@ By DGP symmetry (equal-loss models have symmetric validation score distributions
 
 The model selection impossibility explains why cross-validation rankings are noisy for similar-performance models: it is not an engineering failure but a mathematical inevitability. The resolution is the same: average (ensemble) rather than select.
 
+\paragraph{Connection to cross-validation instability.}
+The model selection impossibility is not merely an analogy---it explains a well-known practical phenomenon. When two models have similar cross-validation scores, different folds often rank them differently. Practitioners typically respond by increasing the number of folds or repeating cross-validation. The design space theorem shows this is exactly the $M$-parameterization: increasing folds moves along Family~$\mathcal{B}'$ toward higher stability, but at the cost of acknowledging ties for similar-performance models. Model ensembling (training all $K$ candidates and averaging predictions) is the model selection analogue of \DASH{}: it avoids the impossible selection problem entirely by using all models simultaneously.
+
 \subsection{Instance 3: Causal Discovery under Markov Equivalence}
 
-This instance has a \emph{different} and \emph{variable-size} symmetry group, confirming the technique's generality beyond binary orbits. The CPDAG automorphism group $G_{\text{CPDAG}}$ is not restricted to transpositions: for a chain $X\text{---}Y\text{---}Z$, $|[G^*]| = 2$ with $G \cong S_2$ (like instances 1--2); for a 3-node undirected cycle, $|[G^*]| = 6$ with $G \cong S_3$; for larger undirected components, $|[G^*]|$ can grow combinatorially.
+This instance has a \emph{different} and \emph{variable-size} symmetry group, confirming the technique's generality beyond binary orbits.
+
+\begin{definition}[Causal orientation decision problem]
+The causal edge orientation problem is a symmetric decision problem $(\Theta, \mathcal{D}, \pi, G)$ where:
+\begin{itemize}
+    \item $\Theta$ is the set of full edge orientations consistent with the CPDAG (i.e., the DAGs in $[G^*]$).
+    \item $\mathcal{D}$ is the space of finite observational datasets drawn from the true DAG $G^*$.
+    \item $\pi$ is the distribution over datasets (induced by i.i.d.\ sampling from the structural equation model).
+    \item $G_{\text{CPDAG}}$ is the \emph{automorphism group of the CPDAG}: the set of permutations of undirected edge orientations that preserve the CPDAG structure.
+\end{itemize}
+\end{definition}
+
+\paragraph{Key structural difference.}
+The CPDAG automorphism group $G_{\text{CPDAG}}$ is not restricted to transpositions: for a chain $X\text{---}Y\text{---}Z$, $|[G^*]| = 2$ with $G \cong S_2$ (like instances 1--2); for a 3-node undirected cycle, $|[G^*]| = 6$ with $G \cong S_3$; for larger undirected components, $|[G^*]|$ can grow combinatorially.
 
 \begin{theorem}[Causal Discovery Impossibility]
 \label{thm:causal-discovery}
@@ -834,10 +934,21 @@ The achievable set has two families:
 \end{theorem}
 
 \begin{proof}
-We verify the premises of Theorem~\ref{thm:bayes-dichotomy}. By Markov equivalence, the observational distribution is identical for all DAGs in the class ($G_{\text{CPDAG}}$-invariance). Any statistical test based on finite data cannot distinguish members of $[G^*]$ at the population level. With finite data, estimation error $O(1/\sqrt{n})$ in conditional independence tests reverses the optimal orientation. Part~(i): any complete orientation rule (selecting one DAG from $[G^*]$) disagrees with $(|[G^*]|-1)/|[G^*]|$ of datasets. Part~(ii): the Bayes estimator reports the CPDAG (ties for undirected edges). Part~(iii): the ideal is infeasible.
+We verify the premises of the Symmetric Bayes Dichotomy (Theorem~\ref{thm:bayes-dichotomy}).
+
+\textbf{$G$-invariance of $\pi$.} For any two DAGs $G_1, G_2 \in [G^*]$, the Markov equivalence guarantees that they encode the same set of conditional independences. By the faithfulness assumption, the observational distribution is compatible with both $G_1$ and $G_2$. Any statistical test based on finite data cannot distinguish between $G_1$ and $G_2$ at the population level (they imply identical distributions). Therefore $\pi$ is $G_{\text{CPDAG}}$-invariant.
+
+\textbf{Finite-sample noise reverses optimal choice.} With finite data, empirical conditional independence tests have estimation error $O(1/\sqrt{n})$. For edges that are undirected in the CPDAG, different random samples will favor different orientations. This is the Rashomon property for edge orientations.
+
+\textbf{Application of Theorem~\ref{thm:bayes-dichotomy}.} Part~(i): any complete orientation rule (selecting one DAG from $[G^*]$) disagrees with $(|[G^*]|-1)/|[G^*]|$ of datasets. Part~(ii): the Bayes estimator under $G_{\text{CPDAG}}$-invariance reports the CPDAG (ties for undirected edges). Part~(iii): the ideal (stable, faithful, complete) is infeasible. Families $\mathcal{A}''$ and $\mathcal{B}''$ follow.
 \end{proof}
 
-The unfaithfulness bound $U \geq 1/|G \cdot \theta|$ yields $U \geq 1/2$ for chains but $U \geq 1/6$ for triangles and potentially much smaller for larger structures. This demonstrates the Symmetric Bayes Dichotomy is not an artifact of binary symmetry but applies to arbitrary finite group actions. Algorithms like PC and GES correctly output CPDAGs (Family $\mathcal{B}''$) precisely because complete orientation of Markov-equivalent edges is impossible from observational data alone. Interventional data breaks the symmetry---analogous to conditional SHAP breaking symmetry when $\beta_j \neq \beta_k$.
+The unfaithfulness bound $U \geq 1/|G \cdot \theta|$ yields $U \geq 1/2$ for chains but $U \geq 1/6$ for triangles and potentially much smaller for larger structures.
+
+\paragraph{What this instance adds.}
+Instances 1--2 (feature attribution and model selection) both have binary orbits ($|G \cdot \theta| = 2$) with unfaithfulness bound $U \geq 1/2$. Instance~3 has variable-size orbits ($|G \cdot \theta| = 2, 6, \ldots$) with unfaithfulness bound $U \geq 1/|[G^*]|$, which can be much smaller than $1/2$ for large equivalence classes. This demonstrates that the Symmetric Bayes Dichotomy is not an artifact of binary symmetry but applies to arbitrary finite group actions, with the unfaithfulness bound adapting to the orbit structure.
+
+Algorithms like PC and GES correctly output CPDAGs (Family $\mathcal{B}''$) precisely because complete orientation of Markov-equivalent edges is impossible from observational data alone. Interventional data breaks the symmetry---analogous to conditional SHAP breaking symmetry when $\beta_j \neq \beta_k$.
 
 \paragraph{Connection to classical invariant decision theory.}
 The Symmetric Bayes Dichotomy is related to the theory of invariant decision rules \cite{lehmann2005testing}. Our contribution is the \emph{reduction template}: verifying $G$-invariance of the population distribution suffices to establish a two-family impossibility with explicit bounds. We demonstrate this across three structurally distinct instances (binary feature transpositions, binary model permutations, and CPDAG automorphisms of variable size) with different symmetry groups.
@@ -891,6 +1002,9 @@ $\rho \backslash \Delta\beta$ & 0.0 & 0.1 & 0.2 & 0.3 & 0.5 & 0.7 & 1.0 \\
 \end{figure}
 
 \paragraph{Fine-grained $\Delta\beta$ sweep at $\rho = 0.9$.}
+We extend the threshold analysis with a finer sweep over
+$\Delta\beta \in \{0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0\}$ at
+$\rho = 0.9$ (20 XGBoost models per setting).
 The transition from instability to stability is sharp, not gradual:
 
 \begin{center}
@@ -903,14 +1017,30 @@ $\Delta\beta$ & $\beta_1$ & $\beta_2$ & Marginal flip & Interventional flip \\
 0.10 & 1.05 & 0.95 & 0.479 & 0.337 \\
 0.20 & 1.10 & 0.90 & 0.000 & 0.000 \\
 0.30 & 1.15 & 0.85 & 0.000 & 0.000 \\
+0.50 & 1.25 & 0.75 & 0.000 & 0.000 \\
+0.70 & 1.35 & 0.65 & 0.000 & 0.000 \\
+1.00 & 1.50 & 0.50 & 0.000 & 0.000 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-At $\Delta\beta = 0.10$, both marginal and interventional SHAP remain highly unstable. At $\Delta\beta = 0.20$, both snap to zero flips simultaneously. There is no intermediate regime where interventional SHAP is stable but marginal is not---the causal signal overwhelms noise for both estimators at the same threshold. The practical implication: ``switch to conditional SHAP'' provides no advantage over marginal SHAP at the instability boundary.
+At $\Delta\beta = 0.10$, both marginal (0.479) and interventional
+(0.337) SHAP remain highly unstable. At $\Delta\beta = 0.20$,
+both snap to zero flips simultaneously. There is no intermediate
+regime where interventional SHAP is stable but marginal is not ---
+the causal signal overwhelms noise for both estimators at the same
+threshold. This means the escape condition is binary: either the
+causal effect difference is large enough to stabilize \emph{all}
+attribution methods, or none are stable. There is no clean crossover point where one method succeeds and the other fails. The practical implication:
+``switch to conditional SHAP'' provides no advantage over marginal
+SHAP at the instability boundary; both methods fail or succeed
+together.
 
 \paragraph{Causal structure validation.}
 Under a known causal structure ($Y = \beta_1 X_1 + \beta_2 X_2 + 0.5 X_3 + \varepsilon$, $\text{Corr}(X_1, X_2) = \rho$), we compare marginal TreeSHAP and interventional TreeSHAP. In the symmetric case ($\beta_1 = \beta_2 = 1.0$), both produce flip rates near 50\% at all $\rho$, confirming the impossibility. In the asymmetric case ($\beta_1 = 1.5$, $\beta_2 = 0.5$), both show 0\% flips at all $\rho$---the signal-to-noise ratio is high enough to overcome collinearity-induced noise. Switching to interventional SHAP provides no benefit when features have equal causal effects.
+
+\paragraph{Caveat.}
+The interventional SHAP implementation in the \texttt{shap} package uses a background-data approximation that does not exactly implement causal/conditional SHAP in the sense of Janzing et al.\ (2020). Results should be interpreted as evidence about the \texttt{shap} package's interventional mode, not as a definitive test of the theoretical conditional attribution.
 
 \subsection{Fairness Audit Impossibility}
 \label{sec:fairness}
@@ -1137,14 +1267,24 @@ and the relationship between $Z_{jk}$ and the flip rate is:
 \textbf{Part III.} Direct substitution of the threshold values into \eqref{eq:flip-z}.
 \end{proof}
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/f1_f5_diagnostic.pdf}
+\caption{\textbf{Left:} F1 attribution test statistic vs.\ flip rate on Breast Cancer ($r = -0.89$). Pairs below $z = 1.96$ (dashed) have unreliable rankings. \textbf{Right:} F5 split-frequency diagnostic ($r = -0.78$). Both diagnostics predict which pairs are unstable.}
+\label{fig:f1-diagnostic}
+\end{figure}
+
 \paragraph{Restricted-range robustness.}
 The headline correlation $r = -0.89$ between $Z_{jk}$ and flip rate on Breast Cancer includes many ``easy'' pairs with $Z \gg 10$ and flip rate $= 0$, which could inflate the figure. Restricting to the diagnostically interesting range: $r = -0.78$ for $Z < 5$ ($n = 118$ pairs), $r = -0.61$ for $Z < 3$ ($n = 74$ pairs), and $r = -0.53$ for $Z < 2$ ($n = 49$ pairs). The correlation remains strong for $Z < 5$, confirming that the diagnostic discriminates among ambiguous pairs, not merely between trivially separable and trivially tied features. The result also holds for gain-based importance (non-SHAP): $r = -0.83$ overall, $r = -0.66$ for $Z < 5$.
 
 \paragraph{Structural correlation baseline.}
 Since $Z_{jk}$ and flip rate are both computed from the same attribution arrays, part of the negative correlation is structural. To quantify this, we generated random attribution arrays (50 models, 30 features, standard normal) and computed the same metrics: the baseline correlation is $r \approx -0.56$ ($R^2 = 0.32$). The observed $r = -0.89$ ($R^2 = 0.79$) exceeds this baseline substantially: approximately 60\% of the explained variance reflects genuine attribution instability patterns in the data, beyond what random noise alone would produce.
 
+\paragraph{Role of Berry--Esseen.}
+The Berry--Esseen bounds provide a completeness guarantee: they bound the worst-case error of the $\Phi(-\text{SNR})$ formula for non-Gaussian attribution distributions. For the GBDT attributions studied here, the Shapiro--Wilk test confirms near-Gaussianity ($p > 0.10$ for 412/435 pairs), so the correction is negligible. The bounds become relevant for heavy-tailed distributions (e.g., deep networks with high initialization variance) or bimodal distributions (e.g., Lasso, where the attribution is either $c > 0$ or $0$). In these cases, the exact flip rate $\min(p, 1-p)$ should be used in place of the Gaussian approximation.
+
 \paragraph{When the CLT fails.}
-The Berry--Esseen error $\varepsilon_{\text{BE}} \leq C_0 \gamma_{jk}/\sigma_{jk}^3$ can be large when: (i) the attribution distribution is \emph{heavy-tailed} (large $\gamma_{jk}$), as occurs for deep networks with high initialization variance; or (ii) the attribution distribution is \emph{bimodal}, as for Lasso where $\varphi_j$ takes value either $c > 0$ (selected) or $0$ (not selected). For gradient-boosted trees, the Shapiro--Wilk test on 50 Breast Cancer models gives $p > 0.10$ for 412/435 feature pairs; the Berry--Esseen correction is negligible in practice.
+The Berry--Esseen error $\varepsilon_{\text{BE}} \leq C_0 \gamma_{jk}/\sigma_{jk}^3$ can be large when: (i) the attribution distribution is \emph{heavy-tailed} (large $\gamma_{jk}$), as occurs for deep networks with high initialization variance---a few seeds produce outlier attributions; or (ii) the attribution distribution is \emph{bimodal}, as for Lasso where $\varphi_j$ takes value either $c > 0$ (selected) or $0$ (not selected), giving a Bernoulli distribution where the Berry--Esseen bound is tight ($\varepsilon_{\text{BE}} \approx 0.47$) but the exact flip rate $\min(p, 1-p)$ is available analytically. For gradient-boosted trees, the Shapiro--Wilk test on 50 Breast Cancer models gives $p > 0.10$ for 412/435 feature pairs; the Berry--Esseen correction is negligible in practice.
 
 \subsection{F5 Single-Model Screen}
 \label{sec:f5}
@@ -1154,11 +1294,34 @@ For a gradient-boosted ensemble with $T$ trees, define the per-tree split indica
 \paragraph{Exchangeability conditions.}
 The theoretical validity of the F5 diagnostic depends on the dependence structure of the indicators $\{n_j(t)\}_{t=1}^T$:
 
-\begin{itemize}
-    \item \textbf{Exact exchangeability under sub-sampling.} If the boosting algorithm uses row sub-sampling (\texttt{subsample} $= q < 1$) and feature sub-sampling (\texttt{colsample\_bytree} $= r < 1$) with independent random subsets per tree, then the per-tree data subsets are independent across trees, and conditional on the residuals, the split indicators $n_j(1), \ldots, n_j(T)$ are conditionally exchangeable. The marginal split probability $p_j = \E[n_j(t)]$ is identical for all $t$.
+\begin{lemma}[Exact exchangeability under sub-sampling]
+\label{lem:exchange-subsample}
+If the boosting algorithm uses row sub-sampling (\texttt{subsample} $= q < 1$) with independent bootstrap samples per tree, and feature sub-sampling (\texttt{colsample\_bytree} $= r < 1$) with independent random subsets per tree, then:
+\begin{enumerate}
+    \item The per-tree data subsets are independent across trees.
+    \item Conditional on the residuals, the split indicators $n_j(1), n_j(2), \ldots, n_j(T)$ are \emph{conditionally exchangeable}: for any permutation $\pi$ of $\{1, \ldots, T\}$,
+    \[
+        (n_j(\pi(1)), \ldots, n_j(\pi(T))) \;\overset{d}{=}\;
+        (n_j(1), \ldots, n_j(T)) \;\mid\; \text{residuals}.
+    \]
+    \item The marginal split probability $p_j = \E[n_j(t)]$ is identical for all $t$.
+\end{enumerate}
+\end{lemma}
 
-    \item \textbf{Approximate exchangeability without sub-sampling.} Without sub-sampling ($q = r = 1$), the split indicators are NOT exchangeable: tree $t$ fits the residual from trees $1, \ldots, t-1$, creating a Markov dependence. However, for learning rate $\eta \leq 0.3$, the residuals converge to a steady state after $T_0 = O(1/\eta)$ trees. In the steady state, the split indicators are approximately stationary with autocorrelation $\text{Corr}(n_j(t), n_j(t+s)) = O(\eta^{|s|})$ (geometric decay).
-\end{itemize}
+\begin{proof}
+Under sub-sampling, tree $t$ is trained on a random subset $S_t \subset \{1, \ldots, n\}$ of size $\lfloor qn \rfloor$, drawn independently for each $t$. The feature subset $F_t$ is also drawn independently. Since $S_t$ and $F_t$ are i.i.d.\ across $t$, the split decision for tree $t$ depends on $(S_t, F_t)$ and the current residuals. Conditional on residuals, the split indicators are functions of i.i.d.\ random inputs, hence exchangeable. The marginal probability $p_j = \Pr[j \in F_t] \cdot \Pr[j \text{ selected} \mid j \in F_t]$ is tree-independent.
+\end{proof}
+
+\begin{lemma}[Approximate exchangeability without sub-sampling]
+\label{lem:exchange-no-subsample}
+Without sub-sampling ($q = r = 1$), the split indicators are NOT exchangeable: tree $t$ fits the residual from trees $1, \ldots, t-1$, creating a Markov dependence.
+
+However, for learning rate $\eta \leq 0.3$, the residuals converge to a \emph{steady state} after $T_0 = O(1/\eta)$ trees. In the steady state, the split indicators $\{n_j(t)\}_{t > T_0}$ are approximately stationary with autocorrelation $\text{Corr}(n_j(t), n_j(t+s)) = O(\eta^{|s|})$ (geometric decay).
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+The residual at tree $t$ is $r_t = r_{t-1} - \eta \cdot h_t(x)$ where $h_t$ is the fitted tree. For $\eta$ small, $\|r_t - r_{t-1}\| = O(\eta)$, so the residual sequence is a slow-mixing Markov chain. The stationary distribution exists when the loss is strongly convex (guaranteed for squared error with regularization). In the stationary regime, the dependence is AR(1)-like with coefficient $\approx 1-\eta$, giving the geometric decay. The effective sample size formula is the standard result for correlated series (Priestley, \emph{Spectral Analysis and Time Series}, Ch.~5.3).
+\end{proof}
 
 The effective sample size for the test statistic is:
 \[
@@ -1187,6 +1350,20 @@ Under the exchangeability conditions above (sub-sampling, or no sub-sampling wit
 On the Breast Cancer dataset (435 pairs, threshold: flip rate $> 0.1$ defines ``truly unstable''): F5 flags 49 pairs with \textbf{94\% precision} (46 true positives, 3 false positives) and 27\% recall. F1 (the full test) flags 47 pairs with \textbf{100\% precision} (zero false positives). Both diagnostics are conservative: they rarely flag stable pairs but miss moderate-instability pairs. For production use, the high precision is the key property---a flagged pair is almost certainly unstable.
 
 F5 precision is 94--100\% on small/clean datasets (Breast Cancer, Wine, Heart Disease) where split counts are reliable, but drops to 48--67\% on high-dimensional datasets (Ames, Communities) where split counts are sparse. This confirms F5 as a conservative screening tool that should be supplemented by the full F1 test for high-dimensional settings.
+
+\paragraph{Sub-sampling requirement.}
+The theoretical guarantee (exact exchangeability,
+Lemma~\ref{lem:exchange-subsample}) requires sub-sampling.
+Without sub-sampling, the approximate exchangeability of
+Lemma~\ref{lem:exchange-no-subsample} applies with reduced effective
+sample size $T_{\text{eff}}$.
+In practice, our validation uses \texttt{colsample\_bytree=1.0}
+(no sub-sampling) and still achieves $r = -0.78$
+(Figure~\ref{fig:f1-diagnostic}, right), suggesting the dependence
+correction is modest.
+
+\paragraph{Regulatory response for ties.}
+If a regulator asks why features are tied: ``These features are statistically indistinguishable in their contribution to the model. Forcing a ranking would be arbitrary and potentially misleading. Our method correctly reports this indistinguishability, consistent with the EU AI Act's requirement to disclose known limitations.''
 
 \subsection{SNR Calibration}
 \label{sec:snr}
@@ -1238,7 +1415,8 @@ $[3.0, \infty)$ & 113 & 0.000 & 0.000 & Exact \\
 When reporting SHAP rankings for a model with collinear features: ``Features [X, Y, Z] form a correlated group ($|\rho| > [\text{threshold}]$). Their relative ranking is unstable across training seeds (estimated flip rate: [X]\%). They should be interpreted as interchangeable contributors. The between-group ranking is stable ($Z > 1.96$).'' For regulatory reporting (EU AI Act, SR~11-7), the \DASH{} consensus ranking provides a defensible explanation.
 
 \paragraph{Group-level reporting.}
-``The correlated group \{X, Y, Z\} contributes a total \DASH{} attribution of [value] to the prediction ($[percent]\%$ of total). Within this group, individual feature rankings are unstable. The group's total importance is stable; individual importance within the group should be interpreted as interchangeable.''
+When reporting feature importance for a model with correlated groups, we recommend the following format:
+``The correlated group \{X, Y, Z\} contributes a total \DASH{} attribution of [value] to the prediction ($[percent]\%$ of total). Within this group, individual feature rankings are unstable across training seeds (estimated flip rate: $[X]\%$). The group's total importance is stable; individual feature importance within the group should be interpreted as interchangeable. For variable selection, any feature from this group may be chosen; the choice is arbitrary with respect to model quality.''
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 10. EMPIRICAL VALIDATION
@@ -1318,8 +1496,16 @@ The within-group flip rate drops below 1\% at $M = 25$, consistent with the $O(1
 \end{figure}
 
 Features measuring the same underlying quantity---worst perimeter and worst area ($|\rho|{=}0.98$)---exhibit a 48\% flip rate across seeds, near the 50\% theoretical maximum. Pairs with high correlation but distinct importance (e.g., mean area and mean concave points, $|\rho| = 0.82$, flip rate 2\%) remain stable, confirming the impossibility requires both collinearity \emph{and} similar true importance.
+Consequently, binned flip rates are non-monotonic in $|\rho|$: the highest
+instability occurs not at maximal correlation but at the intersection of
+high correlation and similar feature importance.
 
-\DASH{} convergence on Breast Cancer:
+\paragraph{\DASH{} convergence on Breast Cancer.}
+We demonstrate that \DASH{} resolves instability on real data.
+Using the 50~XGBoost models trained for the Breast Cancer validation
+(Figure~\ref{fig:real-world}), we measure the flip rate for the most
+unstable pair (worst perimeter $\leftrightarrow$ worst area,
+$|\rho|{=}0.978$) as a function of ensemble size~$M$:
 
 \begin{center}
 \small
@@ -1352,7 +1538,10 @@ F1 correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
 \end{tabular}
 \end{table}
 
-The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500, and F1 diagnostic correlation $|r| > 0.89$ in all three.
+The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500 (the theoretical ceiling), and F1 diagnostic correlation $|r| > 0.89$ in all three. The instability is a property of sequential boosting under collinearity, not of any specific implementation.
+
+\paragraph{F5 caveat.}
+The F5 split-frequency diagnostic requires access to per-tree split counts. CatBoost's \texttt{get\_feature\_importance()} returns gain-based importance (not raw split counts), producing a different $Z$-statistic distribution that does not transfer the XGBoost-calibrated threshold. For CatBoost, the F1 multi-model diagnostic ($r = -0.892$) is recommended instead. LightGBM's feature importance is split-count based and transfers with modest precision reduction.
 
 \subsection{Non-SHAP Attribution Validation}
 
@@ -1391,8 +1580,38 @@ F1 correlation $r(Z, \text{flip})$ & $-0.871$ & $-0.898$ \\
 
 Neural networks exhibit \emph{more} attribution instability than XGBoost: 87\% of feature pairs are unstable (vs.\ 37\%), and the maximum flip rate reaches the theoretical ceiling. The higher instability likely reflects: (i) larger Rashomon sets (more parameters, more near-optimal models); (ii) higher KernelSHAP variance (sampling approximation vs.\ exact tree-path computation); (iii) more diffuse signal distribution across hidden units.
 
-\paragraph{KernelSHAP noise control.}
-To distinguish genuine model instability from KernelSHAP approximation noise, we fix a single MLP model and compute KernelSHAP 20 times with different random background samples. With 50 background samples, only 11\% of pairs show noise-induced flips (mean rate 0.03); with 200, this drops to 4\%. The key correlated pair (worst perimeter vs.\ worst area) shows zero noise-induced flips, confirming the 40\% flip rate in the NN validation is genuinely driven by model variation. Model instability dominates KernelSHAP noise by approximately 8:1.
+\paragraph{KernelSHAP noise vs.\ model instability.}
+To distinguish genuine model instability from KernelSHAP approximation
+noise, we conduct a control experiment: fix a single MLP model
+(\texttt{random\_state=0}) and compute KernelSHAP 20 times with
+\emph{different} random background samples (50 each, seeds 0--19).
+Any observed flip rate is purely due to SHAP sampling noise, not
+model variation.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Source of variation & Unstable pairs & Mean flip & Key pair flip \\
+\midrule
+KernelSHAP noise (bg$=$50) & 47/435 (11\%) & 0.03 & 0.00 \\
+KernelSHAP noise (bg$=$200) & 18/435 (4\%) & 0.02 & 0.00 \\
+Model variation (20 MLPs) & 380/435 (87\%) & 0.28 & 0.40 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\emph{Verdict.}
+Model instability dominates KernelSHAP noise by approximately 8:1.
+With 50 background samples, only 11\% of pairs show noise-induced
+flips (mean flip rate 0.03); with 200 background samples, this drops
+to 4\%. The key correlated pair (worst perimeter vs.\ worst area)
+shows \emph{zero} noise-induced flips in both conditions, confirming
+the 40\% flip rate in the NN validation is genuinely driven by model
+variation under random initialization, not KernelSHAP artifacts.
+Increasing background samples from 50 to 200 reduces noise by
+$2.6\times$ at $4\times$ compute cost; the default 50 is adequate
+for detecting model-level instability.
 
 \subsection{SHAP Efficiency and Attribution Instability}
 
@@ -1467,19 +1686,116 @@ Without row or column subsampling (\texttt{subsample=1.0}, \texttt{colsample\_by
 We demonstrate the full F5$\to$F1$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (F5): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (F1): 5 models confirm instability ($Z_{\text{F1}} = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7), the DASH ranking provides a defensible explanation.
 
 \paragraph{Taiwan Credit Card Default.}
-Bill-amount features (6 consecutive months, up to $|\rho| = 0.95$) produce persistent instability---29 correlated pairs at $|\rho| > 0.5$, with the highest giving a theoretical ratio of $1/(1{-}0.95^2) \approx 10.3\times$. With $M = 25$, mean flip rate across correlated pairs is 4\%, but one pair (months 5 vs.\ 6, $|\rho| = 0.946$) retains 16\% flip rate, illustrating that very high collinearity requires larger ensembles.
+To validate the impossibility on data with genuine high collinearity
+($|\rho| > 0.9$), we apply the workflow to the UCI ``default of credit
+card clients'' dataset (30{,}000 samples, 23 features, binary default
+outcome; subsampled to 10{,}000).
+
+The bill-amount features (monthly bills for 6~consecutive months)
+exhibit strong collinearity: 29~pairs have $|\rho| > 0.5$, with the
+highest at $|\rho| = 0.95$ (giving a theoretical attribution ratio of
+$1/(1{-}0.95^2) \approx 10.3\times$).
+
+\emph{Step 0.} 29 correlated pairs identified at $|\rho| > 0.5$
+(no threshold lowering needed).
+
+\emph{Step 1 (F5).} A single model flags 4 of the 10 tracked pairs
+as potentially unstable ($|Z^{\text{split}}| > 1.96$).
+
+\emph{Step 3 (DASH).} With $M = 25$ models, the mean flip rate
+across correlated pairs is 4\%. One pair (bill amounts at months 5
+vs.\ 6, $|\rho| = 0.946$) retains a 16\% flip rate even at $M = 25$,
+illustrating that very high collinearity requires larger ensembles.
+
+This dataset demonstrates the impossibility biting hard: features
+measuring the same underlying quantity (monthly bill amounts) have
+near-identical predictive signal, and the attribution ranking across
+these features is genuinely unstable.
 
 \paragraph{Synthetic Credit (income $\leftrightarrow$ DTI $\leftrightarrow$ credit score).}
-To validate on the exact collinearity pattern common in US credit models, we generate 10{,}000 samples with 5 features driven by a latent ``creditworthiness'' factor: income ($\rho = 0.99$ with DTI), DTI, credit score ($\rho = 0.98$ with income), loan amount (independent), and employment years ($\rho = 0.94$ with income). With 25 XGBoost models: income$\leftrightarrow$DTI flips 8\% ($|\rho| = 0.99$); credit score$\leftrightarrow$employment years flips 12\% ($|\rho| = 0.92$). Pairs where one feature clearly dominates (income vs.\ credit score) show 0\% flips despite $|\rho| = 0.98$---confirming the impossibility requires BOTH high correlation AND similar importance. For SR~11-7 compliance: report income and DTI as ``interchangeable key risk drivers'' rather than forcing a ranking that would flip under retraining.
+To validate on the exact collinearity pattern common in US credit
+models, we generate a synthetic dataset with 10{,}000 samples and
+5 features driven by a latent ``creditworthiness'' factor:
+income ($\rho = 0.99$ with DTI), DTI, credit score ($\rho = 0.98$
+with income), loan amount (independent), and employment years
+($\rho = 0.94$ with income).
+
+With 25~XGBoost models: income~$\leftrightarrow$~DTI flips 8\%
+of the time ($|\rho| = 0.99$); credit score~$\leftrightarrow$~employment
+years flips 12\% ($|\rho| = 0.92$). Pairs where one feature clearly
+dominates (income vs.\ credit score) show 0\% flips despite
+$|\rho| = 0.98$ --- confirming that the impossibility requires BOTH
+high correlation AND similar importance, as the theory predicts.
+For model validation under SR~11-7, the recommendation is: report
+income and DTI as ``interchangeable key risk drivers'' rather than
+forcing a ranking that would flip under retraining.
 
 \paragraph{Lending Club (positive control).}
-Zero unstable pairs despite correlated features ($Z > 36$ for all pairs), confirming the impossibility requires \emph{both} collinearity AND similar true importance. Three correlated groups detected: person\_age$\leftrightarrow$cb\_person\_cred\_hist\_length ($|\rho| = 0.86$), loan\_amnt$\leftrightarrow$loan\_percent\_income ($|\rho| = 0.58$), loan\_int\_rate$\leftrightarrow$cb\_person\_default\_on\_file ($|\rho| = 0.50$). All have $Z > 36$, confirming distinguishable importance. Not every correlated dataset exhibits instability. The diagnostic distinguishes datasets where instability is a genuine concern from those where it is not.
+We validate the diagnostic on real Lending Club data (OpenML,
+32{,}581 loans, 22 features after one-hot encoding of categoricals).
+Three correlated groups are detected at $|\rho| > 0.5$:
+person\_age $\leftrightarrow$ cb\_person\_cred\_hist\_length
+($|\rho| = 0.86$), loan\_amnt $\leftrightarrow$
+loan\_percent\_income ($|\rho| = 0.58$), and loan\_int\_rate
+$\leftrightarrow$ cb\_person\_default\_on\_file ($|\rho| = 0.50$).
+
+\emph{Result.}
+Zero unstable pairs. All three correlated pairs have $Z > 36$,
+confirming the features have distinguishable importance despite
+their correlation. This is an instructive \emph{positive control}:
+the impossibility theorem predicts instability requires \emph{both}
+collinearity AND similar true importance. Lending Club features are
+correlated but not similarly important (e.g., person\_age contributes
+$3\times$ more than credit history length), so no instability occurs.
+The F5$\to$F1$\to$\DASH{} pipeline correctly identifies this as a
+stable setting, recommending no intervention.
+
+\emph{Implication.}
+Not every correlated dataset exhibits attribution instability.
+The diagnostic distinguishes datasets where instability is a genuine
+concern (Breast Cancer, Taiwan Credit Card) from those where it is
+not (Lending Club, California Housing). This selectivity is a
+feature, not a limitation: the impossibility theorem's conditions are
+precise, and the diagnostic inherits that precision.
 
 \subsection{LLM Attention Attribution Instability}
 
-We load DistilBERT and create 10 model variants by adding small random perturbations ($\sigma = 0.02$) to attention weights, simulating different training runs. Of 59 adjacent token pairs across test sentences, 88\% have flip rates exceeding 10\%. Examples: ``extremely''/``poor'' flips 50\% (coin flip), ``not''/``bad'' flips 40\%. Mean Spearman correlation of full-sentence token rankings is 0.637.
+We load DistilBERT (distilbert-base-uncased) and create 10 model variants by adding small random perturbations ($\sigma = 0.02$) to attention weights, simulating different training runs. For 10 test sentences, we compute attention-based token importance (mean attention received from all heads and layers) and check whether the relative ranking of adjacent tokens flips across the 10 variants.
 
-Under actual fine-tuning on SST-2 (5 seeds, 1 epoch, AdamW, lr$=2{\times}10^{-5}$), 14.5\% of pairs are unstable. The identical 14.5\% across 1 and 3 epochs indicates the instability is structural (driven by collinearity in attention patterns), not a training-depth artifact.
+Of 59 adjacent token pairs across test sentences, 88\% have flip rates exceeding 10\%. Selected examples:
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Token A & Token B & Flip rate & Interpretation \\
+\midrule
+``extremely'' & ``poor'' & 50\% & Coin flip \\
+``not'' & ``bad'' & 40\% & Highly unstable \\
+``absolutely'' & ``terrible'' & 40\% & Highly unstable \\
+``particularly'' & ``sharp'' & 10\% & Borderline \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Mean Spearman correlation of full-sentence token rankings across model variants is 0.637---moderate instability, comparable to single-model SHAP instability on tabular data with moderate collinearity ($\rho \approx 0.5$). Adjacent tokens in natural language carry correlated information (``very'' and ``good'' jointly convey sentiment strength). This correlation induces the same Rashomon structure: different model variants assign different relative importance to the correlated tokens.
+
+Under actual fine-tuning on SST-2 (5 seeds, 1 epoch, AdamW, lr$=2{\times}10^{-5}$, batch size 16), 14.5\% of pairs are unstable. Selected unstable pairs under fine-tuning:
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Token A & Token B & Flip rate (fine-tuning) & Flip rate (perturbation) \\
+\midrule
+``not'' & ``bad'' & 40\% & 40\% \\
+``particularly'' & ``sharp'' & 60\% & 10\% \\
+``surprisingly'' & ``low'' & 40\% & 30\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+To test whether longer training increases instability, we repeat with 3 epochs. The identical 14.5\% across 1 and 3 epochs indicates the instability is structural (driven by collinearity in attention patterns), not a training-depth artifact. The same three token pairs remain unstable at both training lengths.
 
 \begin{center}
 \small
@@ -1495,6 +1811,9 @@ Fine-tuning (5 seeds, 3 epochs) & 14.5\% & 0.965 \\
 \end{center}
 
 The gap between fine-tuning (14.5\%) and perturbation (88\%) reflects the difference in weight divergence: fine-tuning updates parameters by $O(0.001)$ via gradient descent, while perturbation adds $O(0.02)$ noise to all parameters. The perturbation result represents the full Rashomon set; the fine-tuning result represents the subset explored by standard training. Token-level explanations of LLMs face the same impossibility as feature-level explanations of tabular models.
+
+\paragraph{Scope and limitations.}
+The attention-based instability reported here (14.5\% of adjacent token pairs under fine-tuning) is preliminary evidence, not a formal extension of the impossibility theorem. Attention weights are not SHAP values: they do not satisfy the proportionality axiom, and the ``collinear group'' structure of tree features does not map cleanly to token positions. The result demonstrates that attribution instability under model multiplicity is not unique to tree ensembles, but a formal impossibility for transformer attention would require different axioms and definitions. We report this as suggestive evidence for the generality of the phenomenon, not as a proved extension.
 
 \subsection{Replication Study: Published SHAP Rankings}
 
@@ -1551,7 +1870,14 @@ Both impossibilities arise because collinearity/coherence prevents unique identi
 \subsection{Prevalence Survey}
 \label{sec:prevalence}
 
-Of 37 public datasets surveyed, 34 (92\%) have feature pairs with $|\rho| > 0.5$, and 22 (60\%) exhibit attribution instability (flip rate $> 10\%$). With 20 models, the measured flip rate exceeds the 10\% threshold with only 32\% power, making 60\% a conservative lower bound; the true prevalence is likely 75--85\%.
+To assess how frequently the impossibility applies in practice, we surveyed 37 public datasets (7 from scikit-learn, 30 from OpenML). For each, we computed the correlation matrix, identified pairs with $|\rho| > 0.5$, trained 20 XGBoost models with different seeds, and checked whether any correlated pair has a ranking flip rate exceeding 10\%.
+
+Of 37 datasets, 34 (92\%) have at least one feature pair with $|\rho| > 0.5$, and 22 (60\%) exhibit attribution instability (flip rate $> 10\%$ for at least one pair), including Breast Cancer (max flip rate 50\%, confirming the F1 analysis). The impossibility is not a theoretical curiosity: it affects the majority of real-world datasets across domains including medical, financial, image, and tabular data.
+
+\paragraph{Methodology.}
+Each dataset was trained with 20 XGBoost models (\texttt{n\_estimators=50}, \texttt{max\_depth=4}, \texttt{lr=0.1}, \texttt{subsample=0.8}, \texttt{colsample\_bytree=0.8}) with different random seeds. SHAP TreeExplainer computed mean $|\text{SHAP}|$ per feature on a fixed 500-sample evaluation slice. Flip rate was measured as $\min(\#(j{>}k), \#(k{>}j)) / 20$ for each correlated pair. Datasets with $> 10{,}000$ samples were subsampled to 10{,}000. Full results in \texttt{prevalence\_survey.py}.
+
+With 20 models, the measured flip rate exceeds the 10\% threshold with only 32\% power, making 60\% a conservative lower bound; the true prevalence is likely 75--85\%.
 
 \paragraph{Robustness to hyperparameters.}
 We repeated the analysis on 8 representative datasets with three configurations:
@@ -1569,7 +1895,7 @@ C (shallow-fast) & 200 & 2 & 0.3 & Shallow, aggressive \\
 \end{tabular}
 \end{center}
 
-Under Config~A, 5/8 (62\%) datasets exhibit instability; Config~B (deep trees), 4/8 (50\%); Config~C (shallow-fast), 6/8 (75\%). Across all three configurations, 4/8 (50\%) are consistently unstable; under at least one configuration, 6/8 (75\%) are unstable. The instability rate varies by $\pm 15$ percentage points but remains in the 50--75\% range. Shallow-fast trees produce \emph{higher} instability because aggressive learning rates compound the first-mover effect.
+Under Config~A (original), 5/8 (62\%) datasets exhibit instability, consistent with the 60\% headline. Under Config~B (deep trees), 4/8 (50\%). Under Config~C (shallow-fast), 6/8 (75\%). Across all three configurations, 4/8 (50\%) datasets are consistently unstable; under at least one configuration, 6/8 (75\%) are unstable. The instability rate varies by $\pm 15$ percentage points across configurations but remains in the 50--75\% range. Shallow-fast trees (Config~C) produce \emph{higher} instability because aggressive learning rates compound the first-mover effect. The 60\% headline is conservative: the phenomenon is robust to standard hyperparameter variation.
 
 \begin{table}[h]
 \centering
@@ -1595,10 +1921,13 @@ Iris (binary) & 4 & 6 & 0 & --- & --- \\
 \end{tabular}
 \end{table}
 
+\paragraph{Interpretation.}
+The F1 diagnostic achieves $|r| > 0.8$ on 9/10 datasets with unstable pairs (all except Digits). The weaker correlation on Digits ($r = -0.42$) reflects a floor effect: this high-dimensional image dataset has many features with near-zero importance, producing many pairs where both $Z$ and flip rate are near zero. Restricting to pairs with $Z < 5$ (the diagnostically interesting range) would improve this correlation. F5 precision is 94--100\% on small/clean datasets (Breast Cancer, Wine, Heart Disease) where split counts are reliable, but drops to 48--67\% on high-dimensional datasets (Ames, Communities) where split counts are sparse. This confirms F5 as a conservative \emph{screening} tool that works well for moderate-$P$ datasets but should be supplemented by the full F1 test for high-dimensional settings. All datasets use identical XGBoost hyperparameters ($T{=}100$, depth${=}6$, $\eta{=}0.1$); absolute flip rates are therefore not directly comparable across datasets of different sizes and dimensionalities.
+
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/comprehensive_f1.pdf}
-\caption{F1 test statistic vs.\ flip rate across four datasets. The negative correlation confirms the diagnostic across domains.}
+\caption{F1 test statistic vs.\ flip rate across four datasets (Breast Cancer, Ames, Digits, Adult). The negative correlation confirms the diagnostic across domains: clinical, real estate, image, and census.}
 \label{fig:comprehensive-f1}
 \end{figure}
 
@@ -1644,13 +1973,16 @@ Defs.lean (14 axioms, type definitions, derived theorems)
 
 \subsection{Axiom System and Consistency}
 
-The 14 domain-specific axioms are jointly consistent: \texttt{Consistency.lean} constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$, $T{=}100$, Fin~4 models) satisfying all 14 simultaneously. The 3 query-complexity axioms are independently consistent: instantiating $C := 1/8$ satisfies all three. The two axiom sets reside in separate Lean files (\texttt{Defs.lean} and \texttt{QueryComplexity.lean}) with no cross-dependencies, so joint consistency follows from individual consistency.
+The 14 domain-specific axioms are jointly consistent: \texttt{Consistency.lean} constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$, $T{=}100$, Fin~4 models) satisfying all 14 simultaneously. The construction uses \texttt{Fin 4} as the model type, defines explicit split-count functions returning the axiomatized values $T/(2-\rho^2)$ and $(1-\rho^2)T/(2-\rho^2)$, and verifies all 14 axiom predicates hold by computation. The 3 query-complexity axioms (\texttt{testing\_constant}, \texttt{testing\_constant\_pos}, \texttt{le\_cam\_lower\_bound}) are independently consistent: instantiating $C := 1/8$ satisfies all three. The two axiom sets reside in separate Lean files (\texttt{Defs.lean} and \texttt{QueryComplexity.lean}) with no cross-dependencies, so their joint consistency follows from the individual consistency of each set.
 
 \paragraph{Attribution sum symmetry: now derived.}
 \texttt{attribution\_sum\_symmetric} is proved (not axiomatized) in \texttt{SymmetryDerive.lean}. The proof uses (a) \texttt{proportionality\_global} (uniform $c$ across models), (b) \texttt{splitCount\_crossGroup\_symmetric} (equal split counts when first-mover is in a different group), and (c) \texttt{IsBalanced} (equal first-mover counts). The derivation factors out $c$, classifies each model's split-count difference by first-mover identity ($+\text{gap}$ for fm$=j$, $-\text{gap}$ for fm$=k$, $0$ otherwise), decomposes the sum via \texttt{Finset.sum\_ite}, and uses balance to cancel the gap terms.
 
 \paragraph{Variance: partially grounded in Mathlib.}
 The single-model variance \texttt{attribution\_variance} is \emph{defined} from Mathlib's \texttt{ProbabilityTheory.variance}, and its nonnegativity is \emph{derived} from Mathlib's \texttt{variance\_nonneg}. This required adding two infrastructure axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}) to connect the abstract \texttt{Model} type to Mathlib's measure theory. The consensus variance bound ($\Var(\bar\varphi_j) = \Var(\varphi_j)/M$) remains axiomatized; the full derivation via \texttt{IndepFun.variance\_sum} would require a product measure formulation and independence axioms for ensemble draws---deferred to future work.
+
+\paragraph{Variance sub-system.}
+The three variance declarations (\texttt{attribution\_variance}, \texttt{attribution\_variance\_nonneg}, \texttt{consensus\_variance\_bound}) produce convenience results (variance nonnegativity, halving) rather than deep mathematical consequences. Their primary role is to support the Design Space Theorem's stability convergence claim. A deeper formalization would derive the variance bound from Mathlib's \texttt{IndepFun.variance\_sum}, but this requires connecting our abstract \texttt{Model} type to a product measure space.
 
 \paragraph{Spearman bound: axiomatized vs.\ derived.}
 The Lean formalization contains two Spearman bounds: (i) \texttt{spearmanCorr\_bound}, fully derived from the definition of Spearman correlation, giving $\rho_S \leq 1 - 3/(P^3 - P)$; and (ii) \texttt{spearman\_classical\_bound}, axiomatized, giving the tighter $\rho_S \leq 1 - m^3/P^3$. The paper uses the tighter axiomatized bound. The full combinatorial proof (bounding the expected $\sum d_i^2$ under random tie-breaking) requires counting arguments not yet available in the Lean framework.
@@ -1990,9 +2322,29 @@ Impossibility source & Preference profiles disagree & Rashomon property \\
 
 The critical asymmetry: Arrow's theorem concerns a \emph{profile aggregation} function taking all voters simultaneously. The Attribution Impossibility concerns a single-input mapping: for each model $f$, the ranking should reflect $f$'s attributions. The impossibility arises because the ranking must simultaneously agree with all models but be model-independent.
 
+\subsection{Attempted Common Framework}
+
+\begin{definition}[Abstract Aggregation Problem]
+An \emph{abstract aggregation problem} is a tuple $(\mathcal{I}, \mathcal{A}, \mathcal{R}, \text{Agree})$ where:
+\begin{itemize}
+    \item $\mathcal{I}$ is a set of \emph{instances} (voters or models),
+    \item $\mathcal{A}$ is the set of alternatives (candidates or features),
+    \item $\mathcal{R}$ is the set of total orders on $\mathcal{A}$,
+    \item $\text{Agree} \colon \mathcal{I} \to \mathcal{R}$ assigns each instance its ``preferred'' order.
+\end{itemize}
+An \emph{aggregation rule} $F \colon 2^{\mathcal{I}} \to \mathcal{R}$ maps subsets of instances to a consensus order.
+\end{definition}
+
+Arrow's setup: $F$ takes the full profile $(L_1, \ldots, L_n)$ and IIA says $F$'s pairwise comparison of $(a,b)$ depends only on the restriction of each $L_i$ to $\{a,b\}$.
+
+Attribution setup: $F$ is required to be a \emph{constant function} (stability: the ranking does not depend on which model). Faithfulness says this constant ranking agrees with every instance's ordering. But this extreme makes the attribution version trivially impossible---a constant ranking cannot agree with conflicting instances (this is just the definition of the Rashomon property). Arrow's theorem is much deeper: it shows that even when the aggregation \emph{is} allowed to depend on instances, the constraints are still too tight. The proofs have entirely different structures.
+
 \subsection{Assessment}
 
-The Attribution Impossibility and Arrow's theorem are \emph{analogous} but not instances of a common theorem in any non-trivial sense. A common framework can be defined, but its ``impossibility theorem'' reduces to: ``if instances disagree and the aggregation rule must be constant, faithfulness is impossible''---a one-line observation. Arrow's actual content (the impossibility persists even when the rule is allowed to depend on all voters) has no analogue in attribution. The closest structural analogue may be Sen's (1970) impossibility of a Paretian liberal, where individual ``rights'' conflict with the Pareto criterion.
+The Attribution Impossibility and Arrow's theorem are \emph{analogous} but not instances of a common theorem in any non-trivial sense. One can define an abstract framework that subsumes both, but the common framework's ``impossibility theorem'' would be: ``if instances disagree and the aggregation rule must be constant, faithfulness is impossible''---a one-line observation, not a theorem. Arrow's actual content (the impossibility persists even when the rule \emph{is} allowed to depend on all voters) has no analogue in attribution. The attribution impossibility's actual content (the quantitative divergence $1/(1-\rho^2)$, the resolution via ensemble averaging, the connection to the Rashomon set's geometry) has no analogue in Arrow's setting. The closest true statement is: \emph{both theorems arise from the tension between local coherence (respecting individual views) and global consistency (producing a single ranking), when the individuals disagree}. This is a useful heuristic but not a formal unification.
+
+\paragraph{Relationship to Sen's liberalism paradox.}
+A closer structural analogue may be Sen's (1970) impossibility of a Paretian liberal, which concerns a setting where individual ``rights'' (each person's ranking of certain pairs should be respected) conflict with the Pareto criterion. The attribution impossibility can be viewed as a Sen-type result where each model has the ``right'' to determine the ranking of features (faithfulness), but these rights conflict across models. However, we do not pursue this further, as the connection remains at the level of analogy rather than formal subsumption.
 
 \section{Topological Analysis of the Impossibility}
 \label{sec:topological}
@@ -2003,9 +2355,17 @@ We investigate whether the Attribution Impossibility has topological content bey
 
 For two features $j, k$, the attribution map assigns to each training seed $s$ a sign $\sigma(s) = \text{sign}(\varphi_j(f_s) - \varphi_k(f_s)) \in \{+1, -1\}$. The Rashomon property says both values are achieved. A ``stable ranking'' is a constant function. The impossibility is immediate; no topological machinery is needed.
 
+\subsection{The $m = 3$ Case}
+
+For three features, the attribution map sends seeds to rankings in $S_3$ (6 elements). Again, if $\mathcal{S}$ is connected and the map is continuous, then the image must be a connected subset of $S_3$. Since $S_3$ is discrete, the image is a single point---contradicting Rashomon. This is the same connectedness argument; the symmetric group's structure plays no role.
+
 \subsection{The $m \geq 4$ Case: The Permutohedron}
 
-For $m$ features, the attribution vector lives in $\R^m$. The ranking is determined by the chamber of the braid arrangement $\{x_i = x_j : i \neq j\}$. One might hope the attribution map has a non-trivial winding number around the intersection of hyperplanes, giving a quantitative lower bound on ranking flips. This does not work: (1) the complement of the braid arrangement in $\R^m$ is simply connected for $m \geq 3$; (2) even if a winding number existed, it would count signed crossings, and the flip rate (unsigned) is already captured by $1/(1-\rho^2)$.
+For $m$ features, the attribution vector $(\varphi_1(f_s), \ldots, \varphi_m(f_s))$ lives in $\R^m$. The ranking is determined by the \emph{chamber} of the \emph{braid arrangement} (the hyperplane arrangement $\{x_i = x_j : i \neq j\}$) containing the attribution vector. The chambers are the cones of the \emph{permutohedron}.
+
+One might hope the attribution map has a non-trivial winding number around the intersection of hyperplanes, giving a quantitative lower bound on ranking flips. This does not work for two reasons: (1) the complement of the braid arrangement in $\R^m$ is simply connected for $m \geq 3$ (the codimension of each hyperplane is 1, so removing hyperplanes gives a space whose fundamental group is the pure braid group on $m$ strands; but we would need the image to be a \emph{loop} in this space, which requires additional structure not present in the attribution problem); (2) even if a winding number existed, it would count signed crossings, and the flip rate (unsigned) is already captured by $1/(1-\rho^2)$.
+
+There is one setting where topology could add genuine content: if the model space $\mathcal{S}$ has the structure of a manifold and the attribution map is smooth, then Morse theory could bound the number of critical points (ranking transitions). However, this requires $\mathcal{S}$ to be a smooth manifold, $g = \varphi_j - \varphi_k$ to be a Morse function, and knowing the topology of $\mathcal{S}$. None of these hold for practical training algorithms (XGBoost's seed space is discrete; neural net loss landscapes are non-smooth).
 
 \subsection{Assessment}
 
@@ -2015,7 +2375,16 @@ The Attribution Impossibility is fundamentally a \emph{combinatorial} result (co
 
 \subsection{The Trivial Version}
 
-Let $A_1, \ldots, A_n$ be any finite set of axioms. If $A_1 \wedge \cdots \wedge A_n$ implies faithfulness, stability, and completeness, then $A_1 \wedge \cdots \wedge A_n \to \bot$ under the Rashomon property. This is immediate from Theorem~\ref{thm:impossibility}; no content is added.
+Let $A_1, \ldots, A_n$ be any finite set of axioms on an attribution method $\varphi$. If $A_1 \wedge \cdots \wedge A_n$ implies faithfulness (the ranking reflects model attributions), stability (the ranking is model-independent), and completeness (the ranking decides all pairs), then $A_1 \wedge \cdots \wedge A_n \to \bot$ under the Rashomon property. This is immediate: if the conjunction implies $F \wedge S \wedge C$, and $F \wedge S \wedge C \to \bot$ (Theorem~\ref{thm:impossibility}), then the conjunction implies $\bot$. No content is added beyond Theorem~\ref{thm:impossibility}.
+
+\subsection{The ``Constant Attribution'' Escape}
+
+Why is a categorical strengthening difficult? Because trivial attribution methods escape the impossibility:
+\begin{itemize}
+    \item $\varphi_j(f) = 1/P$ for all $j, f$ (uniform): perfectly stable, perfectly equitable, satisfies any axiom system that doesn't require faithfulness.
+    \item $\varphi_j(f) = \E_f[\varphi_j(f)]$ (population mean): stable by construction, equitable under DGP symmetry.
+\end{itemize}
+Any ``impossibility for all axiom systems'' must exclude these methods, which means it must require faithfulness (or something implying it). But once faithfulness is required, we are back to Theorem~\ref{thm:impossibility}.
 
 \subsection{The Non-Trivial Quantitative Version}
 
