@@ -37,4 +37,5 @@ echo "=== Done. Compile with: ==="
 echo "  pdflatex main_jmlr.tex && bibtex main_jmlr && pdflatex main_jmlr.tex && pdflatex main_jmlr.tex"
 echo "  # or for NeurIPS preprint:"
 echo "  pdflatex main_preprint.tex && bibtex main_preprint && pdflatex main_preprint.tex && pdflatex main_preprint.tex"
-echo "=== Upload to arXiv under: cs.LG, cs.AI, stat.ML ==="
+echo "=== Upload to arXiv under: cs.LG, cs.AI, stat.ML, cs.LO ==="
+# Timing: consider posting 1-2 weeks before FAccT 2026 or major XAI workshop

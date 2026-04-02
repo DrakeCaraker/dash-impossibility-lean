@@ -31,7 +31,7 @@
 \newcommand{\DASH}{\textsc{Dash}}
 \newcommand{\GBDT}{\textsc{GBDT}}
 
-\title{The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity}
+\title{The Attribution Impossibility}
 
 % Author block hidden for anonymous review.
 % Uncomment for camera-ready / arXiv preprint:
@@ -48,8 +48,9 @@
 \maketitle
 
 \begin{abstract}
-We characterize the complete design space for feature attribution under collinearity: exactly two families of methods exist---faithful-complete methods that are unstable (rankings flip up to 50\% of the time) and ensemble methods like \DASH{} that are stable but report ties for symmetric features---and no method lies outside this dichotomy.
-The foundation is the \emph{Attribution Impossibility}: no feature ranking can be simultaneously faithful, stable, and complete when features are collinear, a result we prove in four lines from the Rashomon property.
+No feature ranking can be simultaneously faithful, stable, and complete when features are correlated---an impossibility we prove in four lines from the Rashomon property, then quantify, resolve, and machine-verify in Lean~4.
+For $m{=}2$ collinear features, the ranking is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
+Faithful, stable, and complete feature rankings cannot coexist under collinearity---we characterize the complete design space: exactly two families of methods exist, and no method lies outside this dichotomy.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
 In a survey of 37 public datasets, approximately 60\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
@@ -62,9 +63,9 @@ The design space theorem, diagnostics, and impossibility are mechanically verifi
 \section{Introduction}
 \label{sec:intro}
 
-Feature attribution methods assign importance scores to input variables, enabling practitioners to understand which features drive a model's predictions.
-SHAP values \citep{lundberg2017unified} have become the dominant framework, offering a principled connection to cooperative game theory.
-Yet under feature collinearity, SHAP-based rankings are unstable: retraining on bootstrap samples can invert the importance ordering of correlated features \citep{hwang2025shap}, eroding trust in explanations, complicating regulatory compliance, and producing contradictory conclusions in variable selection and causal discovery.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes. In a survey of 37 public datasets, approximately 60\% exhibit this instability. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility.
+
+Before this work, practitioners attributed SHAP instability to fixable causes. After, they know it is a mathematical certainty under collinearity---and they have a provably optimal fix.
 
 Several recent results have established fundamental limits on feature attribution.
 \citet{bilodeau2024impossibility} prove that completeness and linearity cannot coexist; \citet{huang2024failings} show SHAP can misrank features in Boolean domains; \citet{srinivas2019full} show complete attributions cannot be weakly input-dependent; and \citet{rao2025limits} establishes Kolmogorov complexity barriers to explainability.
@@ -146,9 +147,12 @@ A ranking $\succ$ is \emph{complete} if for every pair $j \neq k$, either $j \su
 \end{definition}
 
 The first desideratum asks that the ranking reflect what the model actually learned; the second asks that it be reproducible across training runs; the third asks that it resolve all feature pairs.
+Faithful, stable, complete: pick two.
 
 %% MOVED TO SUPPLEMENT: \paragraph{Two explanation goals.}
 %% MOVED TO SUPPLEMENT: Feature rankings serve two distinct purposes ... \DASH{} targets population-level explanation.
+
+Faithfulness is a model-level desideratum; stability is a population-level desideratum. The impossibility formalizes the tension between these goals.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The Attribution Impossibility}
@@ -306,6 +310,8 @@ When the proportionality constant $c$ is uniform across models (a consequence of
 In the Lean~4 formalization, this equality is derived from the proportionality and split-count axioms (\texttt{SymmetryDerive.lean}).
 \end{proof}
 
+\DASH{} changes explanations, not predictions. A \DASH{}-explained model and a single-model-explained model make identical decisions---they differ only in which explanation accompanies the decision.
+
 \paragraph{Between-group stability.}
 Under independence of seeds, $\Var(\bar{\varphi}_j) = \Var(\varphi_j) / M$, which vanishes as $M \to \infty$.
 The between-group ranking therefore stabilizes: features in groups with higher true signal are consistently ranked above those with lower signal, with convergence rate $O(1/M)$.
@@ -313,6 +319,41 @@ The between-group ranking therefore stabilizes: features in groups with higher t
 \paragraph{Within-group completeness.}
 Since $\bar{\varphi}_j = \bar{\varphi}_k$ for same-group features, the consensus ranking produces a \emph{tie} rather than an arbitrary ordering---faithfully reflecting the DGP symmetry.
 In regulated settings, within-group features reported as tied should be documented as interchangeable.
+
+The impossibility, the quantitative bounds, and the DASH resolution are not isolated results---they are facets of a single structural theorem characterizing the complete attribution design space.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Attribution Design Space}
+\label{sec:design-space}
+
+The impossibility, bounds, and \DASH{} resolution are facets of a single structural theorem (Figure~\ref{fig:design-space}).
+
+\begin{theorem}[Attribution Design Space]
+\label{thm:design-space-main}
+For any model class satisfying the Rashomon property under within-group
+correlation $\rho > 0$, the achievable set of (stability $S$,
+unfaithfulness $U$, completeness $C$) triples consists of exactly
+two families:
+\begin{itemize}
+    \item \textbf{Family $\mathcal{A}$ (single-model):}
+      $S \leq 1 - m^3/P^3$, $U = 1/2$, $C = \text{complete}$.
+    \item \textbf{Family $\mathcal{B}$ (ensemble):}
+      $S_M = 1 - O(1/M)$, $U = 0$, $C = \text{partial (ties)}$.
+      \DASH{}$(M)$ is Pareto-optimal.
+\end{itemize}
+The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible.
+\end{theorem}
+
+The exhaustiveness follows from the unfaithfulness bound: any stable, complete ranking disagrees with exactly half the models under DGP symmetry. The only ranking avoiding unfaithfulness is a tie---placing it in Family~$\mathcal{B}$. No third option exists (Lean: \texttt{family\_a\_or\_family\_b} in \texttt{DesignSpaceFull.lean}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/design_space.pdf}
+\caption{The Attribution Design Space. Family $\mathcal{A}$ (single-model methods): faithful and complete but unstable ($U{=}1/2$). Family $\mathcal{B}$ (\DASH{} ensemble): stable with ties ($U{=}0$, $S$ increasing with $M$). The ideal point $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. There is no third option.}
+\label{fig:design-space}
+\end{figure}
+
+This parallels Arrow's landscape: Arrow restricts social welfare functions; we restrict attribution methods. Unlike Arrow's setting, our relaxation paths \emph{converge} (supplement), reflecting the DGP symmetry.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Empirical Validation}
@@ -366,37 +407,6 @@ The diagnostics generalize to LightGBM, CatBoost, and non-SHAP attributions (sup
 %% MOVED TO SUPPLEMENT: NN validation and SHAP efficiency axiom paragraphs
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The Attribution Design Space}
-\label{sec:design-space}
-
-The impossibility, bounds, and \DASH{} resolution are facets of a single structural theorem (Figure~\ref{fig:design-space}).
-
-\begin{theorem}[Attribution Design Space]
-\label{thm:design-space-main}
-For any model class satisfying the Rashomon property under within-group
-correlation $\rho > 0$, the achievable set of (stability $S$,
-unfaithfulness $U$, completeness $C$) triples consists of exactly
-two families:
-\begin{itemize}
-    \item \textbf{Family $\mathcal{A}$ (single-model):}
-      $S \leq 1 - m^3/P^3$, $U = 1/2$, $C = \text{complete}$.
-    \item \textbf{Family $\mathcal{B}$ (ensemble):}
-      $S_M = 1 - O(1/M)$, $U = 0$, $C = \text{partial (ties)}$.
-      \DASH{}$(M)$ is Pareto-optimal.
-\end{itemize}
-The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible.
-\end{theorem}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.55\textwidth]{figures/design_space.pdf}
-\caption{The Attribution Design Space. Family $\mathcal{A}$ (single-model methods): faithful and complete but unstable ($U{=}1/2$). Family $\mathcal{B}$ (\DASH{} ensemble): stable with ties ($U{=}0$, $S$ increasing with $M$). The ideal point $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. There is no third option.}
-\label{fig:design-space}
-\end{figure}
-
-This parallels Arrow's landscape: Arrow restricts social welfare functions; we restrict attribution methods. Unlike Arrow's setting, our relaxation paths \emph{converge} (supplement), reflecting the DGP symmetry.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Work}
 \label{sec:related}
 
@@ -437,6 +447,9 @@ Our theorem proves this is a ``known and foreseeable circumstance'' under EU AI 
 The consequences are concrete: a hospital investing in the ``top'' SHAP feature may target the wrong intervention after retraining; published studies reporting single-model feature importance may report artifacts of the training run.
 For fairness auditing, a single-model SHAP audit of a collinear proxy concludes ``proxy reliance'' with probability exactly $1/2$---a coin flip (supplement).
 \DASH{} mitigates by reporting honest indistinguishability rather than arbitrary distinctions.
+
+\paragraph{Distinction from classical multicollinearity.}
+The classical multicollinearity concern is about estimation variance ($\Var(\hat\beta_j - \hat\beta_k) \to \infty$ as $\rho \to 1$). Our result is qualitatively different: it concerns \emph{ranking impossibility}, not estimation imprecision. Even with infinite data and perfect estimates, the ranking of symmetric features is a coin flip---because different models in the Rashomon set rank them in opposite orders.
 
 \paragraph{Rashomon set vs.\ deployed model.}
 The impossibility characterizes the Rashomon set, not a single deployed model.

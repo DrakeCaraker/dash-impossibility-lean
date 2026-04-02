@@ -30,7 +30,7 @@
 \newcommand{\GBDT}{\textsc{GBDT}}
 \newenvironment{keywords}{\paragraph{Keywords:}}{}
 
-\title{The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity}
+\title{The Attribution Impossibility}
 
 \author{
   Drake Caraker\thanks{Corresponding author: \texttt{drakecaraker@gmail.com}} \quad
@@ -49,7 +49,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-We characterize the complete attribution design space under feature collinearity: exactly two families of methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and no method lies outside this dichotomy.
+Feature attribution rankings under collinearity are provably unreliable: we establish that faithfulness, stability, and completeness are mutually incompatible, characterize the complete design space (exactly two achievable families), and give the provably optimal resolution.
 The foundation is the \emph{Attribution Impossibility}: no feature ranking can be simultaneously faithful, stable, and complete when features are collinear.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
@@ -71,9 +71,11 @@ Feature attribution impossibility, Shapley value stability, Rashomon effect, ens
 \section{Introduction}
 \label{sec:intro}
 
-Feature attribution methods assign importance scores to input variables, enabling practitioners to understand which features drive a model's predictions.
-SHAP values \cite{lundberg2017unified} have become the dominant framework, offering a principled connection to cooperative game theory.
-Yet under feature collinearity, SHAP-based rankings are unstable: retraining on bootstrap samples can invert the importance ordering of correlated features \cite{hwang2025shap}, eroding trust in explanations, complicating regulatory compliance, and producing contradictory conclusions in variable selection and causal discovery.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes. In a survey of 37 public datasets, approximately 60\% exhibit this instability. Before this work, practitioners assumed this was an engineering problem. We prove it is a mathematical impossibility---and we provide the complete theory: an impossibility theorem, quantitative architecture-discriminating bounds, a constructive resolution with provable optimality, and machine verification in Lean~4.
+
+For $m{=}2$, ranking collinear pairs is literally a coin flip.
+
+The classical multicollinearity concern is about estimation variance. Our result is qualitatively different: it concerns \emph{ranking impossibility}. Even with perfect estimates, the ranking of symmetric features is a coin flip.
 
 Several recent results have established fundamental limits on feature attribution.
 \cite{bilodeau2024impossibility} prove that completeness and linearity cannot coexist; \cite{huang2024failings} show SHAP can misrank features in Boolean domains; \cite{srinivas2019full} show complete attributions cannot be weakly input-dependent; and \cite{rao2025limits} establishes Kolmogorov complexity barriers to explainability.
@@ -229,6 +231,8 @@ A ranking $\succ$ is \emph{complete} if for every pair $j \neq k$, either $j \su
 \end{definition}
 
 The first desideratum asks that the ranking reflect what the model actually learned; the second asks that it be reproducible across training runs; the third asks that it resolve all feature pairs.
+
+\emph{Faithful, stable, complete: pick two.}
 
 \paragraph{Two explanation goals.}
 Feature rankings serve two distinct purposes: \emph{model-level explanation} (what did this specific model learn?) and \emph{population-level explanation} (what does the model class learn?).
@@ -545,6 +549,12 @@ For a balanced ensemble and any two features $j, k$ in the same group $\ell$, $\
 By DGP symmetry, permuting features $j \leftrightarrow k$ leaves the joint distribution invariant. For a balanced ensemble, each feature serves as first-mover equally often, so the summed split counts satisfy $\sum_i n_j(f_i) = \sum_i n_k(f_i)$. When the proportionality constant $c$ is uniform across models, this gives $\sum_i \varphi_j(f_i) = \sum_i \varphi_k(f_i)$.
 \end{proof}
 
+\paragraph{Progressive \DASH{}.}
+For cost-sensitive deployments, we propose progressive \DASH{}: start with $M{=}5$ models; for pairs with $Z > 3.0$, declare stable; for $Z < 1.96$, flag as unstable; for borderline pairs, train 5 more and repeat. Average-case cost: ${\sim}8\times$ (not $25\times$).
+
+\paragraph{\DASH{} does not change predictions.}
+\DASH{} changes explanations, not predictions. The model's output is unchanged; only the accompanying explanation differs.
+
 \paragraph{Between-group stability.}
 Under independence of seeds, $\Var(\bar{\varphi}_j) = \Var(\varphi_j) / M$, which vanishes as $M \to \infty$.
 
@@ -750,6 +760,8 @@ The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is the statement
 \section{The Symmetric Bayes Dichotomy}
 \label{sec:sbd}
 
+The impossibility is not specific to feature attribution. It is an instance of a general pattern: any symmetric decision problem admits exactly two families of methods. We call this the Symmetric Bayes Dichotomy---a specialization of classical invariant decision theory \citep{lehmann2005testing} to finite symmetric groups, cast as a reusable reduction template for ML impossibility proofs.
+
 The Symmetric Bayes Dichotomy is a specialization of the classical theory of invariant decision rules \citep{lehmann2005testing,hunt1946} to finite symmetric groups, cast as a reusable reduction template for ML impossibility proofs. The classical theory establishes that Bayes-optimal rules respect the invariance structure of the problem; our contribution is the explicit reduction: verifying $G$-invariance of the population distribution suffices to establish a two-family impossibility with quantitative unfaithfulness and stability bounds. We demonstrate this across three structurally distinct instances.
 
 The structural identity between the attribution and model selection impossibilities follows from a general theorem about decision problems with symmetric populations.
@@ -942,6 +954,9 @@ When multiple protected attributes (race, gender, age) are each proxied by colli
 
 \paragraph{Example: lending.}
 In credit models, ``zip code'' (proxy for race) is often collinear with ``income bracket'' ($|\rho| \approx 0.6$--$0.8$). If both have similar predictive power, a single-model SHAP audit finding ``zip code is the 3rd most important feature'' may conclude proxy discrimination---but retraining with a different seed could produce a model where zip code drops to 8th and income rises to 3rd. The audit conclusion depends on the random seed, not on the model's actual reliance on the protected attribute.
+
+\paragraph{Worked adverse action example.}
+Consider a borrower denied credit, with correlated features income and DTI. Model~A (seed~1) cites income as the top adverse factor; Model~B (seed~2) cites DTI. Under ECOA, the lender must disclose the primary reason. The disclosure depends on the random seed---a regulatory violation that is mathematically inevitable under collinearity. \DASH{} resolves this: the consensus ranks income and DTI as tied contributors.
 
 \subsection{Direct FIM Impossibility}
 \label{sec:fim}
@@ -1481,24 +1496,7 @@ Zero unstable pairs despite correlated features ($Z > 36$ for all pairs), confir
 
 \subsection{LLM Attention Attribution Instability}
 
-We load DistilBERT and create 10 model variants by adding small random perturbations ($\sigma = 0.02$) to attention weights, simulating different training runs. Of 59 adjacent token pairs across test sentences, 88\% have flip rates exceeding 10\%. Examples: ``extremely''/``poor'' flips 50\% (coin flip), ``not''/``bad'' flips 40\%. Mean Spearman correlation of full-sentence token rankings is 0.637.
-
-Under actual fine-tuning on SST-2 (5 seeds, 1 epoch, AdamW, lr$=2{\times}10^{-5}$), 14.5\% of pairs are unstable. The identical 14.5\% across 1 and 3 epochs indicates the instability is structural (driven by collinearity in attention patterns), not a training-depth artifact.
-
-\begin{center}
-\small
-\begin{tabular}{@{}lcc@{}}
-\toprule
-Method & \% Pairs unstable ($>10\%$ flip) & Mean Spearman \\
-\midrule
-Weight perturbation ($\sigma{=}0.02$, 10 models) & 88\% & 0.637 \\
-Fine-tuning (5 seeds, 1 epoch) & 14.5\% & 0.956 \\
-Fine-tuning (5 seeds, 3 epochs) & 14.5\% & 0.965 \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-The gap between fine-tuning (14.5\%) and perturbation (88\%) reflects the difference in weight divergence: fine-tuning updates parameters by $O(0.001)$ via gradient descent, while perturbation adds $O(0.02)$ noise to all parameters. The perturbation result represents the full Rashomon set; the fine-tuning result represents the subset explored by standard training. Token-level explanations of LLMs face the same impossibility as feature-level explanations of tabular models.
+We provide preliminary evidence that attribution instability extends to transformer attention: fine-tuning DistilBERT on SST-2 with different seeds produces 14.5\% unstable adjacent-token pairs. However, this is a proxy experiment---attention weights are not SHAP values---and full LLM generalization remains an open problem.
 
 \subsection{Replication Study: Published SHAP Rankings}
 
@@ -1808,6 +1806,9 @@ The core impossibility (Theorem~\ref{thm:impossibility}) is Lean-verified with z
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\sigma(j) - \sigma(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.
 
 For $m$ features in a group under full DGP symmetry, the attribution ranking is a uniform random permutation. Any stable ranking $\sigma^*$ has expected Spearman correlation with the model's ranking of $\E[\rho_S(\sigma^*, \pi)] = -1/(m-1)$. The stable ranking is \emph{negatively correlated} with the model's ranking in expectation (for $m \geq 3$) and converges to zero correlation as $m \to \infty$.
+
+\paragraph{Robustness conjecture.}
+We conjecture that the flip rate prediction $\Phi(-\text{SNR})$ is Lipschitz-continuous in the correlation matrix: if $\|\hat\Sigma - \Sigma\|_F < \varepsilon$, the predicted flip rates change by $O(\varepsilon/\sigma)$. Simulation on Breast Cancer supports this, but a formal proof is open.
 
 \paragraph{Open problems.}
 The Bayes-optimality half of the Design Space is proved but not in Lean (requires measure-theoretic decision theory). Deriving split-count axioms algorithmically, proving the proportionality axiom for TreeSHAP, and generalizing from $\rho > 0$ to $I(X_j; X_k) > 0$ remain open. A reference implementation is available at \url{https://github.com/DrakeCaraker/dash-shap}.

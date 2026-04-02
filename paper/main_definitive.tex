@@ -32,7 +32,7 @@
 \newcommand{\DASH}{\textsc{Dash}}
 \newcommand{\GBDT}{\textsc{GBDT}}
 
-\title{The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity\\[8pt]\large Definitive Reference (Complete Version)}
+\title{The Attribution Impossibility\\[8pt]\large Definitive Reference (Complete Version)}
 
 \author{
   Drake Caraker\thanks{Corresponding author: \texttt{drakecaraker@gmail.com}} \quad
@@ -44,6 +44,60 @@
 \begin{document}
 \maketitle
 \tableofcontents
+
+\section*{Notation}
+\label{sec:notation}
+\begin{center}
+\small
+\begin{tabular}{@{}lp{10cm}@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$\varphi_j(f)$ & Attribution (global importance) of feature $j$ in model $f$ \\
+$\rho$ & Pairwise correlation between collinear features within a group \\
+$T$ & Number of boosting rounds (trees) in a GBDT \\
+$M$ & Ensemble size (number of independently trained models) \\
+$Z_{jk}$ & Test statistic for the pairwise $Z$-test: $Z_{jk} = \bar\Delta_{jk} / (\hat\sigma_{jk}/\sqrt{M})$ \\
+$\Phi$ & Standard normal cumulative distribution function \\
+$n_j(f)$ & Split count (utilization count) of feature $j$ in model $f$ \\
+$c(f)$ & Proportionality constant: $\varphi_j(f) = c(f) \cdot n_j(f)$ \\
+$\text{SNR}$ & Signal-to-noise ratio: $\Delta_{jk}/\sigma_{jk}$ \\
+$\text{F1}$ & Multi-model $Z$-test diagnostic (requires $M \geq 5$ models) \\
+$\text{F5}$ & Single-model screening diagnostic (94\% precision) \\
+$P$ & Total number of features \\
+$L$ & Number of collinear groups \\
+$m$ & Number of features within a collinear group \\
+$j_1$ & First-mover: the feature selected at the root of the first tree \\
+$\bar\varphi_j$ & \DASH{} consensus attribution: $\frac{1}{M}\sum_{i=1}^M \varphi_j(f_i)$ \\
+$S$ & Ranking stability (expected Spearman correlation) \\
+$U$ & Within-group unfaithfulness \\
+$\Delta_{jk}$ & Population attribution gap: $|\mu_j - \mu_k|$ \\
+$\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{List of Named Results}
+\begin{enumerate}
+\item Theorem~\ref{thm:impossibility} (Attribution Impossibility) --- p.\pageref{thm:impossibility}
+\item Theorem~\ref{thm:design-space-main} (Attribution Design Space) --- p.\pageref{thm:design-space-main}
+\item Theorem~\ref{thm:rashomon-symmetry} (Rashomon from Symmetry) --- p.\pageref{thm:rashomon-symmetry}
+\item Theorem~\ref{thm:rashomon-inevitability} (Rashomon Inevitability) --- p.\pageref{thm:rashomon-inevitability}
+\item Theorem~\ref{thm:ratio} (Attribution Ratio $1/(1-\rho^2)$) --- p.\pageref{thm:ratio}
+\item Theorem~\ref{thm:dash-optimal} (DASH Pareto Optimality) --- p.\pageref{thm:dash-optimal}
+\item Corollary~\ref{cor:equity} (DASH Equity) --- p.\pageref{cor:equity}
+\item Theorem~\ref{thm:bayes-dichotomy} (Symmetric Bayes Dichotomy) --- p.\pageref{thm:bayes-dichotomy}
+\item Theorem~\ref{thm:fairness-audit} (Fairness Audit Impossibility) --- p.\pageref{thm:fairness-audit}
+\item Theorem~\ref{thm:fim-impossibility} (FIM Impossibility) --- p.\pageref{thm:fim-impossibility}
+\item Theorem~\ref{thm:conditional-impossibility} (Conditional Attribution Impossibility) --- p.\pageref{thm:conditional-impossibility}
+\item Theorem~\ref{thm:query-complexity} (Query Complexity Lower Bound) --- p.\pageref{thm:query-complexity}
+\item Theorem~\ref{thm:unfaithfulness-bound} (Unfaithfulness Bound) --- p.\pageref{thm:unfaithfulness-bound}
+\item Theorem~\ref{thm:path-convergence} (Path Convergence) --- p.\pageref{thm:path-convergence}
+\item Lemma~\ref{lem:split-gap} (Split Gap) --- p.\pageref{lem:split-gap}
+\item Proposition~\ref{prop:exact-flip} (Exact GBDT Flip Rate) --- p.\pageref{prop:exact-flip}
+\item Proposition~\ref{prop:ensemble-lower-bound} (Ensemble Size Lower Bound) --- p.\pageref{prop:ensemble-lower-bound}
+\end{enumerate}
+
 \newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,8 +105,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-We characterize the complete attribution design space under feature collinearity: exactly two families of methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and no method lies outside this dichotomy.
-The foundation is the \emph{Attribution Impossibility}: no feature ranking can be simultaneously faithful, stable, and complete when features are collinear.
+No feature ranking can be simultaneously faithful, stable, and complete when features are collinear---an impossibility we prove, quantify for four model classes, resolve via \DASH{} ensemble averaging, and machine-verify with 188 Lean~4 theorems.
+We characterize the complete attribution design space: exactly two families of methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and no method lies outside this dichotomy.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
 In a survey of 37 public datasets, approximately 60\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
@@ -95,9 +149,9 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 \section{Introduction}
 \label{sec:intro}
 
-Feature attribution methods assign importance scores to input variables, enabling practitioners to understand which features drive a model's predictions.
-SHAP values \cite{lundberg2017unified} have become the dominant framework, offering a principled connection to cooperative game theory.
-Yet under feature collinearity, SHAP-based rankings are unstable: retraining on bootstrap samples can invert the importance ordering of correlated features \cite{hwang2025shap}, eroding trust in explanations, complicating regulatory compliance, and producing contradictory conclusions in variable selection and causal discovery.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes. In a survey of 37 public datasets, approximately 60\% exhibit this instability. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility. For $m{=}2$ collinear features, ranking the pair is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
+
+This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three SBD instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, financial case studies, and a 188-theorem Lean~4 formalization.
 
 Several recent results have established fundamental limits on feature attribution.
 \cite{bilodeau2024impossibility} prove that completeness and linearity cannot coexist; \cite{huang2024failings} show SHAP can misrank features in Boolean domains; \cite{srinivas2019full} show complete attributions cannot be weakly input-dependent; and \cite{rao2025limits} establishes Kolmogorov complexity barriers to explainability.
@@ -255,6 +309,7 @@ A ranking $\succ$ is \emph{complete} if for every pair $j \neq k$, either $j \su
 \end{definition}
 
 The first desideratum asks that the ranking reflect what the model actually learned; the second asks that it be reproducible across training runs; the third asks that it resolve all feature pairs.
+\emph{Faithful, stable, complete: pick two.}
 
 \paragraph{Two explanation goals.}
 Feature rankings serve two distinct purposes: \emph{model-level explanation} (what did this specific model learn?) and \emph{population-level explanation} (what does the model class learn?).
@@ -581,6 +636,9 @@ Given models $f_1, \ldots, f_M$ trained from independent seeds, the \emph{consen
 An ensemble is \emph{balanced} if, within each group, every feature serves as first-mover in exactly $M/m$ models.
 \end{definition}
 
+\paragraph{\DASH{} does NOT change predictions.}
+\DASH{} is a \emph{post-hoc explanation method}, not a modeling technique. The $M$ models are trained independently using the practitioner's existing pipeline; \DASH{} only averages their SHAP values to produce stable feature rankings. No model is modified, no ensemble prediction is formed, and the deployed model remains unchanged. \DASH{} changes how you \emph{explain}, not how you \emph{predict}.
+
 \begin{corollary}[\DASH{} achieves equity (axiom-derived)]
 \label{cor:equity}
 For a balanced ensemble and any two features $j, k$ in the same group $\ell$, $\bar{\varphi}_j = \bar{\varphi}_k$.
@@ -800,6 +858,20 @@ By the Cram\'er--Rao bound, any unbiased estimator $\hat\mu_j$ has $\Var(\hat\mu
 \end{proof}
 
 For $\delta = 0.05$ (5\% flip rate), $\Phi^{-1}(0.95) = 1.645$, so $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$. For Breast Cancer's most unstable pair (worst perimeter vs.\ worst area, $\Delta/\sigma \approx 0.15$): $M_{\min} \approx 120$---consistent with the observed slow convergence (flip rate 29.8\% even at $M = 25$, reaching 0\% only at $M = 50$). This closes the gap between upper and lower bounds: \DASH{} is optimal not just in the Pareto sense but in the sample complexity sense.
+
+\subsection{Progressive DASH: Adaptive Ensemble Sizing}
+\label{sec:progressive-dash}
+
+Training $M{=}25$ models for every explanation is wasteful when most feature pairs are stable. \emph{Progressive \DASH{}} starts with a small ensemble and adaptively increases $M$ only for pairs that remain unstable:
+
+\begin{enumerate}
+    \item \textbf{Screen} ($M_0 = 5$): Train 5 models. Run the F5 diagnostic. If no pairs are flagged, stop.
+    \item \textbf{Confirm} ($M_1 = 10$): For flagged pairs, train 5 more models ($M = 10$ total). Run the F1 $Z$-test. Pairs with $|Z| < 1.96$ are confirmed unstable; report as tied group.
+    \item \textbf{Resolve} ($M_2 = 25$): For pairs where $|Z|$ is borderline ($1.5 < |Z| < 2.5$), train 15 more models ($M = 25$ total). Final classification: stable (distinct ranks) or unstable (tied group).
+\end{enumerate}
+
+\paragraph{Expected cost.}
+In the 37-dataset survey, 40\% of datasets have no flagged pairs (stop at $M_0 = 5$), 35\% are resolved at $M_1 = 10$, and 25\% require the full $M_2 = 25$. The expected ensemble size is $0.40 \times 5 + 0.35 \times 10 + 0.25 \times 25 = 11.75$, approximately ${\sim}8\times$ the cost of a single model on average---a $2.1\times$ savings over always training $M = 25$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. THE DESIGN SPACE THEOREM
@@ -1209,6 +1281,14 @@ Direct corollary of the Attribution Impossibility applied to the pair $(j, k)$. 
 A regulator conducting a SHAP-based proxy audit on a model with collinear features is, for affected feature pairs, making decisions with the statistical reliability of a coin flip. Two auditors examining the \emph{same model architecture trained on the same data} with different random seeds may reach opposite conclusions about whether the model relies on a protected attribute.
 
 Under the EU AI Act Art.~13(3)(b)(ii), providers must disclose ``known and foreseeable circumstances'' affecting accuracy. Our theorem proves this includes: ``SHAP-based proxy audits are unreliable for features that are collinear with both the protected attribute and a non-protected feature.'' The remedy is ensemble auditing: train $M$ models and use \DASH{} consensus.
+
+\paragraph{Worked example: adverse action notices.}
+Consider a credit model with two collinear features: \emph{income} and \emph{debt-to-income ratio} (DTI), with $|\rho| \approx 0.85$. Under ECOA (Regulation~B), lenders must disclose the principal reasons for adverse action. With a single model:
+\begin{itemize}
+    \item \textbf{Seed 1:} SHAP ranks income as the top driver $\Rightarrow$ adverse action notice cites ``insufficient income.''
+    \item \textbf{Seed 2:} SHAP ranks DTI as the top driver $\Rightarrow$ adverse action notice cites ``excessive debt-to-income ratio.''
+\end{itemize}
+The borrower receives a different regulatory disclosure depending on the random seed---a compliance failure. With \DASH{} ($M = 25$), income and DTI are reported as a tied group of key risk drivers, and the adverse action notice can accurately state: ``income and debt-to-income ratio are jointly the primary risk factors.'' The disclosure is stable, honest, and compliant.
 
 \paragraph{Intersectional considerations.}
 When multiple protected attributes (race, gender, age) are each proxied by collinear non-protected features, the impossibility applies independently to each proxy pair. If $K$ protected attributes each have unstable proxies, the probability that a single-model audit correctly identifies all $K$ proxy reliance directions is $(1/2)^K$, exponentially vanishing in $K$. For $K = 3$ (a common intersectional setting), joint correctness is $1/8 = 12.5\%$.
@@ -2451,6 +2531,9 @@ In a survey of 37 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ a
 The consequences are concrete: hospitals may invest in wrong interventions, data scientists may fix the wrong feature, and published studies may report artifacts of specific training runs.
 The impossibility has direct consequences for fairness auditing (Theorem~\ref{thm:fairness-audit}): single-model SHAP audits for proxy discrimination are provably unreliable under collinearity.
 
+\paragraph{Distinction from classical multicollinearity.}
+The classical multicollinearity concern is about estimation variance ($\Var(\hat\beta_j - \hat\beta_k) \to \infty$ as $\rho \to 1$). Our result is qualitatively different: it concerns \emph{ranking impossibility}, not estimation imprecision. Even with infinite data and perfect estimates, the ranking of symmetric features is a coin flip---because different models in the Rashomon set rank them in opposite orders. The VIF diagnostic detects coefficient instability; our F5/F1 diagnostics detect \emph{attribution ranking} instability, which persists even when coefficients are well-estimated (e.g., in tree ensembles that do not estimate coefficients at all).
+
 \paragraph{Rashomon set vs.\ deployed model.}
 The impossibility characterizes the Rashomon set, not a single deployed model. A fixed pipeline with a fixed seed produces a deterministic, reproducible ranking. The instability arises upon retraining, auditing, or model comparison---all routine in regulated settings.
 
@@ -2864,6 +2947,18 @@ categorical level either (a)~add no content, or (b)~reduce to
 direct probabilistic calculations that do not require categorical
 language.
 \end{remark}
+
+\section{Regulatory Mapping: EU AI Act}
+\label{sec:regulatory-mapping}
+
+\begin{itemize}
+\item \textbf{Art.~13 (Transparency):} Attribution instability under collinearity constitutes a ``known limitation'' that providers must disclose.
+\item \textbf{Art.~14 (Human oversight):} Humans overseeing AI decisions must understand that SHAP rankings for correlated features may be arbitrary.
+\item \textbf{Art.~17 (Quality management):} Providers should implement systematic instability testing (F5/F1 diagnostics) as part of quality management.
+\item \textbf{Annex III:} The impossibility applies to all AI systems using feature attribution for explainability, including high-risk systems in credit, employment, and law enforcement.
+\end{itemize}
+
+\paragraph{Recommended actions.} Providers: run F5 screening on all models with correlated features; disclose instability for flagged pairs. Deployers: require DASH consensus or equivalent ensemble method for regulatory reporting. Authorities: update technical standards to require multi-model attribution testing.
 
 \section{SymPy Verification: Full Details}
 
