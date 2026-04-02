@@ -48,13 +48,14 @@
 \maketitle
 
 \begin{abstract}
-We characterize the complete attribution design space under feature collinearity: exactly two families of methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and no method lies outside this dichotomy.
-The foundation is the \emph{Attribution Impossibility}: no feature ranking can be simultaneously faithful, stable, and complete when features are collinear.
+We characterize the complete design space for feature attribution under collinearity: exactly two families of methods exist---faithful-complete methods that are unstable (rankings flip up to 50\% of the time) and ensemble methods like \DASH{} that are stable but report ties for symmetric features---and no method lies outside this dichotomy.
+The foundation is the \emph{Attribution Impossibility}: no feature ranking can be simultaneously faithful, stable, and complete when features are collinear, a result we prove in four lines from the Rashomon property.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
 In a survey of 37 public datasets, approximately 60\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
-The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
+The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing.
+SHAP-based proxy discrimination audits are provably no better than coin flips under collinearity.
 The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (188 theorems from 15 domain-specific + 3 query-complexity axioms, 0 \texttt{sorry})---to our knowledge, the first formally verified impossibility in explainable AI.
 \end{abstract}
 
@@ -370,10 +371,20 @@ The diagnostics generalize to LightGBM, CatBoost, and non-SHAP attributions (sup
 
 The impossibility, bounds, and \DASH{} resolution are facets of a single structural theorem (Figure~\ref{fig:design-space}).
 
-%% MOVED TO SUPPLEMENT: Theorem (Attribution Design Space) formal itemized statement
-\begin{theorem}[Attribution Design Space --- informal]
+\begin{theorem}[Attribution Design Space]
 \label{thm:design-space-main}
-Under the Rashomon property, exactly two families of attribution methods exist: \textbf{Family~$\mathcal{A}$} (single-model: faithful and complete but unstable, with unfaithfulness $U{=}1/2$) and \textbf{Family~$\mathcal{B}$} (ensemble: stable with ties, $U{=}0$, stability $S_M = 1 - O(1/M)$). The ideal $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. \DASH{} is Pareto-optimal on $\mathcal{B}$. The formal statement, Pareto optimality argument, and five corollaries are in the supplement.
+For any model class satisfying the Rashomon property under within-group
+correlation $\rho > 0$, the achievable set of (stability $S$,
+unfaithfulness $U$, completeness $C$) triples consists of exactly
+two families:
+\begin{itemize}
+    \item \textbf{Family $\mathcal{A}$ (single-model):}
+      $S \leq 1 - m^3/P^3$, $U = 1/2$, $C = \text{complete}$.
+    \item \textbf{Family $\mathcal{B}$ (ensemble):}
+      $S_M = 1 - O(1/M)$, $U = 0$, $C = \text{partial (ties)}$.
+      \DASH{}$(M)$ is Pareto-optimal.
+\end{itemize}
+The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible.
 \end{theorem}
 
 \begin{figure}[t]

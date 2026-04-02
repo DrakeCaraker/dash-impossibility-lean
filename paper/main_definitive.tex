@@ -62,6 +62,32 @@ The design space theorem, diagnostics, and impossibility are mechanically verifi
 Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
 \end{abstract}
 
+\section*{Executive Summary}
+
+\textbf{The problem.} SHAP feature importance rankings---the most widely used method for explaining machine learning predictions---are unreliable when features are correlated. Retraining the same model with a different random seed can invert which feature is ``most important.'' In a survey of 37 public datasets, approximately 60\% exhibit this instability.
+
+\textbf{The theorem.} We prove this is not an engineering failure but a mathematical impossibility: no feature ranking can simultaneously be \emph{faithful} (reflect the model), \emph{stable} (robust to retraining), and \emph{complete} (rank all features). The proof requires only four lines from the Rashomon property---that collinear designs admit models ranking features in opposite orders.
+
+\textbf{The design space.} The complete set of achievable methods consists of exactly two families:
+\begin{itemize}
+    \item \textbf{Family A} (single-model): Faithful and complete, but rankings flip up to 50\% of the time.
+    \item \textbf{Family B} (\DASH{} ensemble): Stable, but reports ties for symmetric features. Provably Pareto-optimal.
+\end{itemize}
+
+\textbf{The practical toolkit.}
+\begin{enumerate}
+    \item \textbf{Diagnose}: The F5 single-model screen (94\% precision) identifies unstable feature pairs from one model.
+    \item \textbf{Validate}: The F1 multi-model test ($|r| > 0.89$ across 11 datasets) confirms instability with 5 models.
+    \item \textbf{Resolve}: \DASH{} consensus averaging with $M \geq 25$ models reduces flip rate below 1\%.
+    \item \textbf{Size}: The ensemble formula $M_{\min} = \lceil 2.71 \cdot \sigma^2/\Delta^2 \rceil$ gives the optimal model count.
+\end{enumerate}
+
+\textbf{For regulators.} SHAP-based proxy discrimination audits are provably unreliable under collinearity: the audit conclusion is a coin flip across training seeds. This constitutes a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii). The instability disclosure template in Section~9 provides ready-to-use language for model documentation.
+
+\textbf{Verification.} The framework is mechanically verified in Lean~4: 188 theorems from 18 axioms with 0 \texttt{sorry} across 36 files. The formalization caught two logical inconsistencies that survived informal review.
+
+\textbf{Code.} A reference implementation is available at \url{https://github.com/DrakeCaraker/dash-shap} (stability API in PR \#255). The Lean formalization is at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. INTRODUCTION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -107,6 +133,8 @@ The formalization also proved valuable beyond certification: during translation 
     \item \textbf{The symmetric Bayes dichotomy} (\S\ref{sec:sbd}): a proof technique from invariant decision theory \cite{lehmann2005testing}, demonstrated across three structurally distinct instances (feature attribution, model selection, and causal discovery under Markov equivalence) with different symmetry groups.
     \item \textbf{Machine-verified proof}: formalized in Lean~4 (188 type-checked theorems from 18 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}. The axiom system is consistent: we construct an explicit model satisfying all 15 domain-specific axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and numerically.
 \end{enumerate}
+
+\noindent\textit{For practitioners and regulators:} The instability disclosure template is in Section~9, the fairness audit impossibility in Section~8, and the financial case studies in Section~10. The Executive Summary above provides a complete overview without technical prerequisites.
 
 The core impossibility proof is deliberately simple---a four-line contradiction from the Rashomon property.
 Like Arrow's original argument \cite{arrow1951social}, the mathematical contribution lies not in proof complexity but in identifying the right abstraction (the Rashomon property) and characterizing the complete achievable set (the Design Space Theorem).
@@ -1607,6 +1635,34 @@ $[3.0, \infty)$ & 113 & 0.000 & 0.000 & Exact \\
     \item[\textbf{Step 3.}] For flagged pairs: train $M = 5$ models, compute $Z_{jk}$ (F1 test). If $Z_{jk} < 1.96$: use \DASH{} with $M \geq 25$.
     \item[\textbf{Step 4.}] If no pairs are flagged: single-model SHAP is reliable.
 \end{enumerate}
+
+\paragraph{Minimal implementation.}
+\begin{verbatim}
+import xgboost as xgb
+import shap
+import numpy as np
+
+# Train M models with different seeds
+models = [xgb.XGBRegressor(random_state=i).fit(X_train, y_train)
+          for i in range(25)]
+
+# Compute SHAP for each model
+shap_vals = np.array([
+    np.mean(np.abs(shap.TreeExplainer(m).shap_values(X_test)), axis=0)
+    for m in models
+])
+
+# DASH consensus = mean across models
+dash = np.mean(shap_vals, axis=0)
+
+# F1 diagnostic: Z-test for each feature pair
+for j in range(P):
+    for k in range(j+1, P):
+        diff = shap_vals[:, j] - shap_vals[:, k]
+        Z = abs(np.mean(diff)) / (np.std(diff, ddof=1) / np.sqrt(25))
+        if Z < 1.96:
+            print(f"Unstable: features {j} vs {k}, Z={Z:.2f}")
+\end{verbatim}
 
 \paragraph{Production deployment guide.}
 \begin{itemize}

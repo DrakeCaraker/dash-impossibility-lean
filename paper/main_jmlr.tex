@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{subcaption}
+\usepackage[round]{natbib}
 % Standard margins for JMLR-length paper
 \usepackage[margin=1in]{geometry}
 
@@ -27,6 +28,7 @@
 \newcommand{\SHAP}{\mathrm{SHAP}}
 \newcommand{\DASH}{\textsc{Dash}}
 \newcommand{\GBDT}{\textsc{GBDT}}
+\newenvironment{keywords}{\paragraph{Keywords:}}{}
 
 \title{The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity}
 
@@ -57,6 +59,10 @@ The framework includes practical diagnostics---a $Z$-test workflow and single-mo
 The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (188 theorems from 15 domain-specific + 3 query-complexity axioms, 0 \texttt{sorry})---to our knowledge, the first formally verified impossibility in explainable AI.
 Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
 \end{abstract}
+
+\begin{keywords}
+Feature attribution impossibility, Shapley value stability, Rashomon effect, ensemble explanation methods, formal verification (Lean 4)
+\end{keywords}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. INTRODUCTION
@@ -743,6 +749,8 @@ The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is the statement
 
 \section{The Symmetric Bayes Dichotomy}
 \label{sec:sbd}
+
+The Symmetric Bayes Dichotomy is a specialization of the classical theory of invariant decision rules \citep{lehmann2005testing,hunt1946} to finite symmetric groups, cast as a reusable reduction template for ML impossibility proofs. The classical theory establishes that Bayes-optimal rules respect the invariance structure of the problem; our contribution is the explicit reduction: verifying $G$-invariance of the population distribution suffices to establish a two-family impossibility with quantitative unfaithfulness and stability bounds. We demonstrate this across three structurally distinct instances.
 
 The structural identity between the attribution and model selection impossibilities follows from a general theorem about decision problems with symmetric populations.
 
