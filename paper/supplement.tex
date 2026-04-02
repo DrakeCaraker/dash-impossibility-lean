@@ -34,7 +34,7 @@ The formalization uses 18 axioms total: 6 type/constant declarations
 (\texttt{Model}, \texttt{numTrees}, \texttt{numTrees\_pos}, \texttt{attribution},
 \texttt{splitCount}, \texttt{firstMover}), 2 measure-theoretic infrastructure
 axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}),
-6 domain-specific property axioms, and
+7 domain-specific property axioms, and
 3 query-complexity axioms from Le~Cam's method. Three former axioms
 (\texttt{attribution\_sum\_symmetric}, \texttt{attribution\_variance\_nonneg},
 \texttt{consensus\_variance\_bound})
@@ -43,7 +43,7 @@ from Mathlib's \texttt{ProbabilityTheory.variance}.
 
 \begin{table}[h]
 \centering
-\caption{Complete axiom inventory (17 total).}
+\caption{Complete axiom inventory (18 total).}
 \label{tab:axioms}
 \small
 \begin{tabular}{@{}llp{5.5cm}@{}}
@@ -55,6 +55,7 @@ Split count (first-mover) & \texttt{splitCount\_firstMover} & Gaussian condition
 Split count (non-first-mover) & \texttt{splitCount\_nonFirstMover} & Residual signal after first-mover absorbs $\rho$-component \\
 Global proportionality & \texttt{proportionality\_global} & Uniform contribution model with constant $c$ across models \\
 Cross-group symmetry & \texttt{splitCount\_crossGroup\_symmetric} & DGP symmetry: equal split counts when first-mover elsewhere \\
+Cross-group stability & \texttt{splitCount\_crossGroup\_stable} & Changing first-mover within a group does not affect other groups \\
 Spearman bound & \texttt{spearman\_classical\_bound} & Combinatorial rank argument: tied non-first-movers \\
 Model measurable space & \texttt{modelMeasurableSpace} & Mathlib infrastructure: $\sigma$-algebra on Model \\
 Model measure & \texttt{modelMeasure} & Mathlib infrastructure: probability measure on Model \\
@@ -1153,6 +1154,40 @@ fixed-approximation design (same SHAP samples across models) would
 isolate the model effect; we leave this refinement to future work.
 The high F1 diagnostic correlation ($|r| = 0.871$) suggests the
 genuine instability signal dominates the approximation noise.
+
+\subsection{KernelSHAP Noise vs.\ Model Instability}
+
+To distinguish genuine model instability from KernelSHAP approximation
+noise, we conduct a control experiment: fix a single MLP model
+(\texttt{random\_state=0}) and compute KernelSHAP 20 times with
+\emph{different} random background samples (50 each, seeds 0--19).
+Any observed flip rate is purely due to SHAP sampling noise, not
+model variation.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Source of variation & Unstable pairs & Mean flip & Key pair flip \\
+\midrule
+KernelSHAP noise (bg$=$50) & 47/435 (11\%) & 0.03 & 0.00 \\
+KernelSHAP noise (bg$=$200) & 18/435 (4\%) & 0.02 & 0.00 \\
+Model variation (20 MLPs) & 380/435 (87\%) & 0.28 & 0.40 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Verdict.}
+Model instability dominates KernelSHAP noise by approximately 8:1.
+With 50 background samples, only 11\% of pairs show noise-induced
+flips (mean flip rate 0.03); with 200 background samples, this drops
+to 4\%. The key correlated pair (worst perimeter vs.\ worst area)
+shows \emph{zero} noise-induced flips in both conditions, confirming
+the 40\% flip rate in the NN validation is genuinely driven by model
+variation under random initialization, not KernelSHAP artifacts.
+Increasing background samples from 50 to 200 reduces noise by
+$2.6\times$ at $4\times$ compute cost; the default 50 is adequate
+for detecting model-level instability.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EFFICIENCY AND INSTABILITY
@@ -2548,6 +2583,35 @@ For model validation under SR~11-7, the recommendation is: report
 income and DTI as ``interchangeable key risk drivers'' rather than
 forcing a ranking that would flip under retraining.
 
+\subsection{Lending Club validation (positive control)}
+
+We validate the diagnostic on real Lending Club data (OpenML,
+32{,}581 loans, 22 features after one-hot encoding of categoricals).
+Three correlated groups are detected at $|\rho| > 0.5$:
+person\_age $\leftrightarrow$ cb\_person\_cred\_hist\_length
+($|\rho| = 0.86$), loan\_amnt $\leftrightarrow$
+loan\_percent\_income ($|\rho| = 0.58$), and loan\_int\_rate
+$\leftrightarrow$ cb\_person\_default\_on\_file ($|\rho| = 0.50$).
+
+\paragraph{Result.}
+Zero unstable pairs. All three correlated pairs have $Z > 36$,
+confirming the features have distinguishable importance despite
+their correlation. This is an instructive \emph{positive control}:
+the impossibility theorem predicts instability requires \emph{both}
+collinearity AND similar true importance. Lending Club features are
+correlated but not similarly important (e.g., person\_age contributes
+$3\times$ more than credit history length), so no instability occurs.
+The F5$\to$F1$\to$\DASH{} pipeline correctly identifies this as a
+stable setting, recommending no intervention.
+
+\paragraph{Implication.}
+Not every correlated dataset exhibits attribution instability.
+The diagnostic distinguishes datasets where instability is a genuine
+concern (Breast Cancer, Taiwan Credit Card) from those where it is
+not (Lending Club, California Housing). This selectivity is a
+feature, not a limitation: the impossibility theorem's conditions are
+precise, and the diagnostic inherits that precision.
+
 \subsection{Proportionality axiom validation}
 
 The proportionality axiom ($\varphi_j = c \cdot n_j$ for a
@@ -3199,6 +3263,43 @@ impossibility region (dark) expands with $\rho$. At $\rho \geq 0.95$,
 instability persists for all $\Delta\beta \leq 1$.}
 \label{fig:conditional-threshold}
 \end{figure}
+
+\subsection{Fine-grained causal effect threshold}
+
+We extend the threshold analysis with a finer sweep over
+$\Delta\beta \in \{0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0\}$ at
+$\rho = 0.9$ (20 XGBoost models per setting).
+
+\begin{center}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+$\Delta\beta$ & $\beta_1$ & $\beta_2$ & Marginal flip & Interventional flip \\
+\midrule
+0.00 & 1.00 & 1.00 & 0.505 & 0.505 \\
+0.10 & 1.05 & 0.95 & 0.479 & 0.337 \\
+0.20 & 1.10 & 0.90 & 0.000 & 0.000 \\
+0.30 & 1.15 & 0.85 & 0.000 & 0.000 \\
+0.50 & 1.25 & 0.75 & 0.000 & 0.000 \\
+0.70 & 1.35 & 0.65 & 0.000 & 0.000 \\
+1.00 & 1.50 & 0.50 & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Finding.}
+The transition from instability to stability is sharp, not gradual.
+At $\Delta\beta = 0.10$, both marginal (0.479) and interventional
+(0.337) SHAP remain highly unstable. At $\Delta\beta = 0.20$,
+both snap to zero flips simultaneously. There is no intermediate
+regime where interventional SHAP is stable but marginal is not ---
+the causal signal overwhelms noise for both estimators at the same
+threshold. This means the escape condition is binary: either the
+causal effect difference is large enough to stabilize \emph{all}
+attribution methods, or none are stable. The practical implication:
+``switch to conditional SHAP'' provides no advantage over marginal
+SHAP at the instability boundary; both methods fail or succeed
+together.
 
 \subsection{Causal structure validation: marginal vs.\ interventional SHAP}
 

@@ -24,24 +24,28 @@ The following were verified by running `#print axioms` in Lean 4:
 - `propext`, `Classical.choice`, `Quot.sound` are Lean 4 kernel axioms (standard in all Lean proofs)
 - **ZERO domain-specific property axioms** — the paper's "zero axiom dependencies" claim is verified
 
-## Count Verification
+## Count Verification (updated 2026-04-01)
 
 | Claim in paper | Actual | Match? |
 |---------------|--------|--------|
-| 49 declarations | 49 | ✅ |
-| 15 axioms | 15 | ✅ |
-| 0 sorry | 0 | ✅ |
-| 40 theorems + 9 lemmas | 40 + 9 = 49 | ✅ |
+| 188 theorems+lemmas | 188 | ✅ |
+| 18 axioms | 18 | ✅ |
+| 2 sorry (Gaussian CDF) | 2 | ✅ |
+| 36 Lean files | 36 | ✅ |
 | 7 domain-specific axioms | 7 | ✅ |
+| 3 query-complexity axioms | 3 (Le Cam) | ✅ |
 | 2 infrastructure axioms | 2 (modelMeasurableSpace, modelMeasure) | ✅ |
 | 6 type declarations | 6 | ✅ |
 | 23 references | 23 | ✅ |
+| 32 scripts | 32 | ✅ |
 
-## Axiom Categorization (verified)
+## Axiom Categorization (updated)
 
 **Type declarations (6):** Model, numTrees, numTrees_pos, attribution, splitCount, firstMover
 
 **Measure infrastructure (2):** modelMeasurableSpace, modelMeasure
+
+**Query complexity (3):** testing_constant, testing_constant_pos, le_cam_lower_bound
 
 **Domain-specific (7):**
 1. firstMover_surjective

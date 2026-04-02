@@ -101,13 +101,14 @@ The core impossibility theorem (Levels 0-1) uses **none** of these — only the 
 lake build     # compile everything (~2500 jobs)
 ```
 
-## NeurIPS 2026 Submission
+## Submission
 
-- Paper: `paper/main.tex` (9 pages + supplement)
+- **JMLR** (primary target): `paper/main_jmlr.tex` (~40-50 pages, self-contained). JMLR class: https://jmlr.org/format/
+- **NeurIPS 2026** (backup): `paper/main.tex` (14 pages) + `paper/supplement.tex` (76 pages). Abstract May 4, Paper May 6. Placeholder `neurips_2026.sty` — replace with official style.
+- **arXiv**: Run `paper/scripts/prepare_arxiv.sh` to uncomment authors and fill URLs.
 - Title: "The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity"
-- Abstract deadline: May 4, Paper deadline: May 6
-- Placeholder `neurips_2026.sty` — replace with official style before submission
-- TODO: Add co-author information
+- Authors: Drake Caraker, Bryan Arnold, David Rhoads
+- Companion code: [dash-shap PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255)
 
 ## Do NOT
 

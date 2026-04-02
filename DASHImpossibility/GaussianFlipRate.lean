@@ -49,21 +49,69 @@ theorem gaussianReal_standard_symm :
   rw [gaussianReal_map_neg]
   simp
 
-/-- Φ(0) = 1/2 by symmetry of the standard normal. -/
-theorem Phi_zero : Phi 0 = 1 / 2 := by
-  -- The standard normal is symmetric about 0:
-  -- P(Z ≤ 0) = P(Z ≥ 0) = 1/2
-  -- This requires: cdf μ 0 = 1/2 when μ is symmetric about 0.
-  -- Mathlib does not directly provide this as a lemma, so we sorry.
-  sorry
+/-- Helper: the standard normal Gaussian has no atoms (it's a continuous distribution). -/
+instance : NoAtoms (gaussianReal (0 : ℝ) 1) :=
+  noAtoms_gaussianReal one_ne_zero
 
 /-- Φ(-x) = 1 - Φ(x) by symmetry of the standard normal.
     The standard normal satisfies P(Z ≤ -x) = P(Z ≥ x) = 1 - P(Z ≤ x). -/
 theorem Phi_neg (x : ℝ) : Phi (-x) = 1 - Phi x := by
-  -- This follows from gaussianReal_standard_symm and the relationship
-  -- between cdf of a symmetric measure and complement probabilities.
-  -- Mathlib lacks a direct "cdf_neg_of_symmetric" lemma.
-  sorry
+  -- Strategy: Phi(-x) = μ(Iic(-x)) and Phi(x) = μ(Iic(x))
+  -- By symmetry μ.map(neg) = μ, so μ(neg⁻¹'(Iic(-x))) = μ(Iic(-x))
+  -- neg⁻¹'(Iic(-x)) = Ici(x), so μ(Ici(x)) = μ(Iic(-x))
+  -- μ(Ici(x)) = μ(Ioi(x)) (no atoms) = μ((Iic(x))ᶜ) (compl_Iic) = 1 - μ(Iic(x))
+  -- So Phi(-x) = 1 - Phi(x).
+  have μ_def := gaussianReal_standard_symm
+  unfold Phi
+  -- Work in ENNReal via ofReal_cdf, then convert back
+  have h_prob : IsProbabilityMeasure (gaussianReal (0 : ℝ) 1) := inferInstance
+  -- Step 1: cdf(-x) = μ(Iic(-x)) and we want to show it equals 1 - cdf(x) = 1 - μ(Iic(x))
+  -- Use the fact that μ(Ici x) = μ(Iic (-x)) by symmetry
+  have key : (gaussianReal (0 : ℝ) 1) (Set.Ici x) = (gaussianReal (0 : ℝ) 1) (Set.Iic (-x)) := by
+    -- μ(Ici x) = μ.map(neg)(Ici x) by symmetry
+    conv_lhs => rw [← μ_def]
+    rw [Measure.map_apply (measurable_neg) measurableSet_Ici]
+    congr 1
+    ext y
+    simp
+  -- Step 2: μ(Ici x) = 1 - μ(Iic x) (using no atoms: Ici =ᵐ Ioi, and Ioi = (Iic)ᶜ)
+  have h_ici : (gaussianReal (0 : ℝ) 1) (Set.Ici x) = 1 - (gaussianReal (0 : ℝ) 1) (Set.Iic x) := by
+    have h_ae : (Set.Ici x : Set ℝ) =ᵐ[gaussianReal (0 : ℝ) 1] Set.Ioi x :=
+      (Ioi_ae_eq_Ici (μ := gaussianReal (0 : ℝ) 1)).symm
+    rw [measure_congr h_ae, ← Set.compl_Iic]
+    exact prob_compl_eq_one_sub measurableSet_Iic
+  -- Step 3: combine to get cdf(-x) = 1 - cdf(x)
+  -- Work directly with ENNReal then convert
+  have lhs_eq : ENNReal.ofReal (cdf (gaussianReal (0 : ℝ) 1) (-x)) =
+      (gaussianReal (0 : ℝ) 1) (Set.Iic (-x)) := ofReal_cdf _ _
+  have rhs_eq : ENNReal.ofReal (cdf (gaussianReal (0 : ℝ) 1) x) =
+      (gaussianReal (0 : ℝ) 1) (Set.Iic x) := ofReal_cdf _ _
+  -- From key and h_ici: μ(Iic(-x)) = μ(Ici(x)) = 1 - μ(Iic(x))
+  rw [← key] at lhs_eq
+  rw [h_ici] at lhs_eq
+  -- Now lhs_eq : ofReal(cdf(-x)) = 1 - μ(Iic x)
+  -- and rhs_eq : ofReal(cdf(x)) = μ(Iic x)
+  rw [← rhs_eq] at lhs_eq
+  -- lhs_eq : ofReal(cdf(-x)) = 1 - ofReal(cdf(x))
+  have h_le : cdf (gaussianReal (0 : ℝ) 1) x ≤ 1 := cdf_le_one _ _
+  have h_nn : 0 ≤ cdf (gaussianReal (0 : ℝ) 1) x := cdf_nonneg _ _
+  have h_nn_neg : 0 ≤ cdf (gaussianReal (0 : ℝ) 1) (-x) := cdf_nonneg _ _
+  -- Convert the ENNReal equation to ℝ by applying toReal to both sides
+  have := congr_arg ENNReal.toReal lhs_eq
+  rw [ENNReal.toReal_ofReal h_nn_neg] at this
+  have h_le_ennreal : ENNReal.ofReal (cdf (gaussianReal (0 : ℝ) 1) x) ≤ 1 := by
+    rw [ENNReal.ofReal_le_one]
+    exact h_le
+  rw [ENNReal.toReal_sub_of_le h_le_ennreal (ENNReal.one_ne_top)] at this
+  simp only [ENNReal.toReal_one, ENNReal.toReal_ofReal h_nn] at this
+  linarith
+
+/-- Φ(0) = 1/2 by symmetry of the standard normal. -/
+theorem Phi_zero : Phi 0 = 1 / 2 := by
+  -- From Phi_neg with x = 0: Phi(-0) = 1 - Phi(0), i.e. Phi(0) = 1 - Phi(0)
+  have h := Phi_neg 0
+  simp at h
+  linarith
 
 /-! ### Flip Rate Formula -/
 
