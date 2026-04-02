@@ -635,7 +635,69 @@ No aggregation method $A'$ simultaneously achieves $U_{jk}(A') < 0$ and $S_{jk}(
 \DASH{} is the unique method that: (1) achieves zero within-group unfaithfulness (ties for symmetric features); (2) achieves the Cram\'er--Rao variance bound $\sigma^2/M$ for ranking stability; and (3) is the minimum-variance unbiased estimator of $\E[\varphi_j]$ among \emph{all} estimators (not just linear ones), by the Rao--Blackwell theorem: since the sufficient statistic for $\mu_j$ from i.i.d.\ observations is $\sum \varphi_j(f_i)$, and $\bar\varphi_j$ is a function of this sufficient statistic, it dominates any estimator that is not.
 
 \paragraph{Comparison with nonlinear aggregations.}
-The sample median has asymptotic relative efficiency $2/\pi \approx 0.637$ relative to the mean (requiring $\pi/2 \approx 1.57$ times as many models). The 5\%-trimmed mean achieves ARE $= 0.992$ with modest robustness. For standard ML training procedures, \DASH{} (the mean) is strictly more efficient.
+
+\begin{proposition}[Median is less efficient]
+\label{prop:median}
+For i.i.d.\ observations from a distribution with mean $\mu$,
+variance $\sigma^2$, and density $p$, the sample median has
+asymptotic variance:
+\[
+    \Var(\text{median}) = \frac{1}{4M\, p(\text{med})^2}
+\]
+where $\text{med}$ is the population median.
+For the normal distribution, $p(\mu) = 1/(\sigma\sqrt{2\pi})$,
+giving $\Var(\text{median}) = \frac{\pi\sigma^2}{2M}$.
+The asymptotic relative efficiency (ARE) of the median vs.\
+the mean is:
+\[
+    \text{ARE}(\text{median}, \text{mean}) = \frac{2}{\pi} \approx 0.637.
+\]
+The median requires $\pi/2 \approx 1.57$ times as many models to
+achieve the same stability as \DASH{}.
+\end{proposition}
+
+\begin{proof}
+Standard asymptotic statistics (van der Vaart, \emph{Asymptotic
+Statistics}, Theorem 21.6). The sample median is asymptotically
+normal with variance $1/(4n\,p(m)^2)$. Substituting the Gaussian
+density at the mean gives the result.
+\end{proof}
+
+\begin{proposition}[Trimmed mean interpolates]
+\label{prop:trimmed}
+The $\alpha$-trimmed mean (discarding the top and bottom $\alpha$
+fraction of observations) has ARE relative to the mean of:
+\[
+    \text{ARE}(\text{trimmed}_\alpha, \text{mean}) =
+    \frac{(1-2\alpha)\sigma^2}{\sigma^2_\alpha}
+\]
+where $\sigma^2_\alpha$ is the variance of the truncated distribution.
+For Gaussian data:
+\begin{center}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+$\alpha$ & 0 (mean) & 0.05 & 0.10 & 0.25 & 0.50 (median) \\
+\midrule
+ARE & 1.000 & 0.992 & 0.966 & 0.862 & 0.637 \\
+\bottomrule
+\end{tabular}
+\end{center}
+For Gaussian attributions, trimming offers negligible robustness
+benefit at a measurable efficiency cost. The 10\%-trimmed mean
+requires $1/0.966 \approx 3.5\%$ more models than \DASH{} for the
+same stability.
+\end{proposition}
+
+\begin{remark}[When to prefer the median]
+The median has better breakdown point (50\% vs.\ 0\%) and is
+preferable when the attribution distribution is heavy-tailed
+(e.g., contains outlier models). For standard ML training procedures
+(XGBoost, random forests) where attributions are well-behaved,
+\DASH{} (the mean) is strictly more efficient. For adversarial
+settings where some models may be corrupted, the median or trimmed
+mean provides robustness at the cost of requiring more models.
+\end{remark}
 
 \subsection{DASH Robustness and Breakdown Point}
 \label{sec:dash-robustness}
@@ -801,7 +863,46 @@ $\infty$ & 1 & 0 & Partial (ties) \\
 \end{center}
 
 \paragraph{Previous results as corollaries.}
-The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is the statement that $(1, 0, \text{complete})$ lies outside the achievable set (Step~4). The \DASH{} Pareto Optimality (Theorem~\ref{thm:dash-optimal}) is the statement that $\mathcal{B}$ is the Pareto frontier of $\{(S, U) : U = 0\}$. The F1 characterization (Theorem~\ref{thm:testable}) describes the boundary between families. The FIM Impossibility (Theorem~\ref{thm:fim-impossibility}) provides a sufficient condition for the Rashomon property (the prerequisite).
+
+\begin{corollary}[Theorem 1 as a corollary]
+The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is the statement that the
+point $(1, 0, \text{complete})$ lies outside the achievable set.
+This follows from Step~4 of Theorem~\ref{thm:design-space-main}.
+\end{corollary}
+
+\begin{corollary}[F2 as a corollary]
+The DASH Pareto Optimality (Theorem~\ref{thm:dash-optimal}) is the
+statement that $\mathcal{B}$ is the Pareto frontier of
+$\{(S, U) : U = 0\}$, parameterized by $M$. This follows from
+Steps~2--3 of Theorem~\ref{thm:design-space-main}.
+\end{corollary}
+
+\begin{corollary}[Path convergence as a corollary]
+The relaxation path convergence (Theorem~\ref{thm:path-convergence})
+is the statement that \emph{both} relaxation paths (drop faithfulness,
+drop completeness) converge to $\mathcal{B}$ as $M \to \infty$.
+Dropping completeness directly enters $\mathcal{B}$ (DASH with ties).
+Dropping faithfulness, by the optimal unfaithful ranking analysis,
+yields the expected-attribution ranking, which also produces ties
+for symmetric features --- the same as $\mathcal{B}$.
+\end{corollary}
+
+\begin{corollary}[F1 as a corollary]
+The Rashomon Characterization (Theorem~\ref{thm:testable}) describes
+the \emph{boundary between families}: when $Z_{jk} < 1.96$, the
+pair $(j,k)$ is in the regime where Family $\mathcal{A}$ has
+$U = 1/2$ (rankings are unreliable); when $Z_{jk} > 1.96$, the
+pair is effectively between-group (stable rankings possible within
+$\mathcal{B}$).
+\end{corollary}
+
+\begin{corollary}[F3 as a corollary]
+The FIM Impossibility (Theorem~\ref{thm:fim-impossibility}) provides
+a sufficient condition for the Rashomon property (the prerequisite
+for Theorem~\ref{thm:design-space-main}): when the FIM eigenvalue
+$\lambda_-$ is small along $e_j - e_k$, the Rashomon set is large,
+and the achievable set is restricted to $\mathcal{A} \cup \mathcal{B}$.
+\end{corollary}
 
 \begin{figure}[t]
 \centering
@@ -857,6 +958,7 @@ The Symmetric Bayes Dichotomy provides a reusable proof technique for any domain
 \subsection{Instance 1: Feature Attribution}
 
 \begin{corollary}[Feature attribution as instance]
+\label{cor:attribution-instance}
 The Attribution Impossibility (Theorem~\ref{thm:impossibility}) and Design Space Theorem (Theorem~\ref{thm:design-space-main}) are instances of the Symmetric Bayes Dichotomy with $\Theta =$ within-group feature orderings, $G =$ symmetric group on group members, $\mathcal{D} =$ trained models.
 \end{corollary}
 
@@ -906,6 +1008,14 @@ The model selection impossibility explains why cross-validation rankings are noi
 \paragraph{Connection to cross-validation instability.}
 The model selection impossibility is not merely an analogy---it explains a well-known practical phenomenon. When two models have similar cross-validation scores, different folds often rank them differently. Practitioners typically respond by increasing the number of folds or repeating cross-validation. The design space theorem shows this is exactly the $M$-parameterization: increasing folds moves along Family~$\mathcal{B}'$ toward higher stability, but at the cost of acknowledging ties for similar-performance models. Model ensembling (training all $K$ candidates and averaging predictions) is the model selection analogue of \DASH{}: it avoids the impossible selection problem entirely by using all models simultaneously.
 
+\begin{corollary}[Model selection as instance]
+\label{cor:model-selection-instance}
+The Model Selection Impossibility
+(Theorem~\ref{thm:model-selection}) is an instance with
+$\Theta =$ model rankings, $G =$ permutations of equal-loss models,
+$\mathcal{D} =$ validation splits.
+\end{corollary}
+
 \subsection{Instance 3: Causal Discovery under Markov Equivalence}
 
 This instance has a \emph{different} and \emph{variable-size} symmetry group, confirming the technique's generality beyond binary orbits.
@@ -949,6 +1059,15 @@ The unfaithfulness bound $U \geq 1/|G \cdot \theta|$ yields $U \geq 1/2$ for cha
 Instances 1--2 (feature attribution and model selection) both have binary orbits ($|G \cdot \theta| = 2$) with unfaithfulness bound $U \geq 1/2$. Instance~3 has variable-size orbits ($|G \cdot \theta| = 2, 6, \ldots$) with unfaithfulness bound $U \geq 1/|[G^*]|$, which can be much smaller than $1/2$ for large equivalence classes. This demonstrates that the Symmetric Bayes Dichotomy is not an artifact of binary symmetry but applies to arbitrary finite group actions, with the unfaithfulness bound adapting to the orbit structure.
 
 Algorithms like PC and GES correctly output CPDAGs (Family $\mathcal{B}''$) precisely because complete orientation of Markov-equivalent edges is impossible from observational data alone. Interventional data breaks the symmetry---analogous to conditional SHAP breaking symmetry when $\beta_j \neq \beta_k$.
+
+\begin{corollary}[Causal discovery as SBD instance]
+\label{cor:causal-discovery-instance}
+The Causal Discovery Impossibility (Theorem~\ref{thm:causal-discovery})
+is an instance of the Symmetric Bayes Dichotomy with
+$\Theta =$ edge orientations in $[G^*]$,
+$G = G_{\text{CPDAG}}$ (automorphism group of the CPDAG),
+$\mathcal{D} =$ observational datasets.
+\end{corollary}
 
 \paragraph{Connection to classical invariant decision theory.}
 The Symmetric Bayes Dichotomy is related to the theory of invariant decision rules \cite{lehmann2005testing}. Our contribution is the \emph{reduction template}: verifying $G$-invariance of the population distribution suffices to establish a two-family impossibility with explicit bounds. We demonstrate this across three structurally distinct instances (binary feature transpositions, binary model permutations, and CPDAG automorphisms of variable size) with different symmetry groups.
@@ -1137,8 +1256,28 @@ The classical non-identifiability under collinearity ($\Var(\hat\beta_j - \hat\b
 \paragraph{Loss landscape geometry.}
 The $\varepsilon$-Rashomon set $R_\varepsilon$ is approximately an ellipsoid whose projection onto the feature-importance axis $\varphi_j - \varphi_k$ crosses zero. The level sets of the loss landscape contain \emph{ridges} along $e_j - e_k$---curves of near-constant loss along which feature importance redistributes between $j$ and $k$ without changing model quality. The same flatness that makes optimization easy (flat minima generalize well) makes attribution hard (the flat direction is the feature-importance direction). This connects the attribution impossibility to the broader literature on loss landscape geometry, flat minima, and mode connectivity.
 
-\paragraph{Extension to neural networks via NTK.}
-For overparameterized neural networks in the NTK regime, the neural tangent kernel plays the role of the Fisher information matrix. If the NTK has a small eigenvalue along the direction corresponding to swapping features $j$ and $k$ (a consequence of feature collinearity), the same ellipsoidal argument applies. This extension requires: (i) uniform NTK approximation bounds across the Rashomon set, (ii) a spectral gap argument relating feature correlation to NTK eigenvalue separation, and (iii) control of the finite-width correction. None are available in the current literature; we include this to suggest the research direction.
+\begin{remark}[NTK extension --- conjectural]
+For overparameterized neural networks in the NTK regime
+(infinite width), the training dynamics are governed by the
+neural tangent kernel $\Theta(x, x') = \nabla_\theta f_\theta(x)^T
+\nabla_\theta f_\theta(x')$. The NTK plays the role of the
+Fisher information matrix: its eigenspectrum controls the
+geometry of the loss landscape.
+
+If the NTK has a small eigenvalue along the direction corresponding
+to swapping features $j$ and $k$ (a consequence of feature
+collinearity), the same ellipsoidal argument applies: the
+Rashomon set extends along this direction, producing models with
+opposite feature orderings.
+
+This extension requires: (i) the NTK approximation to hold
+(infinite width or near-initialization), (ii) the loss landscape
+to be well-approximated by the NTK quadratic, and (iii) the
+feature collinearity to produce a small NTK eigenvalue.
+Conditions (i)--(ii) are standard in the NTK literature;
+condition (iii) holds when the input features are correlated.
+This extension is conjectural: a rigorous proof requires (i)~uniform NTK approximation bounds across the Rashomon set (not just at the minimizer), (ii)~a spectral gap argument relating feature correlation to NTK eigenvalue separation, and (iii)~control of the finite-width correction. None of these are available in the current literature. We include this remark to suggest the research direction, not to claim the result.
+\end{remark}
 
 \subsection{Query Complexity Lower Bound}
 \label{sec:query}
@@ -1173,7 +1312,19 @@ The $Z$-test detects a gap $\Delta_0$ with error $\leq 1/3$ using $M = O(\sigma_
 The $Z$-test rejects $H_0$ when $|\bar{D}|/(\hat\sigma/\sqrt{M}) > z_{\alpha/2}$. Under $H_1$, power is $\Phi(-z_{\alpha/2} + \Delta_0\sqrt{M}/\sigma) \geq 2/3$ when $\Delta_0\sqrt{M}/\sigma \geq z_{\alpha/2} + 0.43$. For $\alpha = 0.05$: $M \geq (\sigma/\Delta_0)^2(1.96+0.43)^2 \approx 5.7\sigma^2/\Delta_0^2$.
 \end{proof}
 
-No algorithm---including methods based on gradient information, loss curvature, or Fisher information---can certify ranking stability without training $\Omega(\sigma_{jk}^2/\Delta_{jk}^2)$ models. Each model training provides one ``bit'' of evidence about the sign of $\Delta_{jk}$; when the signal-to-noise ratio is small, many bits are needed.
+\begin{remark}[Instability detection is inherently expensive]
+Theorem~\ref{thm:query-complexity} shows that no algorithm---including
+methods based on gradient information, loss curvature, or Fisher
+information---can certify ranking stability without training
+$\Omega(\sigma_{jk}^2/\Delta_{jk}^2)$ models.
+Intuitively, each model training provides one ``bit'' of evidence about
+the sign of $\Delta_{jk}$, and when the signal-to-noise ratio
+$\Delta_{jk}/\sigma_{jk}$ is small (the collinear regime), many bits are
+needed.
+The F1 diagnostic with $M{=}5$ is a fast \emph{screen} with limited
+power, not a certifier; the optimality result applies to the $Z$-test
+run at the information-theoretically optimal sample size.
+\end{remark}
 
 \subsection{Rashomon Inevitability}
 \label{sec:inevitability}
@@ -1200,20 +1351,73 @@ When $\rho_{\mathrm{post}} = \rho$ (the intervention does not reduce the correla
 Under $H_0$, the expected response to $\text{do}(X_j = x)$ is $(\beta + \delta + \rho_{\mathrm{post}}(\beta - \delta))x$; under $H_1$ it is $(\beta - \delta + \rho_{\mathrm{post}}(\beta + \delta))x$. The difference in slopes is $2\delta(1 - \rho_{\mathrm{post}})$. With noise variance $\sigma^2$ and $n$ observations, the Neyman--Pearson sample size formula gives the result.
 \end{proof}
 
-The attribution ratio is $1/(1-\rho^2)$, which diverges as $1/(2(1-\rho))$ near $\rho = 1$; the causal sample complexity is $\Omega(1/(1-\rho)^2)$---a faster divergence. Causal identification under soft interventions is \emph{harder} than observational attribution instability. The shared singularity at $\rho = 1$ reflects a common root cause: collinearity makes features observationally interchangeable. Hard interventions ($\rho_{\mathrm{post}} = 0$) resolve both problems: sample complexity becomes $O(\sigma^2/\delta^2)$, independent of $\rho$.
+\begin{remark}[Comparison with the attribution ratio]
+The attribution ratio is $1/(1-\rho^2) = 1/((1-\rho)(1+\rho))$.
+The causal sample complexity scales as $1/(1-\rho_{\mathrm{post}})^2$.
+These have the same leading singularity as $\rho \to 1$ (both
+diverge as $\Omega(1/(1-\rho)^2)$ when $\rho_{\mathrm{post}} = \rho$),
+but they are \textbf{not identical}:
+\begin{itemize}
+    \item The attribution ratio is $1/(1-\rho^2)$, which diverges
+      as $1/(2(1-\rho))$ near $\rho = 1$.
+    \item The causal sample complexity is $\Omega(1/(1-\rho)^2)$
+      --- a \emph{faster} divergence.
+\end{itemize}
+This difference is meaningful: causal identification under soft
+interventions is \emph{harder} than observational attribution
+instability. The attribution ratio captures the \emph{variance
+amplification} (a ratio of quantities), while the causal barrier
+captures \emph{signal-to-noise} (which squares the denominator).
+
+The match is at the level of the singularity structure (both are
+controlled by $1-\rho$) but not at the level of exponents.
+The shared singularity at $\rho = 1$ reflects a common root cause:
+collinearity makes features observationally interchangeable, whether
+the task is attribution or causal identification.
+\end{remark}
+
+\paragraph{Hard interventions resolve both problems.}
+When the intervention fully breaks the correlation
+($\rho_{\mathrm{post}} = 0$), the sample complexity reduces to
+$n_{\mathrm{int}} = O(\sigma^2/\delta^2)$---independent of $\rho$.
+This parallels the attribution impossibility: perfect interventions
+break the symmetry (just as knowing the true causal graph breaks
+the Rashomon property), while soft interventions preserve it.
 
 \subsection{Local vs.\ Global Attribution Instability}
 \label{sec:local-global}
 
 The impossibility as stated concerns \emph{global} attributions (mean $|\text{SHAP}|$ across data points). We now show that \emph{local} (instance-level) attributions are at least as unstable.
 
-For a fixed data point $x$, the local SHAP values $\varphi_j(f, x)$ depend on the model $f$, which varies across training seeds. The global attribution $\varphi_j(f) = \E_x[|\varphi_j(f, x)|]$ averages over data points, which can only reduce variance (by Jensen's inequality applied to the convex function $|\cdot|$):
+\begin{remark}[Local instability dominates global]
+\label{rem:local-instability}
+For a fixed data point $x$, the local SHAP values
+$\varphi_j(f, x)$ depend on the model $f$, which varies across
+training seeds. The global attribution
+$\varphi_j(f) = \mathbb{E}_x[|\varphi_j(f, x)|]$ averages over
+data points, which can only reduce variance (by Jensen's inequality
+applied to the convex function $|\cdot|$):
 \[
-    \Var_f\!\big(\varphi_j(f)\big) = \Var_f\!\big(\E_x[|\varphi_j(f,x)|]\big) \leq \E_x\!\big[\Var_f(|\varphi_j(f,x)|)\big].
+    \Var_f\!\big(\varphi_j(f)\big)
+    = \Var_f\!\big(\mathbb{E}_x[|\varphi_j(f,x)|]\big)
+    \leq \mathbb{E}_x\!\big[\Var_f(|\varphi_j(f,x)|)\big].
 \]
-The right side is the average local instability; the left side is the global instability. Since the flip rate is a monotone function of the variance-to-gap ratio $\sigma/\Delta$, and averaging reduces $\sigma$ without changing $\Delta$, the global flip rate is a lower bound on the average local flip rate.
+The right side is the average local instability; the left side is the
+global instability. Since the flip rate is a monotone function of
+the variance-to-gap ratio $\sigma/\Delta$, and averaging reduces
+$\sigma$ without changing $\Delta$ (the population gap is the same
+at every $x$ under DGP symmetry), the global flip rate is a lower
+bound on the average local flip rate.
+\end{remark}
 
-If global rankings are unstable (flip rate $> 10\%$), local rankings at individual data points are at least as unstable on average. Practitioners who report per-instance SHAP explanations face the same or worse instability. The F1 diagnostic (computed on global attributions) is therefore a conservative screen for local instability.
+\paragraph{Implication.}
+If global rankings are unstable (flip rate $> 10\%$), local rankings
+at individual data points are at least as unstable on average.
+Practitioners who report per-instance SHAP explanations (e.g.,
+``for this patient, feature X is most important'') face the same
+or worse instability as those reporting global rankings. The F1
+diagnostic (computed on global attributions) is therefore a
+conservative screen for local instability as well.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 9. DIAGNOSTICS
@@ -1615,11 +1819,85 @@ for detecting model-level instability.
 
 \subsection{SHAP Efficiency and Attribution Instability}
 
-SHAP's efficiency axiom ($\sum_j \varphi_j(f,x) = f(x) - \E[f(X)]$ for every model $f$ and point $x$) has a subtle relationship with ranking instability. Under efficiency with equal marginal variances $\sigma^2$, the within-model covariance is $\text{Cov}(\varphi_j, \varphi_k) = -\sigma^2/(m-1)$ and the difference variance is $\Var(\varphi_j - \varphi_k) = 2\sigma^2 \cdot m/(m-1)$---an amplification factor of $m/(m-1)$ relative to independent attributions ($2$ for $m=2$, approaching $1$ for large $m$).
+SHAP's efficiency axiom ($\sum_j \varphi_j(f,x) = f(x) - \E[f(X)]$ for every model $f$ and point $x$) has a subtle relationship with ranking instability.
 
-However, the ranking flip rate is an \emph{across-model} quantity, and the efficiency constraint is fundamentally different across models. The constant $C(f,x) = f(x) - \E[f(X)]$ varies across models, so the within-model negative covariance does not transfer. The across-model covariance $\text{Cov}_f(\varphi_j(f), \varphi_k(f))$ can be positive, zero, or negative---efficiency places no constraint on it.
+\subsubsection{Within-model amplification}
+
+\begin{proposition}[Efficiency-induced negative correlation]
+\label{prop:efficiency-negcor}
+Let $\varphi_1, \ldots, \varphi_m$ be SHAP values for $m$ features in a
+group whose total attribution is $C$ (fixed for a given model $f$ and
+data point $x$), i.e., $\sum_{i=1}^m \varphi_i = C$.  Suppose all
+features have the same marginal variance $\sigma^2$ under some
+perturbation of the data point.  Then for any $j \neq k$:
+\[
+  \mathrm{Cov}(\varphi_j, \varphi_k) = -\frac{\sigma^2}{m-1},
+\]
+\[
+  \mathrm{Var}(\varphi_j - \varphi_k)
+  = 2\sigma^2 \cdot \frac{m}{m-1}.
+\]
+For an unconstrained method with independently computed attributions
+(zero covariance), the same difference has variance $2\sigma^2$.
+The amplification factor is $m/(m-1)$.
+\end{proposition}
+
+\begin{proof}
+From $\sum_i \varphi_i = C$ (constant), $\mathrm{Var}(\sum_i \varphi_i) = 0$.
+Expanding:
+\[
+  0 = m\sigma^2 + m(m-1)\mathrm{Cov}(\varphi_j, \varphi_k)
+  \implies \mathrm{Cov}(\varphi_j, \varphi_k) = -\frac{\sigma^2}{m-1}.
+\]
+Then $\mathrm{Var}(\varphi_j - \varphi_k) = 2\sigma^2 - 2(-\sigma^2/(m-1))
+= 2\sigma^2(1 + 1/(m-1)) = 2\sigma^2 \cdot m/(m-1)$.
+\end{proof}
+
+\begin{corollary}[Group-size dependence]
+\label{cor:groupsize}
+The amplification factor $m/(m-1)$ equals $2$ for $m=2$ (pair of
+collinear features), $3/2$ for $m=3$, and approaches $1$ as
+$m \to \infty$.  The efficiency-induced amplification is therefore
+worst for small groups and negligible for large groups.
+\end{corollary}
+
+\subsubsection{Across-model non-amplification}
+
+\begin{proposition}[Efficiency does not constrain across-model covariance]
+\label{prop:no-across-model}
+Let $\varphi_j(f)$ denote the mean absolute SHAP value for feature $j$
+under model $f$.  The efficiency axiom states that
+$\sum_j \varphi_j^{\mathrm{signed}}(f,x) = f(x) - \mathbb{E}[f(X)]$
+for each fixed $(f,x)$.  However:
+\begin{enumerate}
+\item The efficiency constant $C(f,x) = f(x) - \mathbb{E}[f(X)]$
+  \emph{varies across models}~$f$, because different models produce
+  different predictions.
+\item The group's share of the total,
+  $\sum_{i \in \text{group}} \varphi_i(f,x)$, also varies across
+  models (it depends on how much of the prediction the group captures
+  in model $f$).
+\item Taking absolute values or averaging over data points further
+  breaks the linear constraint.
+\end{enumerate}
+Therefore, $\mathrm{Var}_f(\sum_{i \in \text{group}} \varphi_i(f))
+\neq 0$ in general, and the negative covariance
+$\mathrm{Cov}_f(\varphi_j(f), \varphi_k(f)) = -\sigma^2/(m-1)$
+does \emph{not} follow from efficiency.
+\end{proposition}
 
 The lower instability of SHAP relative to permutation importance (41\% vs.\ 91\% unstable pairs) is driven by SHAP's coalition-averaging reducing the marginal variance $\sigma^2$. The efficiency axiom amplifies within-model differences but does not increase across-model flip rates.
+
+\begin{remark}[Practical implication]
+The efficiency axiom is often cited as a desirable property of SHAP.
+Our analysis shows that its instability implications are nuanced:
+efficiency amplifies within-model attribution differences (making the
+gap between $\varphi_j$ and $\varphi_k$ more extreme for a given model),
+but this does not translate to higher across-model flip rates.  The
+dominant factor for across-model instability is the marginal variance
+$\sigma^2$, which is determined by the attribution algorithm's
+averaging structure, not by the efficiency axiom.
+\end{remark}
 
 \subsection{High-Dimensional Scalability ($P = 500$)}
 
@@ -2154,6 +2432,7 @@ Beyond certifying correctness, the Lean formalization served as a bug-finding me
 \subsection{Gaussian Binary Quantization: Full Derivation}
 
 \begin{proposition}[First-stump variance capture]
+\label{prop:first-stump}
 For the first boosting round on $n$ Gaussian training samples, the stump splits at the empirical median $\hat{m}$, satisfying $|\hat{m}| = O_p(\sigma/\sqrt{n})$. The variance captured is:
 \[
     \alpha_1(n) = \frac{2}{\pi}\left(1 - \frac{\pi(\pi - 2)}{2n} + O(n^{-2})\right)
@@ -2341,7 +2620,30 @@ Attribution setup: $F$ is required to be a \emph{constant function} (stability: 
 
 \subsection{Assessment}
 
-The Attribution Impossibility and Arrow's theorem are \emph{analogous} but not instances of a common theorem in any non-trivial sense. One can define an abstract framework that subsumes both, but the common framework's ``impossibility theorem'' would be: ``if instances disagree and the aggregation rule must be constant, faithfulness is impossible''---a one-line observation, not a theorem. Arrow's actual content (the impossibility persists even when the rule \emph{is} allowed to depend on all voters) has no analogue in attribution. The attribution impossibility's actual content (the quantitative divergence $1/(1-\rho^2)$, the resolution via ensemble averaging, the connection to the Rashomon set's geometry) has no analogue in Arrow's setting. The closest true statement is: \emph{both theorems arise from the tension between local coherence (respecting individual views) and global consistency (producing a single ranking), when the individuals disagree}. This is a useful heuristic but not a formal unification.
+\begin{remark}[No non-trivial common generalization]
+\label{rem:no-arrow-unification}
+The Attribution Impossibility and Arrow's theorem are \emph{analogous}
+but not \emph{instances of a common theorem} in any non-trivial sense.
+One can define an abstract framework that subsumes both as shown above,
+but:
+\begin{enumerate}
+    \item The common framework's ``impossibility theorem'' would be:
+      ``if instances disagree and the aggregation rule must be constant,
+      faithfulness is impossible.'' This is a one-line observation,
+      not a theorem.
+    \item Arrow's actual content (the impossibility persists even when
+      the rule \emph{is} allowed to depend on all voters) has no
+      analogue in the attribution setting.
+    \item The attribution impossibility's actual content (the
+      quantitative divergence $1/(1-\rho^2)$, the resolution via
+      ensemble averaging, the connection to the Rashomon set's geometry)
+      has no analogue in Arrow's setting.
+\end{enumerate}
+The closest true statement is: \emph{both theorems arise from the
+tension between local coherence (respecting individual views) and
+global consistency (producing a single ranking), when the individuals
+disagree}. This is a useful heuristic but not a formal unification.
+\end{remark}
 
 \paragraph{Relationship to Sen's liberalism paradox.}
 A closer structural analogue may be Sen's (1970) impossibility of a Paretian liberal, which concerns a setting where individual ``rights'' (each person's ranking of certain pairs should be respected) conflict with the Pareto criterion. The attribution impossibility can be viewed as a Sen-type result where each model has the ``right'' to determine the ranking of features (faithfulness), but these rights conflict across models. However, we do not pursue this further, as the connection remains at the level of analogy rather than formal subsumption.
@@ -2363,19 +2665,77 @@ For three features, the attribution map sends seeds to rankings in $S_3$ (6 elem
 
 For $m$ features, the attribution vector $(\varphi_1(f_s), \ldots, \varphi_m(f_s))$ lives in $\R^m$. The ranking is determined by the \emph{chamber} of the \emph{braid arrangement} (the hyperplane arrangement $\{x_i = x_j : i \neq j\}$) containing the attribution vector. The chambers are the cones of the \emph{permutohedron}.
 
-One might hope the attribution map has a non-trivial winding number around the intersection of hyperplanes, giving a quantitative lower bound on ranking flips. This does not work for two reasons: (1) the complement of the braid arrangement in $\R^m$ is simply connected for $m \geq 3$ (the codimension of each hyperplane is 1, so removing hyperplanes gives a space whose fundamental group is the pure braid group on $m$ strands; but we would need the image to be a \emph{loop} in this space, which requires additional structure not present in the attribution problem); (2) even if a winding number existed, it would count signed crossings, and the flip rate (unsigned) is already captured by $1/(1-\rho^2)$.
+\begin{remark}[No winding number content]
+For $m \geq 3$, one might hope that the attribution map
+$s \mapsto (\varphi_1(f_s), \ldots, \varphi_m(f_s))$ has a
+non-trivial winding number around the intersection of hyperplanes
+$\{x_j = x_k\}$, which would give a \emph{quantitative} lower
+bound on the number of chamber crossings (ranking flips).
 
-There is one setting where topology could add genuine content: if the model space $\mathcal{S}$ has the structure of a manifold and the attribution map is smooth, then Morse theory could bound the number of critical points (ranking transitions). However, this requires $\mathcal{S}$ to be a smooth manifold, $g = \varphi_j - \varphi_k$ to be a Morse function, and knowing the topology of $\mathcal{S}$. None of these hold for practical training algorithms (XGBoost's seed space is discrete; neural net loss landscapes are non-smooth).
+This does not work for two reasons:
+\begin{enumerate}
+    \item The complement of the braid arrangement in
+      $\mathbb{R}^m$ is simply connected for $m \geq 3$
+      (the codimension of each hyperplane is 1, so removing
+      hyperplanes from $\mathbb{R}^m$ gives a space whose
+      fundamental group is the pure braid group on $m$ strands;
+      but we would need the image to be a \emph{loop} in this
+      space, which requires additional structure not present in
+      the attribution problem).
+    \item Even if a winding number existed, it would count
+      \emph{signed} crossings. The flip rate (unsigned crossings)
+      is already captured by the direct algebraic bound
+      $1/(1-\rho^2)$ without topological machinery.
+\end{enumerate}
+\end{remark}
+
+\begin{remark}[What topology \emph{could} contribute]
+There is one setting where topology adds genuine content: if the
+model space $\mathcal{S}$ has the structure of a manifold (e.g.,
+a torus of hyperparameters) and the attribution map is smooth,
+then Morse theory could bound the number of critical points
+(ranking transitions). Specifically, if the attribution difference
+$g(s) = \varphi_j(f_s) - \varphi_k(f_s)$ is a Morse function on
+$\mathcal{S}$, the number of sign changes of $g$ is bounded below
+by the sum of Betti numbers of $\mathcal{S}$.
+
+However, this requires: (a) $\mathcal{S}$ to be a smooth manifold,
+(b) $g$ to be a Morse function, and (c) knowing the topology of
+$\mathcal{S}$. None of these hold for practical training algorithms
+(XGBoost's seed space is discrete; neural net loss landscapes are
+non-smooth). We therefore do not pursue this direction.
+\end{remark}
 
 \subsection{Assessment}
 
-The Attribution Impossibility is fundamentally a \emph{combinatorial} result (conflicting preferences cannot all be respected), not a topological one. It holds for arbitrary model spaces (including finite, discrete spaces with no topology). Attempts to extract topological content either reduce to the trivial connectedness argument or require unjustified smoothness assumptions.
+\begin{remark}[Topology adds no content]
+\label{rem:topology-trivial}
+The Attribution Impossibility is fundamentally a \emph{combinatorial}
+result (conflicting preferences cannot all be respected), not a
+\emph{topological} one. The impossibility holds for arbitrary model
+spaces (including finite, discrete spaces with no topology). Attempts
+to extract topological content either reduce to the trivial
+connectedness argument or require unjustified smoothness assumptions
+that add no quantitative power beyond what the algebraic
+$1/(1-\rho^2)$ ratio already provides.
+\end{remark}
 
 \section{On Categorical/Axiomatic Strengthening}
 
 \subsection{The Trivial Version}
 
-Let $A_1, \ldots, A_n$ be any finite set of axioms on an attribution method $\varphi$. If $A_1 \wedge \cdots \wedge A_n$ implies faithfulness (the ranking reflects model attributions), stability (the ranking is model-independent), and completeness (the ranking decides all pairs), then $A_1 \wedge \cdots \wedge A_n \to \bot$ under the Rashomon property. This is immediate: if the conjunction implies $F \wedge S \wedge C$, and $F \wedge S \wedge C \to \bot$ (Theorem~\ref{thm:impossibility}), then the conjunction implies $\bot$. No content is added beyond Theorem~\ref{thm:impossibility}.
+\begin{remark}[Trivial metatheorem]
+Let $A_1, \ldots, A_n$ be any finite set of axioms on an
+attribution method $\varphi$. If $A_1 \wedge \cdots \wedge A_n$
+implies faithfulness (the ranking reflects model attributions),
+stability (the ranking is model-independent), and completeness
+(the ranking decides all pairs), then
+$A_1 \wedge \cdots \wedge A_n \to \bot$ under the Rashomon property.
+
+This is immediate: if the conjunction implies $F \wedge S \wedge C$,
+and $F \wedge S \wedge C \to \bot$ (Theorem~\ref{thm:impossibility}), then the conjunction
+implies $\bot$. No content is added beyond Theorem~\ref{thm:impossibility}.
+\end{remark}
 
 \subsection{The ``Constant Attribution'' Escape}
 
@@ -2396,6 +2756,7 @@ An attribution method is $\alpha$-faithful if for all models $f$ and same-group 
 \end{definition}
 
 \begin{proposition}[Approximate faithfulness--stability tradeoff (formal)]
+\label{prop:approx-tradeoff}
 Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$.
 \end{proposition}
 
@@ -2404,6 +2765,7 @@ By DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$. A stable ranking fixe
 \end{proof}
 
 \begin{proposition}[Spearman bound for stable rankings]
+\label{prop:spearman-stable}
 Under full DGP symmetry within a group of $m$ features, any stable ranking $\sigma^*$ has:
 \[
     \E[\rho_S(\sigma^*, \pi)] = \frac{-1}{m - 1}.
@@ -2415,7 +2777,37 @@ The stable ranking is negatively correlated with the model's ranking for $m \geq
 Fix any $\sigma^* \in S_m$. By DGP symmetry, the model's ranking $\pi$ is uniform on $S_m$. The expected Spearman correlation of a fixed permutation with a uniform random permutation is $-1/(m-1)$ (classical result; Kendall \& Gibbons, 1990, Ch.~3).
 \end{proof}
 
-The ``categorical impossibility'' does not genuinely extend Theorem~\ref{thm:impossibility}. The quantitative version provides useful bounds but follows directly from DGP symmetry.
+\begin{remark}
+This says: under perfect symmetry, no stable ranking can agree
+with the model's attributions more than half the time. A coin
+flip achieves $\alpha = 1/2$. The stable ranking is no better
+than random for symmetric feature pairs.
+
+This result is non-trivial in that it holds for \emph{any}
+attribution method satisfying the DGP symmetry condition, not
+just for specific axiom systems. However, it is a direct
+consequence of the symmetry---not of any deep axiomatic or
+categorical structure.
+\end{remark}
+
+\begin{remark}[Limited categorical content]
+\label{rem:categorical-limited}
+The ``categorical impossibility'' does not genuinely extend
+Theorem~\ref{thm:impossibility}. The basic version (no finite axiom system implying
+$F \wedge S \wedge C$ can be consistent under Rashomon) is
+logically trivial. The quantitative version
+(Propositions~\ref{prop:approx-tradeoff} and
+\ref{prop:spearman-stable}) provides useful bounds but
+follows directly from DGP symmetry rather than from
+any categorical or axiomatic structure.
+
+The honest summary: the impossibility is a \emph{concrete}
+result about conflicting requirements, not an instance of a
+general metatheoretic pattern. Attempts to ``lift'' it to a
+categorical level either (a)~add no content, or (b)~reduce to
+direct probabilistic calculations that do not require categorical
+language.
+\end{remark}
 
 \section{SymPy Verification: Full Details}
 
