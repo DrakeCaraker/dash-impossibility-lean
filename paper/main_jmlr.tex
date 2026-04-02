@@ -51,7 +51,7 @@
 No feature ranking can be simultaneously faithful, stable, and complete under collinearity. We prove this impossibility, characterize the complete design space (exactly two achievable families), and give the provably optimal resolution.
 The foundation is the \emph{Attribution Impossibility}: no feature ranking can be simultaneously faithful, stable, and complete when features are collinear.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
-\DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
+\DASH{} (\textbf{D}iversified \textbf{A}ggregation of \textbf{SH}AP) ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
 In a survey of 37 public datasets, approximately 60\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
 The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
