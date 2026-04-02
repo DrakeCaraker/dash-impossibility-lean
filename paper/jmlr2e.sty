@@ -1,0 +1,48 @@
+% jmlr2e.sty -- Minimal compatibility shim for JMLR formatting
+% Replace with the official jmlr2e.sty from jmlr.org before final submission.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{jmlr2e}[2026/04/02 Minimal JMLR compatibility shim]
+
+% --- Page geometry (JMLR specs) ---
+\RequirePackage{geometry}
+\geometry{
+  top=1in,
+  bottom=1in,
+  left=1.25in,
+  right=1.25in,
+  textheight=8.75in,
+  textwidth=6in
+}
+
+% --- Running headers ---
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\newcommand{\jmlrShortTitle}{}
+\newcommand{\jmlrShortAuthor}{}
+\newcommand{\ShortHeadings}[2]{%
+  \renewcommand{\jmlrShortTitle}{#1}%
+  \renewcommand{\jmlrShortAuthor}{#2}%
+  \fancyhead[L]{\small\scshape \jmlrShortTitle}%
+  \fancyhead[R]{\small\scshape \jmlrShortAuthor}%
+}
+\fancyfoot[C]{\thepage}
+
+% --- \jmlrheading command (stores metadata, prints nothing) ---
+\newcommand{\jmlrheading}[6]{%
+  % #1=year #2=volume #3=pages #4=submitted #5=published #6=author
+  % No-op: values stored but not typeset in this shim.
+}
+
+% --- \editor command ---
+\newcommand{\editor}[1]{%
+  \begin{center}
+    \textbf{Editor:} #1
+  \end{center}
+}
+
+% --- Do NOT redefine theorem environments ---
+% The paper's own \newtheorem definitions take precedence.
+
+\endinput

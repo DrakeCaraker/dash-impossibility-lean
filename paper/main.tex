@@ -48,8 +48,7 @@
 \maketitle
 
 \begin{abstract}
-No feature ranking can be simultaneously faithful, stable, and complete when features are correlated---an impossibility we prove in four lines from the Rashomon property, then quantify, resolve, and machine-verify in Lean~4.
-For $m{=}2$ collinear features, the ranking is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
+No feature ranking can be simultaneously faithful, stable, and complete when features are correlated. For collinear pairs, the ranking is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
 Faithful, stable, and complete feature rankings cannot coexist under collinearity---we characterize the complete design space: exactly two families of methods exist, and no method lies outside this dichotomy.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
@@ -67,12 +66,15 @@ Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a
 
 Before this work, practitioners attributed SHAP instability to fixable causes. After, they know it is a mathematical certainty under collinearity---and they have a provably optimal fix.
 
+\paragraph{A concrete example.}
+Consider a credit model with annual income and debt-to-income ratio ($|\rho| = 0.72$): across 20 retrains, SHAP reports income as the top driver 53\% of the time and DTI 47\%, so a compliance report citing ``income'' as the primary adverse factor is a coin flip that changes based solely on training randomness.
+
 Several recent results have established fundamental limits on feature attribution.
 \citet{bilodeau2024impossibility} prove that completeness and linearity cannot coexist; \citet{huang2024failings} show SHAP can misrank features in Boolean domains; \citet{srinivas2019full} show complete attributions cannot be weakly input-dependent; and \citet{rao2025limits} establishes Kolmogorov complexity barriers to explainability.
 None of these results analyze \emph{stability}---the robustness of attributions to retraining---none provide quantitative architecture-discriminating bounds, and none offer a constructive resolution.
 
 This paper fills these gaps.
-Our main result is the \emph{Attribution Design Space Theorem} (\S\ref{sec:design-space}, Figure~\ref{fig:design-space}): a complete characterization of what is achievable when explaining models with collinear features.
+Our main results are the Attribution Impossibility (Theorem~\ref{thm:impossibility}) and its structural completion, the Design Space Theorem (Theorem~\ref{thm:design-space-main}): together, a complete characterization of what is achievable when explaining models with collinear features.
 The achievable set consists of exactly two families---faithful-complete methods (unstable, unfaithful to half the models) and ensemble methods like \DASH{} (stable, with within-group ties)---and \DASH{} is Pareto-optimal.
 The theorem rests on an \emph{Attribution Impossibility}: for any single model trained on collinear features, faithfulness, stability, and completeness are mutually incompatible.
 The impossibility has two layers.

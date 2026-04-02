@@ -105,7 +105,8 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-No feature ranking can be simultaneously faithful, stable, and complete when features are collinear---an impossibility we prove, quantify for four model classes, resolve via \DASH{} ensemble averaging, and machine-verify with 188 Lean~4 theorems.
+No feature ranking can be simultaneously faithful, stable, and complete when features are collinear. For collinear pairs, the ranking is literally a coin flip.
+We prove this impossibility, quantify it for four model classes, resolve it via \DASH{} ensemble averaging, and machine-verify it with 188 Lean~4 theorems.
 We characterize the complete attribution design space: exactly two families of methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and no method lies outside this dichotomy.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
@@ -142,6 +143,22 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 
 \textbf{Code.} A reference implementation is available at \url{https://github.com/DrakeCaraker/dash-shap} (stability API in PR \#255). The Lean formalization is at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
 
+\paragraph{Minimal implementation (5 lines).}
+\begin{verbatim}
+models = [XGBClassifier(random_state=i).fit(X, y) for i in range(25)]
+shap_vals = [mean(|TreeExplainer(m).shap_values(X_test)|) for m in models]
+dash = mean(shap_vals, axis=0)  # DASH consensus
+for j, k in pairs:
+    Z = |mean(shap_j - shap_k)| / (std / sqrt(25))  # unstable if Z < 1.96
+\end{verbatim}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/trilemma.pdf}
+\caption{The Attribution Impossibility. No feature ranking can be simultaneously faithful, stable, and complete under collinearity. \emph{Faithful, Stable, Complete: Pick Two.} Family~$\mathcal{A}$ (single-model) is faithful and complete but rankings flip up to 50\% of the time. Family~$\mathcal{B}$ (\DASH{} ensemble) is faithful and stable but reports ties for symmetric features. No third option exists.}
+\label{fig:trilemma}
+\end{figure}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. INTRODUCTION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -152,6 +169,15 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes. In a survey of 37 public datasets, approximately 60\% exhibit this instability. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility. For $m{=}2$ collinear features, ranking the pair is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
 
 This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three SBD instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, financial case studies, and a 188-theorem Lean~4 formalization.
+
+\paragraph{A concrete example.}
+Consider a credit model with annual income and debt-to-income ratio
+($|\rho| = 0.72$). Across 20 retrains with different seeds, SHAP
+reports income as the top driver 53\% of the time and DTI 47\%.
+A compliance report citing income as the primary adverse factor
+is a coin flip---the same model architecture, same data, different
+random seed. Under ECOA, the lender's adverse action notice
+changes based solely on the training randomness.
 
 Several recent results have established fundamental limits on feature attribution.
 \cite{bilodeau2024impossibility} prove that completeness and linearity cannot coexist; \cite{huang2024failings} show SHAP can misrank features in Boolean domains; \cite{srinivas2019full} show complete attributions cannot be weakly input-dependent; and \cite{rao2025limits} establishes Kolmogorov complexity barriers to explainability.
@@ -193,6 +219,8 @@ The formalization also proved valuable beyond certification: during translation 
 The core impossibility proof is deliberately simple---a four-line contradiction from the Rashomon property.
 Like Arrow's original argument \cite{arrow1951social}, the mathematical contribution lies not in proof complexity but in identifying the right abstraction (the Rashomon property) and characterizing the complete achievable set (the Design Space Theorem).
 The quantitative depth comes from the architecture-specific bounds (\S\ref{sec:bounds}) and the Pareto optimality proof (\S\ref{sec:resolution}).
+
+This document provides the complete treatment of the Attribution Impossibility---from intuition to proof to deployment. A practitioner can find the diagnostic workflow (Section~9), a theorist can find every proof (Sections~3--8 with Lean cross-references in Section~11), and a regulator can find compliance guidance (Section~8 and the Regulatory Mapping appendix).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. SETUP
@@ -1752,7 +1780,7 @@ for j in range(P):
 \end{itemize}
 
 \paragraph{Recommended instability disclosure.}
-When reporting SHAP rankings for a model with collinear features: ``Features [X, Y, Z] form a correlated group ($|\rho| > [\text{threshold}]$). Their relative ranking is unstable across training seeds (estimated flip rate: [X]\%). They should be interpreted as interchangeable contributors. The between-group ranking is stable ($Z > 1.96$).'' For regulatory reporting (EU AI Act, SR~11-7), the \DASH{} consensus ranking provides a defensible explanation.
+When reporting SHAP rankings for a model with collinear features: ``Features [X, Y, Z] form a correlated group ($|\rho| > [\text{threshold}]$). Their relative ranking is unstable across training seeds (estimated flip rate: [X]\%). They should be interpreted as interchangeable contributors. The between-group ranking is stable ($Z > 1.96$).'' For regulatory reporting (EU AI Act, SR~11-7 \cite{occ2011sr117}), the \DASH{} consensus ranking provides a defensible explanation.
 
 \paragraph{Group-level reporting.}
 When reporting feature importance for a model with correlated groups, we recommend the following format:
@@ -2097,7 +2125,7 @@ Without row or column subsampling (\texttt{subsample=1.0}, \texttt{colsample\_by
 \subsection{Financial Case Studies}
 
 \paragraph{German Credit.}
-We demonstrate the full F5$\to$F1$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (F5): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (F1): 5 models confirm instability ($Z_{\text{F1}} = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7), the DASH ranking provides a defensible explanation.
+We demonstrate the full F5$\to$F1$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (F5): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (F1): 5 models confirm instability ($Z_{\text{F1}} = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7 \cite{occ2011sr117}), the DASH ranking provides a defensible explanation.
 
 \paragraph{Taiwan Credit Card Default.}
 To validate the impossibility on data with genuine high collinearity
@@ -2140,7 +2168,7 @@ years flips 12\% ($|\rho| = 0.92$). Pairs where one feature clearly
 dominates (income vs.\ credit score) show 0\% flips despite
 $|\rho| = 0.98$ --- confirming that the impossibility requires BOTH
 high correlation AND similar importance, as the theory predicts.
-For model validation under SR~11-7, the recommendation is: report
+For model validation under SR~11-7 \cite{occ2011sr117}, the recommendation is: report
 income and DTI as ``interchangeable key risk drivers'' rather than
 forcing a ranking that would flip under retraining.
 
@@ -2951,14 +2979,78 @@ language.
 \section{Regulatory Mapping: EU AI Act}
 \label{sec:regulatory-mapping}
 
+The EU AI Act (Regulation (EU) 2024/1689) imposes transparency and risk-management obligations on high-risk AI systems. The attribution impossibility has direct consequences for compliance under several articles.
+
+\subsection*{Art.~13: Transparency}
+
+Art.~13(1) requires:
+\begin{quote}
+``High-risk AI systems shall be designed and developed in such a way to ensure that their operation is sufficiently transparent to enable deployers to interpret the system's output and use it appropriately.''
+\end{quote}
+Attribution instability under collinearity directly undermines this requirement: when the ``most important feature'' changes across training seeds, the system's output cannot be interpreted consistently. Providers relying on single-model SHAP rankings for transparency documentation fail to meet Art.~13(1) when features are correlated.
+
+Art.~13(3)(b)(ii) further requires providers to document:
+\begin{quote}
+``known or foreseeable circumstances \ldots that may lead to risks to health, safety or fundamental rights.''
+\end{quote}
+The impossibility theorem establishes that attribution instability under collinearity is a \emph{known} circumstance---not a speculative risk but a mathematical certainty. Any provider deploying a model with correlated features ($|\rho| > 0$) who does not disclose this instability is in potential non-compliance.
+
+\textbf{Recommended action (providers):} Run the F5 single-model screen on all deployed models. For any flagged feature pairs, include an instability disclosure in the technical documentation required by Art.~11.
+
+\subsection*{Art.~16: Provider Obligations}
+
+Art.~16 requires providers to ensure their AI systems comply with the requirements of Chapter~2 throughout the system's lifecycle. Since attribution instability is a structural property of the model class (not of a specific training run), providers must:
+\begin{enumerate}
+    \item Implement systematic instability testing (F5/F1 diagnostics) as part of the quality management system (Art.~17).
+    \item Update technical documentation whenever the feature correlation structure changes (e.g., new data sources).
+    \item Provide deployers with clear guidance on which feature rankings are reliable and which are unstable.
+\end{enumerate}
+
+\textbf{Recommended action (providers):} Integrate the F1 multi-model diagnostic into the CI/CD pipeline. Document all feature pairs with $|\rho| > 0.5$ as potentially unstable.
+
+\subsection*{Art.~26: Deployer Obligations}
+
+Art.~26 requires deployers to use AI systems in accordance with the instructions of use and to monitor for risks. Deployers who receive instability disclosures must:
+\begin{enumerate}
+    \item Not rely on single-model SHAP rankings for decision justification when instability is disclosed.
+    \item Request \DASH{} consensus or equivalent ensemble explanations for regulatory reporting.
+    \item Document the explanation methodology used and its limitations.
+\end{enumerate}
+
+\textbf{Recommended action (deployers):} Require \DASH{} consensus ($M \geq 25$) or equivalent ensemble method for any feature attribution used in customer-facing decisions or regulatory filings.
+
+\subsection*{Art.~23: Importer Obligations}
+
+Art.~23 requires importers to verify that providers have conducted the appropriate conformity assessment. Importers of AI systems that use feature attribution for explainability should verify that:
+\begin{enumerate}
+    \item The provider's technical documentation addresses attribution instability.
+    \item Instability testing has been performed and results are available.
+    \item Appropriate mitigation (ensemble methods or instability disclosure) is in place.
+\end{enumerate}
+
+\textbf{Recommended action (importers):} Include attribution stability testing in the conformity checklist. Reject systems that use single-model SHAP without instability disclosure.
+
+\subsection*{Recital 47: Transparency Principle}
+
+Recital 47 establishes the general principle that AI systems should be developed and used in a transparent manner, enabling meaningful human oversight. The attribution impossibility demonstrates that transparency through feature importance rankings is fundamentally limited when features are correlated: the ranking itself is an artifact of the training seed, not a stable property of the model-data relationship. True transparency requires disclosing this limitation, not concealing it behind a single deterministic ranking.
+
+\subsection*{Annex III: High-Risk Systems}
+
+The impossibility applies to all AI systems using feature attribution for explainability under Annex~III, including:
 \begin{itemize}
-\item \textbf{Art.~13 (Transparency):} Attribution instability under collinearity constitutes a ``known limitation'' that providers must disclose.
-\item \textbf{Art.~14 (Human oversight):} Humans overseeing AI decisions must understand that SHAP rankings for correlated features may be arbitrary.
-\item \textbf{Art.~17 (Quality management):} Providers should implement systematic instability testing (F5/F1 diagnostics) as part of quality management.
-\item \textbf{Annex III:} The impossibility applies to all AI systems using feature attribution for explainability, including high-risk systems in credit, employment, and law enforcement.
+    \item \textbf{Credit scoring} (Annex III, 5(b)): Adverse action notices citing specific features are unreliable.
+    \item \textbf{Employment} (Annex III, 4): Hiring model explanations may change across seeds.
+    \item \textbf{Law enforcement} (Annex III, 6): Risk assessment explanations are potentially unstable.
+    \item \textbf{Insurance} (Annex III, 5(c)): Premium justifications based on feature importance may be arbitrary.
 \end{itemize}
 
-\paragraph{Recommended actions.} Providers: run F5 screening on all models with correlated features; disclose instability for flagged pairs. Deployers: require DASH consensus or equivalent ensemble method for regulatory reporting. Authorities: update technical standards to require multi-model attribution testing.
+\paragraph{Summary of recommended actions by actor.}
+\begin{itemize}
+    \item \textbf{Providers:} Run F5 screening on all models with correlated features; disclose instability for flagged pairs; integrate F1 diagnostics into CI/CD; document all pairs with $|\rho| > 0.5$.
+    \item \textbf{Deployers:} Require \DASH{} consensus or equivalent ensemble method for regulatory reporting; do not rely on single-model rankings when instability is disclosed.
+    \item \textbf{Importers:} Include attribution stability in conformity assessment checklists; reject systems without instability documentation.
+    \item \textbf{Market surveillance authorities:} Update technical standards to require multi-model attribution testing; treat undisclosed attribution instability as a potential non-conformity under Art.~13.
+\end{itemize}
 
 \section{SymPy Verification: Full Details}
 
@@ -2978,6 +3070,9 @@ All algebraic consequences have been independently verified:
 \end{verbatim}
 
 The three-layer verification (SymPy algebra, Lean type-checking, empirical validation) provides strong confidence in the mathematical claims. The SymPy script verifies: (1) the split-gap formula $\rho^2 T/(2-\rho^2)$; (2) the attribution ratio $1/(1-\rho^2)$; (3) the lower bound $\rho^2 T/2$; (4) the sum symmetry under balanced ensembles.
+
+\section*{Acknowledgments}
+The Lean formalization was developed with assistance from Claude Code (Anthropic). All proofs were machine-verified by the Lean~4 type-checker; no theorem was accepted solely on the basis of AI-generated output. The paper text was written by the human authors with AI editing assistance.
 
 \bibliographystyle{plainnat}
 \bibliography{references}

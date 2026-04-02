@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{jmlr2e}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{hyperref}
@@ -9,8 +10,6 @@
 \usepackage{xcolor}
 \usepackage{subcaption}
 \usepackage[round]{natbib}
-% Standard margins for JMLR-length paper
-\usepackage[margin=1in]{geometry}
 
 % Theorem environments
 \newtheorem{theorem}{Theorem}
@@ -49,7 +48,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-Feature attribution rankings under collinearity are provably unreliable: we establish that faithfulness, stability, and completeness are mutually incompatible, characterize the complete design space (exactly two achievable families), and give the provably optimal resolution.
+No feature ranking can be simultaneously faithful, stable, and complete under collinearity. We prove this impossibility, characterize the complete design space (exactly two achievable families), and give the provably optimal resolution.
 The foundation is the \emph{Attribution Impossibility}: no feature ranking can be simultaneously faithful, stable, and complete when features are collinear.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
@@ -64,6 +63,33 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 Feature attribution impossibility, Shapley value stability, Rashomon effect, ensemble explanation methods, formal verification (Lean 4)
 \end{keywords}
 
+\section*{Notation}
+\label{sec:notation}
+\begin{center}
+\small
+\begin{tabular}{@{}lp{10cm}@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning} \\
+\midrule
+$\varphi_j(f)$ & Attribution (global importance) of feature $j$ in model $f$ \\
+$\rho$ & Pairwise correlation between collinear features within a group \\
+$T$ & Number of boosting rounds (trees) in a GBDT \\
+$M$ & Ensemble size (number of independently trained models) \\
+$n_j(f)$ & Split count (utilization count) of feature $j$ in model $f$ \\
+$c(f)$ & Proportionality constant: $\varphi_j(f) = c(f) \cdot n_j(f)$ \\
+$P$ & Total number of features \\
+$L$ & Number of collinear groups \\
+$m$ & Number of features within a collinear group \\
+$j_1$ & First-mover: the feature selected at the root of the first tree \\
+$\bar\varphi_j$ & \DASH{} consensus attribution: $\frac{1}{M}\sum_{i=1}^M \varphi_j(f_i)$ \\
+$S$ & Ranking stability (expected Spearman correlation) \\
+$U$ & Within-group unfaithfulness \\
+$\Delta_{jk}$ & Population attribution gap: $|\mu_j - \mu_k|$ \\
+$\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. INTRODUCTION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,6 +102,15 @@ Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a
 For $m{=}2$, ranking collinear pairs is literally a coin flip.
 
 The classical multicollinearity concern is about estimation variance. Our result is qualitatively different: it concerns \emph{ranking impossibility}. Even with perfect estimates, the ranking of symmetric features is a coin flip.
+
+\paragraph{A concrete example.}
+Consider a credit model with annual income and debt-to-income ratio
+($|\rho| = 0.72$). Across 20 retrains with different seeds, SHAP
+reports income as the top driver 53\% of the time and DTI 47\%.
+A compliance report citing income as the primary adverse factor
+is a coin flip---the same model architecture, same data, different
+random seed. Under ECOA, the lender's adverse action notice
+changes based solely on the training randomness.
 
 Several recent results have established fundamental limits on feature attribution.
 \cite{bilodeau2024impossibility} prove that completeness and linearity cannot coexist; \cite{huang2024failings} show SHAP can misrank features in Boolean domains; \cite{srinivas2019full} show complete attributions cannot be weakly input-dependent; and \cite{rao2025limits} establishes Kolmogorov complexity barriers to explainability.
@@ -748,6 +783,13 @@ The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is the statement
 
 \begin{figure}[t]
 \centering
+\includegraphics[width=\textwidth]{figures/trilemma.pdf}
+\caption{The Attribution Impossibility. No feature ranking can be simultaneously faithful, stable, and complete under collinearity. \emph{Faithful, Stable, Complete: Pick Two.} Family~$\mathcal{A}$ (single-model) is faithful and complete but rankings flip up to 50\% of the time. Family~$\mathcal{B}$ (\DASH{} ensemble) is faithful and stable but reports ties for symmetric features. No third option exists.}
+\label{fig:trilemma}
+\end{figure}
+
+\begin{figure}[t]
+\centering
 \includegraphics[width=0.55\textwidth]{figures/design_space.pdf}
 \caption{The Attribution Design Space. Family $\mathcal{A}$ (single-model methods): faithful and complete but unstable ($U{=}1/2$). Family $\mathcal{B}$ (\DASH{} ensemble): stable with ties ($U{=}0$, $S$ increasing with $M$). The ideal point $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. There is no third option.}
 \label{fig:design-space}
@@ -1254,7 +1296,7 @@ $[3.0, \infty)$ & 113 & 0.000 & 0.000 & Exact \\
 \end{itemize}
 
 \paragraph{Recommended instability disclosure.}
-When reporting SHAP rankings for a model with collinear features: ``Features [X, Y, Z] form a correlated group ($|\rho| > [\text{threshold}]$). Their relative ranking is unstable across training seeds (estimated flip rate: [X]\%). They should be interpreted as interchangeable contributors. The between-group ranking is stable ($Z > 1.96$).'' For regulatory reporting (EU AI Act, SR~11-7), the \DASH{} consensus ranking provides a defensible explanation.
+When reporting SHAP rankings for a model with collinear features: ``Features [X, Y, Z] form a correlated group ($|\rho| > [\text{threshold}]$). Their relative ranking is unstable across training seeds (estimated flip rate: [X]\%). They should be interpreted as interchangeable contributors. The between-group ranking is stable ($Z > 1.96$).'' For regulatory reporting (EU AI Act, SR~11-7 \cite{occ2011sr117}), the \DASH{} consensus ranking provides a defensible explanation.
 
 \paragraph{Group-level reporting.}
 ``The correlated group \{X, Y, Z\} contributes a total \DASH{} attribution of [value] to the prediction ($[percent]\%$ of total). Within this group, individual feature rankings are unstable. The group's total importance is stable; individual importance within the group should be interpreted as interchangeable.''
@@ -1483,13 +1525,13 @@ Without row or column subsampling (\texttt{subsample=1.0}, \texttt{colsample\_by
 \subsection{Financial Case Studies}
 
 \paragraph{German Credit.}
-We demonstrate the full F5$\to$F1$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (F5): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (F1): 5 models confirm instability ($Z_{\text{F1}} = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7), the DASH ranking provides a defensible explanation.
+We demonstrate the full F5$\to$F1$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (F5): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (F1): 5 models confirm instability ($Z_{\text{F1}} = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7 \cite{occ2011sr117}), the DASH ranking provides a defensible explanation.
 
 \paragraph{Taiwan Credit Card Default.}
 Bill-amount features (6 consecutive months, up to $|\rho| = 0.95$) produce persistent instability---29 correlated pairs at $|\rho| > 0.5$, with the highest giving a theoretical ratio of $1/(1{-}0.95^2) \approx 10.3\times$. With $M = 25$, mean flip rate across correlated pairs is 4\%, but one pair (months 5 vs.\ 6, $|\rho| = 0.946$) retains 16\% flip rate, illustrating that very high collinearity requires larger ensembles.
 
 \paragraph{Synthetic Credit (income $\leftrightarrow$ DTI $\leftrightarrow$ credit score).}
-To validate on the exact collinearity pattern common in US credit models, we generate 10{,}000 samples with 5 features driven by a latent ``creditworthiness'' factor: income ($\rho = 0.99$ with DTI), DTI, credit score ($\rho = 0.98$ with income), loan amount (independent), and employment years ($\rho = 0.94$ with income). With 25 XGBoost models: income$\leftrightarrow$DTI flips 8\% ($|\rho| = 0.99$); credit score$\leftrightarrow$employment years flips 12\% ($|\rho| = 0.92$). Pairs where one feature clearly dominates (income vs.\ credit score) show 0\% flips despite $|\rho| = 0.98$---confirming the impossibility requires BOTH high correlation AND similar importance. For SR~11-7 compliance: report income and DTI as ``interchangeable key risk drivers'' rather than forcing a ranking that would flip under retraining.
+To validate on the exact collinearity pattern common in US credit models, we generate 10{,}000 samples with 5 features driven by a latent ``creditworthiness'' factor: income ($\rho = 0.99$ with DTI), DTI, credit score ($\rho = 0.98$ with income), loan amount (independent), and employment years ($\rho = 0.94$ with income). With 25 XGBoost models: income$\leftrightarrow$DTI flips 8\% ($|\rho| = 0.99$); credit score$\leftrightarrow$employment years flips 12\% ($|\rho| = 0.92$). Pairs where one feature clearly dominates (income vs.\ credit score) show 0\% flips despite $|\rho| = 0.98$---confirming the impossibility requires BOTH high correlation AND similar importance. For SR~11-7 \cite{occ2011sr117} compliance: report income and DTI as ``interchangeable key risk drivers'' rather than forcing a ranking that would flip under retraining.
 
 \paragraph{Lending Club (positive control).}
 Zero unstable pairs despite correlated features ($Z > 36$ for all pairs), confirming the impossibility requires \emph{both} collinearity AND similar true importance. Three correlated groups detected: person\_age$\leftrightarrow$cb\_person\_cred\_hist\_length ($|\rho| = 0.86$), loan\_amnt$\leftrightarrow$loan\_percent\_income ($|\rho| = 0.58$), loan\_int\_rate$\leftrightarrow$cb\_person\_default\_on\_file ($|\rho| = 0.50$). All have $Z > 36$, confirming distinguishable importance. Not every correlated dataset exhibits instability. The diagnostic distinguishes datasets where instability is a genuine concern from those where it is not.
@@ -1755,6 +1797,11 @@ The Bilodeau and Rashomon impossibilities are complementary: Bilodeau constrains
 \cite{laberge2023partial} find that attribution rankings across Rashomon sets are inherently partial orders; \cite{rudin2024amazing} advocate embracing model multiplicity.
 Our theorem shows the partial order is not a pragmatic choice but a mathematical necessity.
 We add: (i)~a formal impossibility proof, (ii)~quantitative bounds, (iii)~a provably optimal resolution (\DASH{}), and (iv)~machine-verified formalization.
+\cite{herren2023statistical} develop statistical inference for feature rankings under model multiplicity; our contribution is to prove that the multiplicity is unavoidable under collinearity, not merely empirically common.
+
+\paragraph{Foundational methods.}
+The model architectures we analyze were introduced by \cite{breiman2001random} (random forests) and \cite{friedman2001greedy} (gradient boosting); LIME \cite{ribeiro2016should} provides an alternative local explanation framework.
+\cite{hooker2021unrestricted} show that unrestricted permutation-based importance forces extrapolation into out-of-distribution regions, a complementary failure mode to our stability impossibility.
 
 \paragraph{Fairness impossibility.}
 \cite{chouldechova2017fair} and \cite{kleinberg2017inherent} prove calibration, balance, and equal false positive rates cannot coexist.
@@ -1815,6 +1862,9 @@ The Bayes-optimality half of the Design Space is proved but not in Lean (require
 
 \paragraph{Formalization as methodology.}
 Beyond certifying correctness, the Lean formalization served as a bug-finding methodology: it caught two logical inconsistencies and one type mismatch that survived informal review. We recommend formalizing impossibility theorems as a general practice.
+
+\section*{Acknowledgments}
+The Lean formalization was developed with assistance from Claude Code (Anthropic). All proofs were machine-verified by the Lean~4 type-checker; no theorem was accepted solely on the basis of AI-generated output. The paper text was written by the human authors with AI editing assistance.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
