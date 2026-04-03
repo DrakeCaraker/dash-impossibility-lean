@@ -1,0 +1,17 @@
+{
+  "description": "Monte Carlo validation of flip rate formula Phi(-SNR)",
+  "config": {
+    "P": 10,
+    "N_train": 2000,
+    "N_eval": 200,
+    "n_estimators": 50,
+    "max_depth": 1,
+    "subsample": 0.8
+  },
+  "results": [
+    {
+      "rho": 0.1,
+      "empirical_flip_rate": 0.1873,
+      "theoretical_flip_rate": 0.190114,
+      "abs_difference": 0.002814,
+      "empirical_snr": 
