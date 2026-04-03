@@ -2,8 +2,8 @@
 
 **No feature ranking can be simultaneously faithful, stable, and complete when features are correlated -- and we prove it in Lean 4.**
 
-![Theorems](https://img.shields.io/badge/theorems-188-blue)
-![Axioms](https://img.shields.io/badge/axioms-18-orange)
+![Theorems](https://img.shields.io/badge/theorems-190-blue)
+![Axioms](https://img.shields.io/badge/axioms-17-orange)
 ![Sorry](https://img.shields.io/badge/sorry-0-brightgreen)
 ![Lean 4](https://img.shields.io/badge/Lean-4-purple)
 ![Files](https://img.shields.io/badge/Lean_files-36-informational)
@@ -30,7 +30,7 @@ cd dash-impossibility-lean
 # Install Lean 4 via elan if needed
 curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh
 
-# Verify the formalization (188 theorems, 0 sorry)
+# Verify the formalization (190 theorems, 0 sorry)
 lake build                    # ~5 min cached, ~20 min first build
 
 # Verify axiom consistency (expect 15/15 PASS)
@@ -49,14 +49,14 @@ python3 paper/scripts/f1_f5_validation.py
 
 **Regulator or model risk officer.** Single-model SHAP explanations are provably unreliable under collinearity. In a survey of 37 public datasets, approximately 60% exhibit attribution instability. This affects EU AI Act Art. 13(3)(b)(ii) requirements for disclosing "known and foreseeable circumstances" affecting accuracy, and SR 11-7 model risk management compliance. The paper provides disclosure templates and a diagnostic workflow.
 
-**Lean or Mathlib community.** 188 theorems across 36 files, 13 abstraction levels, using `MulAction` for orbit bounds, `ProbabilityTheory.cdf` for the Gaussian flip rate, and `Analysis.Calculus` for the FIM impossibility. The Gaussian CDF symmetry proofs (phi(0)=1/2, phi(-x)=1-phi(x)) via `NoAtoms` + `prob_compl_eq_one_sub` may be of independent interest. The axiom consistency proof constructs a `Fin 4` model satisfying all 18 axioms.
+**Lean or Mathlib community.** 190 theorems across 36 files, 13 abstraction levels, using `MulAction` for orbit bounds, `ProbabilityTheory.cdf` for the Gaussian flip rate, and `Analysis.Calculus` for the FIM impossibility. The Gaussian CDF symmetry proofs (phi(0)=1/2, phi(-x)=1-phi(x)) via `NoAtoms` + `prob_compl_eq_one_sub` may be of independent interest. The axiom consistency proof constructs a `Fin 4` model satisfying all 17 axioms.
 
 ## Repository Map
 
 ```
 dash-impossibility-lean/
 │
-├── DASHImpossibility/                    # 36 Lean 4 files, 188 theorems, 18 axioms, 0 sorry
+├── DASHImpossibility/                    # 36 Lean 4 files, 190 theorems, 17 axioms, 0 sorry
 │   │
 │   │  ── Level 0: Pure Logic ──
 │   ├── Trilemma.lean                     # attribution_impossibility (zero axiom deps, 4-line proof)
@@ -115,7 +115,7 @@ dash-impossibility-lean/
 │   ├── LocalGlobal.lean                  # Local instability >= global instability
 │   │
 │   │  ── Infrastructure ──
-│   ├── Defs.lean                         # FeatureSpace, 18 axioms, stability/equity defs, Mathlib
+│   ├── Defs.lean                         # FeatureSpace, 17 axioms, stability/equity defs, Mathlib
 │   ├── Consistency.lean                  # Axiom system consistency (Fin 4 construction)
 │   ├── GaussianFlipRate.lean             # Standard normal CDF, flip rate formula
 │   ├── FIMImpossibility.lean             # Gaussian FIM impossibility, Rashomon ellipsoid
@@ -380,9 +380,9 @@ All scripts use fixed random seeds and run on a standard laptop in under 30 minu
 
 ## 10. The Formalization
 
-**188 theorems. 18 axioms. 0 sorry. 36 files. 13 abstraction levels.**
+**190 theorems. 17 axioms. 0 sorry. 36 files. 13 abstraction levels.**
 
-The Lean formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review. The axiom consistency proof (a `Fin 4` construction in [`Consistency.lean`](DASHImpossibility/Consistency.lean)) demonstrates the axiom system is non-vacuous -- there exists a concrete model satisfying all 18 axioms.
+The Lean formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review. The axiom consistency proof (a `Fin 4` construction in [`Consistency.lean`](DASHImpossibility/Consistency.lean)) demonstrates the axiom system is non-vacuous -- there exists a concrete model satisfying all 17 axioms.
 
 ### Architecture Levels
 
