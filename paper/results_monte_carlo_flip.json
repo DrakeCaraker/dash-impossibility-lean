@@ -1,17 +1,70 @@
 {
-  "description": "Monte Carlo validation of flip rate formula Phi(-SNR)",
   "config": {
     "P": 10,
     "N_train": 2000,
     "N_eval": 200,
-    "n_estimators": 50,
+    "trials": 1000,
     "max_depth": 1,
     "subsample": 0.8
   },
-  "results": [
+  "rows": [
     {
       "rho": 0.1,
-      "empirical_flip_rate": 0.1873,
-      "theoretical_flip_rate": 0.190114,
-      "abs_difference": 0.002814,
-      "empirical_snr": 
+      "empirical_flip": 0.417,
+      "theoretical_flip": 0.4212981444856644,
+      "abs_diff": 0.004298144485664401,
+      "snr": 0.198573622381241
+    },
+    {
+      "rho": 0.3,
+      "empirical_flip": 0.457,
+      "theoretical_flip": 0.4796761921105621,
+      "abs_diff": 0.0226761921105621,
+      "snr": 0.05096628759532423
+    },
+    {
+      "rho": 0.5,
+      "empirical_flip": 0.482,
+      "theoretical_flip": 0.4558539981454053,
+      "abs_diff": 0.026146001854594703,
+      "snr": 0.1108844252401314
+    },
+    {
+      "rho": 0.7,
+      "empirical_flip": 0.467,
+      "theoretical_flip": 0.4574865260454018,
+      "abs_diff": 0.009513473954598228,
+      "snr": 0.1067679779862162
+    },
+    {
+      "rho": 0.8,
+      "empirical_flip": 0.499,
+      "theoretical_flip": 0.4909653874594723,
+      "abs_diff": 0.008034612540527675,
+      "snr": 0.022648351332519828
+    },
+    {
+      "rho": 0.9,
+      "empirical_flip": 0.493,
+      "theoretical_flip": 0.48172098130950813,
+      "abs_diff": 0.01127901869049186,
+      "snr": 0.04583474848400788
+    },
+    {
+      "rho": 0.95,
+      "empirical_flip": 0.494,
+      "theoretical_flip": 0.4945112955625252,
+      "abs_diff": 0.0005112955625252158,
+      "snr": 0.013758575801157687
+    },
+    {
+      "rho": 0.99,
+      "empirical_flip": 0.481,
+      "theoretical_flip": 0.4886490203862033,
+      "abs_diff": 0.007649020386203298,
+      "snr": 0.028456526537008076
+    }
+  ],
+  "max_abs_diff": 0.026146001854594703,
+  "verdict": "VALIDATED: max |diff| = 0.0261 < 0.05"
+}
