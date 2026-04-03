@@ -30,7 +30,7 @@
 Table~\ref{tab:axioms} lists all property axioms in the formalization
 (the core impossibility theorem requires none of them---only the Rashomon
 property as hypothesis).
-The formalization uses 17 axioms total: 6 type/constant declarations
+The formalization uses 16 axioms total: 6 type/constant declarations
 (\texttt{Model}, \texttt{numTrees}, \texttt{numTrees\_pos}, \texttt{attribution},
 \texttt{splitCount}, \texttt{firstMover}), 2 measure-theoretic infrastructure
 axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}),
@@ -76,7 +76,7 @@ Testing lower bound & \texttt{le\_cam\_lower\_bound} & \textbf{Theorem} in \text
 
 \section{Proof Architecture}
 
-The formalization comprises 36 Lean~4 files with 17 axioms and
+The formalization comprises 36 Lean~4 files with 16 axioms and
 188 type-checked theorems and lemmas (
 0 \texttt{sorry}). Of these, 43 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or
@@ -124,7 +124,7 @@ supplement section and key theorem.
 
 \begin{table}[h]
 \centering
-\caption{Lean file cross-reference (36 files, 190 theorems, 17 axioms).}
+\caption{Lean file cross-reference (40 files, 203 theorems, 16 axioms).}
 \label{tab:lean-crossref}
 \footnotesize
 \begin{tabular}{@{}llll@{}}
@@ -239,7 +239,7 @@ would derive the variance bound from Mathlib's
 \paragraph{Development methodology.}
 The initial formalization (49 theorems, 15 files) was developed by
 the first author with iterative Claude Code assistance over several
-weeks. The expansion from 49 to 190 theorems (36 files) was produced
+weeks. The expansion from 49 to 203 theorems (40 files) was produced
 in a single development session by dispatching targeted Lean-writing
 agents with detailed mathematical specifications (theorem statements,
 proof strategies, and Mathlib lemma references). All proofs were
@@ -292,7 +292,7 @@ The first two are genuine logical inconsistencies that would have been
 difficult to detect by inspection of an informal proof. The third is a
 modeling assumption made explicit by the type system.
 
-\paragraph{Joint consistency of all 17 axioms.}
+\paragraph{Joint consistency of all 16 axioms.}
 The 14 domain-specific axioms are jointly consistent: \texttt{Consistency.lean}
 constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$,
 $T{=}100$, Fin~4 models) satisfying all 14 simultaneously.
