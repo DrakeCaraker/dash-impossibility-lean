@@ -102,7 +102,9 @@ This is, to our knowledge, the first formally verified impossibility result in e
     \item \textbf{Machine-verified proof}: formalized in Lean~4 (188 theorems from 18 axioms, 0 \texttt{sorry}), publicly available at \url{[anonymized for review]}.
 \end{enumerate}
 
-The core impossibility proof is a four-line contradiction from the Rashomon property; the quantitative depth comes from architecture-specific bounds (\S\ref{sec:bounds}) and the Pareto optimality proof (supplement).
+The core impossibility proof is deliberately simple---a four-line contradiction from the Rashomon property.
+Like Arrow's original argument \citep{arrow1951social}, the contribution is in identifying the right abstraction (the Rashomon property) and characterizing the complete design space, not in proof complexity.
+The quantitative depth comes from architecture-specific bounds (\S\ref{sec:bounds}) and the Pareto optimality proof (supplement).
 
 \section{Setup}
 \label{sec:setup}
@@ -248,14 +250,15 @@ In the Lean~4 formalization, the limit is proved using the filter-based definiti
 \end{proof}
 
 For finite-depth trees, the effective signal capture $\alpha < 1$ yields a corrected ratio $1/(1{-}\alpha\rho^2)$; for stumps $\alpha \approx 2/\pi$ ($R^2{=}0.89$; Figure~\ref{fig:ratio}).
-The proportionality axiom holds with CV${\approx}0.35$ for stumps and CV${\approx}0.66$ for depth-6 trees (supplement); the ratio $1/(1{-}\rho^2)$ is an order-of-magnitude bound refined by the $\alpha$-correction.
+The proportionality axiom holds with CV${\approx}0.35$ for stumps and CV${\approx}0.66$ for depth-6 trees (supplement); the ratio $1/(1{-}\rho^2)$ is an order-of-magnitude prediction, refined by the $\alpha$-correction to $1/(1{-}\alpha\rho^2)$ with $R^2 = 0.89$.
+\textbf{The core impossibility (Theorem~\ref{thm:impossibility}) is entirely independent of the proportionality axiom}---it requires only the Rashomon property.
 
 For stability, when two models $f, f'$ have different first-movers within the same group of size $m$, the within-group rank reshuffling bounds the Spearman correlation:
 \[
     \rho_S(f, f') \;\leq\; 1 - \frac{m^3}{P^3}.
 \]
 This bound follows from the combinatorial argument that non-first-mover features are tied in split count and therefore randomly ordered, contributing $\Theta(m^3)$ to $\sum d_i^2$ in the Spearman formula.
-(In the Lean~4 formalization, a weaker bound $3/(P^3-P)$ is derived from the defined Spearman correlation; the $m^3/P^3$ constant is axiomatized.)
+(In the Lean~4 formalization, two Spearman bounds exist: a fully derived bound $\rho_S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$ and a tighter axiomatized bound $\rho_S \leq 1 - m^3/P^3$. The gap is a combinatorial counting argument---the effect of transposition on midranks---not a domain-specific assumption.)
 
 \subsection{Lasso: Infinite Violation}
 \label{sec:lasso}

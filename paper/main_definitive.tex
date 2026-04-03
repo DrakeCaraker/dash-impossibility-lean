@@ -568,7 +568,7 @@ ensembles (depth~3) with \DASH{} consensus ($M \geq 5$) provide the
 best stability--accuracy tradeoff.
 
 \paragraph{Proportionality validation.}
-The proportionality axiom holds with CV${\approx}0.35$ for stumps and CV${\approx}0.66$ for depth-6 trees on Breast Cancer; the ratio $1/(1{-}\rho^2)$ is an order-of-magnitude bound refined by the $\alpha$-correction.
+The proportionality axiom holds with CV${\approx}0.35$ for stumps (the idealized theoretical setting) and CV${\approx}0.66$ for depth-6 trees on Breast Cancer. The quantitative ratio $1/(1{-}\rho^2)$ is an order-of-magnitude prediction, refined by the $\alpha$-correction to $1/(1{-}\alpha\rho^2)$ with $R^2 = 0.89$. \textbf{The core impossibility (Theorem~\ref{thm:impossibility}) is entirely independent of the proportionality axiom}---it requires only the Rashomon property. All quantitative bounds ($1/(1{-}\rho^2)$, ensemble size $M_{\min}$, attribution ratio) should be interpreted as order-of-magnitude predictions, not exact formulas.
 
 \paragraph{Error analysis for $\alpha = 2/\pi$.}
 The fitted $\alpha = 0.60$ (empirical) vs.\ $2/\pi = 0.637$ (theory) represents a gap of $\Delta\alpha = 0.037$. Two error sources: (1) empirical vs.\ population split location (negligible, $\Delta\alpha_1 \approx 0.0009$ for $n = 2000$): the optimal split of $X \sim \mathcal{N}(0, \sigma^2)$ at $\delta$ instead of $0$ gives $\alpha_1(n) = (2/\pi)(1 - \pi(\pi-2)/(2n) + O(n^{-2}))$; (2) non-Gaussian residuals after the first boosting round (dominant, accounting for $\approx 0.036$): residuals are a location-shifted mixture with excess kurtosis $\kappa = O(\eta^2 c^2/\sigma^2)$, which accumulates across boosting rounds. The impossibility theorem does not depend on $\alpha$ at all; the quantitative ratio uses $\alpha$ to predict the \emph{severity} of the violation.
@@ -2098,7 +2098,7 @@ Depth & Mean CV of $c_j$ & Interpretation \\
 \end{tabular}
 \end{center}
 
-For stumps, the axiom holds reasonably well; for deeper trees, multi-level interactions increase the CV. The proportionality axiom is used only for the quantitative bounds (Theorems~\ref{thm:ratio}); the core impossibility (Theorem~\ref{thm:impossibility}) does not depend on it.
+For stumps, the axiom holds reasonably well; for deeper trees, multi-level interactions increase the CV. The proportionality axiom is used only for the quantitative bounds (Theorems~\ref{thm:ratio}); \textbf{the core impossibility (Theorem~\ref{thm:impossibility}) does not depend on it}. The $\alpha$-corrected model matches empirical data at $R^2 = 0.89$.
 
 \subsection{Cross-Implementation and Data-Level Validation}
 
@@ -2427,7 +2427,7 @@ The single-model variance \texttt{attribution\_variance} is \emph{defined} from 
 The three variance declarations (\texttt{attribution\_variance}, \texttt{attribution\_variance\_nonneg}, \texttt{consensus\_variance\_bound}) produce convenience results (variance nonnegativity, halving) rather than deep mathematical consequences. Their primary role is to support the Design Space Theorem's stability convergence claim. A deeper formalization would derive the variance bound from Mathlib's \texttt{IndepFun.variance\_sum}, but this requires connecting our abstract \texttt{Model} type to a product measure space.
 
 \paragraph{Spearman bound: axiomatized vs.\ derived.}
-The Lean formalization contains two Spearman bounds: (i) \texttt{spearmanCorr\_bound}, fully derived from the definition of Spearman correlation, giving $\rho_S \leq 1 - 3/(P^3 - P)$; and (ii) \texttt{spearman\_classical\_bound}, axiomatized, giving the tighter $\rho_S \leq 1 - m^3/P^3$. The paper uses the tighter axiomatized bound. The full combinatorial proof (bounding the expected $\sum d_i^2$ under random tie-breaking) requires counting arguments not yet available in the Lean framework.
+The Lean formalization contains two Spearman bounds: (i) \texttt{spearmanCorr\_bound}, fully derived from the definition of Spearman correlation, giving $\rho_S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$; and (ii) \texttt{spearman\_classical\_bound}, axiomatized, giving the tighter $\rho_S \leq 1 - m^3/P^3$. Both capture the qualitative insight that instability grows with group size~$m$. The paper uses the tighter axiomatized bound. The gap between the two is a combinatorial counting argument (bounding the effect of transposition on midranks in the expected $\sum d_i^2$ under random tie-breaking), not a domain-specific assumption. The full counting argument requires combinatorial lemmas not yet available in the Lean framework.
 
 \subsection{Development Methodology}
 
