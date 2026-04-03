@@ -134,7 +134,7 @@ Practitioners can achieve between-group faithfulness and stability by aggregatin
 
 The proof is mechanically verified in Lean~4 using Mathlib: 190 type-checked theorems and lemmas across 36 files (75 with multi-step proofs of ${\geq}5$ tactic lines; the remainder are definitions, wrappers, and single-step applications; from 14 domain-specific + 2 query-complexity + 1 Spearman axioms; 0 \texttt{sorry}).
 The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero axioms beyond the Rashomon property; the DASH equity result (Corollary~\ref{cor:equity}) depends on the \texttt{attribution\_sum\_symmetric} theorem (derived in \texttt{SymmetryDerive.lean} from the proportionality and split-count axioms).
-This is, to our knowledge, the first formally verified impossibility result in explainable AI (the core impossibility uses zero axioms; quantitative bounds are conditional on 6 domain-specific axioms; query complexity uses 3 additional axioms from Le~Cam's method).
+This is, to our knowledge, the first formally verified impossibility result in explainable AI (the core impossibility uses zero axioms; quantitative bounds are conditional on 6 domain-specific axioms; query complexity uses 2 additional axioms from Le~Cam's method).
 The formalization also proved valuable beyond certification: during translation to Lean~4 we discovered two logical inconsistencies and one type mismatch in the original axiom system, echoing prior experiences where formalization uncovered subtle proof errors \cite{nipkow2009social,zhang2026statistical}.
 
 \paragraph{Contributions.}
@@ -998,7 +998,7 @@ When multiple protected attributes (race, gender, age) are each proxied by colli
 In credit models, ``zip code'' (proxy for race) is often collinear with ``income bracket'' ($|\rho| \approx 0.6$--$0.8$). If both have similar predictive power, a single-model SHAP audit finding ``zip code is the 3rd most important feature'' may conclude proxy discrimination---but retraining with a different seed could produce a model where zip code drops to 8th and income rises to 3rd. The audit conclusion depends on the random seed, not on the model's actual reliance on the protected attribute.
 
 \paragraph{Worked adverse action example.}
-Consider a borrower denied credit, with correlated features income and DTI. Model~A (seed~1) cites income as the top adverse factor; Model~B (seed~2) cites DTI. Under ECOA, the lender must disclose the primary reason. The disclosure depends on the random seed---a regulatory violation that is mathematically inevitable under collinearity. \DASH{} resolves this: the consensus ranks income and DTI as tied contributors.
+Consider a borrower denied credit, with correlated features income and DTI. Model~A (seed~1) cites income as the top adverse factor; Model~B (seed~2) cites DTI. Under ECOA, the lender must disclose the primary reason. The disclosure depends on the random seed---a model governance concern that is mathematically inevitable under collinearity. \DASH{} resolves this: the consensus ranks income and DTI as tied contributors.
 
 \subsection{Direct FIM Impossibility}
 \label{sec:fim}
@@ -1681,7 +1681,7 @@ Defs.lean (14 axioms, type definitions, derived theorems)
   +-- SBDInstances.lean (abstract aggregation + instances)
   +-- FIMImpossibility.lean (Gaussian FIM -> Rashomon)
   +-- GaussianFlipRate.lean (Phi definition, flip rate formula)
-  +-- QueryComplexity.lean (query lower bound, Le Cam axiomatized)
+  +-- QueryComplexity.lean (query lower bound, Le Cam (2 axioms))
   +-- Consistency.lean (axiom system consistency, Fin 4 model)
   +-- RandomForest.lean (contrast case, documentation only)
 \end{verbatim}
@@ -1847,7 +1847,7 @@ The impossibility has a geometric interpretation: near-singular Fisher informati
 This paper contributes three reusable techniques: (1) the \emph{Rashomon reduction}---reducing a design-space question to a model-multiplicity check; (2) the \emph{FIM-to-Rashomon bridge}---connecting Fisher information rank deficiency to the Rashomon property; and (3) the \emph{symmetric Bayes dichotomy}---the general two-families theorem for symmetric decision problems.
 
 \paragraph{Proof status transparency.}
-The core impossibility (Theorem~\ref{thm:impossibility}) is Lean-verified with zero axiom dependencies. The GBDT ratio, Spearman bounds, and DASH equity are Lean-derived from 14 domain-specific axioms. The query complexity lower bound is axiom-derived from Le~Cam's testing bound (3 axioms). The following are fully formalized in Lean (190 theorems, 0 \texttt{sorry}): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, and the unfaithfulness/path-convergence results. The F1 diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
+The core impossibility (Theorem~\ref{thm:impossibility}) is Lean-verified with zero axiom dependencies. The GBDT ratio, Spearman bounds, and DASH equity are Lean-derived from 14 domain-specific axioms. The query complexity lower bound is axiom-derived from Le~Cam's testing bound (2 axioms). The following are fully formalized in Lean (190 theorems, 0 \texttt{sorry}): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, and the unfaithfulness/path-convergence results. The F1 diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
 
 \paragraph{Approximate faithfulness--stability tradeoff.}
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\sigma(j) - \sigma(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.

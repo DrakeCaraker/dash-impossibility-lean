@@ -19,21 +19,21 @@
 \contentsline {paragraph}{The $\alpha = 2/\pi $ derivation.}{10}{section*.13}%
 \contentsline {paragraph}{Depth dependence.}{10}{section*.14}%
 \contentsline {paragraph}{Practitioner guidance.}{10}{section*.16}%
-\contentsline {paragraph}{Proportionality validation.}{10}{section*.17}%
+\contentsline {paragraph}{Proportionality validation.}{11}{section*.17}%
 \contentsline {paragraph}{Error analysis for $\alpha = 2/\pi $.}{11}{section*.18}%
 \contentsline {paragraph}{Stability bound.}{11}{section*.19}%
 \contentsline {paragraph}{Exact flip rate for GBDT.}{11}{section*.20}%
-\contentsline {subsection}{\numberline {4.2}Lasso: Infinite Violation}{11}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.2}Lasso: Infinite Violation}{12}{subsection.4.2}%
 \contentsline {subsection}{\numberline {4.3}Neural Networks: Conditional Violation}{12}{subsection.4.3}%
 \contentsline {subsection}{\numberline {4.4}Random Forests: Bounded Violation (Contrast)}{12}{subsection.4.4}%
 \contentsline {paragraph}{Summary.}{12}{section*.21}%
 \contentsline {section}{\numberline {5}Resolution: Ensemble Attribution via \textsc {Dash}}{12}{section.5}%
-\contentsline {paragraph}{Progressive \textsc {Dash}{}.}{12}{section*.23}%
-\contentsline {paragraph}{\textsc {Dash}{} does not change predictions.}{12}{section*.24}%
+\contentsline {paragraph}{Progressive \textsc {Dash}{}.}{13}{section*.23}%
+\contentsline {paragraph}{\textsc {Dash}{} does not change predictions.}{13}{section*.24}%
 \contentsline {paragraph}{Between-group stability.}{13}{section*.25}%
 \contentsline {paragraph}{Within-group completeness.}{13}{section*.26}%
 \contentsline {subsection}{\numberline {5.1}DASH Pareto Optimality}{13}{subsection.5.1}%
-\contentsline {paragraph}{Comparison with nonlinear aggregations.}{13}{section*.27}%
+\contentsline {paragraph}{Comparison with nonlinear aggregations.}{14}{section*.27}%
 \contentsline {subsection}{\numberline {5.2}DASH Robustness and Breakdown Point}{14}{subsection.5.2}%
 \contentsline {subsection}{\numberline {5.3}DASH Information Loss}{14}{subsection.5.3}%
 \contentsline {paragraph}{Ensemble size lower bound.}{14}{section*.28}%
@@ -48,11 +48,11 @@
 \contentsline {section}{\numberline {8}Extensions}{20}{section.8}%
 \contentsline {subsection}{\numberline {8.1}Conditional Attribution Impossibility}{20}{subsection.8.1}%
 \contentsline {paragraph}{The escape condition.}{20}{section*.34}%
-\contentsline {paragraph}{Fine-grained $\Delta \beta $ sweep at $\rho = 0.9$.}{21}{section*.37}%
+\contentsline {paragraph}{Fine-grained $\Delta \beta $ sweep at $\rho = 0.9$.}{20}{section*.37}%
 \contentsline {paragraph}{Causal structure validation.}{21}{section*.38}%
 \contentsline {subsection}{\numberline {8.2}Fairness Audit Impossibility}{21}{subsection.8.2}%
 \contentsline {paragraph}{Implications for AI governance.}{21}{section*.39}%
-\contentsline {paragraph}{Intersectional considerations.}{21}{section*.40}%
+\contentsline {paragraph}{Intersectional considerations.}{22}{section*.40}%
 \contentsline {paragraph}{Example: lending.}{22}{section*.41}%
 \contentsline {paragraph}{Worked adverse action example.}{22}{section*.42}%
 \contentsline {subsection}{\numberline {8.3}Direct FIM Impossibility}{22}{subsection.8.3}%

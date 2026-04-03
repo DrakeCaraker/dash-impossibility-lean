@@ -134,19 +134,19 @@
 \contentsline {paragraph}{Variance sub-system.}{46}{section*.97}%
 \contentsline {paragraph}{Spearman bound: axiomatized vs.\ derived.}{46}{section*.98}%
 \contentsline {subsection}{\numberline {11.3}Development Methodology}{46}{subsection.11.3}%
-\contentsline {subsection}{\numberline {11.4}Proof Depth Distribution}{46}{subsection.11.4}%
+\contentsline {subsection}{\numberline {11.4}Proof Depth Distribution}{47}{subsection.11.4}%
 \contentsline {subsection}{\numberline {11.5}Inconsistencies Found During Formalization}{47}{subsection.11.5}%
 \contentsline {subsection}{\numberline {11.6}SymPy Algebraic Verification}{47}{subsection.11.6}%
 \contentsline {subsection}{\numberline {11.7}Lean File Cross-Reference}{47}{subsection.11.7}%
 \contentsline {section}{\numberline {12}Related Work}{47}{section.12}%
 \contentsline {paragraph}{Attribution impossibility results.}{47}{section*.100}%
-\contentsline {paragraph}{Rashomon effect and model multiplicity.}{47}{section*.101}%
+\contentsline {paragraph}{Rashomon effect and model multiplicity.}{48}{section*.101}%
 \contentsline {paragraph}{Fairness impossibility.}{48}{section*.102}%
 \contentsline {paragraph}{Formal verification for ML.}{48}{section*.103}%
 \contentsline {section}{\numberline {13}Discussion}{48}{section.13}%
 \contentsline {paragraph}{Limitations.}{48}{section*.104}%
-\contentsline {paragraph}{Computational cost and practical deployment.}{48}{section*.105}%
-\contentsline {paragraph}{Broader implications.}{48}{section*.106}%
+\contentsline {paragraph}{Computational cost and practical deployment.}{49}{section*.105}%
+\contentsline {paragraph}{Broader implications.}{49}{section*.106}%
 \contentsline {paragraph}{Distinction from classical multicollinearity.}{49}{section*.107}%
 \contentsline {paragraph}{Rashomon set vs.\ deployed model.}{49}{section*.108}%
 \contentsline {paragraph}{Information loss.}{49}{section*.109}%
@@ -165,24 +165,24 @@
 \contentsline {subsection}{\numberline {C.1}Causal Structure Validation: Full Results}{51}{subsection.C.1}%
 \contentsline {section}{\numberline {D}Extended LLM Analysis}{51}{appendix.D}%
 \contentsline {subsection}{\numberline {D.1}Fine-Tuning Details}{51}{subsection.D.1}%
-\contentsline {section}{\numberline {E}Extended Experimental Results}{51}{appendix.E}%
-\contentsline {subsection}{\numberline {E.1}KernelSHAP Noise Control: Full Results}{51}{subsection.E.1}%
+\contentsline {section}{\numberline {E}Extended Experimental Results}{52}{appendix.E}%
+\contentsline {subsection}{\numberline {E.1}KernelSHAP Noise Control: Full Results}{52}{subsection.E.1}%
 \contentsline {subsection}{\numberline {E.2}Cross-Implementation: Full Results}{52}{subsection.E.2}%
 \contentsline {subsection}{\numberline {E.3}Prevalence Survey: Statistical Power Analysis}{52}{subsection.E.3}%
 \contentsline {section}{\numberline {F}Attempted Common Generalization with Arrow's Theorem}{52}{appendix.F}%
 \contentsline {subsection}{\numberline {F.1}Structural Comparison}{52}{subsection.F.1}%
-\contentsline {subsection}{\numberline {F.2}Attempted Common Framework}{52}{subsection.F.2}%
+\contentsline {subsection}{\numberline {F.2}Attempted Common Framework}{53}{subsection.F.2}%
 \contentsline {subsection}{\numberline {F.3}Assessment}{53}{subsection.F.3}%
 \contentsline {paragraph}{Relationship to Sen's liberalism paradox.}{53}{section*.117}%
-\contentsline {section}{\numberline {G}Topological Analysis of the Impossibility}{53}{appendix.G}%
-\contentsline {subsection}{\numberline {G.1}The $m = 2$ Case}{53}{subsection.G.1}%
+\contentsline {section}{\numberline {G}Topological Analysis of the Impossibility}{54}{appendix.G}%
+\contentsline {subsection}{\numberline {G.1}The $m = 2$ Case}{54}{subsection.G.1}%
 \contentsline {subsection}{\numberline {G.2}The $m = 3$ Case}{54}{subsection.G.2}%
 \contentsline {subsection}{\numberline {G.3}The $m \geq 4$ Case: The Permutohedron}{54}{subsection.G.3}%
 \contentsline {subsection}{\numberline {G.4}Assessment}{54}{subsection.G.4}%
-\contentsline {section}{\numberline {H}On Categorical/Axiomatic Strengthening}{54}{appendix.H}%
-\contentsline {subsection}{\numberline {H.1}The Trivial Version}{54}{subsection.H.1}%
+\contentsline {section}{\numberline {H}On Categorical/Axiomatic Strengthening}{55}{appendix.H}%
+\contentsline {subsection}{\numberline {H.1}The Trivial Version}{55}{subsection.H.1}%
 \contentsline {subsection}{\numberline {H.2}The ``Constant Attribution'' Escape}{55}{subsection.H.2}%
 \contentsline {subsection}{\numberline {H.3}The Non-Trivial Quantitative Version}{55}{subsection.H.3}%
-\contentsline {section}{\numberline {I}Regulatory Mapping: EU AI Act}{55}{appendix.I}%
+\contentsline {section}{\numberline {I}Regulatory Mapping: EU AI Act}{56}{appendix.I}%
 \contentsline {paragraph}{Summary of recommended actions by actor.}{57}{section*.124}%
 \contentsline {section}{\numberline {J}SymPy Verification: Full Details}{57}{appendix.J}%
