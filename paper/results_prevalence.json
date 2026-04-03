@@ -16,7 +16,9 @@
       "n_corr_pairs": 145,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "wine",
@@ -27,7 +29,9 @@
       "n_corr_pairs": 14,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.4
+      "max_flip_rate": 0.4,
+      "max_flip_rate_ci_lower": 0.333,
+      "max_flip_rate_ci_upper": 0.471
     },
     {
       "dataset": "iris",
@@ -38,7 +42,9 @@
       "n_corr_pairs": 3,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "digits",
@@ -49,7 +55,9 @@
       "n_corr_pairs": 61,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "diabetes",
@@ -60,7 +68,9 @@
       "n_corr_pairs": 6,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.3
+      "max_flip_rate": 0.3,
+      "max_flip_rate_ci_lower": 0.2393,
+      "max_flip_rate_ci_upper": 0.3686
     },
     {
       "dataset": "california_housing",
@@ -71,7 +81,9 @@
       "n_corr_pairs": 2,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.35
+      "max_flip_rate": 0.35,
+      "max_flip_rate_ci_lower": 0.2858,
+      "max_flip_rate_ci_upper": 0.4202
     },
     {
       "dataset": "linnerud",
@@ -82,7 +94,9 @@
       "n_corr_pairs": 2,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.1
+      "max_flip_rate": 0.1,
+      "max_flip_rate_ci_lower": 0.065,
+      "max_flip_rate_ci_upper": 0.1509
     },
     {
       "dataset": "heart-statlog",
@@ -93,7 +107,9 @@
       "n_corr_pairs": 1,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "credit-g",
@@ -104,7 +120,9 @@
       "n_corr_pairs": 1,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.05
+      "max_flip_rate": 0.05,
+      "max_flip_rate_ci_lower": 0.027,
+      "max_flip_rate_ci_upper": 0.0909
     },
     {
       "dataset": "default-credit-card",
@@ -115,7 +133,9 @@
       "n_corr_pairs": 29,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.45
+      "max_flip_rate": 0.45,
+      "max_flip_rate_ci_lower": 0.3809,
+      "max_flip_rate_ci_upper": 0.521
     },
     {
       "dataset": "adult",
@@ -126,7 +146,9 @@
       "n_corr_pairs": 0,
       "has_correlated": false,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "us_crime",
@@ -137,7 +159,9 @@
       "n_corr_pairs": 1206,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "kc_house_prices",
@@ -148,7 +172,9 @@
       "n_corr_pairs": 10,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.35
+      "max_flip_rate": 0.35,
+      "max_flip_rate_ci_lower": 0.2858,
+      "max_flip_rate_ci_upper": 0.4202
     },
     {
       "dataset": "bike_sharing",
@@ -159,7 +185,9 @@
       "n_corr_pairs": 1,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "phoneme",
@@ -170,7 +198,9 @@
       "n_corr_pairs": 0,
       "has_correlated": false,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "blood-transfusion",
@@ -181,7 +211,9 @@
       "n_corr_pairs": 3,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "vehicle",
@@ -192,7 +224,9 @@
       "n_corr_pairs": 60,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "segment",
@@ -203,7 +237,9 @@
       "n_corr_pairs": 38,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "steel-plates-fault",
@@ -214,7 +250,9 @@
       "n_corr_pairs": 55,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.05
+      "max_flip_rate": 0.05,
+      "max_flip_rate_ci_lower": 0.027,
+      "max_flip_rate_ci_upper": 0.0909
     },
     {
       "dataset": "vowel",
@@ -225,7 +263,9 @@
       "n_corr_pairs": 3,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "scene",
@@ -236,7 +276,9 @@
       "n_corr_pairs": 2138,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "analcatdata_authorship",
@@ -247,7 +289,9 @@
       "n_corr_pairs": 19,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.4
+      "max_flip_rate": 0.4,
+      "max_flip_rate_ci_lower": 0.333,
+      "max_flip_rate_ci_upper": 0.471
     },
     {
       "dataset": "pc1",
@@ -258,7 +302,9 @@
       "n_corr_pairs": 145,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "kc1",
@@ -269,7 +315,9 @@
       "n_corr_pairs": 166,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "pc4",
@@ -280,7 +328,9 @@
       "n_corr_pairs": 162,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "ionosphere",
@@ -291,7 +341,9 @@
       "n_corr_pairs": 52,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "sonar",
@@ -302,7 +354,9 @@
       "n_corr_pairs": 133,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "mfeat-factors",
@@ -313,7 +367,9 @@
       "n_corr_pairs": 2582,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "mfeat-fourier",
@@ -324,7 +380,9 @@
       "n_corr_pairs": 18,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "mfeat-karhunen",
@@ -335,7 +393,9 @@
       "n_corr_pairs": 1,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "wilt",
@@ -346,7 +406,9 @@
       "n_corr_pairs": 1,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "ozone-level-8hr",
@@ -357,7 +419,9 @@
       "n_corr_pairs": 735,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "spambase",
@@ -368,7 +432,9 @@
       "n_corr_pairs": 31,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.2
+      "max_flip_rate": 0.2,
+      "max_flip_rate_ci_lower": 0.1493,
+      "max_flip_rate_ci_upper": 0.2626
     },
     {
       "dataset": "wall-robot-navigation",
@@ -379,7 +445,9 @@
       "n_corr_pairs": 6,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.3
+      "max_flip_rate": 0.3,
+      "max_flip_rate_ci_lower": 0.2393,
+      "max_flip_rate_ci_upper": 0.3686
     },
     {
       "dataset": "electricity",
@@ -390,7 +458,9 @@
       "n_corr_pairs": 2,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "banknote-authentication",
@@ -401,7 +471,9 @@
       "n_corr_pairs": 2,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "climate-simulation-crashes",
@@ -412,7 +484,10 @@
       "n_corr_pairs": 0,
       "has_correlated": false,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     }
-  ]
+  ],
+  "ci_method": "Wilson score (n_eff=190, heuristic)"
 }

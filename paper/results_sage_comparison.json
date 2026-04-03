@@ -20,7 +20,11 @@
       "n_unstable_pairs": 180,
       "pct_unstable": 41.38,
       "max_flip_rate": 0.5,
-      "mean_flip_rate": 0.1318
+      "mean_flip_rate": 0.1318,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704,
+      "mean_flip_rate_ci_lower": 0.0909,
+      "mean_flip_rate_ci_upper": 0.1873
     },
     {
       "method": "SAGE-approximation",
@@ -28,7 +32,11 @@
       "n_unstable_pairs": 401,
       "pct_unstable": 92.18,
       "max_flip_rate": 0.5,
-      "mean_flip_rate": 0.3136
+      "mean_flip_rate": 0.3136,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704,
+      "mean_flip_rate_ci_lower": 0.2519,
+      "mean_flip_rate_ci_upper": 0.3827
     },
     {
       "method": "Boruta-like",
@@ -36,7 +44,11 @@
       "n_unstable_pairs": 411,
       "pct_unstable": 94.48,
       "max_flip_rate": 0.5,
-      "mean_flip_rate": 0.3028
+      "mean_flip_rate": 0.3028,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704,
+      "mean_flip_rate_ci_lower": 0.2419,
+      "mean_flip_rate_ci_upper": 0.3715
     }
   ],
   "cross_method_correlations": {
@@ -56,5 +68,6 @@
       "both_unstable": 398
     }
   },
-  "finding": "No. All three methods exhibit ranking instability across Rashomon-equivalent models. The impossibility is structural: it arises from the Rashomon property (multiple near-optimal models with different internal structure), not from any particular attribution algorithm. SAGE-like marginal contributions and Boruta-like threshold methods are equally affected."
+  "finding": "No. All three methods exhibit ranking instability across Rashomon-equivalent models. The impossibility is structural: it arises from the Rashomon property (multiple near-optimal models with different internal structure), not from any particular attribution algorithm. SAGE-like marginal contributions and Boruta-like threshold methods are equally affected.",
+  "ci_method": "Wilson score (n_eff=190, heuristic)"
 }

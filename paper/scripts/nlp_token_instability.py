@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NLP Token-Level Attribution Instability — Attribution Impossibility for text features.
+Bag-of-Words Attribution Instability — Attribution Impossibility for TF-IDF text features.
 
 Extends the LLM attention instability experiment (llm_attention_instability.py)
 to a lightweight, CPU-only setting using TF-IDF + XGBoost + TreeSHAP.
@@ -274,10 +274,12 @@ def main():
     # Verdict
     print("\n" + "-" * 70)
     verdict = (
-        f"Token-level attribution instability affects {pct_unstable_top1:.0f}% "
+        f"Bag-of-words attribution instability affects {pct_unstable_top1:.0f}% "
         f"of documents (top-1) and {pct_unstable_top3:.0f}% (top-3). "
         f"TF-IDF co-occurrence creates correlated features subject to the "
-        f"impossibility theorem."
+        f"impossibility theorem. Note: this demonstrates instability in "
+        f"bag-of-words models (TF-IDF + XGBoost), not transformer-based NLP. "
+        f"For transformer results, see llm_attention_instability.py."
     )
     print(verdict)
     print("-" * 70)

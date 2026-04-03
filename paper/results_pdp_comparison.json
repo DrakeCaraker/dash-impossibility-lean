@@ -19,7 +19,11 @@
       "n_unstable_pairs": 180,
       "pct_unstable": 41.38,
       "max_flip_rate": 0.5,
-      "mean_flip_rate": 0.1318
+      "mean_flip_rate": 0.1318,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704,
+      "mean_flip_rate_ci_lower": 0.0909,
+      "mean_flip_rate_ci_upper": 0.1873
     },
     {
       "method": "Permutation Importance",
@@ -27,7 +31,11 @@
       "n_unstable_pairs": 396,
       "pct_unstable": 91.03,
       "max_flip_rate": 0.5,
-      "mean_flip_rate": 0.3055
+      "mean_flip_rate": 0.3055,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704,
+      "mean_flip_rate_ci_lower": 0.2444,
+      "mean_flip_rate_ci_upper": 0.3743
     },
     {
       "method": "Gain-based Importance",
@@ -35,7 +43,11 @@
       "n_unstable_pairs": 254,
       "pct_unstable": 58.39,
       "max_flip_rate": 0.5,
-      "mean_flip_rate": 0.1989
+      "mean_flip_rate": 0.1989,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704,
+      "mean_flip_rate_ci_lower": 0.1484,
+      "mean_flip_rate_ci_upper": 0.2614
     }
   ],
   "cross_method_correlations": {
@@ -61,5 +73,6 @@
       "only_Gain-based": 17
     }
   },
-  "finding": "All three methods exhibit ranking instability. The impossibility is structural (Rashomon property), not an artifact of any single attribution method."
+  "finding": "All three methods exhibit ranking instability. The impossibility is structural (Rashomon property), not an artifact of any single attribution method.",
+  "ci_method": "Wilson score (n_eff=190, heuristic)"
 }

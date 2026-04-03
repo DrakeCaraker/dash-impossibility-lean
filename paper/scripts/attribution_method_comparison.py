@@ -1,13 +1,13 @@
 """
-PDP / Gain-Based Importance Stability Comparison.
+Attribution Method Stability Comparison.
 
 Compares ranking stability across three attribution methods:
   1. TreeSHAP (mean |SHAP| per feature)
   2. Permutation importance (sklearn, n_repeats=10)
   3. XGBoost gain-based feature importance (model.feature_importances_)
 
-PDP itself is per-feature (not a ranking), so gain-based importance serves
-as a proxy for "model-derived" ranking that doesn't use SHAP.
+All three methods produce feature rankings. The impossibility applies to
+any method satisfying proportionality-like conditions.
 
 Dataset: Breast Cancer (sklearn)
 Models:  50 XGBoost classifiers (different seeds, subsample=0.8)

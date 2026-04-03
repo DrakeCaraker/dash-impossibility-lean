@@ -49,7 +49,13 @@
       "unstable_B_deep": true,
       "flip_rate_B_deep": 0.5,
       "unstable_C_shallow_fast": true,
-      "flip_rate_C_shallow_fast": 0.5
+      "flip_rate_C_shallow_fast": 0.5,
+      "flip_rate_A_original_ci_lower": 0.4296,
+      "flip_rate_A_original_ci_upper": 0.5704,
+      "flip_rate_B_deep_ci_lower": 0.4296,
+      "flip_rate_B_deep_ci_upper": 0.5704,
+      "flip_rate_C_shallow_fast_ci_lower": 0.4296,
+      "flip_rate_C_shallow_fast_ci_upper": 0.5704
     },
     {
       "dataset": "wine",
@@ -63,7 +69,13 @@
       "unstable_B_deep": true,
       "flip_rate_B_deep": 0.5,
       "unstable_C_shallow_fast": true,
-      "flip_rate_C_shallow_fast": 0.35
+      "flip_rate_C_shallow_fast": 0.35,
+      "flip_rate_A_original_ci_lower": 0.2393,
+      "flip_rate_A_original_ci_upper": 0.3686,
+      "flip_rate_B_deep_ci_lower": 0.4296,
+      "flip_rate_B_deep_ci_upper": 0.5704,
+      "flip_rate_C_shallow_fast_ci_lower": 0.2858,
+      "flip_rate_C_shallow_fast_ci_upper": 0.4202
     },
     {
       "dataset": "diabetes",
@@ -77,7 +89,13 @@
       "unstable_B_deep": true,
       "flip_rate_B_deep": 0.35,
       "unstable_C_shallow_fast": true,
-      "flip_rate_C_shallow_fast": 0.2
+      "flip_rate_C_shallow_fast": 0.2,
+      "flip_rate_A_original_ci_lower": 0.3809,
+      "flip_rate_A_original_ci_upper": 0.521,
+      "flip_rate_B_deep_ci_lower": 0.2858,
+      "flip_rate_B_deep_ci_upper": 0.4202,
+      "flip_rate_C_shallow_fast_ci_lower": 0.1493,
+      "flip_rate_C_shallow_fast_ci_upper": 0.2626
     },
     {
       "dataset": "california_housing",
@@ -91,7 +109,13 @@
       "unstable_B_deep": false,
       "flip_rate_B_deep": 0.0,
       "unstable_C_shallow_fast": false,
-      "flip_rate_C_shallow_fast": 0.0
+      "flip_rate_C_shallow_fast": 0.0,
+      "flip_rate_A_original_ci_lower": 0.0,
+      "flip_rate_A_original_ci_upper": 0.0198,
+      "flip_rate_B_deep_ci_lower": 0.0,
+      "flip_rate_B_deep_ci_upper": 0.0198,
+      "flip_rate_C_shallow_fast_ci_lower": 0.0,
+      "flip_rate_C_shallow_fast_ci_upper": 0.0198
     },
     {
       "dataset": "iris",
@@ -105,7 +129,13 @@
       "unstable_B_deep": false,
       "flip_rate_B_deep": 0.0,
       "unstable_C_shallow_fast": false,
-      "flip_rate_C_shallow_fast": 0.05
+      "flip_rate_C_shallow_fast": 0.05,
+      "flip_rate_A_original_ci_lower": 0.0,
+      "flip_rate_A_original_ci_upper": 0.0198,
+      "flip_rate_B_deep_ci_lower": 0.0,
+      "flip_rate_B_deep_ci_upper": 0.0198,
+      "flip_rate_C_shallow_fast_ci_lower": 0.027,
+      "flip_rate_C_shallow_fast_ci_upper": 0.0909
     },
     {
       "dataset": "digits_01",
@@ -119,7 +149,13 @@
       "unstable_B_deep": true,
       "flip_rate_B_deep": 0.5,
       "unstable_C_shallow_fast": true,
-      "flip_rate_C_shallow_fast": 0.45
+      "flip_rate_C_shallow_fast": 0.45,
+      "flip_rate_A_original_ci_lower": 0.3809,
+      "flip_rate_A_original_ci_upper": 0.521,
+      "flip_rate_B_deep_ci_lower": 0.4296,
+      "flip_rate_B_deep_ci_upper": 0.5704,
+      "flip_rate_C_shallow_fast_ci_lower": 0.3809,
+      "flip_rate_C_shallow_fast_ci_upper": 0.521
     },
     {
       "dataset": "credit_g",
@@ -133,7 +169,13 @@
       "unstable_B_deep": false,
       "flip_rate_B_deep": 0.0,
       "unstable_C_shallow_fast": true,
-      "flip_rate_C_shallow_fast": 0.3
+      "flip_rate_C_shallow_fast": 0.3,
+      "flip_rate_A_original_ci_lower": 0.2393,
+      "flip_rate_A_original_ci_upper": 0.3686,
+      "flip_rate_B_deep_ci_lower": 0.0,
+      "flip_rate_B_deep_ci_upper": 0.0198,
+      "flip_rate_C_shallow_fast_ci_lower": 0.2393,
+      "flip_rate_C_shallow_fast_ci_upper": 0.3686
     },
     {
       "dataset": "heart_statlog",
@@ -147,7 +189,14 @@
       "unstable_B_deep": false,
       "flip_rate_B_deep": 0.0,
       "unstable_C_shallow_fast": true,
-      "flip_rate_C_shallow_fast": 0.15
+      "flip_rate_C_shallow_fast": 0.15,
+      "flip_rate_A_original_ci_lower": 0.0,
+      "flip_rate_A_original_ci_upper": 0.0198,
+      "flip_rate_B_deep_ci_lower": 0.0,
+      "flip_rate_B_deep_ci_upper": 0.0198,
+      "flip_rate_C_shallow_fast_ci_lower": 0.1062,
+      "flip_rate_C_shallow_fast_ci_upper": 0.2077
     }
-  ]
+  ],
+  "ci_method": "Wilson score (n_eff=190, heuristic)"
 }

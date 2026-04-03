@@ -16,7 +16,9 @@
       "n_corr_pairs": 145,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "sklearn_diabetes",
@@ -27,7 +29,9 @@
       "n_corr_pairs": 6,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.3
+      "max_flip_rate": 0.3,
+      "max_flip_rate_ci_lower": 0.2393,
+      "max_flip_rate_ci_upper": 0.3686
     },
     {
       "dataset": "heart-statlog",
@@ -38,7 +42,9 @@
       "n_corr_pairs": 1,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "qsar-biodeg",
@@ -49,7 +55,9 @@
       "n_corr_pairs": 49,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.45
+      "max_flip_rate": 0.45,
+      "max_flip_rate_ci_lower": 0.3809,
+      "max_flip_rate_ci_upper": 0.521
     },
     {
       "dataset": "ilpd",
@@ -60,7 +68,9 @@
       "n_corr_pairs": 4,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.35
+      "max_flip_rate": 0.35,
+      "max_flip_rate_ci_lower": 0.2858,
+      "max_flip_rate_ci_upper": 0.4202
     },
     {
       "dataset": "pc1",
@@ -71,7 +81,9 @@
       "n_corr_pairs": 145,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "parkinsons",
@@ -82,7 +94,9 @@
       "n_corr_pairs": 29,
       "has_correlated": true,
       "has_instability": true,
-      "max_flip_rate": 0.5
+      "max_flip_rate": 0.5,
+      "max_flip_rate_ci_lower": 0.4296,
+      "max_flip_rate_ci_upper": 0.5704
     },
     {
       "dataset": "diabetes",
@@ -93,7 +107,9 @@
       "n_corr_pairs": 1,
       "has_correlated": true,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     },
     {
       "dataset": "hepatitis",
@@ -104,7 +120,10 @@
       "n_corr_pairs": 0,
       "has_correlated": false,
       "has_instability": false,
-      "max_flip_rate": 0.0
+      "max_flip_rate": 0.0,
+      "max_flip_rate_ci_lower": 0.0,
+      "max_flip_rate_ci_upper": 0.0198
     }
-  ]
+  ],
+  "ci_method": "Wilson score (n_eff=190, heuristic)"
 }

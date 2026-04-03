@@ -17,7 +17,11 @@
     "k_name": "worst area",
     "rho": 0.9775780914063881,
     "nn_flip_rate": 0.4,
-    "xgb_flip_rate_paper": 0.48
+    "xgb_flip_rate_paper": 0.48,
+    "nn_flip_rate_ci_lower": 0.333,
+    "nn_flip_rate_ci_upper": 0.471,
+    "xgb_flip_rate_paper_ci_lower": 0.4101,
+    "xgb_flip_rate_paper_ci_upper": 0.5507
   },
   "n_unstable_pairs": 380,
   "flip_threshold": 0.1,
@@ -4375,5 +4379,6 @@
       "n_j_wins": 14,
       "n_k_wins": 6
     }
-  ]
+  ],
+  "ci_method": "Wilson score (n_eff=190, heuristic)"
 }
