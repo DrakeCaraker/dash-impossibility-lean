@@ -111,7 +111,12 @@ The core impossibility theorem (Levels 0-1) uses **none** of these — only the 
 ## Building
 
 ```bash
-lake build     # compile everything (~2500 jobs)
+make help          # show all targets
+make lean          # compile Lean (~5 min)
+make paper         # compile all paper versions
+make verify        # build + count consistency check
+make validate      # run 3 key experiments (~5 min)
+make setup         # full setup for new contributors
 ```
 
 ## Submission
@@ -133,7 +138,7 @@ lake build     # compile everything (~2500 jobs)
   ls DASHImpossibility/*.lean | wc -l | awk '{print "files:", $1}'
   ```
 - Use `sorry` without a `-- TODO:` comment explaining what's needed
-- Change axioms without re-running the SymPy verification (`dash-shap/paper/proofs/verify_lemma6_algebra.py`)
+- Change axioms without re-running the SymPy verification (in companion repo: `dash-shap/paper/proofs/verify_lemma6_algebra.py`)
 - Add `autoImplicit true` — all variables must be explicit
 - Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print s}'` (currently 190)
 - Run parallel subagents that both modify the same file (causes build cache corruption)

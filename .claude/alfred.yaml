@@ -3,7 +3,7 @@
 
 project:
   name: "dash-impossibility-lean"
-  type: "lean"
+  type: "mixed"
 
 formatting:
   tool: "none"
@@ -27,5 +27,5 @@ git:
   main_branch: "main"
 
 domain:
-  venue: "NeurIPS / AISTATS"
-  topic: "impossibility theorem for gradient boosting attributions — Lean 4 formalization"
+  venue: "JMLR (primary) / NeurIPS 2026 (backup)"
+  topic: "Attribution impossibility theorem — Lean 4 formalization, DASH resolution, design space characterization"

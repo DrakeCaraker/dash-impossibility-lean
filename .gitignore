@@ -16,7 +16,10 @@ lake-packages/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+*.toc
 paper/main.pdf
+paper/main_jmlr.pdf
+paper/main_definitive.pdf
 paper/supplement.pdf
 paper/submission/
 
@@ -29,6 +32,9 @@ paper/submission/
 .claude/worktrees/
 .claude/.pilot-session-start
 .claude/.session-count
+
+# Provenance sidecar files
+*.meta
 
 # CatBoost training artifacts
 catboost_info/
