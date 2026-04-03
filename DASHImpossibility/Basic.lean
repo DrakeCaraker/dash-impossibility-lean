@@ -35,6 +35,7 @@ import DASHImpossibility.IntersectionalFairness
 import DASHImpossibility.Consistency
 import DASHImpossibility.GaussianFlipRate
 import DASHImpossibility.RobustnessLipschitz
+import DASHImpossibility.MutualInformation
 import DASHImpossibility.FIMImpossibility
 import DASHImpossibility.QueryComplexity
 import DASHImpossibility.Setup
