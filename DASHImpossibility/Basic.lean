@@ -38,6 +38,7 @@ import DASHImpossibility.RobustnessLipschitz
 import DASHImpossibility.MutualInformation
 import DASHImpossibility.StumpProportionality
 import DASHImpossibility.QueryComplexityParametric
+import DASHImpossibility.LocalSufficiency
 import DASHImpossibility.FIMImpossibility
 import DASHImpossibility.QueryComplexity
 import DASHImpossibility.Setup
