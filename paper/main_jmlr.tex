@@ -126,7 +126,7 @@ The second is model-specific: we derive quantitative bounds on the attribution r
 For \GBDT{}, this ratio follows $1/(1-\alpha\rho^2)$ where $\alpha$ captures the per-tree signal fraction; for Lasso it is infinite at any $\rho > 0$; for neural networks it depends on the initialization; and for random forests it is $O(1/\sqrt{T})$---converging rather than diverging.
 
 The impossibility parallels fairness: \cite{chouldechova2017fair} and \cite{kleinberg2017inherent} proved that calibration, balance, and equal false positive rates cannot coexist when base rates differ.
-Our result plays the same role for explainability---instability under collinearity is not an engineering deficiency but a mathematical inevitability---with direct implications for the EU AI Act \cite{euaiact2024} (Art.~13(3)(b)(ii)), which requires disclosing ``known and foreseeable circumstances'' affecting accuracy.
+Our result plays the same role for explainability---instability under collinearity is not an engineering deficiency but a mathematical inevitability---with direct implications for the EU AI Act \cite{euaiact2024} (Art.~13(3)(b)(ii)), which requires disclosing ``known and foreseeable circumstances'' which may lead to risks to health, safety or fundamental rights.
 
 The impossibility also admits a principled relaxation.
 \DASH{} ensemble averaging breaks the sequential dependence that drives attribution concentration: for balanced ensembles, expected attributions are equitable across symmetric features with variance $O(1/M)$.
@@ -206,7 +206,7 @@ The formalization uses 17 axioms total: 6 type/constant declarations, 2 measure-
 
 \begin{table}[h]
 \centering
-\caption{Complete axiom inventory (18 total).}
+\caption{Complete axiom inventory (17 total).}
 \label{tab:axioms}
 \small
 \begin{tabular}{@{}llp{5.5cm}@{}}
@@ -226,13 +226,13 @@ Model measure & \texttt{modelMeasure} & Mathlib infrastructure: probability meas
 \multicolumn{3}{@{}l}{\emph{Query complexity (Le~Cam's method, axiomatized):}} \\
 Testing constant & \texttt{testing\_constant} & Universal constant $C \geq 1/8$ from Tsybakov (2009) \\
 Constant positivity & \texttt{testing\_constant\_pos} & $C > 0$ \\
-Testing lower bound & \texttt{le\_cam\_lower\_bound} & $n \geq C\sigma^2/\Delta^2$ for reliable testing \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Formerly axiomatized, now derived:}} \\
 Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & \textbf{Theorem} in \texttt{SymmetryDerive.lean} \\
 Attribution variance & \texttt{attribution\_variance} & \textbf{Definition} from \texttt{ProbabilityTheory.variance} \\
 Variance nonnegativity & \texttt{attribution\_variance\_nonneg} & \textbf{Theorem} from Mathlib's \texttt{variance\_nonneg} \\
 Consensus variance bound & \texttt{consensus\_variance\_bound} & \textbf{Theorem} in \texttt{Defs.lean} (algebraic) \\
+Testing lower bound & \texttt{le\_cam\_lower\_bound} & \textbf{Theorem} in \texttt{QueryComplexity.lean} (contrapositive) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -586,6 +586,7 @@ By DGP symmetry, permuting features $j \leftrightarrow k$ leaves the joint distr
 
 \paragraph{Progressive \DASH{}.}
 For cost-sensitive deployments, we propose progressive \DASH{}: start with $M{=}5$ models; for pairs with $Z > 3.0$, declare stable; for $Z < 1.96$, flag as unstable; for borderline pairs, train 5 more and repeat. Average-case cost: ${\sim}8\times$ (not $25\times$).
+(The $Z$-thresholds 1.96 and 3.0 are fixed-sample values; a fully sequential design should use Pocock- or O'Brien-Fleming-corrected boundaries to control familywise error. We present this as a practical heuristic, not a formally analyzed procedure.)
 
 \paragraph{\DASH{} does not change predictions.}
 \DASH{} changes explanations, not predictions. The model's output is unchanged; only the accompanying explanation differs.
@@ -989,7 +990,7 @@ Direct corollary of the Attribution Impossibility applied to the pair $(j, k)$. 
 \paragraph{Implications for AI governance.}
 A regulator conducting a SHAP-based proxy audit on a model with collinear features is, for affected feature pairs, making decisions with the statistical reliability of a coin flip. Two auditors examining the \emph{same model architecture trained on the same data} with different random seeds may reach opposite conclusions about whether the model relies on a protected attribute.
 
-Under the EU AI Act Art.~13(3)(b)(ii), providers must disclose ``known and foreseeable circumstances'' affecting accuracy. Our theorem proves this includes: ``SHAP-based proxy audits are unreliable for features that are collinear with both the protected attribute and a non-protected feature.'' The remedy is ensemble auditing: train $M$ models and use \DASH{} consensus.
+Under the EU AI Act Art.~13(3)(b)(ii), providers must disclose ``known and foreseeable circumstances'' which may lead to risks to health, safety or fundamental rights. Our theorem proves this includes: ``SHAP-based proxy audits are unreliable for features that are collinear with both the protected attribute and a non-protected feature.'' The remedy is ensemble auditing: train $M$ models and use \DASH{} consensus.
 
 \paragraph{Intersectional considerations.}
 When multiple protected attributes (race, gender, age) are each proxied by collinear non-protected features, the impossibility applies independently to each proxy pair. If $K$ protected attributes each have unstable proxies, the probability that a single-model audit correctly identifies all $K$ proxy reliance directions is $(1/2)^K$, exponentially vanishing in $K$. For $K = 3$ (a common intersectional setting), joint correctness is $1/8 = 12.5\%$.

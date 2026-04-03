@@ -12,7 +12,7 @@ The Attribution Impossibility paper is ready for your review. This is Paper 3 in
 ## What's Ready
 
 - **Paper**: 14-page main + 76-page supplement (NeurIPS format). A JMLR merged version (~40-50 pages) is in progress.
-- **Lean formalization**: 188 theorems, 18 axioms, 2 sorry (Gaussian CDF symmetry — Mathlib gap), 36 files. Builds with `lake build`.
+- **Lean formalization**: 190 theorems, 17 axioms, 0 sorry, 36 files. Builds with `lake build`.
 - **Experiments**: 32 scripts, all reproducible on Apple Silicon in <30 min total.
 - **Companion code**: F5→F1→DASH workflow in [dash-shap PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255).
 
@@ -41,7 +41,7 @@ The Attribution Impossibility paper is ready for your review. This is Paper 3 in
 ```bash
 git clone https://github.com/DrakeCaraker/dash-impossibility-lean.git
 cd dash-impossibility-lean
-lake build                    # ~5 min, verifies all 188 theorems
+lake build                    # ~5 min, verifies all 190 theorems
 python3 paper/scripts/axiom_consistency_model.py  # verifies axiom system
 ```
 

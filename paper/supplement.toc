@@ -9,7 +9,7 @@
 \contentsline {paragraph}{Development methodology.}{8}{section*.7}%
 \contentsline {paragraph}{Proof depth distribution.}{9}{section*.8}%
 \contentsline {section}{\numberline {3}Inconsistencies Found During Formalization}{9}{section.3}%
-\contentsline {paragraph}{Joint consistency of all 18 axioms.}{9}{section*.9}%
+\contentsline {paragraph}{Joint consistency of all 17 axioms.}{9}{section*.9}%
 \contentsline {section}{\numberline {4}Gaussian Conditioning Argument}{10}{section.4}%
 \contentsline {section}{\numberline {5}Proof Sketch: $\alpha = 2/\pi $ from Gaussian Binary Quantization}{10}{section.5}%
 \contentsline {paragraph}{Connection to the corrected ratio.}{10}{section*.10}%
@@ -170,7 +170,7 @@
 \contentsline {paragraph}{Implications for AI governance.}{67}{section*.92}%
 \contentsline {paragraph}{Scope.}{67}{section*.93}%
 \contentsline {paragraph}{Example: lending.}{67}{section*.94}%
-\contentsline {paragraph}{Intersectional considerations.}{67}{section*.95}%
+\contentsline {paragraph}{Intersectional considerations.}{68}{section*.95}%
 \contentsline {section}{\numberline {31}Expected Ranking Discordance}{68}{section.31}%
 \contentsline {paragraph}{Normalized discordance rate.}{68}{section*.96}%
 \contentsline {paragraph}{Validation on Breast Cancer.}{69}{section*.97}%

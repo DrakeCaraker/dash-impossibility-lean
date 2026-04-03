@@ -56,7 +56,7 @@
 \contentsline {section}{\numberline {8}Extensions}{25}{section.8}%
 \contentsline {subsection}{\numberline {8.1}Conditional Attribution Impossibility}{25}{subsection.8.1}%
 \contentsline {paragraph}{The escape condition.}{25}{section*.44}%
-\contentsline {paragraph}{Fine-grained $\Delta \beta $ sweep at $\rho = 0.9$.}{25}{section*.47}%
+\contentsline {paragraph}{Fine-grained $\Delta \beta $ sweep at $\rho = 0.9$.}{26}{section*.47}%
 \contentsline {paragraph}{Causal structure validation.}{26}{section*.48}%
 \contentsline {paragraph}{Caveat.}{26}{section*.49}%
 \contentsline {subsection}{\numberline {8.2}Fairness Audit Impossibility}{26}{subsection.8.2}%

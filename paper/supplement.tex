@@ -30,20 +30,20 @@
 Table~\ref{tab:axioms} lists all property axioms in the formalization
 (the core impossibility theorem requires none of them---only the Rashomon
 property as hypothesis).
-The formalization uses 18 axioms total: 6 type/constant declarations
+The formalization uses 17 axioms total: 6 type/constant declarations
 (\texttt{Model}, \texttt{numTrees}, \texttt{numTrees\_pos}, \texttt{attribution},
 \texttt{splitCount}, \texttt{firstMover}), 2 measure-theoretic infrastructure
 axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}),
 7 domain-specific property axioms, and
-3 query-complexity axioms from Le~Cam's method. Three former axioms
+2 query-complexity axioms from Le~Cam's method. Four former axioms
 (\texttt{attribution\_sum\_symmetric}, \texttt{attribution\_variance\_nonneg},
-\texttt{consensus\_variance\_bound})
+\texttt{consensus\_variance\_bound}, \texttt{le\_cam\_lower\_bound})
 are now derived theorems; \texttt{attribution\_variance} is now a definition
 from Mathlib's \texttt{ProbabilityTheory.variance}.
 
 \begin{table}[h]
 \centering
-\caption{Complete axiom inventory (18 total).}
+\caption{Complete axiom inventory (17 total).}
 \label{tab:axioms}
 \small
 \begin{tabular}{@{}llp{5.5cm}@{}}
@@ -63,20 +63,20 @@ Model measure & \texttt{modelMeasure} & Mathlib infrastructure: probability meas
 \multicolumn{3}{@{}l}{\emph{Query complexity (Le~Cam's method, axiomatized):}} \\
 Testing constant & \texttt{testing\_constant} & Universal constant $C \geq 1/8$ from Tsybakov (2009) \\
 Constant positivity & \texttt{testing\_constant\_pos} & $C > 0$ \\
-Testing lower bound & \texttt{le\_cam\_lower\_bound} & $n \geq C\sigma^2/\Delta^2$ for reliable testing \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Formerly axiomatized, now derived:}} \\
 Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & \textbf{Theorem} in \texttt{SymmetryDerive.lean} (from axioms above) \\
 Attribution variance & \texttt{attribution\_variance} & \textbf{Definition} from \texttt{ProbabilityTheory.variance} \\
 Variance nonnegativity & \texttt{attribution\_variance\_nonneg} & \textbf{Theorem} from Mathlib's \texttt{variance\_nonneg} \\
 Consensus variance bound & \texttt{consensus\_variance\_bound} & \textbf{Theorem} in \texttt{Defs.lean} (algebraic) \\
+Testing lower bound & \texttt{le\_cam\_lower\_bound} & \textbf{Theorem} in \texttt{QueryComplexity.lean} (contrapositive) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \section{Proof Architecture}
 
-The formalization comprises 36 Lean~4 files with 18 axioms and
+The formalization comprises 36 Lean~4 files with 17 axioms and
 188 type-checked theorems and lemmas (
 0 \texttt{sorry}). Of these, 43 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or
@@ -124,7 +124,7 @@ supplement section and key theorem.
 
 \begin{table}[h]
 \centering
-\caption{Lean file cross-reference (36 files, 188 theorems, 18 axioms).}
+\caption{Lean file cross-reference (36 files, 190 theorems, 17 axioms).}
 \label{tab:lean-crossref}
 \footnotesize
 \begin{tabular}{@{}llll@{}}
@@ -239,7 +239,7 @@ would derive the variance bound from Mathlib's
 \paragraph{Development methodology.}
 The initial formalization (49 theorems, 15 files) was developed by
 the first author with iterative Claude Code assistance over several
-weeks. The expansion from 49 to 188 theorems (36 files) was produced
+weeks. The expansion from 49 to 190 theorems (36 files) was produced
 in a single development session by dispatching targeted Lean-writing
 agents with detailed mathematical specifications (theorem statements,
 proof strategies, and Mathlib lemma references). All proofs were
@@ -292,12 +292,12 @@ The first two are genuine logical inconsistencies that would have been
 difficult to detect by inspection of an informal proof. The third is a
 modeling assumption made explicit by the type system.
 
-\paragraph{Joint consistency of all 18 axioms.}
+\paragraph{Joint consistency of all 17 axioms.}
 The 14 domain-specific axioms are jointly consistent: \texttt{Consistency.lean}
 constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$,
 $T{=}100$, Fin~4 models) satisfying all 14 simultaneously.
-The 3 query-complexity axioms (\texttt{testing\_constant},
-\texttt{testing\_constant\_pos}, \texttt{le\_cam\_lower\_bound})
+The 2 query-complexity axioms (\texttt{testing\_constant},
+\texttt{testing\_constant\_pos})
 are independently consistent: instantiating $C := 1/8$ satisfies all three.
 The two axiom sets reside in separate Lean files
 (\texttt{Defs.lean} and \texttt{QueryComplexity.lean}) with no
@@ -3986,7 +3986,7 @@ same data} with different random seeds may reach opposite conclusions
 about whether the model relies on a protected attribute.
 
 Under the EU AI Act Art.~13(3)(b)(ii), providers must disclose
-``known and foreseeable circumstances'' affecting accuracy. Our
+``known and foreseeable circumstances'' which may lead to risks to health, safety or fundamental rights. Our
 theorem proves that this includes: ``SHAP-based proxy audits are
 unreliable for features that are collinear with both the protected
 attribute and a non-protected feature.'' The remedy is ensemble
