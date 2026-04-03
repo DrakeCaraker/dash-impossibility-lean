@@ -237,7 +237,7 @@ def run_experiment():
     }
 
     with open(output_path, "w") as f:
-        json.dump(output, f, indent=2)
+        json.dump(output, f, indent=2, default=lambda x: float(x))
     print(f"\nSaved to {output_path}")
 
 
