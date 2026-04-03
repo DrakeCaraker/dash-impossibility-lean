@@ -1,24 +1,9 @@
-\documentclass{article}
-\usepackage{jmlr2e}
+\documentclass{jmlr}
+
+% Packages not provided by jmlr.cls
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{hyperref}
-\usepackage{url}
 \usepackage{booktabs}
-\usepackage{amsfonts,amsmath,amssymb,amsthm}
-\usepackage{graphicx}
-\usepackage{xcolor}
-\usepackage{subcaption}
-\usepackage[round]{natbib}
-
-% Theorem environments
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{remark}[theorem]{Remark}
-\newtheorem{axiom}{Axiom}
 
 % Commands
 \newcommand{\R}{\mathbb{R}}
@@ -27,19 +12,24 @@
 \newcommand{\SHAP}{\mathrm{SHAP}}
 \newcommand{\DASH}{\textsc{Dash}}
 \newcommand{\GBDT}{\textsc{GBDT}}
-\newenvironment{keywords}{\paragraph{Keywords:}}{}
 
 \title{The Attribution Impossibility}
 
-\author{
-  Drake Caraker\thanks{Corresponding author: \texttt{drakecaraker@gmail.com}} \quad
-  Bryan Arnold \quad
-  David Rhoads \\[4pt]
-  \textit{Independent Researchers}
+\author{\Name{Drake Caraker} \Email{drakecaraker@gmail.com}\\
+  \addr Independent Researcher
+  \AND
+  \Name{Bryan Arnold} \Email{}\\
+  \addr Independent Researcher
+  \AND
+  \Name{David Rhoads} \Email{}\\
+  \addr Independent Researcher
 }
 
-\ShortHeadings{The Attribution Impossibility}{Caraker, Arnold \& Rhoads}
-\jmlrheading{2026}{}{1--42}{4/26}{}{Caraker, Arnold and Rhoads}
+\editor{TBD}
+
+\jmlrvolume{}
+\jmlrsubmitted{4/26}
+\jmlrpublished{}
 
 \begin{document}
 \maketitle
@@ -1341,24 +1331,24 @@ We generate $P=20$ features in $L=4$ groups of $m=5$, with within-group correlat
 
 \begin{figure}[t]
 \centering
-\begin{subfigure}[t]{0.31\textwidth}
+\begin{minipage}[t]{0.31\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figures/ratio_divergence.pdf}
-\caption{Attribution ratio vs.\ $\rho$. The corrected $1/(1{-}\alpha\rho^2)$ with $\alpha{\approx}2/\pi$ (solid) fits stumps ($R^2{=}0.89$).}
+{\small (a) Attribution ratio vs.\ $\rho$. The corrected $1/(1{-}\alpha\rho^2)$ with $\alpha{\approx}2/\pi$ (solid) fits stumps ($R^2{=}0.89$).}
 \label{fig:ratio}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.31\textwidth}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.31\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figures/shap_instability.pdf}
-\caption{Ranking instability vs.\ $\rho$. Single-model instability grows with correlation; \DASH{} remains low.}
+{\small (b) Ranking instability vs.\ $\rho$. Single-model instability grows with correlation; \DASH{} remains low.}
 \label{fig:flips}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.31\textwidth}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.31\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figures/dash_resolution.pdf}
-\caption{\DASH{} consensus convergence. Attribution CV drops toward the 1\% threshold near $M=25$.}
+{\small (c) \DASH{} consensus convergence. Attribution CV drops toward the 1\% threshold near $M=25$.}
 \label{fig:convergence}
-\end{subfigure}
+\end{minipage}
 \caption{Empirical validation on synthetic Gaussian data ($P=20$, $L=4$, $m=5$, $T=100$, 50 seeds).}
 \label{fig:experiments}
 \end{figure}
@@ -1870,7 +1860,6 @@ Beyond certifying correctness, the Lean formalization served as a bug-finding me
 \section*{Acknowledgments}
 The Lean formalization was developed with assistance from Claude Code (Anthropic). All proofs were machine-verified by the Lean~4 type-checker; no theorem was accepted solely on the basis of AI-generated output. The paper text was written by the human authors with AI editing assistance.
 
-\bibliographystyle{plainnat}
 \bibliography{references}
 
 \end{document}
