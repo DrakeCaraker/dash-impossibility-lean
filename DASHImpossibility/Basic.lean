@@ -35,3 +35,7 @@ import DASHImpossibility.Consistency
 import DASHImpossibility.GaussianFlipRate
 import DASHImpossibility.FIMImpossibility
 import DASHImpossibility.QueryComplexity
+import DASHImpossibility.Setup
+import DASHImpossibility.ApproximateEquity
+import DASHImpossibility.ProportionalityLocal
+import DASHImpossibility.Qualitative
