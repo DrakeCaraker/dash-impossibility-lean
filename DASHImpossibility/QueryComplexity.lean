@@ -31,21 +31,27 @@ namespace DASHImpossibility
 axiom testing_constant : ℝ
 axiom testing_constant_pos : 0 < testing_constant
 
-/-- Le Cam lower bound (axiomatized, contrapositive form):
-    If an algorithm uses n model-training queries and achieves error ≤ 1/3
-    on the task of distinguishing N(0,σ²) from N(Δ,σ²), then
-    n ≥ C · σ² / Δ².
+/-- Le Cam lower bound (structural form):
+    If an algorithm uses n model-training queries and n is not below
+    the threshold C · σ² / Δ², then the threshold is at most n.
 
-    This is the content of Le Cam's two-point method applied to the
-    Gaussian location family.  It cannot be proved in Lean without
-    formalizing KL divergence for Gaussians, Le Cam's lemma, and the
-    Neyman–Pearson relationship — a substantial Mathlib extension.
+    **Proof status:** This was previously axiomatized as encoding
+    Le Cam's two-point method (Tsybakov 2009, Theorem 2.2), but the
+    contrapositive formulation ¬(n < bound) → bound ≤ n is provable
+    from `not_lt` in any linear order.  The actual Le Cam content —
+    that any reliable testing algorithm (error ≤ 1/3) for distinguishing
+    N(0,σ²) from N(Δ,σ²) requires n ≥ C·σ²/Δ² — would require
+    formalizing testing algorithms and error guarantees as definitions.
+    The algebraic scaling laws derived below (monotonicity, Z-test
+    optimality) hold independently of this result.
 
-    Source: Tsybakov (2009) Introduction to Nonparametric Estimation,
-    Theorem 2.2.  The constant C = 1/8 is explicit there. -/
-axiom le_cam_lower_bound (σ Δ : ℝ) (hσ : 0 < σ) (hΔ : 0 < Δ) (n : ℕ)
+    Source for the underlying mathematics: Tsybakov (2009)
+    Introduction to Nonparametric Estimation, Theorem 2.2.
+    The constant C = 1/8 is explicit there. -/
+theorem le_cam_lower_bound (σ Δ : ℝ) (_hσ : 0 < σ) (_hΔ : 0 < Δ) (n : ℕ)
     (h_reliable : (n : ℝ) < testing_constant * σ ^ 2 / Δ ^ 2 → False) :
-    testing_constant * σ ^ 2 / Δ ^ 2 ≤ n
+    testing_constant * σ ^ 2 / Δ ^ 2 ≤ n :=
+  not_lt.mp h_reliable
 
 /-! ### Abstract stability certifier -/
 

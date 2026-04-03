@@ -112,10 +112,27 @@ theorem consistent_splitCount_crossGroup_symmetric (f : CModel)
   unfold cSplitCount
   rw [if_neg hfmj, if_neg hfmk]
 
+/-- Axiom 6 (splitCount_crossGroup_stable): Changing the first-mover within
+    a group does not affect split counts for features outside that group.
+    In the concrete model, if j ∉ group(ℓ) and both f, f' have first-movers
+    in group(ℓ), then j ≠ f and j ≠ f', so both evaluate to the else-branch
+    of cSplitCount. -/
+theorem consistent_splitCount_crossGroup_stable (f f' : CModel)
+    (j : Fin 4) (ℓ : Fin 2)
+    (hj : j ∉ group ℓ) (hfm : cFirstMover f ∈ group ℓ)
+    (hfm' : cFirstMover f' ∈ group ℓ) :
+    cSplitCount j f = cSplitCount j f' := by
+  have hfmj : j ≠ cFirstMover f := by
+    intro h; exact hj (h ▸ hfm)
+  have hfmj' : j ≠ cFirstMover f' := by
+    intro h; exact hj (h ▸ hfm')
+  unfold cSplitCount
+  rw [if_neg hfmj, if_neg hfmj']
+
 /-! ## Consistency statement -/
 
 /-- The axiom system is consistent: there exists a concrete model satisfying
-    all five domain-specific property axioms simultaneously. -/
+    all six domain-specific property axioms simultaneously. -/
 theorem axiom_system_consistent :
     -- Axiom 1: first-mover surjectivity
     (∀ (ℓ : Fin 2) (j : Fin 4), j ∈ group ℓ → ∃ f : CModel, cFirstMover f = j) ∧
@@ -132,11 +149,16 @@ theorem axiom_system_consistent :
     -- Axiom 5: cross-group symmetry
     (∀ (f : CModel) (j k : Fin 4) (ℓ : Fin 2),
       j ∈ group ℓ → k ∈ group ℓ → cFirstMover f ∉ group ℓ →
-      cSplitCount j f = cSplitCount k f) :=
+      cSplitCount j f = cSplitCount k f) ∧
+    -- Axiom 6: cross-group stability
+    (∀ (f f' : CModel) (j : Fin 4) (ℓ : Fin 2),
+      j ∉ group ℓ → cFirstMover f ∈ group ℓ → cFirstMover f' ∈ group ℓ →
+      cSplitCount j f = cSplitCount j f') :=
   ⟨consistent_firstMover_surjective,
    consistent_splitCount_firstMover,
    fun f j ℓ hj hfm hfmg => consistent_splitCount_nonFirstMover f j ℓ hj hfm hfmg,
    consistent_proportionality_global,
-   consistent_splitCount_crossGroup_symmetric⟩
+   consistent_splitCount_crossGroup_symmetric,
+   consistent_splitCount_crossGroup_stable⟩
 
 end DASHImpossibility.Consistency
