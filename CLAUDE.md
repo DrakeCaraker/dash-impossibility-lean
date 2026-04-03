@@ -60,7 +60,7 @@ DASHImpossibility/
   SymmetricBayes.lean    — General SBD: orbit bounds, trichotomy, exhaustiveness (S49-S50)
   GaussianFlipRate.lean  — Standard normal CDF Φ, flip rate formula (S31 Gaussian)
   FIMImpossibility.lean  — Gaussian FIM impossibility, Rashomon ellipsoid (S16-S17)
-  QueryComplexity.lean   — Query complexity Ω(σ²/Δ²), Le Cam axiomatized (S28)
+  QueryComplexity.lean   — Query complexity Ω(σ²/Δ²), Le Cam structural (S28)
   CausalDiscovery.lean   — Causal discovery impossibility (S53-S55)
   SBDInstances.lean      — SBD instances + abstract aggregation (S51-S52, S58)
   FairnessAudit.lean     — Fairness audit impossibility (S56)
@@ -74,19 +74,20 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, design space, SNR calibration, conditional threshold, etc.)
 ```
 
-## Lean State: 36 files, 18 axioms, 188 theorems+lemmas, 0 sorry
+## Lean State: 36 files, 17 axioms, 190 theorems+lemmas, 0 sorry
 
-## Axiom Inventory (18 total)
+## Axiom Inventory (17 total)
 
 | Category | Axioms | Used by |
 |----------|--------|---------|
 | Type declarations | Model, numTrees, numTrees_pos, attribution, splitCount, firstMover | Infrastructure |
-| Core properties | firstMover_surjective, splitCount_firstMover, splitCount_nonFirstMover, proportionality_global, splitCount_crossGroup_symmetric | GBDT bounds |
+| Core properties | firstMover_surjective, splitCount_firstMover, splitCount_nonFirstMover, proportionality_global, splitCount_crossGroup_symmetric, splitCount_crossGroup_stable | GBDT bounds |
 | Measure infrastructure | modelMeasurableSpace, modelMeasure | Variance (Mathlib connection) |
 | Spearman | spearman_classical_bound (about defined quantity) | Quantitative stability |
-| Query complexity | testing_constant, testing_constant_pos, le_cam_lower_bound | Query complexity (Le Cam) |
+| Query complexity | testing_constant, testing_constant_pos | Query complexity scaling |
 
 **Formerly axiomatized, now derived:**
+- `le_cam_lower_bound` — theorem in QueryComplexity.lean (provable by `not_lt.mp`; the contrapositive formulation ¬(n < bound) → bound ≤ n is a tautology in any linear order. The underlying Le Cam mathematics would require formalizing testing algorithms and error guarantees.)
 - `consensus_variance_bound` — theorem in Defs.lean (from attribution_variance_nonneg + Nat.cast_nonneg; existential witness is trivial)
 - `attribution_sum_symmetric` — theorem in SymmetryDerive.lean (from proportionality + split-count + cross-group + balance)
 - `attribution_variance` — noncomputable def from ProbabilityTheory.variance (Mathlib)
