@@ -449,49 +449,31 @@ theorem spearmanCorr_bound_groupSize (f f' : Model) (j k : Fin fs.P) (ℓ : Fin 
   rw [div_le_div_iff_of_pos_right hdenom_pos']
   linarith
 
-/-! ## Classical quantitative bound (axiomatized about defined quantity)
+/-! ## Spearman bound (derived from split-count structure)
 
-  The classical combinatorial argument gives Spearman ≤ 1 - m³/P³, which is
-  tighter than even the derived 3(m-1)²/(P³-P) bound above.
+  The classical combinatorial argument gives Spearman ≤ 1 - m³/P³. Our formal
+  derivation achieves the slightly weaker bound 1 - 3(m-1)²/(P³-P), which
+  suffices for all downstream results. The gap is a "swap preserves midranks"
+  finset cardinality argument — formalizable but tedious (~250 lines).
 
-  **Current derivation status (with splitCount_crossGroup_stable):**
+  The derived bound is used everywhere the classical bound was previously
+  axiomatized. The key insight is the same: instability scales with (m/P)². -/
 
-  The new axiom `splitCount_crossGroup_stable` enables:
-  - `attribution_eq_outside_group`: features outside group ℓ have identical
-    attributions in both models — so Σd² contribution from outside is zero
-    IF we could prove midranks are preserved.
-  - `countEqual_ge_groupSize_minus_one`: within the group, m-1 non-first-
-    movers are tied, giving countEqual ≥ m-1.
-  - `sumSqRankDiff_ge_sq_groupSize`: Σd² ≥ (m-1)²/2.
-  - `spearmanCorr_bound_groupSize`: Spearman ≤ 1 - 3(m-1)²/(P³-P).
+/-- Spearman instability bound (derived, formerly axiomatized):
+    When two models have different first-movers within the same group,
+    their Spearman correlation is bounded away from 1.
 
-  **Remaining gap to the full m³/P³ bound:**
-
-  The derived bound is 1 - 3(m-1)²/(P³-P), which is O(m²/P³). The classical
-  bound is 1 - m³/P³, which is O(m³/P³). The gap comes from two sources:
-
-  1. **Σd² lower bound**: We prove Σd² ≥ (m-1)²/2 using only d_j and d_k
-     (the two features that swap roles). The classical argument uses all m
-     features in the group, exploiting the fact that their midranks all shift,
-     giving Σd² = Ω(m³). To formalize this, one would need to prove that the
-     attribution vectors are a "value swap" of j and k (which we have shown:
-     `attribution_swap_structure` + `attribution_eq_outside_group` +
-     `attribution_non_fm_stable`), AND that swapping two values in a vector
-     preserves midranks of all other positions (a finset cardinality argument
-     about filter sets under transposition — formalizable but tedious).
-
-  2. **Denominator**: The bound uses P³-P rather than P³. This is a minor
-     difference (P³-P ≈ P³ for large P).
-
-  The m³/P³ bound remains an axiom below. It is strictly about the defined
-  `spearmanCorr` quantity (not an opaque type). With the infrastructure above,
-  the gap is purely the "swap preserves midranks" argument, which is a
-  combinatorial identity rather than a domain-specific assumption. -/
-axiom spearman_classical_bound (f f' : Model) (ℓ : Fin fs.L)
+    The bound 3(m-1)²/(P³-P) is fully derived from the split-count axioms
+    and cross-group stability. It is weaker than the classical m³/P³ bound
+    but requires no additional axioms. -/
+theorem spearman_instability_bound (f f' : Model) (ℓ : Fin fs.L)
     (hfm_grp : firstMover fs f ∈ fs.group ℓ)
     (hfm'_grp : firstMover fs f' ∈ fs.group ℓ)
-    (hdiff : firstMover fs f ≠ firstMover fs f') :
+    (hdiff : firstMover fs f ≠ firstMover fs f')
+    (hP : 2 ≤ fs.P) :
     spearmanCorr fs (fun j => attribution fs j f) (fun j => attribution fs j f') ≤
-      1 - (fs.groupSize ℓ : ℝ) ^ 3 / (fs.P : ℝ) ^ 3
+      1 - 3 * ((fs.groupSize ℓ : ℝ) - 1) ^ 2 / ((fs.P : ℝ) ^ 3 - (fs.P : ℝ)) := by
+  exact spearmanCorr_bound_groupSize fs f f' (firstMover fs f) (firstMover fs f')
+    ℓ hfm_grp hfm'_grp hdiff rfl rfl hP
 
 end DASHImpossibility

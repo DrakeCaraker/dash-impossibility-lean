@@ -24,6 +24,10 @@ Level 9 (instances):      ModelSelection.lean, CausalDiscovery.lean, SBDInstance
 Level 10 (extensions):    ConditionalImpossibility.lean, FairnessAudit.lean, FlipRate.lean
 Level 11 (bounds):        EnsembleBound.lean, Efficiency.lean, AlphaFaithful.lean
 Level 12 (universality):  RashomonUniversality.lean, RashomonInevitability.lean, LocalGlobal.lean
+Strengthening:            ProportionalityLocal.lean (impossibility from per-model c only)
+                          Qualitative.lean (impossibility from 2 axioms: dominance + surjectivity)
+                          ApproximateEquity.lean (Rashomon from bounded proportionality)
+                          Setup.lean (GBDTSetup structure bundling all axioms)
 Contrast:                 RandomForest.lean (bounded violations, no formal proofs)
 ```
 
@@ -74,21 +78,29 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, design space, SNR calibration, conditional threshold, etc.)
 ```
 
-## Lean State: 36 files, 17 axioms, 190 theorems+lemmas, 0 sorry
+## Lean State: 40 files, 16 axioms, 203 theorems+lemmas, 0 sorry
 
-## Axiom Inventory (17 total)
+## Axiom Inventory (16 total)
 
 | Category | Axioms | Used by |
 |----------|--------|---------|
-| Type declarations | Model, numTrees, numTrees_pos, attribution, splitCount, firstMover | Infrastructure |
+| Type declarations | Model, numTrees, numTrees_pos, attribution, splitCount, firstMover | Infrastructure (bundled in Setup.lean) |
 | Core properties | firstMover_surjective, splitCount_firstMover, splitCount_nonFirstMover, proportionality_global, splitCount_crossGroup_symmetric, splitCount_crossGroup_stable | GBDT bounds |
 | Measure infrastructure | modelMeasurableSpace, modelMeasure | Variance (Mathlib connection) |
-| Spearman | spearman_classical_bound (about defined quantity) | Quantitative stability |
 | Query complexity | testing_constant, testing_constant_pos | Query complexity scaling |
 
+**Axiom stratification (verified by `#print axioms`):**
+- **Core impossibility** (`attribution_impossibility`): ZERO behavioral axioms (only Model + attribution types)
+- **Qualitative impossibility** (`impossibility_qualitative`): ZERO behavioral axioms (dominance + surjectivity as hypotheses)
+- **GBDT impossibility** (`gbdt_impossibility_local`): 4 axioms (surj, fm, nfm — NO proportionality_global)
+- **Quantitative impossibility** (`impossibility`): 5 axioms (+ proportionality_global for ratio)
+- **DASH resolution** (`consensus_equity`): 6 axioms (+ cross-group symmetric)
+- **Bundled impossibility** (`attribution_impossibility_bundled`): ZERO axioms (fully parametric via GBDTSetup)
+
 **Formerly axiomatized, now derived:**
-- `le_cam_lower_bound` — theorem in QueryComplexity.lean (provable by `not_lt.mp`; the contrapositive formulation ¬(n < bound) → bound ≤ n is a tautology in any linear order. The underlying Le Cam mathematics would require formalizing testing algorithms and error guarantees.)
-- `consensus_variance_bound` — theorem in Defs.lean (from attribution_variance_nonneg + Nat.cast_nonneg; existential witness is trivial)
+- `spearman_classical_bound` → `spearman_instability_bound` in SpearmanDef.lean (derived from split-count structure; bound 3(m-1)²/(P³-P) is weaker than classical m³/P³ but fully proved)
+- `le_cam_lower_bound` — theorem in QueryComplexity.lean (provable by `not_lt.mp`; the contrapositive formulation ¬(n < bound) → bound ≤ n is a tautology in any linear order)
+- `consensus_variance_bound` — theorem in Defs.lean (from attribution_variance_nonneg + Nat.cast_nonneg)
 - `attribution_sum_symmetric` — theorem in SymmetryDerive.lean (from proportionality + split-count + cross-group + balance)
 - `attribution_variance` — noncomputable def from ProbabilityTheory.variance (Mathlib)
 - `attribution_variance_nonneg` — theorem from Mathlib's variance_nonneg
