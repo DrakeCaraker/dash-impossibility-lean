@@ -1,5 +1,5 @@
 """
-DASH vs Alternative SHAP Stabilization Methods — Benchmark.
+DASH vs Alternative SHAP Stabilization Methods — Benchmark (LIGHT version).
 
 Compares five approaches to stabilizing feature attribution rankings:
   1. Single Model TreeSHAP (baseline)
@@ -12,18 +12,21 @@ Key insight validated: DASH dominates on flip rate because it is the only
 method that addresses the Rashomon property (multiple models). The others
 only address SHAP estimation noise (single model).
 
-DGP: P=20 features, L=4 groups of m=5, ρ sweep, N=2000, Y = ΣX_j + ε(σ=0.1).
+DGP: P=20 features, L=4 groups of m=5, rho sweep, N=1000, Y = sum(X_j) + eps(sigma=0.1).
 
 Usage:
   python dash_vs_alternatives.py
 """
+
+# Force line-buffered stdout so output is visible during execution
+import sys
+sys.stdout = open(sys.stdout.fileno(), mode='w', buffering=1)
 
 import warnings
 import numpy as np
 import json
 import os
 import time
-import sys
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -43,21 +46,24 @@ except ImportError:
 from scipy.stats import norm
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-N_SAMPLES = 2000
+N_SAMPLES = 1000
 P_PER_GROUP = 5
 N_GROUPS = 4
 P_TOTAL = P_PER_GROUP * N_GROUPS  # 20
 NOISE_STD = 0.1
-RHO_VALUES = [0.3, 0.5, 0.7, 0.9, 0.95]
+RHO_VALUES = [0.5, 0.7, 0.9]
 
-N_TRIALS = 20          # independent trials per (method, rho)
-N_REPS = 50            # repetitions for flip rate measurement
-M_DASH = 25            # ensemble size for DASH
-N_BOOTSTRAP = 25       # bootstrap/subsample replicates
-N_BACKGROUND = 100     # background samples for subsampled SHAP
+N_TRIALS = 10           # independent trials per (method, rho)
+N_REPS = 20             # repetitions for flip rate measurement
+M_DASH = 25             # ensemble size for DASH
+N_BOOTSTRAP = 25        # bootstrap/subsample replicates
+N_BACKGROUND = 100      # background samples for subsampled SHAP
+SHAP_EVAL_SAMPLES = 100 # samples for SHAP evaluation
+
+N_BOOT_CI = 1000        # bootstrap resamples for confidence intervals on flip rates
 
 XGB_PARAMS = dict(
-    n_estimators=100,
+    n_estimators=50,
     max_depth=4,
     subsample=0.8,
     learning_rate=0.1,
@@ -206,15 +212,12 @@ def compute_flip_rate(rankings_list, ties_list=None):
     rankings_list : list of ndarray, each shape (P,)
         Importance scores from each repetition.
     ties_list : list of set or None
-        For CI method, sets of (i,j) pairs that are tied. Only non-tied pairs
-        count toward flip rate.
+        For CI method, sets of (i,j) pairs that are tied.
 
     Returns
     -------
     mean_flip_rate : float
-        Average flip rate across within-group pairs.
     pairs_resolved : float
-        Average number of within-group pairs with definitive ranking.
     """
     n_reps = len(rankings_list)
     total_flips = 0
@@ -251,6 +254,34 @@ def compute_flip_rate(rankings_list, ties_list=None):
     return mean_flip, pairs_resolved
 
 
+def bootstrap_ci_flip_rate(trial_flips, n_boot=N_BOOT_CI, alpha=0.05):
+    """
+    Compute bootstrap confidence interval for the mean flip rate.
+
+    Parameters
+    ----------
+    trial_flips : array-like of float
+        Flip rates from each trial.
+    n_boot : int
+        Number of bootstrap resamples.
+    alpha : float
+        Significance level (0.05 for 95% CI).
+
+    Returns
+    -------
+    ci_lower, ci_upper : float
+    """
+    arr = np.array(trial_flips)
+    rng = np.random.default_rng(42)
+    boot_means = np.empty(n_boot)
+    for b in range(n_boot):
+        sample = rng.choice(arr, size=len(arr), replace=True)
+        boot_means[b] = np.mean(sample)
+    ci_lower = float(np.percentile(boot_means, 100 * alpha / 2))
+    ci_upper = float(np.percentile(boot_means, 100 * (1 - alpha / 2)))
+    return ci_lower, ci_upper
+
+
 # ── Main benchmark ────────────────────────────────────────────────────────────
 
 METHODS = {
@@ -265,21 +296,23 @@ METHODS = {
 def run_benchmark():
     """Run full benchmark across all methods and rho values."""
     results = {}
-    print("=" * 90)
-    print(f"DASH vs Alternative SHAP Stabilization Methods")
+    total_start = time.time()
+    print("=" * 100)
+    print(f"DASH vs Alternative SHAP Stabilization Methods (LIGHT)")
     print(f"P={P_TOTAL}, L={N_GROUPS} groups of m={P_PER_GROUP}, "
-          f"N={N_SAMPLES}, {N_TRIALS} trials, {N_REPS} reps/trial")
-    print("=" * 90)
+          f"N={N_SAMPLES}, {N_TRIALS} trials, {N_REPS} reps/trial, "
+          f"n_estimators={XGB_PARAMS['n_estimators']}, SHAP_eval={SHAP_EVAL_SAMPLES}")
+    print("=" * 100)
 
     for rho in RHO_VALUES:
         results[str(rho)] = {}
-        print(f"\n{'─' * 90}")
+        print(f"\n{'─' * 100}")
         print(f"  rho = {rho}")
-        print(f"{'─' * 90}")
-        header = (f"  {'Method':<22s} {'Flip Rate':>10s} {'Flip Std':>10s} "
-                  f"{'Wall (s)':>10s} {'Pairs Resolved':>15s}")
+        print(f"{'─' * 100}")
+        header = (f"  {'Method':<22s} {'Flip Rate':>10s} {'95% CI':>22s} "
+                  f"{'Flip Std':>10s} {'Wall (s)':>10s} {'Pairs Resolved':>15s}")
         print(header)
-        print(f"  {'─' * 70}")
+        print(f"  {'─' * 92}")
 
         for method_name, method_fn in METHODS.items():
             trial_flips = []
@@ -290,8 +323,16 @@ def run_benchmark():
                 data_seed = trial * 1000 + int(rho * 100)
                 X, y = generate_data(N_SAMPLES, rho, data_seed)
                 n_train = int(0.8 * N_SAMPLES)
-                X_train, X_test = X[:n_train], X[n_train:]
+                X_train, X_test_full = X[:n_train], X[n_train:]
                 y_train, y_test = y[:n_train], y[n_train:]
+
+                # Subsample SHAP eval set for speed
+                rng_eval = np.random.default_rng(data_seed + 9999)
+                if len(X_test_full) > SHAP_EVAL_SAMPLES:
+                    eval_idx = rng_eval.choice(len(X_test_full), size=SHAP_EVAL_SAMPLES, replace=False)
+                    X_test = X_test_full[eval_idx]
+                else:
+                    X_test = X_test_full
 
                 # Collect N_REPS rankings for flip rate
                 rankings = []
@@ -314,45 +355,93 @@ def run_benchmark():
                 trial_times.append(wall / N_REPS)  # per-run time
                 trial_resolved.append(resolved)
 
+                # Progress indicator
+                print(f"    [{method_name}] trial {trial+1}/{N_TRIALS} done "
+                      f"(flip={flip:.4f}, {wall:.1f}s)")
+
             mean_flip = np.mean(trial_flips)
             std_flip = np.std(trial_flips, ddof=1)
             mean_time = np.mean(trial_times)
             mean_resolved = np.mean(trial_resolved)
 
+            # Bootstrap CI on the flip rate
+            ci_lower, ci_upper = bootstrap_ci_flip_rate(trial_flips)
+
             results[str(rho)][method_name] = {
-                "flip_rate_mean": round(float(mean_flip), 4),
+                "flip_rate": round(float(mean_flip), 4),
+                "ci_lower": round(float(ci_lower), 4),
+                "ci_upper": round(float(ci_upper), 4),
                 "flip_rate_std": round(float(std_flip), 4),
                 "wall_time_s": round(float(mean_time), 3),
                 "pairs_resolved": round(float(mean_resolved), 2),
                 "n_within_pairs": N_WITHIN_PAIRS,
             }
 
-            print(f"  {method_name:<22s} {mean_flip:>10.4f} {std_flip:>10.4f} "
-                  f"{mean_time:>10.3f} {mean_resolved:>12.1f}/{N_WITHIN_PAIRS}")
+            ci_str = f"[{ci_lower:.4f}, {ci_upper:.4f}]"
+            print(f"  {method_name:<22s} {mean_flip:>10.4f} {ci_str:>22s} "
+                  f"{std_flip:>10.4f} {mean_time:>10.3f} "
+                  f"{mean_resolved:>12.1f}/{N_WITHIN_PAIRS}")
 
+    elapsed = time.time() - total_start
+    print(f"\nTotal wall time: {elapsed:.1f}s ({elapsed/60:.1f} min)")
+    results["_meta"] = {
+        "N_SAMPLES": N_SAMPLES,
+        "N_TRIALS": N_TRIALS,
+        "N_REPS": N_REPS,
+        "n_estimators": XGB_PARAMS["n_estimators"],
+        "SHAP_EVAL_SAMPLES": SHAP_EVAL_SAMPLES,
+        "rho_values": RHO_VALUES,
+        "total_wall_time_s": round(elapsed, 1),
+    }
     return results
 
 
 def print_summary(results):
     """Print which method achieves lowest flip rate at each rho."""
-    print(f"\n{'=' * 90}")
-    print("SUMMARY: Lowest flip rate at each rho")
-    print(f"{'=' * 90}")
+    print(f"\n{'=' * 100}")
+    print("SUMMARY: Lowest flip rate at each rho (with 95% bootstrap CI)")
+    print(f"{'=' * 100}")
+    dash_wins = True
     for rho in RHO_VALUES:
         rho_key = str(rho)
         best_name = None
         best_flip = float("inf")
         for method_name, vals in results[rho_key].items():
-            # For CI SHAP, compare on non-tied pairs only
-            if vals["flip_rate_mean"] < best_flip:
-                best_flip = vals["flip_rate_mean"]
+            if vals["flip_rate"] < best_flip:
+                best_flip = vals["flip_rate"]
                 best_name = method_name
-        print(f"  rho={rho:<5}  ->  {best_name:<22s}  (flip rate = {best_flip:.4f})")
+        ci_lo = results[rho_key][best_name]["ci_lower"]
+        ci_hi = results[rho_key][best_name]["ci_upper"]
+        marker = " <-- DASH" if "DASH" in best_name else " <-- NOT DASH!"
+        if "DASH" not in best_name:
+            dash_wins = False
+        print(f"  rho={rho:<5}  ->  {best_name:<22s}  "
+              f"(flip rate = {best_flip:.4f}, 95% CI [{ci_lo:.4f}, {ci_hi:.4f}]){marker}")
 
-    print(f"\nInsight: DASH addresses the Rashomon property (multiple models),")
-    print(f"while Bootstrap/Subsampled/CI SHAP only address estimation noise")
-    print(f"(single model). At high rho, single-model methods cannot reduce")
-    print(f"flip rates because the instability is structural, not statistical.")
+    print()
+    if dash_wins:
+        print("RESULT: DASH has the lowest flip rate at every rho value.")
+        print("This confirms: DASH addresses the Rashomon property (multiple models),")
+        print("while Bootstrap/Subsampled/CI SHAP only address estimation noise")
+        print("(single model). At high rho, single-model methods cannot reduce")
+        print("flip rates because the instability is structural, not statistical.")
+    else:
+        print("WARNING: DASH did NOT win at every rho. Investigate further.")
+
+    # Also print all CIs for easy comparison
+    print(f"\n{'=' * 100}")
+    print("FULL TABLE: flip_rate [ci_lower, ci_upper]")
+    print(f"{'=' * 100}")
+    print(f"  {'Method':<22s}", end="")
+    for rho in RHO_VALUES:
+        print(f"  {'rho='+str(rho):>28s}", end="")
+    print()
+    for method_name in METHODS:
+        print(f"  {method_name:<22s}", end="")
+        for rho in RHO_VALUES:
+            v = results[str(rho)][method_name]
+            print(f"  {v['flip_rate']:.4f} [{v['ci_lower']:.4f},{v['ci_upper']:.4f}]", end="")
+        print()
 
 
 def main():
