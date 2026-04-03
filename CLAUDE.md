@@ -73,7 +73,7 @@ DASHImpossibility/
 paper/
   main.tex           — NeurIPS 2026 paper (14 pages pre-restructure)
   supplement.tex     — Supplementary (70 pages)
-  references.bib     — 23 citations
+  references.bib     — 44 citations
   scripts/           — 30 scripts (figure generation, validation, diagnostics)
   figures/           — PDF figures (ratio, instability, DASH, F1/F5, design space, SNR calibration, conditional threshold, etc.)
 ```
@@ -116,8 +116,8 @@ lake build     # compile everything (~2500 jobs)
 
 ## Submission
 
-- **JMLR** (primary target): `paper/main_jmlr.tex` (~40-50 pages, self-contained). JMLR class: https://jmlr.org/format/
-- **NeurIPS 2026** (backup): `paper/main.tex` (14 pages) + `paper/supplement.tex` (76 pages). Abstract May 4, Paper May 6. Placeholder `neurips_2026.sty` — replace with official style.
+- **JMLR** (primary target): `paper/main_jmlr.tex` (50 pages, `jmlr.cls` from TeX Live). JMLR class: https://jmlr.org/format/
+- **NeurIPS 2026** (backup): `paper/main.tex` (10 pages) + `paper/supplement.tex` (76 pages). Abstract May 4, Paper May 6. Official `neurips_2026.sty` (verified identical to neurips.cc download).
 - **arXiv**: Run `paper/scripts/prepare_arxiv.sh` to uncomment authors and fill URLs.
 - Title: "The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity"
 - Authors: Drake Caraker, Bryan Arnold, David Rhoads
@@ -125,11 +125,17 @@ lake build     # compile everything (~2500 jobs)
 
 ## Do NOT
 
-- Commit paper changes without verifying paper-code consistency: theorem count (`grep -c "^theorem\|^lemma" DASHImpossibility/*.lean`), axiom count (`grep -c "^axiom" DASHImpossibility/*.lean`), page counts (`pdfinfo paper/main.pdf`, `pdfinfo paper/supplement.pdf`), and sorry count all match what the paper text claims
+- Commit paper changes without verifying paper-code consistency. Run this verification block and confirm all numbers match the paper text before committing:
+  ```bash
+  grep -c "^theorem\|^lemma" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print "theorems+lemmas:", s}'
+  grep -c "^axiom" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print "axioms:", s}'
+  grep -rc "sorry" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print "sorry:", s}'
+  ls DASHImpossibility/*.lean | wc -l | awk '{print "files:", $1}'
+  ```
 - Use `sorry` without a `-- TODO:` comment explaining what's needed
 - Change axioms without re-running the SymPy verification (`dash-shap/paper/proofs/verify_lemma6_algebra.py`)
 - Add `autoImplicit true` — all variables must be explicit
-- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma"` (currently 180)
+- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print s}'` (currently 190)
 - Run parallel subagents that both modify the same file (causes build cache corruption)
 - Axiomatize quantities that can be defined — prefer definitions with axiomatized bounds (see SpearmanDef.lean pattern)
 - Claim empirical results as "proved" or "Lean-verified" — distinguish: **proved** (zero axiom deps), **derived** (from axioms), **argued** (supplement proof only), **empirical** (experiments). The paper's "Proof status transparency" paragraph is the reference.
