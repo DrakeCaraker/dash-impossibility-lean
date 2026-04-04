@@ -1671,31 +1671,104 @@ Iris (binary) & 4 & 6 & 0 & --- & --- \\
 \label{fig:comprehensive-f1}
 \end{figure}
 
-\subsection{Additional Experimental Validation}
-\label{sec:additional-experiments}
+\subsection{Mechanism Isolation: Stochastic Training Creates the Rashomon Set}
+\label{sec:mechanism}
 
-We conducted 12 additional experiments to test the robustness and generalizability of the impossibility. Results are available in the repository as JSON with bootstrap confidence intervals.
+To confirm that the instability is driven by the Rashomon effect (multiple near-optimal models) rather than SHAP estimation noise, we compare deterministic and stochastic XGBoost training on the same synthetic data ($P{=}10$, 2 groups of 5, $\rho{=}0.9$, 20 seeds):
 
-\paragraph{Mechanism validation.}
-With deterministic training (\texttt{subsample=1.0}), the flip rate drops to 0.0\% (95\% CI: [0.0\%, 0.1\%]), compared to 22.8\% [21.5\%, 24.2\%] with stochastic training (\texttt{subsample=0.8}). This confirms the Rashomon mechanism: stochastic training creates the Rashomon set.
+\begin{center}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Training mode & Within-group flip rate & 95\% CI \\
+\midrule
+Deterministic (\texttt{subsample=1.0}) & 0.0\% & [0.0\%, 0.1\%] \\
+Stochastic (\texttt{subsample=0.8}) & 22.8\% & [21.5\%, 24.2\%] \\
+\bottomrule
+\end{tabular}
+\end{center}
 
-\paragraph{Flip rate formula validation.}
-Monte Carlo simulation (1,000 trials per $\rho$, stumps) validates $\Phi(-\text{SNR})$ to within 2.6\% across $\rho \in \{0.1, \ldots, 0.99\}$.
+With deterministic training, XGBoost produces identical models across seeds---no Rashomon set, no instability. With the recommended stochastic setting (\texttt{subsample=0.8}), each seed produces a different near-optimal model, and feature rankings flip. The impossibility is about the stochastic (recommended, regularized) setting, not a bug in the algorithm.
 
-\paragraph{Conditional SHAP.}
-Using SHAP's interventional mode, conditional SHAP gives 50.3\% flip rate at $\Delta\beta = 0$ (equal causal effects)---confirming the impossibility holds for conditional SHAP under symmetry. Conditional SHAP resolves the ranking only when causal effects differ ($\Delta\beta > 0.1$). Decorrelation (residualization) always gives 0\% flip rate but changes the feature semantics---it does not escape the impossibility, it changes the problem.
+\subsection{Conditional SHAP: Impossibility Under Equal Causal Effects}
+\label{sec:conditional-experiment}
 
-\paragraph{Hyperparameter universality.}
-Across 81 XGBoost configurations (3 learning rates $\times$ 3 depths $\times$ 3 tree counts $\times$ 3 correlations), the minimum flip rate is 38.7\% [37.1\%, 40.2\%] at $\rho = 0.5$. No hyperparameter configuration eliminates instability for $\rho > 0$.
+Using SHAP's interventional mode (\texttt{feature\_perturbation="interventional"}) on a known causal DAG ($X_1 \to Y$, $X_2 \to Y$, $X_1 \leftrightarrow X_2$ with $\rho{=}0.8$), we sweep the causal effect difference $\Delta\beta = |\beta_1 - \beta_2|$:
 
-\paragraph{Compounding factors.}
-Class imbalance amplifies instability (max flip rate increases monotonically with imbalance ratio). Missing data compounds the effect across all mechanisms (MCAR, MAR, MNAR) and rates (5\%--20\%). Instability persists and grows over 50 retrain cycles with simulated data drift.
+\begin{center}
+\small
+\begin{tabular}{@{}cccl@{}}
+\toprule
+$\Delta\beta$ & Marginal SHAP flip & Conditional SHAP flip & Status \\
+\midrule
+0.0 & 49.7\% & 50.3\% & Both unstable (coin flip) \\
+0.1 & 15.0\% & 0.0\% & Conditional resolves \\
+0.2 & 0.0\% & 0.0\% & Both stable \\
+\bottomrule
+\end{tabular}
+\end{center}
 
-\paragraph{Generality beyond tabular GBDT.}
-In bag-of-words text classification (20newsgroups, TF-IDF + XGBoost), 60\% of documents have unstable top-1 token attribution and 91\% have unstable top-3. Temporal feature engineering (AR(1) processes with rolling windows) creates correlated groups with 27\% of within-series pairs exhibiting instability.
+At $\Delta\beta = 0$ (equal causal effects), both marginal and conditional SHAP produce coin-flip rankings---confirming the impossibility holds for conditional SHAP under symmetry (Theorem~\ref{thm:conditional}). Conditional SHAP resolves the ranking only when causal effects genuinely differ. A third approach, decorrelation (residualization $X_2' = X_2 - \rho X_1$), always gives 0\% flip rate but changes the feature semantics rather than escaping the impossibility.
 
-\paragraph{Regulatory impact.}
-In a simulated ECOA adverse action pipeline (10,000 loan applications, 5 correlated income features at $\rho = 0.7$, 25 XGBoost models), 43.2\% of denied applicants receive a different ``top reason for denial'' depending on which equivalent model is queried. \DASH{} ensemble averaging resolves this entirely: 100\% stable adverse action reasons after consensus.
+\subsection{Regulatory Impact: Adverse Action Instability}
+\label{sec:regulatory-experiment}
+
+In a simulated ECOA adverse action pipeline (5,000 loan applications, 5 correlated income features, 3 uncorrelated features, 25 XGBoost models), we measure how often the ``top reason for denial'' changes across equivalent models:
+
+At $\rho = 0.7$ (typical for income-related features in the US), 43.2\% of denied applicants receive a different ``top reason for denial'' depending on which equivalent model is queried. The instability grows with correlation: the DASH benchmark (Table~\ref{tab:dash-benchmark}) shows within-group flip rates of 16--19\% for single-model methods across $\rho \in \{0.5, 0.7, 0.9\}$. \DASH{} ensemble averaging resolves this entirely: 100\% stable adverse action reasons after consensus. This meets the SR~11-7 definition of ``material model risk'' and has direct implications for EU~AI~Act Art.~13(3)(b)(ii) compliance.
+
+\subsection{Additional Robustness Experiments}
+\label{sec:robustness-experiments}
+
+\begin{table}[h]
+\centering
+\caption{Summary of additional experiments. All scripts and results are in the repository.}
+\label{tab:experiment-summary}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Experiment & Key finding & Reproduce \\
+\midrule
+Monte Carlo flip rate & $\Phi(-\text{SNR})$ validated to $<$2.6\% & \texttt{monte\_carlo\_flip\_rate.py} \\
+Hyperparameter sweep & Min flip 38.7\% at $\rho{=}0.5$; never 0\% & \texttt{hyperparameter\_sensitivity.py} \\
+Class imbalance & Imbalance amplifies instability & \texttt{class\_imbalance\_instability.py} \\
+Missing data & MCAR/MAR/MNAR all compound & \texttt{missing\_data\_instability.py} \\
+Longitudinal drift & Instability persists over 50 retrains & \texttt{longitudinal\_retraining.py} \\
+Adversarial configs & Worst-case grid search (108 configs) & \texttt{adversarial\_max\_instability.py} \\
+Bag-of-words NLP & 60\% unstable top-1, 91\% top-3 & \texttt{nlp\_token\_instability.py} \\
+Time-series features & 27\% within-series pairs unstable & \texttt{timeseries\_instability.py} \\
+Method comparison & SHAP, gain, permutation all unstable & \texttt{attribution\_method\_comparison.py} \\
+SAGE approximation & Alternative methods also unstable & \texttt{sage\_comparison.py} \\
+DASH breakdown & Robustness to contaminated ensembles & \texttt{dash\_breakdown\_point.py} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Quickstart: Using \DASH{} in Practice}
+\label{sec:quickstart}
+
+The \DASH{} workflow requires only standard tools (XGBoost + SHAP):
+
+\begin{verbatim}
+import xgboost as xgb, shap, numpy as np
+
+# Step 1: Train M models with different seeds
+M = 25
+models = [xgb.XGBRegressor(subsample=0.8, random_state=i).fit(X, y)
+          for i in range(M)]
+
+# Step 2: Compute SHAP for each model
+shap_values = [shap.TreeExplainer(m).shap_values(X_test) for m in models]
+
+# Step 3: DASH consensus = mean |SHAP| across models
+consensus = np.mean([np.mean(np.abs(sv), axis=0) for sv in shap_values], axis=0)
+
+# Step 4: Rank features by consensus importance
+ranking = np.argsort(-consensus)
+print("DASH feature ranking:", ranking)
+\end{verbatim}
+
+For the full F5$\to$F1$\to$\DASH{} diagnostic workflow, see the companion library at \url{https://github.com/DrakeCaraker/dash-shap}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 11. LEAN FORMALIZATION
