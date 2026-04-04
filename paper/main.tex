@@ -52,7 +52,7 @@ No feature ranking can be simultaneously faithful, stable, and complete when fea
 Faithful, stable, and complete feature rankings cannot coexist under collinearity---we characterize the complete design space: exactly two families of methods exist, and no method lies outside this dichotomy.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} (\textbf{D}iversified \textbf{A}ggregation of \textbf{SH}AP) ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
-In a survey of 37 public datasets, approximately 60\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
+In a survey of 77 public datasets, 68\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
 The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing.
 SHAP-based proxy discrimination audits are provably no better than coin flips under collinearity.
@@ -62,7 +62,7 @@ The design space theorem, diagnostics, and impossibility are mechanically verifi
 \section{Introduction}
 \label{sec:intro}
 
-Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes. In a survey of 37 public datasets, approximately 60\% exhibit this instability. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes. In a survey of 77 public datasets, 68\% exhibit this instability. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility.
 
 Before this work, practitioners attributed SHAP instability to fixable causes. After, they know it is a mathematical certainty under collinearity---and they have a provably optimal fix.
 
@@ -447,7 +447,7 @@ For safety-critical deployments, report both single-model SHAP (with instability
 %% MOVED TO SUPPLEMENT: For batch pipelines ... through ... not the qualitative impossibility or the diagnostics.
 
 \paragraph{Broader implications.}
-In a survey of 37 public datasets (supplement), approximately 60\% exhibit attribution instability (conservative lower bound; survey power 32\%).
+In a survey of 77 public datasets (supplement), approximately 60\% exhibit attribution instability (conservative lower bound; survey power 32\%).
 Our theorem proves this is a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}: single-model certification of feature attributions is formally infeasible under collinearity.
 The consequences are concrete: a hospital investing in the ``top'' SHAP feature may target the wrong intervention after retraining; published studies reporting single-model feature importance may report artifacts of the training run.
 For fairness auditing, a single-model SHAP audit of a collinear proxy concludes ``proxy reliance'' with probability exactly $1/2$---a coin flip (supplement).

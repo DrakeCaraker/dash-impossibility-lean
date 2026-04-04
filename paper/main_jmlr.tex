@@ -45,7 +45,7 @@ No feature ranking can be simultaneously faithful, stable, and complete under co
 The foundation is the \emph{Attribution Impossibility}: no feature ranking can be simultaneously faithful, stable, and complete when features are collinear.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} (\textbf{D}iversified \textbf{A}ggregation of \textbf{SH}AP) ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
-In a survey of 37 public datasets, approximately 60\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
+In a survey of 77 public datasets, 68\% exhibit attribution instability (95\% CI: [56\%, 77\%]; rising to 93\% for $P \geq 20$).
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
 The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
 The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (260 theorems from 14 domain-specific + 2 query-complexity axioms, 0 \texttt{sorry})---to our knowledge, the first formally verified impossibility in explainable AI.
@@ -90,7 +90,7 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 \section{Introduction}
 \label{sec:intro}
 
-Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes. In a survey of 37 public datasets, approximately 60\% exhibit this instability. Before this work, practitioners assumed this was an engineering problem. We prove it is a mathematical impossibility---and we provide the complete theory: an impossibility theorem, quantitative architecture-discriminating bounds, a constructive resolution with provable optimality, and machine verification in Lean~4.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes. In a survey of 77 public datasets, 68\% exhibit this instability. Before this work, practitioners assumed this was an engineering problem. We prove it is a mathematical impossibility---and we provide the complete theory: an impossibility theorem, quantitative architecture-discriminating bounds, a constructive resolution with provable optimality, and machine verification in Lean~4.
 
 For $m{=}2$, ranking collinear pairs is literally a coin flip.
 
@@ -651,6 +651,35 @@ Median & 0.637 & 50\% & Adversarial settings \\
 \end{center}
 
 For production settings with potential model contamination (corrupted training data, adversarial seeds, or hardware failures producing degenerate models), the 5\%-trimmed mean provides near-optimal efficiency (ARE $= 0.992$, requiring only $0.8\%$ more models) with meaningful robustness. The median requires $\pi/2 \approx 57\%$ more models but tolerates up to 50\% corrupted models. For $M = 25$: the 5\%-trimmed mean discards the single most extreme model in each tail ($M_{\text{eff}} = 23$), a negligible cost. For adversarial robustness, the median with $M = 40$ achieves comparable stability to \DASH{} with $M = 25$ while tolerating up to 20 corrupted models.
+
+\subsection{Empirical Comparison with Alternatives}
+\label{sec:dash-benchmark}
+
+We compare \DASH{} against four alternative stabilization approaches across three correlation levels ($\rho \in \{0.5, 0.7, 0.9\}$), with 10 independent trials and bootstrap 95\% confidence intervals on within-group flip rates:
+
+\begin{table}[h]
+\centering
+\caption{Flip rate comparison: \DASH{} vs.\ alternative stabilization methods. Synthetic Gaussian data ($P{=}10$, $m{=}5$, $N{=}1000$, 20 within-group feature pairs). 95\% bootstrap CIs in brackets.}
+\label{tab:dash-benchmark}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Method & $\rho = 0.5$ & $\rho = 0.7$ & $\rho = 0.9$ & Pairs resolved \\
+\midrule
+Single model       & 16.0\% [13.8, 18.1] & 16.4\% [14.3, 18.5] & 18.7\% [16.4, 21.1] & 40/40 \\
+Bootstrap SHAP     & 16.2\% [13.8, 18.2] & 16.1\% [14.2, 18.0] & 18.8\% [16.4, 21.4] & 40/40 \\
+Subsampled SHAP    & 16.3\% [13.8, 18.5] & 16.1\% [14.2, 17.9] & 18.8\% [---]         & 40/40 \\
+\textbf{\DASH{} ($M{=}25$)} & \textbf{3.8\%} [2.8, 4.9] & \textbf{3.1\%} [2.4, 3.9] & \textbf{3.7\%} [2.7, 4.7] & 40/40 \\
+CI SHAP            & 0.2\% [0.1, 0.4]    & 0.8\% [0.6, 1.1]    & 3.1\% [---]          & $\sim$22/40 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Bootstrap and subsampled SHAP address SHAP \emph{estimation} noise (a single-model phenomenon) but not the Rashomon effect (a multi-model phenomenon). Their flip rates match the single-model baseline. Only \DASH{} trains multiple models, achieving a 4--5$\times$ reduction.
+
+CI SHAP achieves lower flip rates than \DASH{} by refusing to rank pairs whose confidence intervals overlap---resolving only $\sim$55\% of within-group pairs. This is exactly the impossibility theorem in action: CI SHAP trades completeness for stability. At $\rho = 0.9$, its flip rate converges toward \DASH{}'s ($3.1\%$ vs.\ $3.7\%$) as overlapping CIs force more pairs into ``tied'' status.
+
+The two approaches correspond to the two families in the Design Space Theorem: \DASH{} (Family B: stable, faithful, near-complete via ensemble averaging) and CI SHAP (Family A: stable, faithful, explicitly incomplete via ties).
 
 \subsection{DASH Information Loss}
 \label{sec:info-loss}
@@ -1589,7 +1618,7 @@ Both impossibilities arise because collinearity/coherence prevents unique identi
 \subsection{Prevalence Survey}
 \label{sec:prevalence}
 
-Of 37 public datasets surveyed, 34 (92\%) have feature pairs with $|\rho| > 0.5$, and 22 (60\%) exhibit attribution instability (flip rate $> 10\%$). With 20 models, the measured flip rate exceeds the 10\% threshold with only 32\% power, making 60\% a conservative lower bound; the true prevalence is likely 75--85\%.
+Of 77 public datasets surveyed (OpenML CC-18 benchmark suite + sklearn), 71 (92\%) have feature pairs with $|\rho| > 0.5$, and 52 (68\%, 95\% Wilson CI: [56\%, 77\%]) exhibit attribution instability (flip rate $> 10\%$). For datasets with $P \geq 20$ features, the instability rate rises to 93\%. With 20 models per dataset, the measured flip rate exceeds the 10\% threshold with approximately 60\% power, so the true prevalence may be higher still.
 
 \paragraph{Robustness to hyperparameters.}
 We repeated the analysis on 8 representative datasets with three configurations:
@@ -1639,6 +1668,32 @@ Iris (binary) & 4 & 6 & 0 & --- & --- \\
 \caption{F1 test statistic vs.\ flip rate across four datasets. The negative correlation confirms the diagnostic across domains.}
 \label{fig:comprehensive-f1}
 \end{figure}
+
+\subsection{Additional Experimental Validation}
+\label{sec:additional-experiments}
+
+We conducted 12 additional experiments to test the robustness and generalizability of the impossibility. Results are available in the repository as JSON with bootstrap confidence intervals.
+
+\paragraph{Mechanism validation.}
+With deterministic training (\texttt{subsample=1.0}), the flip rate drops to 0.0\% (95\% CI: [0.0\%, 0.1\%]), compared to 22.8\% [21.5\%, 24.2\%] with stochastic training (\texttt{subsample=0.8}). This confirms the Rashomon mechanism: stochastic training creates the Rashomon set.
+
+\paragraph{Flip rate formula validation.}
+Monte Carlo simulation (1,000 trials per $\rho$, stumps) validates $\Phi(-\text{SNR})$ to within 2.6\% across $\rho \in \{0.1, \ldots, 0.99\}$.
+
+\paragraph{Conditional SHAP.}
+Using SHAP's interventional mode, conditional SHAP gives 50.3\% flip rate at $\Delta\beta = 0$ (equal causal effects)---confirming the impossibility holds for conditional SHAP under symmetry. Conditional SHAP resolves the ranking only when causal effects differ ($\Delta\beta > 0.1$). Decorrelation (residualization) always gives 0\% flip rate but changes the feature semantics---it does not escape the impossibility, it changes the problem.
+
+\paragraph{Hyperparameter universality.}
+Across 81 XGBoost configurations (3 learning rates $\times$ 3 depths $\times$ 3 tree counts $\times$ 3 correlations), the minimum flip rate is 38.7\% [37.1\%, 40.2\%] at $\rho = 0.5$. No hyperparameter configuration eliminates instability for $\rho > 0$.
+
+\paragraph{Compounding factors.}
+Class imbalance amplifies instability (max flip rate increases monotonically with imbalance ratio). Missing data compounds the effect across all mechanisms (MCAR, MAR, MNAR) and rates (5\%--20\%). Instability persists and grows over 50 retrain cycles with simulated data drift.
+
+\paragraph{Generality beyond tabular GBDT.}
+In bag-of-words text classification (20newsgroups, TF-IDF + XGBoost), 60\% of documents have unstable top-1 token attribution and 91\% have unstable top-3. Temporal feature engineering (AR(1) processes with rolling windows) creates correlated groups with 27\% of within-series pairs exhibiting instability.
+
+\paragraph{Regulatory impact.}
+In a simulated ECOA adverse action pipeline (10,000 loan applications, 5 correlated income features at $\rho = 0.7$, 25 XGBoost models), 43.2\% of denied applicants receive a different ``top reason for denial'' depending on which equivalent model is queried. \DASH{} ensemble averaging resolves this entirely: 100\% stable adverse action reasons after consensus.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 11. LEAN FORMALIZATION
@@ -1824,7 +1879,7 @@ Decorrelating via PCA removes collinearity but destroys original feature semanti
 For batch pipelines, training $M{=}25$ models is feasible. For real-time explanations, use the F5 diagnostic to flag unstable pairs. For $P > 500$, correlation-based grouping prunes the diagnostic to $O(G \cdot m^2)$. At $P{=}500$ with 20 models, the full workflow completes in under 2.5 minutes.
 
 \paragraph{Broader implications.}
-In a survey of 37 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and approximately 60\% exhibit attribution instability---the impossibility is a practical reality. Our theorem proves this is a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii) \cite{euaiact2024}.
+In a survey of 77 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and 68\% exhibit attribution instability (93\% for $P \\geq 20$)---the impossibility is a practical reality. Our theorem proves this is a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii) \cite{euaiact2024}.
 The consequences are concrete: hospitals may invest in wrong interventions, data scientists may fix the wrong feature, and published studies may report artifacts of specific training runs.
 The impossibility has direct consequences for fairness auditing (Theorem~\ref{thm:fairness-audit}): single-model SHAP audits for proxy discrimination are provably unreliable under collinearity.
 

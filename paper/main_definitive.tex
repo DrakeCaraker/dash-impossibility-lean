@@ -110,7 +110,7 @@ We prove this impossibility, quantify it for four model classes, resolve it via 
 We characterize the complete attribution design space: exactly two families of methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and no method lies outside this dichotomy.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} (\textbf{D}iversified \textbf{A}ggregation of \textbf{SH}AP) ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
-In a survey of 37 public datasets, approximately 60\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
+In a survey of 77 public datasets, 68\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
 The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
 The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (260 theorems from 14 domain-specific + 2 query-complexity axioms, 0 \texttt{sorry})---to our knowledge, the first formally verified impossibility in explainable AI.
@@ -119,7 +119,7 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 
 \section*{Executive Summary}
 
-\textbf{The problem.} SHAP feature importance rankings---the most widely used method for explaining machine learning predictions---are unreliable when features are correlated. Retraining the same model with a different random seed can invert which feature is ``most important.'' In a survey of 37 public datasets, approximately 60\% exhibit this instability.
+\textbf{The problem.} SHAP feature importance rankings---the most widely used method for explaining machine learning predictions---are unreliable when features are correlated. Retraining the same model with a different random seed can invert which feature is ``most important.'' In a survey of 77 public datasets, 68\% exhibit this instability.
 
 \textbf{The theorem.} We prove this is not an engineering failure but a mathematical impossibility: no feature ranking can simultaneously be \emph{faithful} (reflect the model), \emph{stable} (robust to retraining), and \emph{complete} (rank all features). The proof requires only four lines from the Rashomon property---that collinear designs admit models ranking features in opposite orders.
 
@@ -166,7 +166,7 @@ for j, k in pairs:
 \section{Introduction}
 \label{sec:intro}
 
-Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes. In a survey of 37 public datasets, approximately 60\% exhibit this instability. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility. For $m{=}2$ collinear features, ranking the pair is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes. In a survey of 77 public datasets, 68\% exhibit this instability. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility. For $m{=}2$ collinear features, ranking the pair is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
 
 This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three SBD instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, financial case studies, and a 188-theorem Lean~4 formalization.
 
@@ -2556,7 +2556,7 @@ Decorrelating via PCA removes collinearity but destroys original feature semanti
 For batch pipelines, training $M{=}25$ models is feasible. For real-time explanations, use the F5 diagnostic to flag unstable pairs. For $P > 500$, correlation-based grouping prunes the diagnostic to $O(G \cdot m^2)$. At $P{=}500$ with 20 models, the full workflow completes in under 2.5 minutes.
 
 \paragraph{Broader implications.}
-In a survey of 37 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and approximately 60\% exhibit attribution instability---the impossibility is a practical reality. Our theorem proves this is a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii) \cite{euaiact2024}.
+In a survey of 77 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and approximately 60\% exhibit attribution instability---the impossibility is a practical reality. Our theorem proves this is a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii) \cite{euaiact2024}.
 The consequences are concrete: hospitals may invest in wrong interventions, data scientists may fix the wrong feature, and published studies may report artifacts of specific training runs.
 The impossibility has direct consequences for fairness auditing (Theorem~\ref{thm:fairness-audit}): single-model SHAP audits for proxy discrimination are provably unreliable under collinearity.
 
