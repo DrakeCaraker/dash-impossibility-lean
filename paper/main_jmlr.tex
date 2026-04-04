@@ -668,9 +668,9 @@ Method & $\rho = 0.5$ & $\rho = 0.7$ & $\rho = 0.9$ & Pairs resolved \\
 \midrule
 Single model       & 16.0\% [13.8, 18.1] & 16.4\% [14.3, 18.5] & 18.7\% [16.4, 21.1] & 40/40 \\
 Bootstrap SHAP     & 16.2\% [13.8, 18.2] & 16.1\% [14.2, 18.0] & 18.8\% [16.4, 21.4] & 40/40 \\
-Subsampled SHAP    & 16.3\% [13.8, 18.5] & 16.1\% [14.2, 17.9] & 18.8\% [---]         & 40/40 \\
+Subsampled SHAP    & 16.3\% [13.8, 18.5] & 16.1\% [14.2, 17.9] & 18.8\% [16.5, 21.3]  & 40/40 \\
 \textbf{\DASH{} ($M{=}25$)} & \textbf{3.8\%} [2.8, 4.9] & \textbf{3.1\%} [2.4, 3.9] & \textbf{3.7\%} [2.7, 4.7] & 40/40 \\
-CI SHAP            & 0.2\% [0.1, 0.4]    & 0.8\% [0.6, 1.1]    & 3.1\% [---]          & $\sim$22/40 \\
+CI SHAP            & 0.2\% [0.1, 0.4]    & 0.8\% [0.6, 1.1]    & 3.1\% [2.1, 4.6]     & $\sim$22/40 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1618,7 +1618,9 @@ Both impossibilities arise because collinearity/coherence prevents unique identi
 \subsection{Prevalence Survey}
 \label{sec:prevalence}
 
-Of 77 public datasets surveyed (OpenML CC-18 benchmark suite + sklearn), 71 (92\%) have feature pairs with $|\rho| > 0.5$, and 52 (68\%, 95\% Wilson CI: [56\%, 77\%]) exhibit attribution instability (flip rate $> 10\%$). For datasets with $P \geq 20$ features, the instability rate rises to 93\%. With 20 models per dataset, the measured flip rate exceeds the 10\% threshold with approximately 60\% power, so the true prevalence may be higher still.
+Of 77 public datasets surveyed (OpenML CC-18 benchmark suite + sklearn), 71 (92\%) have feature pairs with $|\rho| > 0.5$, and 52 (68\%, 95\% Wilson CI: [56\%, 77\%]) exhibit attribution instability (flip rate $> 10\%$). For datasets with $P \geq 20$ features ($n = 43$ datasets), the instability rate rises to 93\%. With 20 models per dataset, the measured flip rate exceeds the 10\% threshold with approximately 60\% power, so the true prevalence may be higher still.
+
+\emph{Selection caveat:} The CC-18 suite is curated for ML benchmarking and may overrepresent datasets with rich feature interactions. Production ML pipelines with carefully decorrelated features may exhibit lower prevalence. The 68\% figure is a prevalence estimate for benchmark-representative tabular datasets, not a universal rate.
 
 \paragraph{Robustness to hyperparameters.}
 We repeated the analysis on 8 representative datasets with three configurations:
@@ -1704,7 +1706,7 @@ In a simulated ECOA adverse action pipeline (10,000 loan applications, 5 correla
 
 \subsection{Proof Architecture}
 
-The formalization comprises 36 Lean~4 files with 16 axioms and 260 type-checked theorems and lemmas (0 \texttt{sorry}). Of these, 75 require multi-line proofs ($\geq$5 tactic lines); 6 are definitional wrappers or single-step applications. The core impossibility (\texttt{attribution\_impossibility}) depends on zero axioms---only the Rashomon property as hypothesis. The DASH resolution (\texttt{consensus\_equity}) depends on the \texttt{attribution\_sum\_symmetric} theorem (derived from axioms); the variance convergence depends on the \texttt{consensus\_variance\_bound} theorem (also derived).
+The formalization comprises 46 Lean~4 files with 16 axioms and 260 type-checked theorems and lemmas (0 \texttt{sorry}). Of these, 75 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications. The core impossibility (\texttt{attribution\_impossibility}) depends on zero axioms---only the Rashomon property as hypothesis. The DASH resolution (\texttt{consensus\_equity}) depends on the \texttt{attribution\_sum\_symmetric} theorem (derived from axioms); the variance convergence depends on the \texttt{consensus\_variance\_bound} theorem (also derived).
 
 \begin{verbatim}
 Defs.lean (14 axioms, type definitions, derived theorems)
