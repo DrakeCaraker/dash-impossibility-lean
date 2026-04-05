@@ -17,13 +17,19 @@ import json
 import os
 import numpy as np
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+
+_style = os.path.join(os.path.dirname(__file__), 'publication_style.mplstyle')
+if os.path.exists(_style):
+    plt.style.use(_style)
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 matplotlib.rcParams.update({
     'font.size': 9,
     'font.family': 'serif',
-    'text.usetex': False,
     'figure.figsize': (3.2, 2.4),
     'figure.dpi': 150,
     'savefig.dpi': 300,

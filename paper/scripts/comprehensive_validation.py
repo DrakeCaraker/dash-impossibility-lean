@@ -36,8 +36,14 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+_style = os.path.join(os.path.dirname(__file__), 'publication_style.mplstyle')
+if os.path.exists(_style):
+    plt.style.use(_style)
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 matplotlib.rcParams.update({
-    'font.size': 9, 'font.family': 'serif', 'text.usetex': False,
+    'font.size': 9, 'font.family': 'serif',
     'figure.figsize': (7.0, 6.0), 'savefig.dpi': 300, 'savefig.bbox': 'tight',
 })
 

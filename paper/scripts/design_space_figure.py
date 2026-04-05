@@ -9,16 +9,23 @@ Two families plotted in (Unfaithfulness U, Ranking Stability S) space:
 
 import numpy as np
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, Rectangle
 from matplotlib.collections import PatchCollection
+import os
+
+_style = os.path.join(os.path.dirname(__file__), 'publication_style.mplstyle')
+if os.path.exists(_style):
+    plt.style.use(_style)
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 matplotlib.rcParams.update({
-    'font.size': 10, 'font.family': 'serif', 'text.usetex': False,
+    'font.size': 10, 'font.family': 'serif',
     'figure.figsize': (5.5, 4.5), 'savefig.dpi': 300, 'savefig.bbox': 'tight',
 })
 
-import os
 OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "figures")
 os.makedirs(OUT_DIR, exist_ok=True)
 

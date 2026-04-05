@@ -275,7 +275,7 @@ Table~\ref{tab:axioms} lists all property axioms in the formalization.
 The core impossibility theorem requires none of them---only the Rashomon property as hypothesis.
 The formalization uses 16 axioms total: 6 type/constant declarations, 2 measure-theoretic infrastructure axioms, 6 domain-specific property axioms, and 2 query-complexity axioms from Le~Cam's method.
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Complete axiom inventory (16 total: 6 type/constant, 6 property, 2 measure, 2 query).}
 \label{tab:axioms}
@@ -528,7 +528,7 @@ Table~\ref{tab:depth-rho} reports the within-group split count ratio
 across tree depths and correlation levels (XGBoost, $T{=}100$, $\eta{=}1.0$,
 $P{=}10$ in 2 groups of 5, $N{=}2000$, 30 seeds).
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Within-group split count ratio by depth and $\rho$ ($\eta{=}1.0$).}
 \label{tab:depth-rho}
@@ -820,7 +820,7 @@ mean provides robustness at the cost of requiring more models.
 
 We compare \DASH{} against four alternative stabilization approaches across three correlation levels ($\rho \in \{0.5, 0.7, 0.9\}$), with 10 independent trials and bootstrap 95\% confidence intervals on within-group flip rates:
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Flip rate comparison: \DASH{} vs.\ alternative stabilization methods. Synthetic Gaussian data ($P{=}10$, $m{=}5$, $N{=}1000$, 20 within-group feature pairs). 95\% bootstrap CIs in brackets.}
 \label{tab:dash-benchmark}
@@ -1254,7 +1254,7 @@ Under (C1)--(C2), the causal graph is symmetric with respect to $j$ and $k$. By 
 \paragraph{The escape condition.}
 If $\beta_j \neq \beta_k$, conditional SHAP can resolve the pair. The threshold $\Delta\beta^*(\rho)$ grows steeply: at $\rho \leq 0.7$, a 15\% difference suffices; at $\rho = 0.9$, features must differ by nearly a factor of 2; at $\rho \geq 0.95$, instability is essentially total. Empirical thresholds: $\Delta\beta^*(0.5) \approx 0.15$, $\Delta\beta^*(0.7) \approx 0.15$, $\Delta\beta^*(0.8) \approx 0.4$, $\Delta\beta^*(0.9) \approx 0.9$, $\Delta\beta^*(0.95) > 1.0$, $\Delta\beta^*(0.99) > 1.0$.
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Flip rate (\%) as a function of $\rho$ and causal effect difference $\Delta\beta$.}
 \label{tab:conditional-threshold}
@@ -1819,7 +1819,7 @@ When reporting feature importance for a model with correlated groups, we recomme
 
 \subsection{Experimental Setup}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Experimental configurations.}
 \small
@@ -1914,7 +1914,7 @@ At $M{=}1$ the flip rate is 44.8\%, near the theoretical maximum. \DASH{} consen
 
 \subsection{Cross-Implementation Validation}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Attribution instability across three GBDT implementations on Breast Cancer (50 models each).}
 \label{tab:cross-impl}
@@ -2376,7 +2376,7 @@ C (shallow-fast) & 200 & 2 & 0.3 & Shallow, aggressive \\
 
 Under Config~A (original), 5/8 (62\%) datasets exhibit instability, consistent with the 60\% headline. Under Config~B (deep trees), 4/8 (50\%). Under Config~C (shallow-fast), 6/8 (75\%). Across all three configurations, 4/8 (50\%) datasets are consistently unstable; under at least one configuration, 6/8 (75\%) are unstable. The instability rate varies by $\pm 15$ percentage points across configurations but remains in the 50--75\% range. Shallow-fast trees (Config~C) produce \emph{higher} instability because aggressive learning rates compound the first-mover effect. The 60\% headline is conservative: the phenomenon is robust to standard hyperparameter variation.
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{F1 and F5 diagnostic generality across 11 datasets.}
 \label{tab:f1-generality}
@@ -2505,7 +2505,7 @@ The three-layer verification (SymPy algebra, Lean type-checking, empirical valid
 
 \subsection{Lean File Cross-Reference}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Lean file cross-reference (46 files, 260 theorems, 16 axioms).}
 \label{tab:lean-crossref}
@@ -2560,7 +2560,7 @@ To our knowledge, our result is the first to simultaneously address cross-model 
 \cite{noguer2025mathematical} derives information-theoretic limits on explanation complexity; our limits are about ranking consistency under feature correlation.
 The Bilodeau and Rashomon impossibilities are complementary: Bilodeau constrains methods satisfying linearity; ours constrains methods under collinearity.
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Positioning relative to prior attribution impossibility results.}
 \label{tab:prior-work}
@@ -2789,7 +2789,7 @@ Increasing background samples from 50 to 200 reduces noise by $2.6\times$ at $4\
 
 \subsection{Cross-Implementation: Full Results}
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Full cross-implementation comparison on Breast Cancer (50 models each).}
 \small
@@ -2992,7 +2992,7 @@ Reproduce: \texttt{dash\_breakdown\_point.py}.
 
 Table~\ref{tab:experiment-summary-def} summarizes all robustness experiments with reproduction scripts.
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
 \caption{Summary of additional experiments.}
 \label{tab:experiment-summary-def}

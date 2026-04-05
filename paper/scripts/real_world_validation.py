@@ -19,6 +19,7 @@ try:
     import xgboost as xgb
     import shap
     import matplotlib
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     import matplotlib.ticker as ticker
 except ImportError as e:
@@ -26,10 +27,15 @@ except ImportError as e:
     print("Install: pip install scikit-learn xgboost shap matplotlib")
     exit(1)
 
+_style = os.path.join(os.path.dirname(__file__), 'publication_style.mplstyle')
+if os.path.exists(_style):
+    plt.style.use(_style)
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 matplotlib.rcParams.update({
     'font.size': 9,
     'font.family': 'serif',
-    'text.usetex': False,
     'figure.figsize': (3.4, 2.6),
     'figure.dpi': 150,
     'savefig.dpi': 300,

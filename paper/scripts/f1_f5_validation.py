@@ -17,10 +17,17 @@ from sklearn.model_selection import train_test_split
 import xgboost as xgb
 import shap
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+_style = os.path.join(os.path.dirname(__file__), 'publication_style.mplstyle')
+if os.path.exists(_style):
+    plt.style.use(_style)
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 matplotlib.rcParams.update({
-    'font.size': 9, 'font.family': 'serif', 'text.usetex': False,
+    'font.size': 9, 'font.family': 'serif',
     'figure.figsize': (6.8, 2.8), 'savefig.dpi': 300, 'savefig.bbox': 'tight',
 })
 

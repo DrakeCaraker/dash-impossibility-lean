@@ -16,7 +16,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 import warnings
+import os
 warnings.filterwarnings("ignore")
+
+_style = os.path.join(os.path.dirname(__file__), 'publication_style.mplstyle')
+if os.path.exists(_style):
+    plt.style.use(_style)
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 from sklearn.datasets import (
     load_breast_cancer, load_wine, load_diabetes,

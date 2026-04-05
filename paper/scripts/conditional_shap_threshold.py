@@ -27,6 +27,13 @@ import itertools
 import os
 import warnings
 
+_style = os.path.join(os.path.dirname(__file__), 'publication_style.mplstyle')
+if os.path.exists(_style):
+    plt.style.use(_style)
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+matplotlib.rcParams['text.usetex'] = False  # Unicode axis labels not LaTeX-compatible
+
 warnings.filterwarnings("ignore")
 
 # ── Reproducibility ────────────────────────────────────────────────────────────
