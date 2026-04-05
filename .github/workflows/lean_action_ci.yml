@@ -79,6 +79,6 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        run: pip install sympy numpy
+        run: pip install sympy numpy scipy
       - name: Run axiom consistency check
         run: python3 paper/scripts/axiom_consistency_model.py
