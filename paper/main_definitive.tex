@@ -308,6 +308,8 @@ Testing lower bound & \texttt{le\_cam\_lower\_bound} & \textbf{Theorem} in \text
 \end{tabular}
 \end{table}
 
+Both cross-group axioms assume an approximately additive model; feature interactions between groups can break cross-group independence. The core impossibility and ratio bound do not depend on these axioms.
+
 \paragraph{Gaussian conditioning argument.}
 The split count formulas (Axiom~\ref{ax:splits}) are justified by the following argument. Consider two features $X_j, X_k$ with correlation $\rho$ and a GBDT with $T$ boosting rounds. At each tree $t$, the root split selects the feature with the highest gain (variance reduction). Once feature $j$ is selected as root, the available signal for $k$ becomes:
 \[
@@ -386,11 +388,7 @@ By stability, this relation holds for all models, including $f'$.
 But faithfulness applied to $f'$ requires $k \succ j$ (since $\varphi_k(f') > \varphi_j(f')$), contradicting $j \succ k$.
 \end{proof}
 
-The argument is structurally parallel to Arrow's impossibility theorem for social welfare functions \cite{arrow1951social}: Arrow shows that no aggregation rule can satisfy independence of irrelevant alternatives, the Pareto principle, and non-dictatorship simultaneously.
-Here, faithfulness plays the role of the Pareto condition, stability plays the role of IIA, and completeness plays the role of totality.
-\cite{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; our Lean~4 formalization follows the same spirit.
-
-The resolution is also parallel: Arrow's theorem is circumvented by relaxing completeness (allowing partial orders or ties).
+The resolution echoes Arrow's impossibility theorem \cite{arrow1951social}: when desirable properties conflict, relaxing completeness (accepting ties or partial orders) restores consistency. \cite{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; our Lean~4 formalization follows the same spirit.
 \DASH{} achieves this by averaging attributions across the Rashomon set, producing $\E[\varphi_j] = \E[\varphi_k]$ for symmetric features---a tie rather than an arbitrary ordering.
 
 \subsection{From Abstract to Concrete: Iterative Optimizers}
@@ -441,14 +439,18 @@ By DGP symmetry, the joint distribution of $(X, Y)$ is invariant under permutati
 
 The permutation closure condition is satisfied by any model class without built-in feature ordering: neural networks (permute input neurons), gradient-boosted trees (permute split features), Lasso (permute covariates), and random forests. It fails only for model classes with hard-coded feature preferences.
 
-\begin{theorem}[Attribution non-degeneracy]
+\begin{proposition}[Attribution non-degeneracy]
 \label{thm:non-degeneracy}
 Let $A$ be a stochastic training algorithm with continuous dependence on its random seed (e.g., SGD with random initialization, bootstrap sampling, random feature selection). For any DGP with $\rho > 0$ and $n < \infty$ training samples, $\Pr[\varphi_j(f) \neq \varphi_k(f)] = 1$ for features $j, k$ in the same collinear group.
-\end{theorem}
+\end{proposition}
 
 \begin{proof}
 With finite samples, the empirical correlation between $X_j$ and $X_k$ is $\hat\rho = \rho + O(1/\sqrt{n})$, which is almost surely irrational. Under continuous dependence on the data, the training algorithm's feature utilization varies continuously with $\hat\rho$, so the event $\{\varphi_j(f) = \varphi_k(f)\}$ has measure zero in the joint randomness of the data and the algorithm.
 \end{proof}
+
+\begin{remark}
+The argument above is informal; a rigorous proof would require a transversality argument showing that the level set $\{\varphi_j(f) = \varphi_k(f)\}$ is a lower-dimensional manifold in seed space. The core impossibility (Theorem~\ref{thm:impossibility}) does not depend on this result.
+\end{remark}
 
 \begin{theorem}[Rashomon inevitability]
 \label{thm:rashomon-inevitability}
@@ -1111,7 +1113,7 @@ The achievable set consists of exactly two families: $\mathcal{A}$ (faithful + c
 \textbf{Exhaustiveness.} Any estimator either selects within orbits (faithful, complete, $\mathcal{A}$) or reports ties within orbits (stable, incomplete, $\mathcal{B}$). The Bayes estimator achieves the minimum-variance point of $\mathcal{B}$ (Cram\'er--Rao).
 \end{proof}
 
-The Symmetric Bayes Dichotomy provides a reusable proof technique for any domain where: (a) a population distribution is symmetric over discrete alternatives, and (b) finite samples introduce noise sufficient to reverse the optimal choice. The technique reduces the impossibility to checking $G$-invariance of the population distribution, which is often immediate from the problem's symmetry.
+The Symmetric Bayes Dichotomy connects the classical theory of invariant decision rules \cite{lehmann2005testing,hunt1946} to modern ML impossibility proofs. The classical Hunt--Stein theorem establishes that Bayes-optimal rules respect the invariance structure of the problem; our contribution is demonstrating that this classical machinery, when applied to finite symmetric groups arising in ML (feature permutations, model permutations, CPDAG automorphisms), yields two-family impossibility results with explicit unfaithfulness and stability bounds. We demonstrate this across three structurally distinct instances with different symmetry groups.
 
 \subsection{Instance 1: Feature Attribution}
 
@@ -1228,7 +1230,7 @@ $\mathcal{D} =$ observational datasets.
 \end{corollary}
 
 \paragraph{Connection to classical invariant decision theory.}
-The Symmetric Bayes Dichotomy is related to the theory of invariant decision rules \cite{lehmann2005testing}. Our contribution is the \emph{reduction template}: verifying $G$-invariance of the population distribution suffices to establish a two-family impossibility with explicit bounds. We demonstrate this across three structurally distinct instances (binary feature transpositions, binary model permutations, and CPDAG automorphisms of variable size) with different symmetry groups.
+The Symmetric Bayes Dichotomy connects the classical theory of invariant decision rules \cite{lehmann2005testing,hunt1946} to modern ML impossibility proofs. The classical Hunt--Stein theorem establishes that Bayes-optimal rules respect the invariance structure of the problem; our contribution is demonstrating that this classical machinery, when applied to finite symmetric groups arising in ML (feature permutations, model permutations, CPDAG automorphisms), yields two-family impossibility results with explicit unfaithfulness and stability bounds. We demonstrate this across three structurally distinct instances with different symmetry groups.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 8. EXTENSIONS
@@ -1468,7 +1470,7 @@ By Le~Cam's two-point method (Tsybakov, 2009, Theorem~2.2), for any test $\psi$ 
 \[
     \Pr_{H_0}[\psi = 1] + \Pr_{H_1}[\psi = 0] \geq 1 - \text{TV}(P_0^{\otimes M}, P_1^{\otimes M}).
 \]
-The chi-squared divergence gives $\text{TV}(P_0^{\otimes M}, P_1^{\otimes M}) \leq \sqrt{\frac{1}{2}\chi^2(P_1^{\otimes M} \| P_0^{\otimes M})}$. For Gaussian location families, $\chi^2 = \exp(M\Delta_0^2/\sigma^2) - 1$. When $M\Delta_0^2/\sigma^2 \leq 1$, using $e^x - 1 \leq 2x$: $\text{TV} \leq \sqrt{M\Delta_0^2/\sigma^2}$. For reliable testing (total error $\leq 2/3$), we need $\text{TV} \geq 1/3$, giving $M\Delta_0^2/\sigma^2 \geq 1/9$. The stated $1/8$ constant follows from Pinsker's inequality.
+By Pinsker's inequality, $\text{TV}(P_0^{\otimes M}, P_1^{\otimes M}) \leq \sqrt{\frac{1}{2}\text{KL}(P_1^{\otimes M} \| P_0^{\otimes M})}$. For the Gaussian location family, $\text{KL}(P_1 \| P_0) = \Delta_0^2/(2\sigma^2)$, so for $M$ i.i.d.\ copies $\text{KL} = M\Delta_0^2/(2\sigma^2)$ and $\text{TV} \leq \sqrt{M\Delta_0^2/(4\sigma^2)}$. For reliable testing (total error $\leq 2/3$), Le~Cam's method requires $\text{TV} \geq 1/3$, giving $M\Delta_0^2/(4\sigma^2) \geq 1/9$, hence $M \geq 4\sigma^2/(9\Delta_0^2)$. The standard constant $1/8$ from \cite{tsybakov2009nonparametric} (Theorem~2.2) uses a slightly tighter analysis via the likelihood ratio directly; since $1/8 < 4/9$, this gives a weaker (more conservative) lower bound than our Pinsker derivation.
 \end{proof}
 
 \begin{corollary}[Near-optimality of the $Z$-test]
@@ -1836,7 +1838,7 @@ Compute & Synthetic: ${<}5$ min; Validation: ${<}30$ min; Breast Cancer: ${<}10$
 \end{tabular}
 \end{table}
 
-All experiments use publicly available datasets and are fully reproducible. \textbf{Confound note:} each seed uses a different train/test split, so SHAP values are computed on seed-specific test sets. This conflates model instability with evaluation-set variation; the reported flip rates may overestimate pure model instability. The mechanism isolation experiment (\S\ref{sec:mechanism-isolation} below) partially addresses this by comparing deterministic vs.\ stochastic training, confirming that model-level stochasticity is the dominant source. A cleaner experiment fixing the test set while varying only the model seed would further isolate the effect.
+All experiments use publicly available datasets and are fully reproducible. \textbf{Confound note:} each seed uses a different train/test split, so SHAP values are computed on seed-specific test sets. This conflates model instability with evaluation-set variation; the reported flip rates may overestimate pure model instability. The mechanism isolation experiment (\S\ref{sec:mechanism-isolation} below) partially addresses this by comparing deterministic vs.\ stochastic training. To cleanly isolate model-level noise, we also fix the test set (seed 42, 20\% holdout) and train 50 models on the same training data with different seeds (\texttt{subsample=0.8}). With the fixed test set, 102 pairs (23\%) are unstable (max flip rate 0.51), compared to 162 (37\%) with varying test sets---confirming that model-level stochasticity accounts for the majority (${\sim}63\%$) of the observed instability, with evaluation-set variation contributing the remainder.
 
 \subsection{Synthetic Gaussian}
 
@@ -2508,37 +2510,37 @@ The three-layer verification (SymPy algebra, Lean type-checking, empirical valid
 \caption{Lean file cross-reference (46 files, 260 theorems, 16 axioms).}
 \label{tab:lean-crossref}
 \footnotesize
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{@{}lll@{}}
 \toprule
-\textbf{File} & \textbf{Section} & \textbf{Key Result} & \textbf{Sorry?} \\
+\textbf{File} & \textbf{Section} & \textbf{Key Result} \\
 \midrule
-Defs.lean & \S\ref{sec:setup} & 14 axioms + derived theorems & No \\
-Trilemma.lean & Thm.~\ref{thm:impossibility} & attribution\_impossibility & No \\
-Iterative.lean & \S\ref{sec:iterative} & iterative\_impossibility & No \\
-General.lean & \S\ref{sec:gbdt-bounds} & gbdt\_impossibility & No \\
-SplitGap.lean & Lem.~\ref{lem:split-gap} & split\_gap\_exact & No \\
-Ratio.lean & Thm.~\ref{thm:ratio} & ratio\_tendsto\_atTop & No \\
-SpearmanDef.lean & \S\ref{sec:bounds} & spearmanCorr\_bound & No \\
-Lasso.lean & \S\ref{sec:lasso} & lasso\_impossibility & No \\
-NeuralNet.lean & \S\ref{sec:nn} & nn\_impossibility & No \\
-Impossibility.lean & Combined & not\_equitable, not\_stable & No \\
-Corollary.lean & Cor.~\ref{cor:equity} & consensus\_equity & No \\
-SymmetryDerive.lean & Derived & attribution\_sum\_symmetric & No \\
-DesignSpace.lean & Thm.~\ref{thm:design-space-main} & design\_space\_theorem & No \\
-DesignSpaceFull.lean & Step 3 & family\_a\_or\_family\_b & No \\
-ModelSelection.lean & Thm.~\ref{thm:model-selection} & model\_selection\_impossibility & No \\
-UnfaithfulBound.lean & Thm.~\ref{thm:unfaithfulness-bound} & stable\_complete\_unfaithful & No \\
-PathConvergence.lean & Thm.~\ref{thm:path-convergence} & relaxation\_paths\_converge & No \\
-RashomonUniversality.lean & Thm.~\ref{thm:rashomon-symmetry} & rashomon\_from\_symmetry & No \\
-RashomonInevitability.lean & Thm.~\ref{thm:rashomon-inevitability} & rashomon\_inevitability & No \\
-ConditionalImpossibility.lean & Thm.~\ref{thm:conditional-impossibility} & conditional\_impossibility & No \\
-FlipRate.lean & Prop.~\ref{prop:exact-flip} & binary\_group\_flip\_rate & No \\
-SymmetricBayes.lean & Thm.~\ref{thm:bayes-dichotomy} & symmetric\_bayes\_dichotomy & No \\
-CausalDiscovery.lean & Thm.~\ref{thm:causal-discovery} & causal\_discovery\_impossibility & No \\
-FairnessAudit.lean & Thm.~\ref{thm:fairness-audit} & fairness\_audit\_impossibility & No \\
-FIMImpossibility.lean & Thm.~\ref{thm:fim-impossibility} & gaussian\_rashomon\_witnesses & No \\
-QueryComplexity.lean & Thm.~\ref{thm:query-complexity} & query\_complexity\_lower\_bound & No \\
-Consistency.lean & \S\ref{sec:lean} & axiom\_system\_consistent & No \\
+Defs.lean & \S\ref{sec:setup} & 14 axioms + derived theorems \\
+Trilemma.lean & Thm.~\ref{thm:impossibility} & attribution\_impossibility \\
+Iterative.lean & \S\ref{sec:iterative} & iterative\_impossibility \\
+General.lean & \S\ref{sec:gbdt-bounds} & gbdt\_impossibility \\
+SplitGap.lean & Lem.~\ref{lem:split-gap} & split\_gap\_exact \\
+Ratio.lean & Thm.~\ref{thm:ratio} & ratio\_tendsto\_atTop \\
+SpearmanDef.lean & \S\ref{sec:bounds} & spearmanCorr\_bound \\
+Lasso.lean & \S\ref{sec:lasso} & lasso\_impossibility \\
+NeuralNet.lean & \S\ref{sec:nn} & nn\_impossibility \\
+Impossibility.lean & Combined & not\_equitable, not\_stable \\
+Corollary.lean & Cor.~\ref{cor:equity} & consensus\_equity \\
+SymmetryDerive.lean & Derived & attribution\_sum\_symmetric \\
+DesignSpace.lean & Thm.~\ref{thm:design-space-main} & design\_space\_theorem \\
+DesignSpaceFull.lean & Step 3 & family\_a\_or\_family\_b \\
+ModelSelection.lean & Thm.~\ref{thm:model-selection} & model\_selection\_impossibility \\
+UnfaithfulBound.lean & Thm.~\ref{thm:unfaithfulness-bound} & stable\_complete\_unfaithful \\
+PathConvergence.lean & Thm.~\ref{thm:path-convergence} & relaxation\_paths\_converge \\
+RashomonUniversality.lean & Thm.~\ref{thm:rashomon-symmetry} & rashomon\_from\_symmetry \\
+RashomonInevitability.lean & Thm.~\ref{thm:rashomon-inevitability} & rashomon\_inevitability \\
+ConditionalImpossibility.lean & Thm.~\ref{thm:conditional-impossibility} & conditional\_impossibility \\
+FlipRate.lean & Prop.~\ref{prop:exact-flip} & binary\_group\_flip\_rate \\
+SymmetricBayes.lean & Thm.~\ref{thm:bayes-dichotomy} & symmetric\_bayes\_dichotomy \\
+CausalDiscovery.lean & Thm.~\ref{thm:causal-discovery} & causal\_discovery\_impossibility \\
+FairnessAudit.lean & Thm.~\ref{thm:fairness-audit} & fairness\_audit\_impossibility \\
+FIMImpossibility.lean & Thm.~\ref{thm:fim-impossibility} & gaussian\_rashomon\_witnesses \\
+QueryComplexity.lean & Thm.~\ref{thm:query-complexity} & query\_complexity\_lower\_bound \\
+Consistency.lean & \S\ref{sec:lean} & axiom\_system\_consistent \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -2552,11 +2554,32 @@ Consistency.lean & \S\ref{sec:lean} & axiom\_system\_consistent & No \\
 
 \paragraph{Attribution impossibility results.}
 \cite{bilodeau2024impossibility} prove completeness and linearity cannot coexist; \cite{huang2024failings} show SHAP can misrank features in Boolean settings; \cite{srinivas2019full} prove complete attributions cannot be weakly input-dependent; \cite{rao2025limits} establishes Kolmogorov complexity barriers.
-Our result is the first to address cross-model \emph{stability}, give quantitative architecture-dependent bounds, and provide a constructive resolution.
+To our knowledge, our result is the first to simultaneously address cross-model \emph{stability} as an impossibility, give quantitative architecture-discriminating bounds, and provide a constructive resolution with proved optimality.
 \cite{decker2024provably} optimize aggregation across attribution \emph{methods} for a single model; we aggregate across \emph{models} via \DASH{}.
 \cite{jin2025probabilistic} give constructive stability certificates; we give the impossibility that necessitates them.
 \cite{noguer2025mathematical} derives information-theoretic limits on explanation complexity; our limits are about ranking consistency under feature correlation.
 The Bilodeau and Rashomon impossibilities are complementary: Bilodeau constrains methods satisfying linearity; ours constrains methods under collinearity.
+
+\begin{table}[h]
+\centering
+\caption{Positioning relative to prior attribution impossibility results.}
+\label{tab:prior-work}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Result & Stability? & Quantitative? & Resolution? & Formal? \\
+\midrule
+Bilodeau et al.\ (2024) & No & No & No & No \\
+Huang et al.\ (2024) & No & No & No & No \\
+Srinivas et al.\ (2019) & No & No & No & No \\
+Rao (2025) & No & No & No & No \\
+Laberge et al.\ (2023) & Empirical & No & No & No \\
+Herren \& Hahn (2023) & Inference & No & No & No \\
+Jin et al.\ (2025) & Certificates & No & No & No \\
+\textbf{This paper} & \textbf{Impossibility} & \textbf{Yes} & \textbf{\DASH{}} & \textbf{Lean 4} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Rashomon effect and model multiplicity.}
 \cite{laberge2023partial} find that attribution rankings across Rashomon sets are inherently partial orders; \cite{rudin2024amazing} advocate embracing model multiplicity.
@@ -2591,11 +2614,14 @@ Our trilemma (faithfulness, stability, completeness) is structurally analogous.
 The split-count axioms assume full signal capture ($\alpha = 1$); for finite-depth trees, $\alpha \approx 2/\pi$ ($R^2 = 0.89$). The impossibility holds for any $\alpha > 0$.
 The equicorrelation assumption simplifies the axioms; the Rashomon property holds pairwise.
 The balanced ensemble assumption is idealized, though $O(1/M)$ convergence is robust to approximate balance.
+The global proportionality axiom ($c$ uniform across models) has CV $\approx 0.35$--$0.66$ empirically; under variable $c$, \DASH{} consensus achieves approximate rather than exact equity, with the equity violation bounded by the CV of $c$ across first-mover and non-first-mover models.
 The variance bound is axiomatized; the full measure-theoretic derivation from Mathlib's \texttt{IndepFun.variance\_sum} is deferred.
 Switching to conditional SHAP does not universally resolve the instability (Theorem~\ref{thm:conditional-impossibility}).
 Decorrelating via PCA removes collinearity but destroys original feature semantics.
+An alternative is removing redundant features entirely (e.g., via VIF thresholding). This eliminates the impossibility but changes the model: predictions differ because fewer features are used, and genuinely useful information may be discarded. \DASH{} is the \emph{explanation-side} fix---it changes how the model is explained without changing what it predicts. The two approaches are complementary: feature removal for model simplification, \DASH{} for faithful explanation of complex models that retain all features.
 \DASH{} requires $M\times$ training cost; $M{=}25$ brings the flip rate below 1\%, while $M{=}5$ provides a substantial improvement at modest cost.
 The empirical validation focuses on gradient boosting and neural networks; the Lasso ($\varphi_{j_1}/\varphi_k = \infty$) and random forest ($1 + O(1/\sqrt{T})$) bounds are proved but not empirically demonstrated. The prevalence survey uses 20 models per dataset, achieving approximately 60\% power to detect 10\% flip rates; the true prevalence may be higher than the reported 68\%.
+The 10\% flip rate threshold defining ``instability'' is a practical convention; at a 5\% threshold the prevalence would be higher, at 15\% lower.
 
 \paragraph{Computational cost and practical deployment.}
 For batch pipelines, training $M{=}25$ models is feasible. For real-time explanations, use the F5 diagnostic to flag unstable pairs. For $P > 500$, correlation-based grouping prunes the diagnostic to $O(G \cdot m^2)$. At $P{=}500$ with 20 models, the full workflow completes in under 2.5 minutes.

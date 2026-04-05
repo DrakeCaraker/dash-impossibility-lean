@@ -195,8 +195,7 @@ By stability, this relation holds for all models, including $f'$.
 But faithfulness applied to $f'$ requires $k \succ j$ (since $\varphi_k(f') > \varphi_j(f')$), contradicting $j \succ k$.
 \end{proof}
 
-The argument parallels Arrow's impossibility \citep{arrow1951social}: faithfulness $\leftrightarrow$ Pareto condition, stability $\leftrightarrow$ IIA, completeness $\leftrightarrow$ totality.
-The resolution is also parallel: relaxing completeness (allowing ties) circumvents the impossibility.
+The resolution echoes Arrow's impossibility \citep{arrow1951social}: when desirable properties conflict, relaxing completeness (accepting ties) restores consistency.
 \DASH{} achieves this by averaging across the Rashomon set, producing $\E[\varphi_j] = \E[\varphi_k]$ for symmetric features.
 
 %% MOVED TO SUPPLEMENT: Definition 4 (Iterative optimizer) and Proposition 3 (iterative-rashomon)
@@ -417,7 +416,7 @@ The diagnostics generalize to LightGBM, CatBoost, and non-SHAP attributions (sup
 
 \paragraph{Attribution impossibility results.}
 \citet{bilodeau2024impossibility} prove completeness and linearity cannot coexist; \citet{huang2024failings} show SHAP can misrank features; \citet{srinivas2019full} prove complete attributions cannot be weakly input-dependent; \citet{rao2025limits} establishes Kolmogorov complexity barriers.
-Our result is the first to address cross-model \emph{stability}, give quantitative architecture-dependent bounds, and provide a constructive resolution (\DASH{}).
+To our knowledge, our result is the first to simultaneously address cross-model \emph{stability} as an impossibility, give quantitative architecture-discriminating bounds, and provide a constructive resolution with proved optimality (\DASH{}).
 
 \paragraph{Rashomon effect and model multiplicity.}
 \citet{laberge2023partial} find that attribution rankings across Rashomon sets are inherently partial orders; \citet{rudin2024amazing} advocate embracing model multiplicity.
@@ -428,7 +427,7 @@ Our theorem proves the partial order is a mathematical necessity, adding a forma
 Our trilemma (faithfulness, stability, completeness) is structurally analogous, making the fairness--explainability parallel explicit.
 
 \paragraph{Formal verification for ML.}
-\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning theory in Lean~4. Ours is the first formally verified result in explainable AI.
+\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning theory in Lean~4. To our knowledge, ours is the first formally verified impossibility result in explainable AI.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Discussion}
