@@ -36,153 +36,169 @@
 \contentsline {subsection}{\numberline {5.1}DASH Pareto Optimality}{16}{subsection.5.1}%
 \contentsline {paragraph}{Summary of optimality.}{17}{section*.31}%
 \contentsline {paragraph}{Comparison with nonlinear aggregations.}{17}{section*.32}%
-\contentsline {subsection}{\numberline {5.2}DASH Robustness and Breakdown Point}{18}{subsection.5.2}%
-\contentsline {subsection}{\numberline {5.3}DASH Information Loss}{18}{subsection.5.3}%
-\contentsline {paragraph}{Interpretation for safety-critical applications.}{18}{section*.33}%
-\contentsline {paragraph}{Ensemble size lower bound.}{19}{section*.35}%
-\contentsline {subsection}{\numberline {5.4}Progressive DASH: Adaptive Ensemble Sizing}{19}{subsection.5.4}%
-\contentsline {paragraph}{Expected cost.}{20}{section*.36}%
+\contentsline {subsection}{\numberline {5.2}Empirical Comparison with Alternatives}{18}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}DASH Robustness and Breakdown Point}{18}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}DASH Information Loss}{18}{subsection.5.4}%
+\contentsline {paragraph}{Interpretation for safety-critical applications.}{19}{section*.34}%
+\contentsline {paragraph}{Ensemble size lower bound.}{19}{section*.36}%
+\contentsline {subsection}{\numberline {5.5}Progressive DASH: Adaptive Ensemble Sizing}{20}{subsection.5.5}%
+\contentsline {paragraph}{Expected cost.}{20}{section*.37}%
 \contentsline {section}{\numberline {6}The Attribution Design Space}{20}{section.6}%
-\contentsline {paragraph}{The single tradeoff axis.}{21}{section*.37}%
-\contentsline {paragraph}{Previous results as corollaries.}{21}{section*.38}%
-\contentsline {section}{\numberline {7}The Symmetric Bayes Dichotomy}{21}{section.7}%
+\contentsline {paragraph}{The single tradeoff axis.}{21}{section*.38}%
+\contentsline {paragraph}{Previous results as corollaries.}{22}{section*.39}%
+\contentsline {section}{\numberline {7}The Symmetric Bayes Dichotomy}{22}{section.7}%
 \contentsline {subsection}{\numberline {7.1}Instance 1: Feature Attribution}{23}{subsection.7.1}%
 \contentsline {subsection}{\numberline {7.2}Instance 2: Model Selection}{23}{subsection.7.2}%
-\contentsline {paragraph}{Connection to cross-validation instability.}{24}{section*.40}%
+\contentsline {paragraph}{Connection to cross-validation instability.}{24}{section*.41}%
 \contentsline {subsection}{\numberline {7.3}Instance 3: Causal Discovery under Markov Equivalence}{24}{subsection.7.3}%
-\contentsline {paragraph}{Key structural difference.}{24}{section*.41}%
-\contentsline {paragraph}{What this instance adds.}{25}{section*.42}%
-\contentsline {paragraph}{Connection to classical invariant decision theory.}{25}{section*.43}%
+\contentsline {paragraph}{Key structural difference.}{25}{section*.42}%
+\contentsline {paragraph}{What this instance adds.}{25}{section*.43}%
+\contentsline {paragraph}{Connection to classical invariant decision theory.}{25}{section*.44}%
 \contentsline {section}{\numberline {8}Extensions}{25}{section.8}%
 \contentsline {subsection}{\numberline {8.1}Conditional Attribution Impossibility}{25}{subsection.8.1}%
-\contentsline {paragraph}{The escape condition.}{25}{section*.44}%
-\contentsline {paragraph}{Fine-grained $\Delta \beta $ sweep at $\rho = 0.9$.}{26}{section*.47}%
-\contentsline {paragraph}{Causal structure validation.}{26}{section*.48}%
-\contentsline {paragraph}{Caveat.}{26}{section*.49}%
-\contentsline {subsection}{\numberline {8.2}Fairness Audit Impossibility}{26}{subsection.8.2}%
-\contentsline {paragraph}{Implications for AI governance.}{27}{section*.50}%
-\contentsline {paragraph}{Worked example: adverse action notices.}{27}{section*.51}%
-\contentsline {paragraph}{Intersectional considerations.}{27}{section*.52}%
-\contentsline {paragraph}{Example: lending.}{27}{section*.53}%
-\contentsline {subsection}{\numberline {8.3}Direct FIM Impossibility}{27}{subsection.8.3}%
-\contentsline {paragraph}{Classical setup.}{27}{section*.54}%
-\contentsline {paragraph}{Regularity conditions.}{28}{section*.55}%
-\contentsline {paragraph}{Loss landscape geometry.}{29}{section*.56}%
+\contentsline {paragraph}{The escape condition.}{26}{section*.45}%
+\contentsline {paragraph}{Fine-grained $\Delta \beta $ sweep at $\rho = 0.9$.}{26}{section*.48}%
+\contentsline {paragraph}{Causal structure validation.}{27}{section*.49}%
+\contentsline {paragraph}{Caveat.}{27}{section*.50}%
+\contentsline {subsection}{\numberline {8.2}Fairness Audit Impossibility}{27}{subsection.8.2}%
+\contentsline {paragraph}{Implications for AI governance.}{27}{section*.51}%
+\contentsline {paragraph}{Worked example: adverse action notices.}{27}{section*.52}%
+\contentsline {paragraph}{Intersectional considerations.}{28}{section*.53}%
+\contentsline {paragraph}{Example: lending.}{28}{section*.54}%
+\contentsline {subsection}{\numberline {8.3}Direct FIM Impossibility}{28}{subsection.8.3}%
+\contentsline {paragraph}{Classical setup.}{28}{section*.55}%
+\contentsline {paragraph}{Regularity conditions.}{28}{section*.56}%
+\contentsline {paragraph}{Loss landscape geometry.}{29}{section*.57}%
 \contentsline {subsection}{\numberline {8.4}Query Complexity Lower Bound}{29}{subsection.8.4}%
 \contentsline {subsection}{\numberline {8.5}Rashomon Inevitability}{30}{subsection.8.5}%
 \contentsline {subsection}{\numberline {8.6}Causal Identification Barrier}{30}{subsection.8.6}%
-\contentsline {paragraph}{Hard interventions resolve both problems.}{30}{section*.57}%
+\contentsline {paragraph}{Hard interventions resolve both problems.}{31}{section*.58}%
 \contentsline {subsection}{\numberline {8.7}Local vs.\ Global Attribution Instability}{31}{subsection.8.7}%
-\contentsline {paragraph}{Implication.}{31}{section*.58}%
+\contentsline {paragraph}{Implication.}{31}{section*.59}%
 \contentsline {section}{\numberline {9}Diagnostics}{31}{section.9}%
 \contentsline {subsection}{\numberline {9.1}F1 Multi-Model Diagnostic}{31}{subsection.9.1}%
-\contentsline {paragraph}{Restricted-range robustness.}{32}{section*.60}%
-\contentsline {paragraph}{Structural correlation baseline.}{32}{section*.61}%
-\contentsline {paragraph}{Role of Berry--Esseen.}{32}{section*.62}%
-\contentsline {paragraph}{When the CLT fails.}{33}{section*.63}%
+\contentsline {paragraph}{Restricted-range robustness.}{32}{section*.61}%
+\contentsline {paragraph}{Structural correlation baseline.}{32}{section*.62}%
+\contentsline {paragraph}{Role of Berry--Esseen.}{33}{section*.63}%
+\contentsline {paragraph}{When the CLT fails.}{33}{section*.64}%
 \contentsline {subsection}{\numberline {9.2}F5 Single-Model Screen}{33}{subsection.9.2}%
-\contentsline {paragraph}{Exchangeability conditions.}{33}{section*.64}%
-\contentsline {paragraph}{F5 screening accuracy.}{34}{section*.65}%
-\contentsline {paragraph}{Sub-sampling requirement.}{34}{section*.66}%
-\contentsline {paragraph}{Regulatory response for ties.}{34}{section*.67}%
-\contentsline {subsection}{\numberline {9.3}SNR Calibration}{34}{subsection.9.3}%
-\contentsline {subsection}{\numberline {9.4}Practitioner Workflow}{34}{subsection.9.4}%
-\contentsline {paragraph}{Minimal implementation.}{35}{section*.69}%
-\contentsline {paragraph}{Production deployment guide.}{36}{section*.70}%
-\contentsline {paragraph}{Recommended instability disclosure.}{36}{section*.71}%
-\contentsline {paragraph}{Group-level reporting.}{36}{section*.72}%
-\contentsline {section}{\numberline {10}Empirical Validation}{36}{section.10}%
-\contentsline {subsection}{\numberline {10.1}Experimental Setup}{36}{subsection.10.1}%
+\contentsline {paragraph}{Exchangeability conditions.}{33}{section*.65}%
+\contentsline {paragraph}{F5 screening accuracy.}{34}{section*.66}%
+\contentsline {paragraph}{Sub-sampling requirement.}{34}{section*.67}%
+\contentsline {paragraph}{Regulatory response for ties.}{35}{section*.68}%
+\contentsline {subsection}{\numberline {9.3}SNR Calibration}{35}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}Practitioner Workflow}{35}{subsection.9.4}%
+\contentsline {paragraph}{Minimal implementation.}{36}{section*.70}%
+\contentsline {paragraph}{Production deployment guide.}{36}{section*.71}%
+\contentsline {paragraph}{Recommended instability disclosure.}{36}{section*.72}%
+\contentsline {paragraph}{Group-level reporting.}{36}{section*.73}%
+\contentsline {section}{\numberline {10}Empirical Validation}{37}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Experimental Setup}{37}{subsection.10.1}%
 \contentsline {subsection}{\numberline {10.2}Synthetic Gaussian}{37}{subsection.10.2}%
-\contentsline {paragraph}{Attribution ratio (Figure~\ref {fig:ratio}).}{37}{section*.75}%
-\contentsline {paragraph}{Ranking instability (Figure~\ref {fig:flips}).}{37}{section*.76}%
-\contentsline {paragraph}{\textsc {Dash}{} convergence (Figure~\ref {fig:convergence}).}{37}{section*.77}%
-\contentsline {subsection}{\numberline {10.3}Breast Cancer (Wisconsin)}{37}{subsection.10.3}%
-\contentsline {paragraph}{\textsc {Dash}{} convergence on Breast Cancer.}{38}{section*.79}%
+\contentsline {paragraph}{Attribution ratio (Figure~\ref {fig:ratio}).}{37}{section*.76}%
+\contentsline {paragraph}{Ranking instability (Figure~\ref {fig:flips}).}{37}{section*.77}%
+\contentsline {paragraph}{\textsc {Dash}{} convergence (Figure~\ref {fig:convergence}).}{38}{section*.78}%
+\contentsline {subsection}{\numberline {10.3}Breast Cancer (Wisconsin)}{38}{subsection.10.3}%
+\contentsline {paragraph}{\textsc {Dash}{} convergence on Breast Cancer.}{38}{section*.80}%
 \contentsline {subsection}{\numberline {10.4}Cross-Implementation Validation}{38}{subsection.10.4}%
-\contentsline {paragraph}{F5 caveat.}{38}{section*.81}%
-\contentsline {subsection}{\numberline {10.5}Non-SHAP Attribution Validation}{38}{subsection.10.5}%
+\contentsline {paragraph}{F5 caveat.}{39}{section*.82}%
+\contentsline {subsection}{\numberline {10.5}Non-SHAP Attribution Validation}{39}{subsection.10.5}%
 \contentsline {subsection}{\numberline {10.6}Neural Network Attribution Instability}{39}{subsection.10.6}%
-\contentsline {paragraph}{KernelSHAP noise vs.\ model instability.}{39}{section*.82}%
-\contentsline {subsection}{\numberline {10.7}SHAP Efficiency and Attribution Instability}{39}{subsection.10.7}%
-\contentsline {subsubsection}{\numberline {10.7.1}Within-model amplification}{39}{subsubsection.10.7.1}%
+\contentsline {paragraph}{KernelSHAP noise vs.\ model instability.}{39}{section*.83}%
+\contentsline {subsection}{\numberline {10.7}SHAP Efficiency and Attribution Instability}{40}{subsection.10.7}%
+\contentsline {subsubsection}{\numberline {10.7.1}Within-model amplification}{40}{subsubsection.10.7.1}%
 \contentsline {subsubsection}{\numberline {10.7.2}Across-model non-amplification}{40}{subsubsection.10.7.2}%
-\contentsline {subsection}{\numberline {10.8}High-Dimensional Scalability ($P = 500$)}{40}{subsection.10.8}%
-\contentsline {subsection}{\numberline {10.9}Proportionality Axiom Validation}{40}{subsection.10.9}%
+\contentsline {subsection}{\numberline {10.8}High-Dimensional Scalability ($P = 500$)}{41}{subsection.10.8}%
+\contentsline {subsection}{\numberline {10.9}Proportionality Axiom Validation}{41}{subsection.10.9}%
 \contentsline {subsection}{\numberline {10.10}Cross-Implementation and Data-Level Validation}{41}{subsection.10.10}%
-\contentsline {paragraph}{Data-level stochasticity.}{41}{section*.83}%
-\contentsline {paragraph}{Determinism without subsampling.}{41}{section*.84}%
-\contentsline {subsection}{\numberline {10.11}Financial Case Studies}{41}{subsection.10.11}%
-\contentsline {paragraph}{German Credit.}{41}{section*.85}%
-\contentsline {paragraph}{Taiwan Credit Card Default.}{41}{section*.86}%
-\contentsline {paragraph}{Synthetic Credit (income $\leftrightarrow $ DTI $\leftrightarrow $ credit score).}{41}{section*.87}%
-\contentsline {paragraph}{Lending Club (positive control).}{42}{section*.88}%
-\contentsline {subsection}{\numberline {10.12}LLM Attention Attribution Instability}{42}{subsection.10.12}%
-\contentsline {paragraph}{Scope and limitations.}{43}{section*.89}%
-\contentsline {subsection}{\numberline {10.13}Replication Study: Published SHAP Rankings}{43}{subsection.10.13}%
-\contentsline {subsection}{\numberline {10.14}Expected Ranking Discordance}{43}{subsection.10.14}%
-\contentsline {subsection}{\numberline {10.15}Compressed Sensing Connection}{43}{subsection.10.15}%
+\contentsline {paragraph}{Data-level stochasticity.}{41}{section*.84}%
+\contentsline {paragraph}{Determinism without subsampling.}{41}{section*.85}%
+\contentsline {subsection}{\numberline {10.11}Financial Case Studies}{42}{subsection.10.11}%
+\contentsline {paragraph}{German Credit.}{42}{section*.86}%
+\contentsline {paragraph}{Taiwan Credit Card Default.}{42}{section*.87}%
+\contentsline {paragraph}{Synthetic Credit (income $\leftrightarrow $ DTI $\leftrightarrow $ credit score).}{42}{section*.88}%
+\contentsline {paragraph}{Regulatory adverse action experiment.}{42}{section*.89}%
+\contentsline {paragraph}{Lending Club (specificity control).}{42}{section*.90}%
+\contentsline {subsection}{\numberline {10.12}LLM Attention Attribution Instability}{43}{subsection.10.12}%
+\contentsline {paragraph}{Scope and limitations.}{43}{section*.91}%
+\contentsline {subsection}{\numberline {10.13}Replication Study: Published SHAP Rankings}{44}{subsection.10.13}%
+\contentsline {subsection}{\numberline {10.14}Expected Ranking Discordance}{44}{subsection.10.14}%
+\contentsline {subsection}{\numberline {10.15}Compressed Sensing Connection}{44}{subsection.10.15}%
 \contentsline {subsection}{\numberline {10.16}Prevalence Survey}{44}{subsection.10.16}%
-\contentsline {paragraph}{Methodology.}{44}{section*.90}%
-\contentsline {paragraph}{Robustness to hyperparameters.}{44}{section*.91}%
-\contentsline {paragraph}{Interpretation.}{44}{section*.93}%
-\contentsline {section}{\numberline {11}Lean Formalization}{45}{section.11}%
-\contentsline {subsection}{\numberline {11.1}Proof Architecture}{45}{subsection.11.1}%
-\contentsline {subsection}{\numberline {11.2}Axiom System and Consistency}{46}{subsection.11.2}%
-\contentsline {paragraph}{Attribution sum symmetry: now derived.}{46}{section*.95}%
-\contentsline {paragraph}{Variance: partially grounded in Mathlib.}{46}{section*.96}%
-\contentsline {paragraph}{Variance sub-system.}{46}{section*.97}%
-\contentsline {paragraph}{Spearman bound: axiomatized vs.\ derived.}{46}{section*.98}%
-\contentsline {subsection}{\numberline {11.3}Development Methodology}{46}{subsection.11.3}%
-\contentsline {subsection}{\numberline {11.4}Proof Depth Distribution}{47}{subsection.11.4}%
-\contentsline {subsection}{\numberline {11.5}Inconsistencies Found During Formalization}{47}{subsection.11.5}%
-\contentsline {subsection}{\numberline {11.6}SymPy Algebraic Verification}{47}{subsection.11.6}%
-\contentsline {subsection}{\numberline {11.7}Lean File Cross-Reference}{47}{subsection.11.7}%
-\contentsline {section}{\numberline {12}Related Work}{47}{section.12}%
-\contentsline {paragraph}{Attribution impossibility results.}{47}{section*.100}%
-\contentsline {paragraph}{Rashomon effect and model multiplicity.}{48}{section*.101}%
-\contentsline {paragraph}{Fairness impossibility.}{48}{section*.102}%
-\contentsline {paragraph}{Formal verification for ML.}{48}{section*.103}%
-\contentsline {section}{\numberline {13}Discussion}{48}{section.13}%
-\contentsline {paragraph}{Limitations.}{48}{section*.104}%
-\contentsline {paragraph}{Computational cost and practical deployment.}{49}{section*.105}%
-\contentsline {paragraph}{Broader implications.}{49}{section*.106}%
-\contentsline {paragraph}{Distinction from classical multicollinearity.}{49}{section*.107}%
-\contentsline {paragraph}{Rashomon set vs.\ deployed model.}{49}{section*.108}%
-\contentsline {paragraph}{Information loss.}{49}{section*.109}%
-\contentsline {paragraph}{Loss landscape geometry.}{49}{section*.110}%
-\contentsline {paragraph}{Named techniques.}{49}{section*.111}%
-\contentsline {paragraph}{Proof status transparency.}{49}{section*.112}%
-\contentsline {paragraph}{Approximate faithfulness--stability tradeoff.}{49}{section*.113}%
-\contentsline {paragraph}{Open problems.}{50}{section*.114}%
-\contentsline {paragraph}{Formalization as methodology.}{50}{section*.115}%
-\contentsline {section}{\numberline {A}Extended Proof Details}{50}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}Gaussian Binary Quantization: Full Derivation}{50}{subsection.A.1}%
-\contentsline {subsection}{\numberline {A.2}Exact Flip Rate Under Approximate Symmetry}{50}{subsection.A.2}%
-\contentsline {section}{\numberline {B}DASH Robustness: Extended Analysis}{50}{appendix.B}%
-\contentsline {subsection}{\numberline {B.1}When to Prefer the Median}{50}{subsection.B.1}%
-\contentsline {section}{\numberline {C}Extended Conditional Attribution Analysis}{51}{appendix.C}%
-\contentsline {subsection}{\numberline {C.1}Causal Structure Validation: Full Results}{51}{subsection.C.1}%
-\contentsline {section}{\numberline {D}Extended LLM Analysis}{51}{appendix.D}%
-\contentsline {subsection}{\numberline {D.1}Fine-Tuning Details}{51}{subsection.D.1}%
-\contentsline {section}{\numberline {E}Extended Experimental Results}{52}{appendix.E}%
-\contentsline {subsection}{\numberline {E.1}KernelSHAP Noise Control: Full Results}{52}{subsection.E.1}%
-\contentsline {subsection}{\numberline {E.2}Cross-Implementation: Full Results}{52}{subsection.E.2}%
-\contentsline {subsection}{\numberline {E.3}Prevalence Survey: Statistical Power Analysis}{52}{subsection.E.3}%
-\contentsline {section}{\numberline {F}Attempted Common Generalization with Arrow's Theorem}{52}{appendix.F}%
-\contentsline {subsection}{\numberline {F.1}Structural Comparison}{52}{subsection.F.1}%
-\contentsline {subsection}{\numberline {F.2}Attempted Common Framework}{53}{subsection.F.2}%
-\contentsline {subsection}{\numberline {F.3}Assessment}{53}{subsection.F.3}%
-\contentsline {paragraph}{Relationship to Sen's liberalism paradox.}{53}{section*.117}%
-\contentsline {section}{\numberline {G}Topological Analysis of the Impossibility}{54}{appendix.G}%
-\contentsline {subsection}{\numberline {G.1}The $m = 2$ Case}{54}{subsection.G.1}%
-\contentsline {subsection}{\numberline {G.2}The $m = 3$ Case}{54}{subsection.G.2}%
-\contentsline {subsection}{\numberline {G.3}The $m \geq 4$ Case: The Permutohedron}{54}{subsection.G.3}%
-\contentsline {subsection}{\numberline {G.4}Assessment}{54}{subsection.G.4}%
-\contentsline {section}{\numberline {H}On Categorical/Axiomatic Strengthening}{55}{appendix.H}%
-\contentsline {subsection}{\numberline {H.1}The Trivial Version}{55}{subsection.H.1}%
-\contentsline {subsection}{\numberline {H.2}The ``Constant Attribution'' Escape}{55}{subsection.H.2}%
-\contentsline {subsection}{\numberline {H.3}The Non-Trivial Quantitative Version}{55}{subsection.H.3}%
-\contentsline {section}{\numberline {I}Regulatory Mapping: EU AI Act}{56}{appendix.I}%
-\contentsline {paragraph}{Summary of recommended actions by actor.}{57}{section*.124}%
-\contentsline {section}{\numberline {J}SymPy Verification: Full Details}{57}{appendix.J}%
+\contentsline {paragraph}{Methodology.}{45}{section*.92}%
+\contentsline {paragraph}{Healthcare datasets.}{45}{section*.93}%
+\contentsline {paragraph}{Robustness to hyperparameters.}{45}{section*.94}%
+\contentsline {paragraph}{Interpretation.}{45}{section*.96}%
+\contentsline {section}{\numberline {11}Lean Formalization}{46}{section.11}%
+\contentsline {subsection}{\numberline {11.1}Proof Architecture}{46}{subsection.11.1}%
+\contentsline {subsection}{\numberline {11.2}Axiom System and Consistency}{47}{subsection.11.2}%
+\contentsline {paragraph}{Attribution sum symmetry: now derived.}{47}{section*.98}%
+\contentsline {paragraph}{Variance: partially grounded in Mathlib.}{47}{section*.99}%
+\contentsline {paragraph}{Variance sub-system.}{47}{section*.100}%
+\contentsline {paragraph}{Spearman bound: axiomatized vs.\ derived.}{47}{section*.101}%
+\contentsline {subsection}{\numberline {11.3}Development Methodology}{48}{subsection.11.3}%
+\contentsline {subsection}{\numberline {11.4}Proof Depth Distribution}{48}{subsection.11.4}%
+\contentsline {subsection}{\numberline {11.5}Inconsistencies Found During Formalization}{48}{subsection.11.5}%
+\contentsline {subsection}{\numberline {11.6}SymPy Algebraic Verification}{48}{subsection.11.6}%
+\contentsline {subsection}{\numberline {11.7}Lean File Cross-Reference}{48}{subsection.11.7}%
+\contentsline {section}{\numberline {12}Related Work}{48}{section.12}%
+\contentsline {paragraph}{Attribution impossibility results.}{48}{section*.103}%
+\contentsline {paragraph}{Rashomon effect and model multiplicity.}{49}{section*.104}%
+\contentsline {paragraph}{Attribution sensitivity and fragility.}{49}{section*.105}%
+\contentsline {paragraph}{Foundational methods.}{49}{section*.106}%
+\contentsline {paragraph}{Fairness impossibility.}{50}{section*.107}%
+\contentsline {paragraph}{Formal verification for ML.}{50}{section*.108}%
+\contentsline {section}{\numberline {13}Discussion}{50}{section.13}%
+\contentsline {paragraph}{Limitations.}{50}{section*.109}%
+\contentsline {paragraph}{Computational cost and practical deployment.}{50}{section*.110}%
+\contentsline {paragraph}{Broader implications.}{50}{section*.111}%
+\contentsline {paragraph}{Distinction from classical multicollinearity.}{50}{section*.112}%
+\contentsline {paragraph}{Rashomon set vs.\ deployed model.}{50}{section*.113}%
+\contentsline {paragraph}{Connection to underspecification.}{50}{section*.114}%
+\contentsline {paragraph}{Information loss.}{51}{section*.115}%
+\contentsline {paragraph}{Loss landscape geometry.}{51}{section*.116}%
+\contentsline {paragraph}{Named techniques.}{51}{section*.117}%
+\contentsline {paragraph}{Proof status transparency and axiom stratification.}{51}{section*.118}%
+\contentsline {paragraph}{Approximate faithfulness--stability tradeoff.}{51}{section*.119}%
+\contentsline {paragraph}{Open problems.}{52}{section*.120}%
+\contentsline {paragraph}{Formalization as methodology.}{52}{section*.121}%
+\contentsline {section}{\numberline {A}Extended Proof Details}{52}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Gaussian Binary Quantization: Full Derivation}{52}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}Exact Flip Rate Under Approximate Symmetry}{52}{subsection.A.2}%
+\contentsline {section}{\numberline {B}DASH Robustness: Extended Analysis}{52}{appendix.B}%
+\contentsline {subsection}{\numberline {B.1}When to Prefer the Median}{52}{subsection.B.1}%
+\contentsline {section}{\numberline {C}Extended Conditional Attribution Analysis}{53}{appendix.C}%
+\contentsline {subsection}{\numberline {C.1}Causal Structure Validation: Full Results}{53}{subsection.C.1}%
+\contentsline {section}{\numberline {D}Extended LLM Analysis}{53}{appendix.D}%
+\contentsline {subsection}{\numberline {D.1}Fine-Tuning Details}{53}{subsection.D.1}%
+\contentsline {section}{\numberline {E}Extended Experimental Results}{53}{appendix.E}%
+\contentsline {subsection}{\numberline {E.1}KernelSHAP Noise Control: Full Results}{53}{subsection.E.1}%
+\contentsline {subsection}{\numberline {E.2}Cross-Implementation: Full Results}{54}{subsection.E.2}%
+\contentsline {subsection}{\numberline {E.3}Prevalence Survey: Statistical Power Analysis}{54}{subsection.E.3}%
+\contentsline {subsection}{\numberline {E.4}Class Imbalance Amplifies Instability}{54}{subsection.E.4}%
+\contentsline {subsection}{\numberline {E.5}Missing Data Compounds Instability}{54}{subsection.E.5}%
+\contentsline {subsection}{\numberline {E.6}Longitudinal Retraining Drift}{55}{subsection.E.6}%
+\contentsline {subsection}{\numberline {E.7}SAGE and Boruta Comparison}{55}{subsection.E.7}%
+\contentsline {subsection}{\numberline {E.8}Bag-of-Words NLP Attribution Instability}{55}{subsection.E.8}%
+\contentsline {subsection}{\numberline {E.9}Time-Series Feature Instability}{56}{subsection.E.9}%
+\contentsline {subsection}{\numberline {E.10}Adversarial Max Instability}{56}{subsection.E.10}%
+\contentsline {subsection}{\numberline {E.11}Hyperparameter Sensitivity}{56}{subsection.E.11}%
+\contentsline {subsection}{\numberline {E.12}DASH Breakdown Contamination Sweep}{56}{subsection.E.12}%
+\contentsline {subsection}{\numberline {E.13}Experiment Summary}{56}{subsection.E.13}%
+\contentsline {section}{\numberline {F}Attempted Common Generalization with Arrow's Theorem}{57}{appendix.F}%
+\contentsline {subsection}{\numberline {F.1}Structural Comparison}{57}{subsection.F.1}%
+\contentsline {subsection}{\numberline {F.2}Attempted Common Framework}{57}{subsection.F.2}%
+\contentsline {subsection}{\numberline {F.3}Assessment}{58}{subsection.F.3}%
+\contentsline {paragraph}{Relationship to Sen's liberalism paradox.}{58}{section*.124}%
+\contentsline {section}{\numberline {G}Topological Analysis of the Impossibility}{58}{appendix.G}%
+\contentsline {subsection}{\numberline {G.1}The $m = 2$ Case}{58}{subsection.G.1}%
+\contentsline {subsection}{\numberline {G.2}The $m = 3$ Case}{58}{subsection.G.2}%
+\contentsline {subsection}{\numberline {G.3}The $m \geq 4$ Case: The Permutohedron}{58}{subsection.G.3}%
+\contentsline {subsection}{\numberline {G.4}Assessment}{59}{subsection.G.4}%
+\contentsline {section}{\numberline {H}On Categorical/Axiomatic Strengthening}{59}{appendix.H}%
+\contentsline {subsection}{\numberline {H.1}The Trivial Version}{59}{subsection.H.1}%
+\contentsline {subsection}{\numberline {H.2}The ``Constant Attribution'' Escape}{59}{subsection.H.2}%
+\contentsline {subsection}{\numberline {H.3}The Non-Trivial Quantitative Version}{59}{subsection.H.3}%
+\contentsline {section}{\numberline {I}Regulatory Mapping: EU AI Act}{60}{appendix.I}%
+\contentsline {paragraph}{Summary of recommended actions by actor.}{62}{section*.131}%
+\contentsline {section}{\numberline {J}SymPy Verification: Full Details}{62}{appendix.J}%
