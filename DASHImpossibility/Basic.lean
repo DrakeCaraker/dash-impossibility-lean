@@ -49,3 +49,4 @@ import DASHImpossibility.ProportionalityLocal
 import DASHImpossibility.Qualitative
 import DASHImpossibility.LossPreservation
 import DASHImpossibility.BayesOptimalTie
+import DASHImpossibility.ParetoOptimality

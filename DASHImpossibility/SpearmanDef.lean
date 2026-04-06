@@ -476,4 +476,124 @@ theorem spearman_instability_bound (f f' : Model) (ℓ : Fin fs.L)
   exact spearmanCorr_bound_groupSize fs f f' (firstMover fs f) (firstMover fs f')
     ℓ hfm_grp hfm'_grp hdiff rfl rfl hP
 
+/-! ## Tighter Spearman bound: m²/2 instead of (m-1)²/2
+
+  The key observation: the midrank gap between the first-mover j and a
+  non-first-mover k is at least m/2 (not just (m-1)/2). This is because:
+  - countEqual(v,k) ≥ m-1 (all non-first-movers in the group are tied)
+  - countEqual(v,j) ≥ 1 (every element is equal to itself)
+  - The midrank gap ≥ (countEqual(k) + countEqual(j))/2 ≥ ((m-1) + 1)/2 = m/2
+
+  The existing `midrank_gap_ge_half_groupSize` already has all the hypotheses
+  for this tighter bound — it just states (m-1)/2 instead of m/2. -/
+
+/-- Tighter midrank gap: midrank(v,j) - midrank(v,k) ≥ m/2 (not just (m-1)/2).
+    The improvement comes from combining countEqual(k) ≥ m-1 with countEqual(j) ≥ 1,
+    giving (countEqual(k) + countEqual(j))/2 ≥ m/2. -/
+lemma midrank_gap_ge_half_groupSize_tight (f : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
+    (hfm : firstMover fs f = j) :
+    let v := fun i => attribution fs i f
+    (fs.groupSize ℓ : ℝ) / 2 ≤ midrank fs v j - midrank fs v k := by
+  intro v
+  have hvjk : v k < v j := attribution_firstMover_gt fs f j k ℓ hj hk hfm hjk
+  have hcb := countBelow_of_gt fs v j k hvjk
+  have hce_k := countEqual_ge_groupSize_minus_one fs f j k ℓ hj hk hjk hfm
+  have hce_j := countEqual_pos fs v j
+  unfold midrank
+  have h1 : (countBelow fs v j : ℝ) ≥ (countBelow fs v k : ℝ) + (countEqual fs v k : ℝ) := by
+    exact_mod_cast hcb
+  have h2 : (countEqual fs v j : ℝ) ≥ 1 := by exact_mod_cast hce_j
+  have h3 : (countEqual fs v k : ℝ) ≥ (fs.groupSize ℓ : ℝ) - 1 := by
+    have hle : (fs.groupSize ℓ - 1 : ℕ) ≤ countEqual fs v k := hce_k
+    have hgs : 2 ≤ fs.groupSize ℓ := fs.group_size_ge_two ℓ
+    have hge1 : 1 ≤ fs.groupSize ℓ := Nat.one_le_iff_ne_zero.mpr (by intro h; simp [h] at hgs)
+    have hce_ge : fs.groupSize ℓ ≤ countEqual fs v k + 1 :=
+      calc fs.groupSize ℓ = (fs.groupSize ℓ - 1) + 1 := (Nat.sub_add_cancel hge1).symm
+        _ ≤ countEqual fs v k + 1 := Nat.add_le_add_right hle 1
+    have hcast : (fs.groupSize ℓ : ℝ) ≤ (countEqual fs v k : ℝ) + 1 := by exact_mod_cast hce_ge
+    linarith
+  -- gap = countBelow(j) + (countEqual(j)+1)/2 - countBelow(k) - (countEqual(k)+1)/2
+  --     ≥ countEqual(k) + (countEqual(j)+1)/2 - (countEqual(k)+1)/2
+  --     = countEqual(k)/2 + countEqual(j)/2
+  --     ≥ (m-1)/2 + 1/2 = m/2
+  linarith
+
+/-- Tighter Σd² bound: Σd² ≥ m²/2 (instead of (m-1)²/2).
+    Uses the tighter midrank gap of m/2 in each model. -/
+theorem sumSqRankDiff_ge_sq_groupSize_tight (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
+    (hfm : firstMover fs f = j) (hfm' : firstMover fs f' = k) :
+    (fs.groupSize ℓ : ℝ) ^ 2 / 2 ≤
+      sumSqRankDiff fs (fun i => attribution fs i f) (fun i => attribution fs i f') := by
+  set v := fun i => attribution fs i f
+  set w := fun i => attribution fs i f'
+  have hrev := attribution_reversal fs f f' j k ℓ hj hk hfm hfm' hjk
+  -- Tighter midrank gaps: ≥ m/2 in each model
+  have hgap_v := midrank_gap_ge_half_groupSize_tight fs f j k ℓ hj hk hjk hfm
+  have hgap_w := midrank_gap_ge_half_groupSize_tight fs f' k j ℓ hk hj hjk.symm hfm'
+  set dj := midrank fs v j - midrank fs w j
+  set dk := midrank fs v k - midrank fs w k
+  -- d_j - d_k ≥ m/2 + m/2 = m
+  have hdiff : dj - dk ≥ (fs.groupSize ℓ : ℝ) := by
+    show midrank fs v j - midrank fs w j - (midrank fs v k - midrank fs w k) ≥ _
+    have := hgap_v
+    have := hgap_w
+    linarith
+  -- Σd² ≥ d_j² + d_k² ≥ (d_j - d_k)²/2 ≥ m²/2
+  unfold sumSqRankDiff
+  have hpair : dj ^ 2 + dk ^ 2 ≤
+      Finset.univ.sum (fun i => (midrank fs v i - midrank fs w i) ^ 2) := by
+    have hsub : {j, k} ⊆ Finset.univ (α := Fin fs.P) := Finset.subset_univ _
+    have hne : j ≠ k := hjk
+    have hpair_sum := Finset.sum_le_sum_of_subset_of_nonneg hsub
+      (fun (i : Fin fs.P) (_ : i ∈ Finset.univ) (_ : i ∉ ({j, k} : Finset (Fin fs.P))) =>
+        sq_nonneg (midrank fs v i - midrank fs w i))
+    rw [Finset.sum_pair hne] at hpair_sum
+    exact hpair_sum
+  have hsq : dj ^ 2 + dk ^ 2 ≥ (dj - dk) ^ 2 / 2 := by nlinarith [sq_nonneg (dj + dk)]
+  have hm := fs.group_size_ge_two ℓ
+  have hm_cast : (fs.groupSize ℓ : ℝ) ≥ 2 := by
+    unfold FeatureSpace.groupSize
+    exact_mod_cast hm
+  have hdiffsq : (dj - dk) ^ 2 ≥ (fs.groupSize ℓ : ℝ) ^ 2 := by nlinarith
+  linarith
+
+/-- Tighter Spearman bound: spearmanCorr ≤ 1 - 3m²/(P³-P).
+    Strictly tighter than 1 - 3(m-1)²/(P³-P) by a factor of m²/(m-1)². -/
+theorem spearmanCorr_bound_groupSize_tight (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k)
+    (hfm : firstMover fs f = j) (hfm' : firstMover fs f' = k)
+    (hP : 2 ≤ fs.P) :
+    spearmanCorr fs (fun i => attribution fs i f) (fun i => attribution fs i f') ≤
+      1 - 3 * (fs.groupSize ℓ : ℝ) ^ 2 / ((fs.P : ℝ) ^ 3 - (fs.P : ℝ)) := by
+  unfold spearmanCorr
+  have hsd := sumSqRankDiff_ge_sq_groupSize_tight fs f f' j k ℓ hj hk hjk hfm hfm'
+  have hP_pos : (0 : ℝ) < (fs.P : ℝ) := Nat.cast_pos.mpr fs.hP
+  have hP2 : (1 : ℝ) < (fs.P : ℝ) := by exact_mod_cast (show 1 < fs.P by omega)
+  have hPsq : (0 : ℝ) < (fs.P : ℝ) ^ 2 - 1 := by nlinarith
+  have hdenom_pos : (0 : ℝ) < (fs.P : ℝ) * ((fs.P : ℝ) ^ 2 - 1) :=
+    mul_pos hP_pos hPsq
+  have hfactor : (fs.P : ℝ) * ((fs.P : ℝ) ^ 2 - 1) = (fs.P : ℝ) ^ 3 - (fs.P : ℝ) := by ring
+  rw [hfactor]
+  have hdenom_pos' : (0 : ℝ) < (fs.P : ℝ) ^ 3 - (fs.P : ℝ) := by linarith [hfactor]
+  suffices h : 3 * (fs.groupSize ℓ : ℝ) ^ 2 / ((fs.P : ℝ) ^ 3 - (fs.P : ℝ)) ≤
+               6 * sumSqRankDiff fs (fun i => attribution fs i f)
+                 (fun i => attribution fs i f') /
+               ((fs.P : ℝ) ^ 3 - (fs.P : ℝ)) by linarith
+  rw [div_le_div_iff_of_pos_right hdenom_pos']
+  linarith
+
+/-- Tighter Spearman instability bound (convenience wrapper):
+    spearmanCorr ≤ 1 - 3m²/(P³-P) when first-movers differ within group ℓ. -/
+theorem spearman_instability_bound_tight (f f' : Model) (ℓ : Fin fs.L)
+    (hfm_grp : firstMover fs f ∈ fs.group ℓ)
+    (hfm'_grp : firstMover fs f' ∈ fs.group ℓ)
+    (hdiff : firstMover fs f ≠ firstMover fs f')
+    (hP : 2 ≤ fs.P) :
+    spearmanCorr fs (fun j => attribution fs j f) (fun j => attribution fs j f') ≤
+      1 - 3 * (fs.groupSize ℓ : ℝ) ^ 2 / ((fs.P : ℝ) ^ 3 - (fs.P : ℝ)) := by
+  exact spearmanCorr_bound_groupSize_tight fs f f' (firstMover fs f) (firstMover fs f')
+    ℓ hfm_grp hfm'_grp hdiff rfl rfl hP
+
 end DASHImpossibility
