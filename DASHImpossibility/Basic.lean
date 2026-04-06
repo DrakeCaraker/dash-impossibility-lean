@@ -47,3 +47,5 @@ import DASHImpossibility.Setup
 import DASHImpossibility.ApproximateEquity
 import DASHImpossibility.ProportionalityLocal
 import DASHImpossibility.Qualitative
+import DASHImpossibility.LossPreservation
+import DASHImpossibility.BayesOptimalTie
