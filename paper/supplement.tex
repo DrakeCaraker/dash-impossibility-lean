@@ -78,8 +78,8 @@ Testing lower bound & \texttt{le\_cam\_lower\_bound} & \textbf{Theorem} in \text
 
 \section{Proof Architecture}
 
-The formalization comprises 46 Lean~4 files with 16 axioms and
-260 type-checked theorems and lemmas (
+The formalization comprises 54 Lean~4 files with 16 axioms and
+305 type-checked theorems and lemmas (
 0 \texttt{sorry}). Of these, 67 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or
 single-step applications.
@@ -126,7 +126,7 @@ supplement section and key theorem.
 
 \begin{table}[h]
 \centering
-\caption{Lean file cross-reference (46 files, 260 theorems, 16 axioms).}
+\caption{Lean file cross-reference (54 files, 305 theorems, 16 axioms).}
 \label{tab:lean-crossref}
 \footnotesize
 \begin{tabular}{@{}llll@{}}
@@ -241,7 +241,7 @@ would derive the variance bound from Mathlib's
 \paragraph{Development methodology.}
 The initial formalization (49 theorems, 15 files) was developed by
 the first author with iterative Claude Code assistance over several
-weeks. The expansion from 49 to 260 theorems (46 files) was produced
+weeks. The expansion from 49 to 305 theorems (54 files) was produced
 in a single development session by dispatching targeted Lean-writing
 agents with detailed mathematical specifications (theorem statements,
 proof strategies, and Mathlib lemma references). All proofs were
@@ -252,7 +252,7 @@ reasoning; the deepest proof (\texttt{attribution\_sum\_symmetric},
 35 tactic lines) derives symmetry via split-count decomposition.
 
 \paragraph{Proof depth distribution.}
-Of 260 type-checked declarations: 67 require multi-step proofs
+Of 305 type-checked declarations: 67 require multi-step proofs
 (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5
 require ${\geq}20$ lines. The five deepest proofs are
 \texttt{attribution\_sum\_symmetric} (35 lines, derived symmetry

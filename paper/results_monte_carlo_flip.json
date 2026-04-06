@@ -1,70 +1,112 @@
 {
+  "description": "Monte Carlo validation of flip rate formula Phi(-SNR)",
   "config": {
     "P": 10,
     "N_train": 2000,
     "N_eval": 200,
-    "trials": 1000,
+    "n_estimators": 50,
     "max_depth": 1,
     "subsample": 0.8
   },
-  "rows": [
+  "results": [
     {
       "rho": 0.1,
-      "empirical_flip": 0.417,
-      "theoretical_flip": 0.4212981444856644,
-      "abs_diff": 0.004298144485664401,
-      "snr": 0.198573622381241
+      "empirical_flip_rate": 0.1873,
+      "theoretical_flip_rate": 0.190114,
+      "abs_difference": 0.002814,
+      "empirical_snr": 0.8774999976158142,
+      "n_trials": 10000,
+      "feat0_wins": 1873,
+      "feat1_wins": 8127,
+      "mean_shap_diff": -0.069852,
+      "std_shap_diff": 0.079606
     },
     {
       "rho": 0.3,
-      "empirical_flip": 0.457,
-      "theoretical_flip": 0.4796761921105621,
-      "abs_diff": 0.0226761921105621,
-      "snr": 0.05096628759532423
+      "empirical_flip_rate": 0.3057,
+      "theoretical_flip_rate": 0.29816,
+      "abs_difference": 0.00754,
+      "empirical_snr": 0.529699981212616,
+      "n_trials": 10000,
+      "feat0_wins": 6943,
+      "feat1_wins": 3057,
+      "mean_shap_diff": 0.055938,
+      "std_shap_diff": 0.105602
     },
     {
       "rho": 0.5,
-      "empirical_flip": 0.482,
-      "theoretical_flip": 0.4558539981454053,
-      "abs_diff": 0.026146001854594703,
-      "snr": 0.1108844252401314
+      "empirical_flip_rate": 0.3993,
+      "theoretical_flip_rate": 0.385824,
+      "abs_difference": 0.013476,
+      "empirical_snr": 0.29019999504089355,
+      "n_trials": 10000,
+      "feat0_wins": 3993,
+      "feat1_wins": 6007,
+      "mean_shap_diff": -0.045704,
+      "std_shap_diff": 0.157481
     },
     {
       "rho": 0.7,
-      "empirical_flip": 0.467,
-      "theoretical_flip": 0.4574865260454018,
-      "abs_diff": 0.009513473954598228,
-      "snr": 0.1067679779862162
+      "empirical_flip_rate": 0.478,
+      "theoretical_flip_rate": 0.465792,
+      "abs_difference": 0.012208,
+      "empirical_snr": 0.08590000122785568,
+      "n_trials": 10000,
+      "feat0_wins": 4780,
+      "feat1_wins": 5220,
+      "mean_shap_diff": -0.024341,
+      "std_shap_diff": 0.283514
     },
     {
       "rho": 0.8,
-      "empirical_flip": 0.499,
-      "theoretical_flip": 0.4909653874594723,
-      "abs_diff": 0.008034612540527675,
-      "snr": 0.022648351332519828
+      "empirical_flip_rate": 0.4897,
+      "theoretical_flip_rate": 0.485908,
+      "abs_difference": 0.003792,
+      "empirical_snr": 0.03530000150203705,
+      "n_trials": 10000,
+      "feat0_wins": 4897,
+      "feat1_wins": 5103,
+      "mean_shap_diff": -0.01553,
+      "std_shap_diff": 0.439556
     },
     {
       "rho": 0.9,
-      "empirical_flip": 0.493,
-      "theoretical_flip": 0.48172098130950813,
-      "abs_diff": 0.01127901869049186,
-      "snr": 0.04583474848400788
+      "empirical_flip_rate": 0.4776,
+      "theoretical_flip_rate": 0.475567,
+      "abs_difference": 0.002033,
+      "empirical_snr": 0.06129999831318855,
+      "n_trials": 10000,
+      "feat0_wins": 4776,
+      "feat1_wins": 5224,
+      "mean_shap_diff": -0.038897,
+      "std_shap_diff": 0.634703
     },
     {
       "rho": 0.95,
-      "empirical_flip": 0.494,
-      "theoretical_flip": 0.4945112955625252,
-      "abs_diff": 0.0005112955625252158,
-      "snr": 0.013758575801157687
+      "empirical_flip_rate": 0.4955,
+      "theoretical_flip_rate": 0.491207,
+      "abs_difference": 0.004293,
+      "empirical_snr": 0.02199999988079071,
+      "n_trials": 10000,
+      "feat0_wins": 4955,
+      "feat1_wins": 5045,
+      "mean_shap_diff": -0.016066,
+      "std_shap_diff": 0.728844
     },
     {
       "rho": 0.99,
-      "empirical_flip": 0.481,
-      "theoretical_flip": 0.4886490203862033,
-      "abs_diff": 0.007649020386203298,
-      "snr": 0.028456526537008076
+      "empirical_flip_rate": 0.4927,
+      "theoretical_flip_rate": 0.495191,
+      "abs_difference": 0.002491,
+      "empirical_snr": 0.01209999993443489,
+      "n_trials": 10000,
+      "feat0_wins": 4927,
+      "feat1_wins": 5073,
+      "mean_shap_diff": -0.01033,
+      "std_shap_diff": 0.856936
     }
   ],
-  "max_abs_diff": 0.026146001854594703,
-  "verdict": "VALIDATED: max |diff| = 0.0261 < 0.05"
+  "max_abs_difference": 0.013476,
+  "verdict": "VALIDATED: theoretical formula Phi(-SNR) matches Monte Carlo simulation within 5%",
+  "total_runtime_seconds": 1217.6
 }

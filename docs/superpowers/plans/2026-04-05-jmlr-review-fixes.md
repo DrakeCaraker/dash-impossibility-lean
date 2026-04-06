@@ -472,7 +472,7 @@ grep -rc "sorry" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print "sorry:"
 ls DASHImpossibility/*.lean | wc -l | awk '{print "files:", $1}'
 ```
 
-Expected: 260, 16, 0, 46.
+Expected: 305, 16, 0, 54.
 
 - [ ] **Step 3: Verify no stale numbers**
 
