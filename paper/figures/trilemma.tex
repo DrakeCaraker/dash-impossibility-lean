@@ -66,21 +66,21 @@
     % Left edge: Family B (DASH) — at exact midpoint
     \node[rotate=60, anchor=east, align=center,
           text=familyB]
-      at ($(F)!0.50!(S) + (-0.45,0.15)$)
+      at ($(F)!0.25!(S) + (-0.45,0.15)$)
       {{\bfseries Family B (DASH)}\\[-1pt]
        {\footnotesize\color{familyB!70} stable $+$ ties}};
 
     % Right edge: Family A — at exact midpoint
     \node[rotate=-60, anchor=west, align=center,
           text=familyA]
-      at ($(F)!0.50!(C) + (0.45,0.15)$)
+      at ($(F)!0.25!(C) + (0.45,0.15)$)
       {{\bfseries Family A}\\[-1pt]
        {\footnotesize\color{familyA!70} unstable (50\% flips)}};
 
     % Bottom edge: Drop faithful
     \node[anchor=north, align=center,
           text=trivia]
-      at ($(S)!0.5!(C) + (0,-0.45)$)
+      at ($(S)!0.5!(C) + (0,-0.05)$)
       {{\bfseries Drop faithful}\\[-1pt]
        {\footnotesize trivial}};
 
@@ -93,25 +93,25 @@
   % ============================================================
   %  PANEL B — Before / After DASH
   % ============================================================
-  \begin{scope}[shift={(8.0, -0.3)}]
+  \begin{scope}[shift={(7.0, -0.3)}]
 
     \newcommand{\barwidth}{0.4}
     \newcommand{\gapwidth}{0.22}
 
     % Panel label
     \node[anchor=north west, font=\sffamily\bfseries\Large]
-      at (-1.6, 6.5) {\textsf{B}};
+      at (-2.3, 6.5) {\textsf{B}};
 
     % ----------------------------------------------------------
     %  Top sub-panel: Before DASH
     % ----------------------------------------------------------
-    \node[anchor=south, font=\sffamily\bfseries]
-      at (1.0, 5.6) {Before DASH};
+    \node[anchor=south, font=\sffamily\bfseries\large]
+      at (0.1, 5.75) {Before DASH};
 
     % Model 1 (left bar chart) — lowered for gap below title
-    \begin{scope}[shift={(-0.4, 2.9)}]
+    \begin{scope}[shift={(-1.4, 3.5)}]
       \node[anchor=south, font=\sffamily\footnotesize, text=black!60]
-        at (0.5, 2.1) {Model 1};
+        at (0.5, 1.85) {Model 1};
 
       \fill[bardark] (0, 0) rectangle (\barwidth, 1.8);
       \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {$X_1$};
@@ -126,13 +126,13 @@
 
     % "retrain" arrow — centered between Model 1 right edge and Model 2 left edge
     \draw[->, line width=1pt, black!50]
-      (0.75, 4.1) -- (1.55, 4.1)
+      (-0.35, 4.6) -- (0.75, 4.6)
       node[midway, above=1pt, font=\sffamily\scriptsize, text=black!50] {retrain};
 
     % Model 2 (right bar chart) — reversed, same lowered position
-    \begin{scope}[shift={(1.7, 2.9)}]
+    \begin{scope}[shift={(0.7, 3.5)}]
       \node[anchor=south, font=\sffamily\footnotesize, text=black!60]
-        at (0.5, 2.1) {Model 2};
+        at (0.5, 1.85) {Model 2};
 
       \fill[barlight] (0, 0) rectangle (\barwidth, 0.65);
       \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {$X_1$};
@@ -148,7 +148,7 @@
     % Red brace: ranking flipped — adjusted to match lowered bars
     \draw[impossiblered, thick, decorate,
           decoration={brace, amplitude=4pt, mirror}]
-      (-0.5, 2.5) -- (2.85, 2.5)
+      (-1.25, 2.95) -- (1.60, 2.95)
       node[midway, below=6pt, font=\sffamily\scriptsize,
            text=impossiblered] {ranking flipped!};
 
@@ -156,10 +156,10 @@
     %  Bottom sub-panel: After DASH (M=25) — raised for balance
     % ----------------------------------------------------------
     \node[anchor=south, font=\sffamily\bfseries]
-      at (1.0, 1.5) {After DASH ($M\!=\!25$)};
+      at (0.2, 1.65) {After DASH ($M\!=\!25$)};
 
     % Single bar chart — tied
-    \begin{scope}[shift={(0.35, -0.4)}]
+    \begin{scope}[shift={(-0.35, -0.15)}]
       \fill[dashgreen!80] (0, 0) rectangle (\barwidth, 1.2);
       \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {$X_1$};
 
