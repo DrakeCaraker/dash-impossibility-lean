@@ -36,8 +36,8 @@
 
 \author{
   Drake Caraker\thanks{Corresponding author: \texttt{drakecaraker@gmail.com}} \quad
-  Bryan Arnold \quad
-  David Rhoads \\[4pt]
+  Bryan Arnold\thanks{\texttt{puremath86@gmail.com}} \quad
+  David Rhoads\thanks{\texttt{drhoads9@gmail.com}} \\[4pt]
   \textit{Independent Researchers}
 }
 
@@ -2429,6 +2429,9 @@ The F1 diagnostic achieves $|r| > 0.8$ on 9/10 datasets with unstable pairs (all
 
 The formalization comprises 54 Lean~4 files with 16 axioms and 305 type-checked theorems and lemmas (0 \texttt{sorry}). Of these, 67 require multi-line proofs ($\geq$5 tactic lines); 6 are definitional wrappers or single-step applications. The core impossibility (\texttt{attribution\_impossibility}) depends on zero axioms---only the Rashomon property as hypothesis. The DASH resolution (\texttt{consensus\_equity}) depends on the \texttt{attribution\_sum\_symmetric} theorem (derived from axioms); the variance convergence depends on the \texttt{consensus\_variance\_bound} theorem (also derived).
 
+\paragraph{Scope of verification.}
+The formalization covers the complete theoretical framework. The core impossibility (Theorem~\ref{thm:impossibility}) uses zero behavioral axioms. The quantitative bounds, DASH equity, and the Design Space Theorem are derived from the 16-axiom system. The unfaithfulness probability of exactly $1/2$ (\texttt{attribution\_prob\_half}), the Bayes-optimality of ties (\texttt{tie\_dominates\_commitment}), the consensus variance $\sigma^2/M$ (\texttt{consensus\_variance\_from\_independence}), the binary quantizer fraction $2/\pi$ (\texttt{binary\_quantizer\_fraction}), and the Pareto dominance of DASH (\texttt{dash\_unique\_pareto\_optimal}) are all Lean-derived using definitions-as-hypotheses (the \texttt{IsBalanced} pattern) with zero new axioms. The Chebyshev query complexity bound $M \geq 12\sigma^2/\Delta^2$ (\texttt{chebyshev\_query\_bound}) is derived without axiomatizing the testing constant. Loss preservation is formalized via the \texttt{SymmetricModelSwap} structure. The only result not formalized is the extension of Pareto optimality to biased methods for between-group pairs, which is argued informally in the proof of Theorem~\ref{thm:dash-optimal}.
+
 \begin{verbatim}
 Defs.lean (14 axioms, type definitions, derived theorems)
   +-- SymmetryDerive.lean (attribution_sum_symmetric, DERIVED)
@@ -2667,7 +2670,7 @@ The formalization uses 16 axioms total (14 domain-specific + 2 query-complexity)
 \end{itemize}
 This stratification directly addresses the proportionality axiom's empirical variance (CV $\approx 0.35$--$0.66$): the axiom is unnecessary for the impossibility and ratio bound, which depend only on split-count structure.
 
-The following are fully formalized in Lean (305 theorems, 0 \texttt{sorry}, 54 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, and the unfaithfulness/path-convergence results. The F1 diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
+The following are fully formalized in Lean (305 theorems, 0 \texttt{sorry}, 54 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, and the Pareto dominance of DASH. The F1 diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
 
 \paragraph{Approximate faithfulness--stability tradeoff.}
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\sigma(j) - \sigma(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.
