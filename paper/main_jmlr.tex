@@ -535,7 +535,7 @@ The fitted $\alpha = 0.60$ (empirical) vs.\ $2/\pi = 0.637$ (theory) represents 
 \paragraph{Stability bound.}
 When two models $f, f'$ have different first-movers within the same group of size $m$, the within-group rank reshuffling bounds the Spearman correlation:
 \[
-    \rho_S(f, f') \;\leq\; 1 - \frac{m^3}{P^3}.
+    \rho_S(f, f') \;\leq\; 1 - \frac{3(m-1)^2}{P^3 - P}.
 \]
 
 \paragraph{Exact flip rate for GBDT.}
@@ -788,7 +788,7 @@ The \emph{attribution design space} is the set of triples $(S, U, C)$ achievable
 \label{thm:design-space-main}
 For any model class satisfying the Rashomon property under within-group correlation $\rho > 0$, the achievable set of $(S, U, C)$ triples is the union of exactly two families:
 \begin{itemize}
-    \item \textbf{Family $\mathcal{A}$ (single-model):} $S \leq 1 - m^3/P^3$, $U = 1/2$, $C = \text{complete}$. Any method faithful to an individual model falls here.
+    \item \textbf{Family $\mathcal{A}$ (single-model):} $S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$, $U = 1/2$, $C = \text{complete}$. Any method faithful to an individual model falls here.
     \item \textbf{Family $\mathcal{B}$ (ensemble):} $S_M = 1 - O(1/M)$, $U = 0$, $C = \text{partial (ties)}$. \DASH{}$(M)$ achieves this and is Pareto-optimal among unbiased aggregations.
 \end{itemize}
 The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. At the extremes, the design space collapses to a single axis: ensemble size $M$.
@@ -798,7 +798,7 @@ The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. At the extremes,
 The proof proceeds in four steps.
 
 \textbf{Step 1: Family $\mathcal{A}$ is forced.}
-By the Rashomon property, for any within-group pair $(j,k)$, there exist models ranking them in opposite orders. By Theorem~\ref{thm:unfaithfulness-bound}, any faithful, complete ranking has $U = 1/2$ for symmetric pairs. Stability is bounded by $S \leq 1 - m^3/P^3$ from the Spearman bound.
+By the Rashomon property, for any within-group pair $(j,k)$, there exist models ranking them in opposite orders. By Theorem~\ref{thm:unfaithfulness-bound}, any faithful, complete ranking has $U = 1/2$ for symmetric pairs. Stability is bounded by $S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$ from the Spearman bound (Lean-derived).
 
 \textbf{Step 2: Family $\mathcal{B}$ is achievable.}
 By Corollary~\ref{cor:equity}, \DASH{} achieves $U = 0$ with ties within groups. By Theorem~\ref{thm:dash-optimal}, between-group stability satisfies $S_M \geq 1 - \exp(-M\Delta^2/(2\sigma^2))$.
@@ -851,7 +851,7 @@ The Design Space Theorem collapses the three-dimensional space to a single axis:
 \toprule
 $M$ & Stability $S$ & Unfaithfulness $U$ & Completeness \\
 \midrule
-1 & $\leq 1 - m^3/P^3$ & $1/2$ & Complete \\
+1 & $\leq 1 - 3(m{-}1)^2/(P^3{-}P)$ & $1/2$ & Complete \\
 5 & $1 - O(1/5)$ & 0 & Partial (ties) \\
 25 & $1 - O(1/25)$ & 0 & Partial (ties) \\
 $\infty$ & 1 & 0 & Partial (ties) \\
@@ -1898,7 +1898,7 @@ The consensus variance bound ($\Var(\bar\varphi_j) = \Var(\varphi_j)/M$) remains
 \paragraph{Spearman bound.}
 The Lean formalization derives the Spearman bound (theorem \textsf{spearman\_instability\_bound} in \textsf{SpearmanDef.lean}) from the definition of Spearman correlation via midrank algebra, giving
 $\rho_S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$.
-The paper uses the tighter classical bound $\rho_S \leq 1 - m^3/P^3$; closing the gap requires a combinatorial counting argument (bounding the transposition effect on midranks in $\sum d_i^2$ under random tie-breaking) not yet available in the Lean~framework.
+The paper uses the Lean-derived bound $\rho_S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$. The tighter classical bound $\rho_S \leq 1 - m^3/P^3$ from the full rank transposition counting argument is not yet formalized; both give the same qualitative conclusion ($S < 1$ for within-group pairs).
 
 \subsection{Development Methodology}
 

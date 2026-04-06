@@ -578,7 +578,7 @@ The fitted $\alpha = 0.60$ (empirical) vs.\ $2/\pi = 0.637$ (theory) represents 
 \paragraph{Stability bound.}
 When two models $f, f'$ have different first-movers within the same group of size $m$, the within-group rank reshuffling bounds the Spearman correlation:
 \[
-    \rho_S(f, f') \;\leq\; 1 - \frac{m^3}{P^3}.
+    \rho_S(f, f') \;\leq\; 1 - \frac{3(m-1)^2}{P^3 - P}.
 \]
 
 \paragraph{Exact flip rate for GBDT.}
@@ -713,7 +713,7 @@ For features $j, k$ in the same group with $\mu_j = \mu_k$ (DGP symmetry):
     \item \emph{Unfaithfulness}: $U_{jk}(A) = \Pr[\hat\varphi_j \neq \hat\varphi_k \text{ and the ordering disagrees with } f]$ for a random model $f$.
 \end{itemize}
 
-\emph{Relationship to ranking stability $S$.} The Design Space Theorem (\S\ref{sec:design-space}) uses the full-ranking stability $S$ (expected Spearman correlation). The pairwise stability $S_{jk}$ here is a per-pair component: high $S_{jk}$ for all between-group pairs is necessary (but not sufficient) for high $S$. Within-group pairs contribute to $S$ through their random ordering, which is why $S \leq 1 - m^3/P^3$ even when all between-group $S_{jk}$ are high.
+\emph{Relationship to ranking stability $S$.} The Design Space Theorem (\S\ref{sec:design-space}) uses the full-ranking stability $S$ (expected Spearman correlation). The pairwise stability $S_{jk}$ here is a per-pair component: high $S_{jk}$ for all between-group pairs is necessary (but not sufficient) for high $S$. Within-group pairs contribute to $S$ through their random ordering, which is why $S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$ even when all between-group $S_{jk}$ are high.
 \end{definition}
 
 \begin{theorem}[DASH Pareto Optimality]
@@ -956,7 +956,7 @@ The \emph{attribution design space} is the set of triples $(S, U, C)$ achievable
 \label{thm:design-space-main}
 For any model class satisfying the Rashomon property under within-group correlation $\rho > 0$, the achievable set of $(S, U, C)$ triples is the union of exactly two families:
 \begin{itemize}
-    \item \textbf{Family $\mathcal{A}$ (single-model):} $S \leq 1 - m^3/P^3$, $U = 1/2$, $C = \text{complete}$. Any method faithful to an individual model falls here.
+    \item \textbf{Family $\mathcal{A}$ (single-model):} $S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$, $U = 1/2$, $C = \text{complete}$. Any method faithful to an individual model falls here.
     \item \textbf{Family $\mathcal{B}$ (ensemble):} $S_M = 1 - O(1/M)$, $U = 0$, $C = \text{partial (ties)}$. \DASH{}$(M)$ achieves this and is Pareto-optimal among unbiased aggregations.
 \end{itemize}
 The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. At the extremes, the design space collapses to a single axis: ensemble size $M$.
@@ -966,7 +966,7 @@ The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. At the extremes,
 The proof proceeds in four steps.
 
 \textbf{Step 1: Family $\mathcal{A}$ is forced.}
-By the Rashomon property, for any within-group pair $(j,k)$, there exist models ranking them in opposite orders. By Theorem~\ref{thm:unfaithfulness-bound}, any faithful, complete ranking has $U = 1/2$ for symmetric pairs. Stability is bounded by $S \leq 1 - m^3/P^3$ from the Spearman bound.
+By the Rashomon property, for any within-group pair $(j,k)$, there exist models ranking them in opposite orders. By Theorem~\ref{thm:unfaithfulness-bound}, any faithful, complete ranking has $U = 1/2$ for symmetric pairs. Stability is bounded by $S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$ from the Spearman bound (Lean-derived).
 
 \textbf{Step 2: Family $\mathcal{B}$ is achievable.}
 By Corollary~\ref{cor:equity}, \DASH{} achieves $U = 0$ with ties within groups. By Theorem~\ref{thm:dash-optimal}, between-group stability satisfies $S_M \geq 1 - \exp(-M\Delta^2/(2\sigma^2))$.
@@ -1019,7 +1019,7 @@ The Design Space Theorem collapses the three-dimensional space to a single axis:
 \toprule
 $M$ & Stability $S$ & Unfaithfulness $U$ & Completeness \\
 \midrule
-1 & $\leq 1 - m^3/P^3$ & $1/2$ & Complete \\
+1 & $\leq 1 - 3(m{-}1)^2/(P^3{-}P)$ & $1/2$ & Complete \\
 5 & $1 - O(1/5)$ & 0 & Partial (ties) \\
 25 & $1 - O(1/25)$ & 0 & Partial (ties) \\
 $\infty$ & 1 & 0 & Partial (ties) \\
@@ -2472,7 +2472,7 @@ The single-model variance \texttt{attribution\_variance} is \emph{defined} from 
 The three variance declarations (\texttt{attribution\_variance}, \texttt{attribution\_variance\_nonneg}, \texttt{consensus\_variance\_bound}) produce convenience results (variance nonnegativity, halving) rather than deep mathematical consequences. Their primary role is to support the Design Space Theorem's stability convergence claim. A deeper formalization would derive the variance bound from Mathlib's \texttt{IndepFun.variance\_sum}, but this requires connecting our abstract \texttt{Model} type to a product measure space.
 
 \paragraph{Spearman bound: axiomatized vs.\ derived.}
-The Lean formalization contains two Spearman bounds: (i) \texttt{spearmanCorr\_bound}, fully derived from the definition of Spearman correlation, giving $\rho_S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$; and (ii) \texttt{spearman\_classical\_bound}, axiomatized, giving the tighter $\rho_S \leq 1 - m^3/P^3$. Both capture the qualitative insight that instability grows with group size~$m$. The paper uses the tighter axiomatized bound. The gap between the two is a combinatorial counting argument (bounding the effect of transposition on midranks in the expected $\sum d_i^2$ under random tie-breaking), not a domain-specific assumption. The full counting argument requires combinatorial lemmas not yet available in the Lean framework.
+The Lean formalization derives the Spearman bound $\rho_S \leq 1 - 3(m{-}1)^2/(P^3{-}P)$ from the definition of Spearman correlation via midrank algebra (\texttt{spearmanCorr\_bound} in \texttt{SpearmanDef.lean}). The tighter classical bound $\rho_S \leq 1 - m^3/P^3$ from the full rank transposition counting argument is not yet formalized; both give the same qualitative conclusion ($S < 1$ for within-group pairs).
 
 \subsection{Development Methodology}
 
