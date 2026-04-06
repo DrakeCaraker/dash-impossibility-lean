@@ -61,17 +61,21 @@ Cross-group stability & \texttt{splitCount\_crossGroup\_stable} & Changing first
 Model measurable space & \texttt{modelMeasurableSpace} & Mathlib infrastructure: $\sigma$-algebra on Model \\
 Model measure & \texttt{modelMeasure} & Mathlib infrastructure: probability measure on Model \\
 \midrule
-\multicolumn{3}{@{}l}{\emph{Query complexity (Le~Cam's method, axiomatized):}} \\
-Testing constant & \texttt{testing\_constant} & Universal constant $C \geq 1/8$ from Tsybakov (2009) \\
-Constant positivity & \texttt{testing\_constant\_pos} & $C > 0$ \\
+\multicolumn{3}{@{}l}{\emph{Query complexity (Le~Cam's method; $C\geq 1/8$ axiomatized, $C=1/12$ derived):}} \\
+Testing constant & \texttt{testing\_constant} & Axiom: universal constant $C \geq 1/8$ from Tsybakov (2009) \\
+Constant positivity & \texttt{testing\_constant\_pos} & Axiom: $C > 0$ (Chebyshev alternative $C=1/12$ derived in \texttt{QueryComplexityDerived.lean}) \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Formerly axiomatized, now derived:}} \\
-Spearman bound & \texttt{spearman\_instability\_bound} & \textbf{Theorem} in \texttt{SpearmanDef.lean} (from midranks) \\
+Spearman bound (original) & \texttt{spearman\_instability\_bound} & \textbf{Theorem} in \texttt{SpearmanDef.lean} (from midranks; $1-3(m{-}1)^2/(P^3{-}P)$) \\
+Spearman bound (tight) & \texttt{spearmanCorr\_bound\_groupSize\_tight} & \textbf{Theorem} in \texttt{SpearmanDef.lean} (tighter; $1-3m^2/(P^3{-}P)$) \\
 Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & \textbf{Theorem} in \texttt{SymmetryDerive.lean} (from axioms above) \\
 Attribution variance & \texttt{attribution\_variance} & \textbf{Definition} from \texttt{ProbabilityTheory.variance} \\
 Variance nonnegativity & \texttt{attribution\_variance\_nonneg} & \textbf{Theorem} from Mathlib's \texttt{variance\_nonneg} \\
-Consensus variance bound & \texttt{consensus\_variance\_bound} & \textbf{Theorem} in \texttt{Defs.lean} (algebraic) \\
+Consensus variance bound & \texttt{consensus\_variance\_bound} & \textbf{Theorem} in \texttt{VarianceDerivation.lean} (from \texttt{IndepEnsemble}) \\
 Testing lower bound & \texttt{le\_cam\_lower\_bound} & \textbf{Theorem} in \texttt{QueryComplexity.lean} (contrapositive) \\
+Chebyshev query bound & \texttt{chebyshev\_query\_bound} & \textbf{Theorem} in \texttt{QueryComplexityDerived.lean} ($C=1/12$, derived) \\
+Bayes-optimal tie & \texttt{bayes\_optimal\_tie} & \textbf{Theorem} in \texttt{BayesOptimalTie.lean} (symmetric posterior $\Rightarrow$ tie) \\
+Pareto optimality & \texttt{dash\_pareto\_optimal} & \textbf{Theorem} in \texttt{ParetoOptimality.lean} (DASH achieves variance frontier) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -114,9 +118,27 @@ Defs.lean (14 axioms, type definitions, derived theorems)
   +-- SBDInstances.lean (abstract aggregation + instances)
   +-- FIMImpossibility.lean (Gaussian FIM -> Rashomon)
   +-- GaussianFlipRate.lean (Phi definition, flip rate formula)
-  +-- QueryComplexity.lean (query lower bound, Le Cam axiomatized)
+  +-- QueryComplexity.lean (query lower bound, Le~Cam constant axiomatized $C \geq 1/8$; Chebyshev $C=1/12$ derived in QueryComplexityDerived)
+  +-- QueryComplexityDerived.lean (Chebyshev alternative, C=1/12)
+  +-- MeasureHypotheses.lean (independence + measure hypotheses)
+  +-- VarianceDerivation.lean (consensus variance from IndepEnsemble)
+  +-- UnfaithfulQuantitative.lean (quantitative unfaithfulness bounds)
+  +-- BinaryQuantizer.lean (binary quantization lemmas)
+  +-- BayesOptimalTie.lean (Bayes-optimal tie assignment formalized)
+  +-- LossPreservation.lean (loss preservation under tie-breaking)
+  +-- ParetoOptimality.lean (DASH Pareto optimality formalized)
   +-- Consistency.lean (axiom system consistency, Fin 4 model)
   +-- RandomForest.lean (contrast case, documentation only)
+  +-- Setup.lean (GBDTSetup structure bundling all axioms, axiom-free API)
+  +-- Qualitative.lean (impossibility from 2 axioms: dominance + surjectivity)
+  +-- ProportionalityLocal.lean (impossibility from per-model c only)
+  +-- ApproximateEquity.lean (Rashomon from bounded proportionality K-ratio)
+  +-- QueryComplexityParametric.lean (Le~Cam bound as hypothesis, no global axioms)
+  +-- RobustnessLipschitz.lean (flip rate Lipschitz-continuous in rho)
+  +-- StumpProportionality.lean (proportionality DERIVED for depth-1 trees)
+  +-- LocalSufficiency.lean (local c suffices for all quantitative bounds)
+  +-- MutualInformation.lean (impossibility generalised to I(X_j;X_k)>0)
+  +-- IntersectionalFairness.lean (K-audit compounding: 1-(1/2)^K)
 \end{verbatim}
 
 \subsection{Lean File Cross-Reference}
@@ -167,8 +189,26 @@ EnsembleBound.lean & \S F2 Pareto & variance\_decreases\_with\_M & No \\
 FIMImpossibility.lean & \S F3 FIM & gaussian\_rashomon\_witnesses & No \\
 GaussianFlipRate.lean & \S F1 Diagnostic & Phi, gaussianFlipRate & No \\
 QueryComplexity.lean & \S Query complexity & query\_complexity\_lower\_bound & No \\
+QueryComplexityDerived.lean & \S Query complexity & chebyshev\_query\_bound ($C{=}1/12$) & No \\
+MeasureHypotheses.lean & \S Variance & independence + measure hypotheses & No \\
+VarianceDerivation.lean & \S Variance & consensus\_variance\_derived & No \\
+UnfaithfulQuantitative.lean & \S Unfaithfulness & quantitative\_unfaithful\_bound & No \\
+BinaryQuantizer.lean & \S Binary & binary\_quantizer\_lemmas & No \\
+BayesOptimalTie.lean & Theorem 5 Step 3 & bayes\_optimal\_tie & No \\
+LossPreservation.lean & \S Optimality & loss\_preservation\_tie & No \\
+ParetoOptimality.lean & \S F2 Pareto & dash\_pareto\_optimal & No \\
 Consistency.lean & \S Axiom Consistency & axiom\_system\_consistent & No \\
 Basic.lean & (import hub) & — & No \\
+Setup.lean & \S Axiom System & attribution\_impossibility\_bundled (GBDTSetup) & No \\
+Qualitative.lean & Strengthening & impossibility\_qualitative (2 axioms) & No \\
+ProportionalityLocal.lean & Strengthening & gbdt\_impossibility\_local (per-model $c$) & No \\
+ApproximateEquity.lean & Strengthening & approximate\_equity (bounded $K$-ratio) & No \\
+QueryComplexityParametric.lean & \S Query complexity & query\_complexity\_parametric (no global axioms) & No \\
+RobustnessLipschitz.lean & \S Robustness & flip\_rate\_lipschitz & No \\
+StumpProportionality.lean & \S Proportionality & stump\_proportionality\_derived & No \\
+LocalSufficiency.lean & \S Axiom Stratification & local\_c\_suffices (quantitative bounds) & No \\
+MutualInformation.lean & \S Open Problems & impossibility\_from\_mutual\_info & No \\
+IntersectionalFairness.lean & \S Fairness Audit & intersectional\_compounding ($K$ audits) & No \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -180,10 +220,11 @@ either Family~$\mathcal{A}$ (complete + unfaithful) or Family~$\mathcal{B}$
 (tie). \texttt{strongly\_faithful\_impossible} formalizes the impossibility
 of consensus-value-faithful methods.
 The Bayes-optimality half (optimal unfaithful ranking assigns ties) is
-proved in the supplement below but not
-in Lean. \texttt{strongly\_faithful\_impossible} formalizes the
-impossibility of consensus-value-faithful methods (a stronger result
-than the supplement's Step~3, which uses ranking-faithfulness).
+proved in the supplement below and is also formalized in
+\texttt{BayesOptimalTie.lean}. \texttt{strongly\_faithful\_impossible}
+formalizes the impossibility of consensus-value-faithful methods (a
+stronger result than the supplement's Step~3, which uses
+ranking-faithfulness).
 
 \paragraph{Variance: partially grounded in Mathlib.}
 The single-model variance \texttt{attribution\_variance} is now
@@ -194,27 +235,33 @@ axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}) to
 connect the abstract \texttt{Model} type to Mathlib's measure theory.
 
 The consensus variance bound ($\Var(\bar\varphi_j) = \Var(\varphi_j)/M$)
-remains axiomatized: the full derivation via \texttt{IndepFun.variance\_sum}
-would require a product measure formulation and independence axioms for
-ensemble draws --- a fundamental architectural change deferred to
-future work (see \texttt{docs/jmlr-variance-derivation-plan.md}).
-The textbook identity $\Var(\bar{X}) = \Var(X)/M$ for i.i.d.\ variables
-is the justification; the derived theorems (variance halving,
-monotonicity) are genuine Lean proofs from this axiom.
+is now \emph{derived} in \texttt{VarianceDerivation.lean} from an
+independence hypothesis on ensemble draws, rather than axiomatized.
+The derivation uses an \texttt{IndepEnsemble} hypothesis (stating that
+ensemble model attributions are independent and identically distributed)
+together with the textbook identity $\Var(\bar{X}) = \Var(X)/M$
+for i.i.d.\ variables. The derived theorems (variance halving,
+monotonicity) are genuine Lean proofs from this hypothesis.
 
-\paragraph{Spearman bound: axiomatized vs.\ derived.}
-The Lean formalization contains two Spearman bounds:
-(i)~\texttt{spearmanCorr\_bound}, fully derived from the definition of
-Spearman correlation, giving the weaker bound
-$\rho_S \leq 1 - 3/(P^3 - P)$; and
-(ii)~\texttt{spearman\_classical\_bound}, axiomatized, giving the
-tighter $\rho_S \leq 1 - m^3/P^3$ from the classical combinatorial
-argument. The paper's stability results use the tighter axiomatized
-bound. The derived bound is available but superseded. We chose to
-axiomatize the tighter constant rather than derive it because the
-full combinatorial proof (bounding the expected $\sum d_i^2$ under
-random tie-breaking) requires counting arguments not yet available
-in our Lean framework.
+\paragraph{Spearman bound: three derived bounds.}
+The Lean formalization now contains three Spearman bounds, all derived
+(none axiomatized):
+(i)~\texttt{spearmanCorr\_bound} (\texttt{SpearmanDef.lean}),
+fully derived from the definition of Spearman correlation, giving the
+original weaker bound $\rho_S \leq 1 - 3(m{-}1)^2/(P^3 - P)$;
+(ii)~\texttt{spearmanCorr\_bound\_groupSize\_tight}
+(\texttt{SpearmanDef.lean}), a tighter derived bound
+$\rho_S \leq 1 - 3m^2/(P^3 - P)$ obtained by tightening the
+group-size constant; and
+(iii) the classical bound $\rho_S \leq 1 - m^3/P^3$, which is
+\emph{not yet formalized} in Lean---it follows from the classical
+combinatorial argument bounding $\sum d_i^2$ under random tie-breaking,
+and requires counting arguments not yet available in our framework.
+The paper's stability results use the middle bound
+$1 - 3m^2/(P^3 - P)$ (bound~(ii)), which is fully proved.
+The former axiom \texttt{spearman\_classical\_bound} has been removed;
+the derived \texttt{spearman\_instability\_bound} (equivalent to
+bound~(i)) supersedes it in the axiom inventory.
 
 \paragraph{Attribution sum symmetry: now derived.}
 \texttt{attribution\_sum\_symmetric} is proved (not axiomatized) in
@@ -229,14 +276,17 @@ $-\text{gap}$ for fm$=$k, $0$ otherwise), decomposes the sum via
 \texttt{Finset.sum\_ite}, and uses balance to cancel the gap terms.
 
 \paragraph{Variance sub-system.}
-The three variance axioms (\texttt{attribution\_variance},
-\texttt{attribution\_variance\_nonneg}, \texttt{consensus\_variance\_bound})
-produce convenience results (variance nonnegativity, halving) rather than
-deep mathematical consequences. Their primary role is to support the
-Design Space Theorem's stability convergence claim. A deeper formalization
-would derive the variance bound from Mathlib's
-\texttt{IndepFun.variance\_sum}, but this requires connecting our abstract
-\texttt{Model} type to a measure space (see above).
+The variance subsystem is now fully derived rather than axiomatized.
+\texttt{attribution\_variance} is defined from Mathlib's
+\texttt{ProbabilityTheory.variance}; \texttt{attribution\_variance\_nonneg}
+is a theorem from Mathlib's \texttt{variance\_nonneg}; and
+\texttt{consensus\_variance\_bound} ($\Var(\bar\varphi_j) = \Var(\varphi_j)/M$)
+is derived in \texttt{VarianceDerivation.lean} from an \texttt{IndepEnsemble}
+independence hypothesis. These produce convenience results (variance
+nonnegativity, halving) that support the Design Space Theorem's
+stability convergence claim. The Mathlib measure-space infrastructure
+is connected via two axioms (\texttt{modelMeasurableSpace},
+\texttt{modelMeasure}), which remain in the axiom inventory.
 
 \paragraph{Development methodology.}
 The initial formalization (49 theorems, 15 files) was developed by
@@ -1611,7 +1661,7 @@ Spearman correlation). The pairwise stability $S_{jk}$ here is a
 per-pair component: high $S_{jk}$ for all between-group pairs is
 necessary (but not sufficient) for high $S$. Within-group pairs
 contribute to $S$ through their random ordering, which is why
-$S \leq 1 - m^3/P^3$ even when all between-group $S_{jk}$ are high.
+$S \leq 1 - 3m^2/(P^3{-}P)$ even when all between-group $S_{jk}$ are high.
 \end{definition}
 
 \subsection{Main result}
@@ -2840,13 +2890,13 @@ complete ranking achieves:
 \begin{equation}
 \label{eq:family-a}
     \mathcal{A} = \big\{(S, U, C) :
-    S \leq 1 - \Omega(m^3/P^3),\;
+    S \leq 1 - \Omega(3m^2/(P^3{-}P)),\;
     U = 1/2,\;
     C = \text{complete}\big\}.
 \end{equation}
 This family corresponds to $M = 1$ (single-model methods).
-The stability bound $S \leq 1 - m^3/P^3$ is the Spearman bound
-from the main text.
+The stability bound $S \leq 1 - 3m^2/(P^3{-}P)$ is the Spearman bound
+from the main text (proved as \texttt{spearmanCorr\_bound\_groupSize\_tight}).
 
 \textbf{Family $\mathcal{B}$ (ensemble methods):}
 \DASH{} consensus with $M \geq 1$ models achieves:
@@ -2883,8 +2933,8 @@ models disagree with the ranking.
 
 For stability: when the dominant feature changes between two models
 $f, f'$ (different first-movers), the within-group rank reshuffling
-contributes $\Theta(m^3)$ to the Spearman $\sum d_i^2$, giving
-$S \leq 1 - m^3/P^3$ (main text, Theorem~2).
+contributes $\Theta(m^2)$ to the Spearman $\sum d_i^2$, giving
+$S \leq 1 - 3m^2/(P^3{-}P)$ (Lean: \texttt{spearmanCorr\_bound\_groupSize\_tight}).
 
 This establishes the upper boundary of $\mathcal{A}$.
 
@@ -2910,7 +2960,7 @@ such methods face different tradeoffs related to data leakage and
 are not standard attribution aggregation methods.)
 
 \emph{Case 1: $A$ is faithful to individual models and complete.}
-Then by Step 1, $U(A) = 1/2$ and $S(A) \leq 1 - m^3/P^3$,
+Then by Step 1, $U(A) = 1/2$ and $S(A) \leq 1 - 3m^2/(P^3{-}P)$,
 so $A \in \mathcal{A}$.
 (This case is formalized in Lean as \texttt{strongly\_faithful\_impossible}
 in \texttt{DesignSpace.lean}: any method faithful to each model's
@@ -3005,7 +3055,7 @@ The only ``knob'' is $M$:
 \toprule
 $M$ & Stability $S$ & Unfaithfulness $U$ & Completeness \\
 \midrule
-1 & $\leq 1 - m^3/P^3$ & $1/2$ & Complete \\
+1 & $\leq 1 - 3m^2/(P^3{-}P)$ & $1/2$ & Complete \\
 5 & $1 - O(1/5)$ & 0 & Partial (ties) \\
 25 & $1 - O(1/25)$ & 0 & Partial (ties) \\
 $\infty$ & 1 & 0 & Partial (ties) \\
