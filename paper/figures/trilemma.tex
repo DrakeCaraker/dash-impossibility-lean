@@ -29,26 +29,26 @@
   % ============================================================
   \begin{scope}[shift={(0,0)}]
 
-    % Equilateral triangle, side length 6
+    % Equilateral triangle
     \coordinate (F) at (0, 5.2);       % top: Faithful
     \coordinate (S) at (-3.0, 0);      % bottom-left: Stable
     \coordinate (C) at (3.0, 0);       % bottom-right: Complete
 
-    % Draw edges (thick)
+    % Draw edges
     \draw[line width=1.2pt, black!70] (F) -- (S) -- (C) -- cycle;
 
-    % Vertex labels (bold, large)
+    % Vertex labels
     \node[above=6pt of F, font=\sffamily\bfseries\large] {Faithful};
     \node[below left=5pt and 2pt of S, font=\sffamily\bfseries\large] {Stable};
     \node[below right=5pt and 2pt of C, font=\sffamily\bfseries\large] {Complete};
 
-    % Small filled circles at vertices
+    % Vertex dots
     \fill (F) circle (3pt);
     \fill (S) circle (3pt);
     \fill (C) circle (3pt);
 
-    % --- Central "Impossible" marker ---
-    \coordinate (center) at (0, 1.73);
+    % --- Central "Impossible" marker (raised for visual centering) ---
+    \coordinate (center) at (0, 2.0);
 
     % Red circle with X
     \draw[impossiblered, line width=2.2pt] (center) circle (0.48);
@@ -58,26 +58,26 @@
       ($(center)+(-0.33,0.33)$) -- ($(center)+(0.33,-0.33)$);
 
     % "Impossible" text
-    \node[below=14pt of center, font=\sffamily\bfseries,
+    \node[below=12pt of center, font=\sffamily\bfseries,
           text=impossiblered] {Impossible};
 
-    % --- Edge annotations (single two-line nodes for perfect alignment) ---
+    % --- Edge annotations: single two-line nodes, centered on edge midpoints ---
 
-    % Left edge: Family B (DASH) — single node, two lines
+    % Left edge: Family B (DASH) — at exact midpoint
     \node[rotate=60, anchor=east, align=center,
           text=familyB]
-      at ($(F)!0.48!(S) + (-0.45,0.15)$)
+      at ($(F)!0.50!(S) + (-0.45,0.15)$)
       {{\bfseries Family B (DASH)}\\[-1pt]
        {\footnotesize\color{familyB!70} stable $+$ ties}};
 
-    % Right edge: Family A — single node, two lines
+    % Right edge: Family A — at exact midpoint
     \node[rotate=-60, anchor=west, align=center,
           text=familyA]
-      at ($(F)!0.48!(C) + (0.45,0.15)$)
+      at ($(F)!0.50!(C) + (0.45,0.15)$)
       {{\bfseries Family A}\\[-1pt]
        {\footnotesize\color{familyA!70} unstable (50\% flips)}};
 
-    % Bottom edge: Drop faithful — single node, two lines
+    % Bottom edge: Drop faithful
     \node[anchor=north, align=center,
           text=trivia]
       at ($(S)!0.5!(C) + (0,-0.45)$)
@@ -91,7 +91,7 @@
   \end{scope}
 
   % ============================================================
-  %  PANEL B — Before / After DASH (right side)
+  %  PANEL B — Before / After DASH
   % ============================================================
   \begin{scope}[shift={(8.0, -0.3)}]
 
@@ -108,78 +108,69 @@
     \node[anchor=south, font=\sffamily\bfseries]
       at (1.0, 5.6) {Before DASH};
 
-    % Model 1 (left bar chart)
-    \begin{scope}[shift={(-0.4, 3.2)}]
+    % Model 1 (left bar chart) — lowered for gap below title
+    \begin{scope}[shift={(-0.4, 2.9)}]
       \node[anchor=south, font=\sffamily\footnotesize, text=black!60]
         at (0.5, 2.1) {Model 1};
 
-      % Feature X1: tall
       \fill[bardark] (0, 0) rectangle (\barwidth, 1.8);
       \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {$X_1$};
 
-      % Feature X2: short
       \fill[barlight] (\barwidth+\gapwidth, 0)
         rectangle (2*\barwidth+\gapwidth, 0.65);
       \node[below=3pt, font=\sffamily\scriptsize]
         at (\barwidth+\gapwidth+\barwidth/2, 0) {$X_2$};
 
-      % Baseline
       \draw[black!40] (-0.1, 0) -- (2*\barwidth+\gapwidth+0.1, 0);
     \end{scope}
 
-    % "retrain" arrow
+    % "retrain" arrow — centered between Model 1 right edge and Model 2 left edge
     \draw[->, line width=1pt, black!50]
-      (1.1, 4.4) -- (1.8, 4.4)
+      (0.75, 4.1) -- (1.55, 4.1)
       node[midway, above=1pt, font=\sffamily\scriptsize, text=black!50] {retrain};
 
-    % Model 2 (right bar chart) — reversed
-    \begin{scope}[shift={(1.7, 3.2)}]
+    % Model 2 (right bar chart) — reversed, same lowered position
+    \begin{scope}[shift={(1.7, 2.9)}]
       \node[anchor=south, font=\sffamily\footnotesize, text=black!60]
         at (0.5, 2.1) {Model 2};
 
-      % Feature X1: short (flipped!)
       \fill[barlight] (0, 0) rectangle (\barwidth, 0.65);
       \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {$X_1$};
 
-      % Feature X2: tall (flipped!)
       \fill[bardark] (\barwidth+\gapwidth, 0)
         rectangle (2*\barwidth+\gapwidth, 1.8);
       \node[below=3pt, font=\sffamily\scriptsize]
         at (\barwidth+\gapwidth+\barwidth/2, 0) {$X_2$};
 
-      % Baseline
       \draw[black!40] (-0.1, 0) -- (2*\barwidth+\gapwidth+0.1, 0);
     \end{scope}
 
-    % Red brace annotation: ranking flipped (well below baselines)
+    % Red brace: ranking flipped — adjusted to match lowered bars
     \draw[impossiblered, thick, decorate,
           decoration={brace, amplitude=4pt, mirror}]
-      (-0.5, 2.75) -- (2.85, 2.75)
+      (-0.5, 2.5) -- (2.85, 2.5)
       node[midway, below=6pt, font=\sffamily\scriptsize,
            text=impossiblered] {ranking flipped!};
 
     % ----------------------------------------------------------
-    %  Bottom sub-panel: After DASH (M=25) — more vertical gap
+    %  Bottom sub-panel: After DASH (M=25) — raised for balance
     % ----------------------------------------------------------
     \node[anchor=south, font=\sffamily\bfseries]
-      at (1.0, 1.15) {After DASH ($M\!=\!25$)};
+      at (1.0, 1.5) {After DASH ($M\!=\!25$)};
 
     % Single bar chart — tied
-    \begin{scope}[shift={(0.35, -0.8)}]
-      % Feature X1
+    \begin{scope}[shift={(0.35, -0.4)}]
       \fill[dashgreen!80] (0, 0) rectangle (\barwidth, 1.2);
       \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {$X_1$};
 
-      % Feature X2 — same height (tied)
       \fill[dashgreen!80] (\barwidth+\gapwidth, 0)
         rectangle (2*\barwidth+\gapwidth, 1.2);
       \node[below=3pt, font=\sffamily\scriptsize]
         at (\barwidth+\gapwidth+\barwidth/2, 0) {$X_2$};
 
-      % Baseline
       \draw[black!40] (-0.1, 0) -- (2*\barwidth+\gapwidth+0.1, 0);
 
-      % Tie bracket above bars with label
+      % Tie bracket with label
       \draw[dashgreen!70!black, thick, decorate,
             decoration={brace, amplitude=3pt}]
         (0, 1.28) -- (2*\barwidth+\gapwidth, 1.28)
