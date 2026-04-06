@@ -1,9 +1,8 @@
 % trilemma.tex — The Attribution Impossibility trilemma figure
 % Compiles standalone:  cd paper/figures && pdflatex trilemma.tex
 % Include in paper:     \includegraphics[width=\textwidth]{figures/trilemma.pdf}
-%                   or: see figure environment at bottom of this file
 %
-\documentclass[border=6pt]{standalone}
+\documentclass[border=8pt]{standalone}
 
 \usepackage{tikz}
 \usepackage{amsmath,amssymb}
@@ -26,14 +25,14 @@
   ]
 
   % ============================================================
-  %  PANEL A — Trilemma Triangle (left, ~60% width)
+  %  PANEL A — Trilemma Triangle
   % ============================================================
   \begin{scope}[shift={(0,0)}]
 
-    % Equilateral triangle, side length 5.6
-    \coordinate (F) at (0, 4.85);      % top: Faithful
-    \coordinate (S) at (-2.8, 0);      % bottom-left: Stable
-    \coordinate (C) at (2.8, 0);       % bottom-right: Complete
+    % Equilateral triangle, side length 6
+    \coordinate (F) at (0, 5.2);       % top: Faithful
+    \coordinate (S) at (-3.0, 0);      % bottom-left: Stable
+    \coordinate (C) at (3.0, 0);       % bottom-right: Complete
 
     % Draw edges (thick)
     \draw[line width=1.2pt, black!70] (F) -- (S) -- (C) -- cycle;
@@ -48,165 +47,155 @@
     \fill (S) circle (3pt);
     \fill (C) circle (3pt);
 
-    % --- Central "Impossible" marker ---
-    \coordinate (center) at (0, 1.62);
+    % --- Central "Impossible" marker (lowered to avoid overlap) ---
+    \coordinate (center) at (0, 1.73);
 
-    % Red circle with X
-    \draw[impossiblered, line width=2.5pt] (center) circle (0.55);
-    \draw[impossiblered, line width=2.5pt]
-      ($(center)+(-0.38,-0.38)$) -- ($(center)+(0.38,0.38)$);
-    \draw[impossiblered, line width=2.5pt]
-      ($(center)+(-0.38,0.38)$) -- ($(center)+(0.38,-0.38)$);
+    % Red circle with X (slightly smaller)
+    \draw[impossiblered, line width=2.2pt] (center) circle (0.48);
+    \draw[impossiblered, line width=2.2pt]
+      ($(center)+(-0.33,-0.33)$) -- ($(center)+(0.33,0.33)$);
+    \draw[impossiblered, line width=2.2pt]
+      ($(center)+(-0.33,0.33)$) -- ($(center)+(0.33,-0.33)$);
 
-    % "Impossible" text
-    \node[below=10pt of center, font=\sffamily\bfseries,
+    % "Impossible" text (more space below the X)
+    \node[below=14pt of center, font=\sffamily\bfseries,
           text=impossiblered] {Impossible};
 
-    % --- Edge annotations ---
+    % --- Edge annotations (pulled away from edges) ---
 
-    % Left edge: Faithful <-> Stable — Family B (DASH)
-    \node[rotate=59, anchor=south, font=\sffamily\bfseries,
-          text=familyB] at ($(F)!0.45!(S) + (-0.35,0.15)$)
+    % Left edge: Family B (DASH) — main label (outside triangle)
+    \node[rotate=60, anchor=south, font=\sffamily\bfseries,
+          text=familyB] at ($(F)!0.45!(S) + (-0.5,0.2)$)
       {Family B (DASH)};
-    \node[rotate=59, anchor=north, font=\sffamily\small,
-          text=familyB!80] at ($(F)!0.55!(S) + (-0.22,-0.05)$)
-      {stable + ties};
+    % Subtitle below main label (further from edge = more negative perpendicular)
+    \node[rotate=60, anchor=north, font=\sffamily\small,
+          text=familyB!70] at ($(F)!0.45!(S) + (-0.5,0.2)$)
+      {stable $+$ ties};
 
-    % Right edge: Faithful <-> Complete — Family A
-    \node[rotate=-59, anchor=south, font=\sffamily\bfseries,
-          text=familyA] at ($(F)!0.45!(C) + (0.35,0.15)$)
+    % Right edge: Family A — main label (outside triangle)
+    \node[rotate=-60, anchor=south, font=\sffamily\bfseries,
+          text=familyA] at ($(F)!0.45!(C) + (0.5,0.2)$)
       {Family A};
-    \node[rotate=-59, anchor=north, font=\sffamily\small,
-          text=familyA!80] at ($(F)!0.55!(C) + (0.22,-0.05)$)
+    % Subtitle below main label
+    \node[rotate=-60, anchor=north, font=\sffamily\small,
+          text=familyA!70] at ($(F)!0.45!(C) + (0.5,0.2)$)
       {unstable (50\% flips)};
 
-    % Bottom edge: Stable <-> Complete — Drop faithful
+    % Bottom edge: Drop faithful
     \node[anchor=south, font=\sffamily\bfseries,
-          text=trivia] at ($(S)!0.5!(C) + (0,-0.55)$)
+          text=trivia] at ($(S)!0.5!(C) + (0,-0.6)$)
       {Drop faithful};
     \node[anchor=north, font=\sffamily\small,
-          text=trivia] at ($(S)!0.5!(C) + (0,-0.55)$)
+          text=trivia] at ($(S)!0.5!(C) + (0,-0.6)$)
       {trivial};
 
     % Panel label
-    \node[anchor=north west, font=\sffamily\bfseries\large]
-      at (-3.6, 5.8) {\textsf{A}};
+    \node[anchor=north west, font=\sffamily\bfseries\Large]
+      at (-3.8, 6.2) {\textsf{A}};
 
   \end{scope}
 
   % ============================================================
-  %  PANEL B — Before / After DASH (right, ~40% width)
+  %  PANEL B — Before / After DASH (right side, wider)
   % ============================================================
-  \begin{scope}[shift={(7.5, 0)}]
+  \begin{scope}[shift={(8.0, -0.3)}]
 
-    \newcommand{\barwidth}{0.35}
-    \newcommand{\gapwidth}{0.18}
+    \newcommand{\barwidth}{0.4}
+    \newcommand{\gapwidth}{0.22}
 
     % Panel label
-    \node[anchor=north west, font=\sffamily\bfseries\large]
-      at (-1.8, 5.8) {\textsf{B}};
+    \node[anchor=north west, font=\sffamily\bfseries\Large]
+      at (-1.6, 6.5) {\textsf{B}};
 
     % ----------------------------------------------------------
-    %  Top sub-panel: Before DASH (lowered for alignment)
+    %  Top sub-panel: Before DASH
     % ----------------------------------------------------------
     \node[anchor=south, font=\sffamily\bfseries]
-      at (0.9, 4.75) {Before DASH};
+      at (1.0, 5.6) {Before DASH};
 
     % Model 1 (left bar chart)
-    \begin{scope}[shift={(-0.5, 2.65)}]
-      \node[anchor=south, font=\sffamily\footnotesize, text=black!70]
-        at (0.44, 1.95) {Model 1};
+    \begin{scope}[shift={(-0.4, 3.2)}]
+      \node[anchor=south, font=\sffamily\footnotesize, text=black!60]
+        at (0.5, 2.1) {Model 1};
 
       % Feature A: tall
-      \fill[bardark] (0, 0) rectangle (\barwidth, 1.7);
-      \node[below=2pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
+      \fill[bardark] (0, 0) rectangle (\barwidth, 1.8);
+      \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
 
       % Feature B: short
       \fill[barlight] (\barwidth+\gapwidth, 0)
-        rectangle (2*\barwidth+\gapwidth, 0.6);
-      \node[below=2pt, font=\sffamily\scriptsize]
+        rectangle (2*\barwidth+\gapwidth, 0.65);
+      \node[below=3pt, font=\sffamily\scriptsize]
         at (\barwidth+\gapwidth+\barwidth/2, 0) {B};
 
       % Baseline
       \draw[black!40] (-0.1, 0) -- (2*\barwidth+\gapwidth+0.1, 0);
     \end{scope}
 
-    % "retrain" arrow (centered between bar groups)
-    \draw[->, line width=1pt, black!60]
-      (0.9, 3.8) -- (1.55, 3.8)
-      node[midway, above, font=\sffamily\scriptsize, text=black!60] {retrain};
+    % "retrain" arrow (more space between charts)
+    \draw[->, line width=1pt, black!50]
+      (1.1, 4.4) -- (1.8, 4.4)
+      node[midway, above=1pt, font=\sffamily\scriptsize, text=black!50] {retrain};
 
     % Model 2 (right bar chart) — reversed
-    \begin{scope}[shift={(1.4, 2.65)}]
-      \node[anchor=south, font=\sffamily\footnotesize, text=black!70]
-        at (0.44, 1.95) {Model 2};
+    \begin{scope}[shift={(1.7, 3.2)}]
+      \node[anchor=south, font=\sffamily\footnotesize, text=black!60]
+        at (0.5, 2.1) {Model 2};
 
       % Feature A: short (flipped!)
-      \fill[barlight] (0, 0) rectangle (\barwidth, 0.6);
-      \node[below=2pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
+      \fill[barlight] (0, 0) rectangle (\barwidth, 0.65);
+      \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
 
       % Feature B: tall (flipped!)
       \fill[bardark] (\barwidth+\gapwidth, 0)
-        rectangle (2*\barwidth+\gapwidth, 1.7);
-      \node[below=2pt, font=\sffamily\scriptsize]
+        rectangle (2*\barwidth+\gapwidth, 1.8);
+      \node[below=3pt, font=\sffamily\scriptsize]
         at (\barwidth+\gapwidth+\barwidth/2, 0) {B};
 
       % Baseline
       \draw[black!40] (-0.1, 0) -- (2*\barwidth+\gapwidth+0.1, 0);
     \end{scope}
 
-    % Red annotation: ranking flipped
+    % Red brace annotation: ranking flipped (below baselines with space)
     \draw[impossiblered, thick, decorate,
           decoration={brace, amplitude=4pt, mirror}]
-      (-0.6, 2.5) -- (2.45, 2.5)
-      node[midway, below=5pt, font=\sffamily\scriptsize,
+      (-0.5, 2.95) -- (2.85, 2.95)
+      node[midway, below=6pt, font=\sffamily\scriptsize,
            text=impossiblered] {ranking flipped!};
 
     % ----------------------------------------------------------
-    %  Bottom sub-panel: After DASH (M=25) — more space from top
+    %  Bottom sub-panel: After DASH (M=25) — generous spacing
     % ----------------------------------------------------------
     \node[anchor=south, font=\sffamily\bfseries]
-      at (0.9, 1.55) {After DASH ($M\!=\!25$)};
+      at (1.0, 1.65) {After DASH ($M\!=\!25$)};
+
+    % "tied (honest)" label below the title
+    \node[anchor=north, font=\sffamily\small,
+          text=dashgreen!70!black]
+      at (1.0, 1.65) {tied (honest)};
 
     % Single bar chart — tied
-    \begin{scope}[shift={(0.2, 0)}]
+    \begin{scope}[shift={(0.35, -0.3)}]
       % Feature A
-      \fill[dashgreen!80] (0, 0) rectangle (\barwidth, 1.1);
-      \node[below=2pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
+      \fill[dashgreen!80] (0, 0) rectangle (\barwidth, 1.2);
+      \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
 
       % Feature B — same height (tied)
       \fill[dashgreen!80] (\barwidth+\gapwidth, 0)
-        rectangle (2*\barwidth+\gapwidth, 1.1);
-      \node[below=2pt, font=\sffamily\scriptsize]
+        rectangle (2*\barwidth+\gapwidth, 1.2);
+      \node[below=3pt, font=\sffamily\scriptsize]
         at (\barwidth+\gapwidth+\barwidth/2, 0) {B};
 
       % Baseline
       \draw[black!40] (-0.1, 0) -- (2*\barwidth+\gapwidth+0.1, 0);
 
-      % Tie bracket
+      % Tie bracket above bars
       \draw[dashgreen!70!black, thick, decorate,
             decoration={brace, amplitude=3pt}]
-        (0, 1.18) -- (2*\barwidth+\gapwidth, 1.18)
-        node[midway, above=4pt, font=\sffamily\footnotesize,
-             text=dashgreen!70!black] {tied (honest)};
+        (0, 1.28) -- (2*\barwidth+\gapwidth, 1.28);
     \end{scope}
 
   \end{scope}
 
 \end{tikzpicture}
 \end{document}
-
-%% === Include in paper with: ===
-%%
-%% \begin{figure}[t]
-%%   \centering
-%%   \includegraphics[width=\textwidth]{figures/trilemma.pdf}
-%%   \caption{%
-%%     \textbf{The Attribution Impossibility:} faithful, stable, and complete
-%%     rankings cannot coexist under collinearity.
-%%     Family~A methods (single-model) are faithful and complete but unstable.
-%%     Family~B methods (DASH ensemble) are faithful and stable but report
-%%     within-group ties. No third option exists.%
-%%   }
-%%   \label{fig:trilemma}
-%% \end{figure}
