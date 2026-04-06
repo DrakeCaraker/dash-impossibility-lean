@@ -29,7 +29,7 @@
   to unbiased methods. The Pareto dominance result here is specific to
   within-group pairs where symmetry forces the 1/2 floor.
 
-  Zero new axioms. Zero sorry.
+  Zero new axioms. All proofs complete.
 
   Supplement: S22–S26 (variance optimality), Design Space Step 3
 -/
