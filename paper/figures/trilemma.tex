@@ -47,47 +47,42 @@
     \fill (S) circle (3pt);
     \fill (C) circle (3pt);
 
-    % --- Central "Impossible" marker (lowered to avoid overlap) ---
+    % --- Central "Impossible" marker ---
     \coordinate (center) at (0, 1.73);
 
-    % Red circle with X (slightly smaller)
+    % Red circle with X
     \draw[impossiblered, line width=2.2pt] (center) circle (0.48);
     \draw[impossiblered, line width=2.2pt]
       ($(center)+(-0.33,-0.33)$) -- ($(center)+(0.33,0.33)$);
     \draw[impossiblered, line width=2.2pt]
       ($(center)+(-0.33,0.33)$) -- ($(center)+(0.33,-0.33)$);
 
-    % "Impossible" text (more space below the X)
+    % "Impossible" text
     \node[below=14pt of center, font=\sffamily\bfseries,
           text=impossiblered] {Impossible};
 
-    % --- Edge annotations (pulled away from edges) ---
+    % --- Edge annotations (single two-line nodes for perfect alignment) ---
 
-    % Left edge: Family B (DASH) — main label (outside triangle)
-    \node[rotate=60, anchor=south, font=\sffamily\bfseries,
-          text=familyB] at ($(F)!0.45!(S) + (-0.5,0.2)$)
-      {Family B (DASH)};
-    % Subtitle below main label (further from edge = more negative perpendicular)
-    \node[rotate=60, anchor=north, font=\sffamily\small,
-          text=familyB!70] at ($(F)!0.45!(S) + (-0.5,0.2)$)
-      {stable $+$ ties};
+    % Left edge: Family B (DASH) — single node, two lines
+    \node[rotate=60, anchor=east, align=center,
+          text=familyB]
+      at ($(F)!0.48!(S) + (-0.45,0.15)$)
+      {{\bfseries Family B (DASH)}\\[-1pt]
+       {\footnotesize\color{familyB!70} stable $+$ ties}};
 
-    % Right edge: Family A — main label (outside triangle)
-    \node[rotate=-60, anchor=south, font=\sffamily\bfseries,
-          text=familyA] at ($(F)!0.45!(C) + (0.5,0.2)$)
-      {Family A};
-    % Subtitle below main label
-    \node[rotate=-60, anchor=north, font=\sffamily\small,
-          text=familyA!70] at ($(F)!0.45!(C) + (0.5,0.2)$)
-      {unstable (50\% flips)};
+    % Right edge: Family A — single node, two lines
+    \node[rotate=-60, anchor=west, align=center,
+          text=familyA]
+      at ($(F)!0.48!(C) + (0.45,0.15)$)
+      {{\bfseries Family A}\\[-1pt]
+       {\footnotesize\color{familyA!70} unstable (50\% flips)}};
 
-    % Bottom edge: Drop faithful
-    \node[anchor=south, font=\sffamily\bfseries,
-          text=trivia] at ($(S)!0.5!(C) + (0,-0.6)$)
-      {Drop faithful};
-    \node[anchor=north, font=\sffamily\small,
-          text=trivia] at ($(S)!0.5!(C) + (0,-0.6)$)
-      {trivial};
+    % Bottom edge: Drop faithful — single node, two lines
+    \node[anchor=north, align=center,
+          text=trivia]
+      at ($(S)!0.5!(C) + (0,-0.45)$)
+      {{\bfseries Drop faithful}\\[-1pt]
+       {\footnotesize trivial}};
 
     % Panel label
     \node[anchor=north west, font=\sffamily\bfseries\Large]
@@ -96,7 +91,7 @@
   \end{scope}
 
   % ============================================================
-  %  PANEL B — Before / After DASH (right side, wider)
+  %  PANEL B — Before / After DASH (right side)
   % ============================================================
   \begin{scope}[shift={(8.0, -0.3)}]
 
@@ -118,21 +113,21 @@
       \node[anchor=south, font=\sffamily\footnotesize, text=black!60]
         at (0.5, 2.1) {Model 1};
 
-      % Feature A: tall
+      % Feature X1: tall
       \fill[bardark] (0, 0) rectangle (\barwidth, 1.8);
-      \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
+      \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {$X_1$};
 
-      % Feature B: short
+      % Feature X2: short
       \fill[barlight] (\barwidth+\gapwidth, 0)
         rectangle (2*\barwidth+\gapwidth, 0.65);
       \node[below=3pt, font=\sffamily\scriptsize]
-        at (\barwidth+\gapwidth+\barwidth/2, 0) {B};
+        at (\barwidth+\gapwidth+\barwidth/2, 0) {$X_2$};
 
       % Baseline
       \draw[black!40] (-0.1, 0) -- (2*\barwidth+\gapwidth+0.1, 0);
     \end{scope}
 
-    % "retrain" arrow (more space between charts)
+    % "retrain" arrow
     \draw[->, line width=1pt, black!50]
       (1.1, 4.4) -- (1.8, 4.4)
       node[midway, above=1pt, font=\sffamily\scriptsize, text=black!50] {retrain};
@@ -142,57 +137,54 @@
       \node[anchor=south, font=\sffamily\footnotesize, text=black!60]
         at (0.5, 2.1) {Model 2};
 
-      % Feature A: short (flipped!)
+      % Feature X1: short (flipped!)
       \fill[barlight] (0, 0) rectangle (\barwidth, 0.65);
-      \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
+      \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {$X_1$};
 
-      % Feature B: tall (flipped!)
+      % Feature X2: tall (flipped!)
       \fill[bardark] (\barwidth+\gapwidth, 0)
         rectangle (2*\barwidth+\gapwidth, 1.8);
       \node[below=3pt, font=\sffamily\scriptsize]
-        at (\barwidth+\gapwidth+\barwidth/2, 0) {B};
+        at (\barwidth+\gapwidth+\barwidth/2, 0) {$X_2$};
 
       % Baseline
       \draw[black!40] (-0.1, 0) -- (2*\barwidth+\gapwidth+0.1, 0);
     \end{scope}
 
-    % Red brace annotation: ranking flipped (below baselines with space)
+    % Red brace annotation: ranking flipped (well below baselines)
     \draw[impossiblered, thick, decorate,
           decoration={brace, amplitude=4pt, mirror}]
-      (-0.5, 2.95) -- (2.85, 2.95)
+      (-0.5, 2.75) -- (2.85, 2.75)
       node[midway, below=6pt, font=\sffamily\scriptsize,
            text=impossiblered] {ranking flipped!};
 
     % ----------------------------------------------------------
-    %  Bottom sub-panel: After DASH (M=25) — generous spacing
+    %  Bottom sub-panel: After DASH (M=25) — more vertical gap
     % ----------------------------------------------------------
     \node[anchor=south, font=\sffamily\bfseries]
-      at (1.0, 1.65) {After DASH ($M\!=\!25$)};
-
-    % "tied (honest)" label below the title
-    \node[anchor=north, font=\sffamily\small,
-          text=dashgreen!70!black]
-      at (1.0, 1.65) {tied (honest)};
+      at (1.0, 1.15) {After DASH ($M\!=\!25$)};
 
     % Single bar chart — tied
-    \begin{scope}[shift={(0.35, -0.3)}]
-      % Feature A
+    \begin{scope}[shift={(0.35, -0.8)}]
+      % Feature X1
       \fill[dashgreen!80] (0, 0) rectangle (\barwidth, 1.2);
-      \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
+      \node[below=3pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {$X_1$};
 
-      % Feature B — same height (tied)
+      % Feature X2 — same height (tied)
       \fill[dashgreen!80] (\barwidth+\gapwidth, 0)
         rectangle (2*\barwidth+\gapwidth, 1.2);
       \node[below=3pt, font=\sffamily\scriptsize]
-        at (\barwidth+\gapwidth+\barwidth/2, 0) {B};
+        at (\barwidth+\gapwidth+\barwidth/2, 0) {$X_2$};
 
       % Baseline
       \draw[black!40] (-0.1, 0) -- (2*\barwidth+\gapwidth+0.1, 0);
 
-      % Tie bracket above bars
+      % Tie bracket above bars with label
       \draw[dashgreen!70!black, thick, decorate,
             decoration={brace, amplitude=3pt}]
-        (0, 1.28) -- (2*\barwidth+\gapwidth, 1.28);
+        (0, 1.28) -- (2*\barwidth+\gapwidth, 1.28)
+        node[midway, above=4pt, font=\sffamily\footnotesize,
+             text=dashgreen!70!black] {tied (honest)};
     \end{scope}
 
   \end{scope}
