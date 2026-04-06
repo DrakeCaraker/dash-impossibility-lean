@@ -97,33 +97,33 @@
   % ============================================================
   %  PANEL B — Before / After DASH (right, ~40% width)
   % ============================================================
-  \begin{scope}[shift={(7.2, 0)}]
+  \begin{scope}[shift={(7.5, 0)}]
 
-    \newcommand{\barwidth}{0.38}
-    \newcommand{\gapwidth}{0.15}
+    \newcommand{\barwidth}{0.35}
+    \newcommand{\gapwidth}{0.18}
 
     % Panel label
     \node[anchor=north west, font=\sffamily\bfseries\large]
       at (-1.8, 5.8) {\textsf{B}};
 
     % ----------------------------------------------------------
-    %  Top sub-panel: Before DASH
+    %  Top sub-panel: Before DASH (lowered for alignment)
     % ----------------------------------------------------------
     \node[anchor=south, font=\sffamily\bfseries]
-      at (0.9, 5.15) {Before DASH};
+      at (0.9, 4.75) {Before DASH};
 
     % Model 1 (left bar chart)
-    \begin{scope}[shift={(-0.5, 2.8)}]
+    \begin{scope}[shift={(-0.5, 2.65)}]
       \node[anchor=south, font=\sffamily\footnotesize, text=black!70]
-        at (0.45, 2.25) {Model 1};
+        at (0.44, 1.95) {Model 1};
 
       % Feature A: tall
-      \fill[bardark] (0, 0) rectangle (\barwidth, 2.0);
+      \fill[bardark] (0, 0) rectangle (\barwidth, 1.7);
       \node[below=2pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
 
       % Feature B: short
       \fill[barlight] (\barwidth+\gapwidth, 0)
-        rectangle (2*\barwidth+\gapwidth, 0.7);
+        rectangle (2*\barwidth+\gapwidth, 0.6);
       \node[below=2pt, font=\sffamily\scriptsize]
         at (\barwidth+\gapwidth+\barwidth/2, 0) {B};
 
@@ -131,23 +131,23 @@
       \draw[black!40] (-0.1, 0) -- (2*\barwidth+\gapwidth+0.1, 0);
     \end{scope}
 
-    % "retrain" arrow
+    % "retrain" arrow (centered between bar groups)
     \draw[->, line width=1pt, black!60]
-      (0.95, 4.3) -- (1.65, 4.3)
+      (0.9, 3.8) -- (1.55, 3.8)
       node[midway, above, font=\sffamily\scriptsize, text=black!60] {retrain};
 
     % Model 2 (right bar chart) — reversed
-    \begin{scope}[shift={(1.5, 2.8)}]
+    \begin{scope}[shift={(1.4, 2.65)}]
       \node[anchor=south, font=\sffamily\footnotesize, text=black!70]
-        at (0.45, 2.25) {Model 2};
+        at (0.44, 1.95) {Model 2};
 
       % Feature A: short (flipped!)
-      \fill[barlight] (0, 0) rectangle (\barwidth, 0.7);
+      \fill[barlight] (0, 0) rectangle (\barwidth, 0.6);
       \node[below=2pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
 
       % Feature B: tall (flipped!)
       \fill[bardark] (\barwidth+\gapwidth, 0)
-        rectangle (2*\barwidth+\gapwidth, 2.0);
+        rectangle (2*\barwidth+\gapwidth, 1.7);
       \node[below=2pt, font=\sffamily\scriptsize]
         at (\barwidth+\gapwidth+\barwidth/2, 0) {B};
 
@@ -158,25 +158,25 @@
     % Red annotation: ranking flipped
     \draw[impossiblered, thick, decorate,
           decoration={brace, amplitude=4pt, mirror}]
-      (-0.6, 2.65) -- (2.55, 2.65)
+      (-0.6, 2.5) -- (2.45, 2.5)
       node[midway, below=5pt, font=\sffamily\scriptsize,
            text=impossiblered] {ranking flipped!};
 
     % ----------------------------------------------------------
-    %  Bottom sub-panel: After DASH (M=25)
+    %  Bottom sub-panel: After DASH (M=25) — more space from top
     % ----------------------------------------------------------
     \node[anchor=south, font=\sffamily\bfseries]
-      at (0.9, 1.85) {After DASH ($M\!=\!25$)};
+      at (0.9, 1.55) {After DASH ($M\!=\!25$)};
 
     % Single bar chart — tied
     \begin{scope}[shift={(0.2, 0)}]
       % Feature A
-      \fill[dashgreen!80] (0, 0) rectangle (\barwidth, 1.3);
+      \fill[dashgreen!80] (0, 0) rectangle (\barwidth, 1.1);
       \node[below=2pt, font=\sffamily\scriptsize] at (\barwidth/2, 0) {A};
 
       % Feature B — same height (tied)
       \fill[dashgreen!80] (\barwidth+\gapwidth, 0)
-        rectangle (2*\barwidth+\gapwidth, 1.3);
+        rectangle (2*\barwidth+\gapwidth, 1.1);
       \node[below=2pt, font=\sffamily\scriptsize]
         at (\barwidth+\gapwidth+\barwidth/2, 0) {B};
 
@@ -186,7 +186,7 @@
       % Tie bracket
       \draw[dashgreen!70!black, thick, decorate,
             decoration={brace, amplitude=3pt}]
-        (0, 1.38) -- (2*\barwidth+\gapwidth, 1.38)
+        (0, 1.18) -- (2*\barwidth+\gapwidth, 1.18)
         node[midway, above=4pt, font=\sffamily\footnotesize,
              text=dashgreen!70!black] {tied (honest)};
     \end{scope}
