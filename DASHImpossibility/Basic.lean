@@ -34,6 +34,7 @@ import DASHImpossibility.FairnessAudit
 import DASHImpossibility.IntersectionalFairness
 import DASHImpossibility.Consistency
 import DASHImpossibility.GaussianFlipRate
+import DASHImpossibility.BinaryQuantizer
 import DASHImpossibility.RobustnessLipschitz
 import DASHImpossibility.MutualInformation
 import DASHImpossibility.StumpProportionality
@@ -41,6 +42,7 @@ import DASHImpossibility.QueryComplexityParametric
 import DASHImpossibility.LocalSufficiency
 import DASHImpossibility.FIMImpossibility
 import DASHImpossibility.QueryComplexity
+import DASHImpossibility.QueryComplexityDerived
 import DASHImpossibility.Setup
 import DASHImpossibility.ApproximateEquity
 import DASHImpossibility.ProportionalityLocal
