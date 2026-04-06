@@ -17,7 +17,7 @@
   - impossibility_with_quality: Attribution impossibility where the
     two witnessing models have equal population loss
 
-  Zero new axioms. Zero sorry.
+  Zero new axioms. All proofs complete.
 -/
 import DASHImpossibility.Defs
 import DASHImpossibility.Trilemma

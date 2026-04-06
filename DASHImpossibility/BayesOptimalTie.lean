@@ -10,7 +10,7 @@
   the existential result (some model disagrees) to a quantitative one
   (exactly half the models disagree).
 
-  Zero new axioms. Zero sorry.
+  Zero new axioms. All proofs complete.
 
   Supplement: Design Space Theorem, Step 3 (substantive version)
 -/
