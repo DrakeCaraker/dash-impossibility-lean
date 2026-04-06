@@ -669,6 +669,11 @@ An ensemble is \emph{balanced} if, within each group, every feature serves as fi
 \paragraph{\DASH{} does NOT change predictions.}
 \DASH{} is a \emph{post-hoc explanation method}, not a modeling technique. The $M$ models are trained independently using the practitioner's existing pipeline; \DASH{} only averages their SHAP values to produce stable feature rankings. No model is modified, no ensemble prediction is formed, and the deployed model remains unchanged. \DASH{} changes how you \emph{explain}, not how you \emph{predict}.
 
+\paragraph{\DASH{} consensus vs.\ \DASH{} pipeline.}
+\DASH{} operates at two layers. \emph{\DASH{} consensus} (Definition~\ref{def:dash}) is the mathematical operation: the arithmetic mean of $|\text{SHAP}|$ values across $M$ independently trained models. This is what Theorems~\ref{thm:dash-optimal} and~\ref{thm:design-space-main} prove is optimal---the minimum-variance unbiased estimator via Cram\'er--Rao, Pareto-optimal on the stable branch of the Design Space. The theoretical guarantees apply to \emph{any} i.i.d.\ ensemble averaging, including simple seed averaging (training $M$ models with different random seeds and identical hyperparameters).
+
+The companion paper on first-mover bias implements \DASH{} as a full pipeline that adds diversity enforcement (deliberate hyperparameter variation, greedy MaxMin model selection on feature utilization vectors) and stability diagnostics (FSI, IS~Plot). Diversity enforcement accelerates convergence to the balanced ensemble condition (Definition~\ref{def:dash}): at finite $M$, it produces more equitable attributions than seed averaging alone (within-group CV reduced by $0.011$, $p < 0.001$). For large $M$, simple seed averaging achieves approximate balance via the law of large numbers. For stability alone, seed averaging suffices; the full pipeline adds equity and diagnostics.
+
 \begin{corollary}[\DASH{} achieves equity (axiom-derived)]
 \label{cor:equity}
 For a balanced ensemble and any two features $j, k$ in the same group $\ell$, $\bar{\varphi}_j = \bar{\varphi}_k$.
@@ -1802,6 +1807,9 @@ for j in range(P):
     \item \textbf{If subsample $= 1.0$ (deterministic):} A single pipeline version produces reproducible rankings. However, \emph{any} change to the pipeline (data refresh, feature engineering, hyperparameter update) produces a new model that may rank features differently. Run F1 validation whenever the pipeline changes. For ongoing model risk management, maintain an ensemble and report \DASH{} consensus.
     \item \textbf{Minimum ensemble size:} $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$ for 5\% between-group flip rate. Estimate $\sigma$ and $\Delta$ from a pilot run of 5 models.
 \end{itemize}
+
+\paragraph{Complementary diagnostics.}
+The F5 and F1 diagnostics developed here are formal hypothesis tests with controlled type~I error. The companion first-mover bias paper introduces complementary \emph{exploratory} diagnostics: FSI (Feature Stability Index, a per-feature coefficient of variation across models) and the IS~Plot (Importance-Stability scatter plot). The recommended combined workflow is: F5 (screen, 1 model) $\to$ F1 (confirm, 5 models) $\to$ \DASH{} (resolve, $M \geq 25$) $\to$ FSI/IS~Plot (audit).
 
 \paragraph{Recommended instability disclosure.}
 When reporting SHAP rankings for a model with collinear features: ``Features [X, Y, Z] form a correlated group ($|\rho| > [\text{threshold}]$). Their relative ranking is unstable across training seeds (estimated flip rate: [X]\%). They should be interpreted as interchangeable contributors. The between-group ranking is stable ($Z > 1.96$).'' For regulatory reporting (EU AI Act, SR~11-7 \cite{occ2011sr117}), the \DASH{} consensus ranking provides a defensible explanation.

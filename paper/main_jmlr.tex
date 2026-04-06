@@ -623,6 +623,9 @@ Given models $f_1, \ldots, f_M$ trained from independent seeds, the \emph{consen
 An ensemble is \emph{balanced} if, within each group, every feature serves as first-mover in exactly $M/m$ models.
 \end{definition}
 
+\paragraph{\DASH{} consensus vs.\ pipeline.}
+\DASH{} consensus (Definition~\ref{def:dash}) is the core mathematical operation, proved optimal in Theorems~\ref{thm:dash-optimal} and~\ref{thm:design-space-main}. The theoretical guarantees apply to any i.i.d.\ ensemble averaging, including simple seed averaging. A companion paper implements \DASH{} as a full pipeline with diversity enforcement (hyperparameter variation, MaxMin model selection) and exploratory diagnostics (FSI, IS~Plot) that improve finite-sample equity beyond seed averaging alone. For large $M$, seed averaging achieves approximate balance via the law of large numbers; diversity enforcement accelerates this convergence.
+
 \begin{corollary}[\DASH{} achieves equity (axiom-derived)]
 \label{cor:equity}
 For a balanced ensemble and any two features $j, k$ in the same group $\ell$, $\bar{\varphi}_j = \bar{\varphi}_k$.
@@ -1377,7 +1380,7 @@ $[3.0, \infty)$ & 113 & 0.000 & 0.000 & Exact \\
 \end{itemize}
 
 \paragraph{Reporting.}
-For feature pairs flagged as unstable, we recommend reporting within-group features as interchangeable contributors (with the group's total attribution) rather than forcing a ranking. For regulatory contexts requiring defensible explanations \citep{occ2011sr117}, the \DASH{} consensus provides a stable alternative.
+For feature pairs flagged as unstable, we recommend reporting within-group features as interchangeable contributors (with the group's total attribution) rather than forcing a ranking. For regulatory contexts requiring defensible explanations \citep{occ2011sr117}, the \DASH{} consensus provides a stable alternative. The F5 and F1 diagnostics are formal hypothesis tests; the companion first-mover bias paper introduces complementary exploratory diagnostics (FSI, IS~Plot) for auditing the full instability landscape.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 10. EMPIRICAL VALIDATION
