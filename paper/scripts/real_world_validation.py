@@ -40,6 +40,9 @@ matplotlib.rcParams.update({
     'figure.dpi': 150,
     'savefig.dpi': 300,
     'savefig.bbox': 'tight',
+    'axes.formatter.use_mathtext': True,
+    'axes.spines.top': False,
+    'axes.spines.right': False,
 })
 
 OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "figures")
@@ -207,7 +210,7 @@ ax.set_xlabel(r'Feature pair correlation $|\rho|$')
 ax.set_ylabel('Ranking flip rate')
 ax.set_xlim(-0.02, 1.0)
 ax.set_ylim(-0.02, 0.55)
-ax.grid(True, linewidth=0.4, alpha=0.5)
+ax.grid(True, linewidth=0.3, alpha=0.2, color='#cccccc')
 ax.legend(loc='upper left', fontsize=7.5, framealpha=0.9)
 
 fig.tight_layout()

@@ -39,8 +39,8 @@ s_bound = 1 - (m**3) / (P**3)  # ≈ 0.984
 # The ideal is S=1, U=0, C=complete — which is infeasible
 ax.fill_between([0, 0.05], [0.99, 0.99], [1.01, 1.01],
                 color='#ffcccc', alpha=0.5, zorder=0)
-ax.annotate('Infeasible\n$(S{=}1, U{=}0, C{=}\\mathrm{complete})$',
-            xy=(0.02, 1.0), fontsize=8, color='#cc0000', ha='left', va='center')
+ax.annotate('Infeasible: $(S{=}1, U{=}0, C{=}\\mathrm{complete})$',
+            xy=(0.01, 1.005), fontsize=7.5, color='#cc0000', ha='left', va='bottom')
 
 # Family B (ensemble/DASH): U = 0, S increases with M
 M_values = [1, 2, 5, 10, 25, 50, 100, 500]
@@ -51,16 +51,20 @@ S_B = [1 - sigma_over_delta**2 / M for M in M_values]
 ax.plot([0]*len(M_values), S_B, 'o-', color='#1f77b4', markersize=8,
         linewidth=2, zorder=5, label='Family $\\mathcal{B}$ (DASH)')
 
-# Label specific M values
+# Label specific M values (only M=1, M=5, and collapsed top cluster)
 for M, s in zip(M_values, S_B):
-    if M in [1, 5, 25]:
-        ax.annotate(f'$M={M}$', xy=(0, s), xytext=(0.04, s),
+    if M == 1:
+        ax.annotate(f'$M = 1$', xy=(0, s), xytext=(0.06, s),
                     fontsize=8, color='#1f77b4',
                     arrowprops=dict(arrowstyle='->', color='#1f77b4', lw=0.8))
-    elif M == 500:
-        ax.annotate(f'$M\\to\\infty$', xy=(0, s), xytext=(0.04, s - 0.005),
+    elif M == 5:
+        ax.annotate(f'$M = 5$', xy=(0, s), xytext=(0.06, s),
                     fontsize=8, color='#1f77b4',
                     arrowprops=dict(arrowstyle='->', color='#1f77b4', lw=0.8))
+# Single label for the top cluster (M >= 25)
+ax.annotate(r'$M \geq 25$', xy=(0, S_B[4]), xytext=(0.06, 0.975),
+            fontsize=8, color='#1f77b4',
+            arrowprops=dict(arrowstyle='->', color='#1f77b4', lw=0.8))
 
 # Family A (single-model): U = 1/2, S ≤ s_bound
 # Show as a vertical bar at U = 0.5
@@ -90,7 +94,7 @@ ax.set_ylabel('Ranking Stability $S$ (expected Spearman)', fontsize=11)
 ax.set_xlim(-0.05, 0.6)
 ax.set_ylim(0.45, 1.02)
 ax.legend(loc='lower right', fontsize=9)
-ax.grid(True, lw=0.3, alpha=0.4)
+ax.grid(True, lw=0.3, alpha=0.2, color='#cccccc')
 ax.set_title('The Attribution Design Space', fontsize=12, weight='bold')
 
 fig.tight_layout()

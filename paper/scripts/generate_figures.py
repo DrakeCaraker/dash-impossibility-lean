@@ -41,6 +41,7 @@ matplotlib.rcParams.update({
     'legend.fontsize': 7,
     'legend.framealpha': 0.9,
     'legend.edgecolor': '0.8',
+    'axes.formatter.use_mathtext': True,
 })
 
 # ---------------------------------------------------------------------------
@@ -139,7 +140,7 @@ def fig_ratio_divergence():
     ax.set_xlim(-0.02, 1.0)
     ax.set_ylim(bottom=0.8)
     ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=False, nbins=6))
-    ax.grid(True, linewidth=0.4, alpha=0.6)
+    ax.grid(True, linewidth=0.3, alpha=0.25, color='#cccccc')
     ax.legend(loc="upper left", fontsize=7.5)
 
     fig.tight_layout()
@@ -169,11 +170,11 @@ def fig_shap_instability():
                 markersize=4, capsize=3, lw=1.2, label="DASH ensemble")
 
     ax.set_xlabel(r"Feature correlation $\rho$")
-    ax.set_ylabel("Ranking instability (1 \u2212 stability)")
+    ax.set_ylabel(r"Ranking instability ($1 - S$)")
     ax.set_xlim(-0.05, 1.0)
     ax.set_ylim(bottom=0)
     ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.3f"))
-    ax.grid(True, linewidth=0.4, alpha=0.6)
+    ax.grid(True, linewidth=0.3, alpha=0.25, color='#cccccc')
     ax.legend(loc="upper left")
 
     fig.tight_layout()
@@ -225,13 +226,13 @@ def fig_dash_resolution():
             label="DASH ensemble", zorder=3)
 
     ax.axhline(0.01, color="#2ca02c", linestyle="--", lw=0.9,
-               label="1% threshold", zorder=2)
+               label=r"1\% threshold", zorder=2)
 
     ax.set_xlabel(r"Ensemble size $M$")
     ax.set_ylabel("Attribution CV (within-group)")
     ax.set_xlim(0, Ms.max() + 2)
     ax.set_ylim(bottom=0)
-    ax.grid(True, linewidth=0.4, alpha=0.6)
+    ax.grid(True, linewidth=0.3, alpha=0.25, color='#cccccc')
     ax.legend(loc="upper right", fontsize=6.5)
 
     fig.tight_layout()

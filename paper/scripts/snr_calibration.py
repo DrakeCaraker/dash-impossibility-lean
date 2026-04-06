@@ -257,8 +257,8 @@ def main():
     # Vertical dashed lines
     ax.axvline(1.28, color="#555555", linestyle="--", linewidth=1.2, alpha=0.8, zorder=4)
     ax.axvline(1.96, color="#222222", linestyle="--", linewidth=1.2, alpha=0.8, zorder=4)
-    ax.text(1.28 + 0.05, 0.47, "SNR=1.28\n(10% flip)", fontsize=8.5, color="#555555", va="top")
-    ax.text(1.96 + 0.05, 0.42, "SNR=1.96\n(2.5% flip)", fontsize=8.5, color="#222222", va="top")
+    ax.text(1.28 + 0.08, 0.45, "SNR=1.28\n(10\% flip)", fontsize=7.5, color="#555555", va="top")
+    ax.text(1.96 + 0.08, 0.40, "SNR=1.96\n(2.5\% flip)", fontsize=7.5, color="#222222", va="top")
 
     ax.set_xlabel(r"Signal-to-noise ratio $|\Delta|/\sigma$")
     ax.set_ylabel("Pairwise flip rate")
@@ -267,7 +267,7 @@ def main():
     ax.set_ylim(0, 0.55)
 
     # Stats annotation
-    stats_text = f"$r={corr:.3f}$,  $R^2={r2:.3f}$,  MAE$={mae:.3f}$\n$n={len(all_snr)}$ pairs across 6 datasets"
+    stats_text = f"$n={len(all_snr)}$ pairs across 6 datasets"
     ax.text(
         0.97, 0.97, stats_text,
         transform=ax.transAxes, fontsize=9,
@@ -281,7 +281,7 @@ def main():
         framealpha=0.9, edgecolor="#cccccc",
         ncol=1,
     )
-    ax.grid(True, alpha=0.25, linestyle=":")
+    ax.grid(True, alpha=0.2, linewidth=0.3, color='#cccccc')
     fig.tight_layout()
 
     out_pdf = os.path.join(FIGURES_DIR, "snr_calibration.pdf")
