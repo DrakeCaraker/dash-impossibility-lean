@@ -84,7 +84,7 @@ Pareto optimality & \texttt{dash\_pareto\_optimal} & \textbf{Theorem} in \texttt
 
 The formalization comprises 54 Lean~4 files with 16 axioms and
 305 type-checked theorems and lemmas (
-0 \texttt{sorry}). Of these, 67 require multi-line proofs
+0 \texttt{sorry}). Of these, 80 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or
 single-step applications.
 The core impossibility (\texttt{attribution\_impossibility}) depends on
@@ -296,13 +296,13 @@ in a single development session by dispatching targeted Lean-writing
 agents with detailed mathematical specifications (theorem statements,
 proof strategies, and Mathlib lemma references). All proofs were
 machine-verified by \texttt{lake build} (the Lean 4 type-checker);
-no proof was accepted on the basis of AI output alone. The 67 proofs
+no proof was accepted on the basis of AI output alone. The 80 proofs
 with ${\geq}5$ tactic lines required substantive mathematical
 reasoning; the deepest proof (\texttt{attribution\_sum\_symmetric},
 35 tactic lines) derives symmetry via split-count decomposition.
 
 \paragraph{Proof depth distribution.}
-Of 305 type-checked declarations: 67 require multi-step proofs
+Of 305 type-checked declarations: 80 require multi-step proofs
 (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5
 require ${\geq}20$ lines. The five deepest proofs are
 \texttt{attribution\_sum\_symmetric} (35 lines, derived symmetry

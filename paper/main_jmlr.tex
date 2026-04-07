@@ -1841,7 +1841,7 @@ DASH breakdown & Robust to contaminated ensembles & \texttt{dash\_breakdown\_poi
 
 \subsection{Proof Architecture}
 
-The formalization comprises 54 Lean~4 files with 16 axioms and 305 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 67 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
+The formalization comprises 54 Lean~4 files with 16 axioms and 305 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 80 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
 The core impossibility (\textsf{attribution\_impossibility}) depends on zero axioms---only the Rashomon property as hypothesis.
 The DASH resolution (\textsf{consensus\_equity}) depends on the \textsf{attribution\_sum\_symmetric} theorem (derived); the variance convergence depends on \textsf{consensus\_variance\_bound} (also~derived).
 
@@ -1906,7 +1906,7 @@ The initial formalization (49 theorems, 15 files) was developed by the first aut
 
 \subsection{Proof Depth Distribution}
 
-Of 305 type-checked declarations: 67 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are listed below.
+Of 305 type-checked declarations: 80 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are listed below.
 
 \begin{center}
 \small
