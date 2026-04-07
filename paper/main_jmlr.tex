@@ -14,7 +14,7 @@
 \newcommand{\DASH}{\textsc{Dash}}
 \newcommand{\GBDT}{\textsc{GBDT}}
 
-\title{No Feature Ranking Is Faithful, Stable, and Complete\\Under Collinearity: The Attribution Impossibility}
+\title[The Attribution Impossibility]{No Feature Ranking Is Faithful, Stable, and Complete\\Under Collinearity: The Attribution Impossibility}
 
 \author{\Name{Drake Caraker} \Email{drakecaraker@gmail.com}\\
   \addr Independent Researcher
@@ -1839,7 +1839,9 @@ The core impossibility (\textsf{attribution\_impossibility}) depends on zero axi
 The DASH resolution (\textsf{consensus\_equity}) depends on the \textsf{attribution\_sum\_symmetric} theorem (derived); the variance convergence depends on \textsf{consensus\_variance\_bound} (also~derived).
 
 \paragraph{Scope of verification.}
+\begin{sloppypar}
 The formalization covers the complete theoretical framework. The core impossibility (Theorem~\ref{thm:impossibility}) uses zero behavioral axioms. The quantitative bounds, DASH equity, and the Design Space Theorem are derived from the 16-axiom system. The unfaithfulness probability of exactly $1/2$ (\texttt{attribution\_prob\_half}), the Bayes-optimality of ties (\texttt{tie\_dominates\_commitment}), the consensus variance $\sigma^2/M$ (\texttt{consensus\_variance\_from\_independence}), the binary quantizer fraction $2/\pi$ (\texttt{binary\_quantizer\_fraction}), and the Pareto dominance of DASH (\texttt{dash\_unique\_pareto\_optimal}) are all Lean-derived using definitions-as-hypotheses (the \texttt{IsBalanced} pattern) with zero new axioms. The Chebyshev query complexity bound $M \geq 12\sigma^2/\Delta^2$ (\texttt{chebyshev\_query\_bound}) is derived without axiomatizing the testing constant. Loss preservation is formalized via the \texttt{SymmetricModelSwap} structure. The only result not formalized is the extension of Pareto optimality to biased methods for between-group pairs, which is argued informally in the proof of Theorem~\ref{thm:dash-optimal}.
+\end{sloppypar}
 
 {\small
 \begin{verbatim}
