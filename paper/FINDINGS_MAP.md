@@ -86,7 +86,7 @@ When updating the monograph, update this map. When adding experiments or Lean th
 | # | Finding | Empirical Validation | Strength |
 |---|---------|---------------------|----------|
 | G1 | **F1 diagnostic** Z-test, flip = Φ(-Z/√M) | r = -0.89 on BC; |r| > 0.8 on 9/10 datasets | **VERY STRONG** |
-| G3-4 | **F5 screen** single-model, 94% precision | 94-100% clean; 48-67% high-dim | **STRONG** |
+| G3-4 | **single-model screen** single-model, 94% precision | 94-100% clean; 48-67% high-dim | **STRONG** |
 | G7 | **SNR calibration** Φ(-SNR) on 1,325 pairs | All SNR > 1.96 have flip < 5% | **STRONG** |
 | G8 | **Expected Kendall τ formula** | Predicted 26.8 vs empirical 36.6 (-27%) | **MODERATE** |
 | G2 | **F1 restricted-range robustness** | r=-0.78 for Z<5; structural baseline r=-0.56 | **MODERATE** |
@@ -184,7 +184,7 @@ When updating the monograph, update this map. When adding experiments or Lean th
 |---|---------|---------------|
 | K1 | EU AI Act Art. 13(3)(b)(ii) compliance | Attribution instability = "known circumstance" |
 | K2 | ECOA adverse action instability (43.2%) | Model governance concern |
-| K3 | Practitioner workflow (F5→F1→DASH) | Actionable 4-step protocol |
+| K3 | Practitioner workflow (Screen→Z-test→DASH) | Actionable 4-step protocol |
 | K4 | Progressive DASH (11.75 models expected) | Cost-effective deployment |
 | K5 | Instability disclosure template | Ready-to-use regulatory language |
 | K6 | Group-level reporting format | Report groups, not individual rankings |

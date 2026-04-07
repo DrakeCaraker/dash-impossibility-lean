@@ -853,7 +853,7 @@ $\infty$ & 1 & 0 & Partial (ties) \\
 \end{center}
 
 \paragraph{Previous results as corollaries.}
-The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is the statement that $(1, 0, \text{complete})$ lies outside the achievable set (Step~4). The \DASH{} Pareto Optimality (Theorem~\ref{thm:dash-optimal}) is the statement that $\mathcal{B}$ is the Pareto frontier of $\{(S, U) : U = 0\}$. The F1 characterization (Theorem~\ref{thm:testable}) describes the boundary between families. The FIM Impossibility (Theorem~\ref{thm:fim-impossibility}) provides a sufficient condition for the Rashomon property (the prerequisite).
+The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is the statement that $(1, 0, \text{complete})$ lies outside the achievable set (Step~4). The \DASH{} Pareto Optimality (Theorem~\ref{thm:dash-optimal}) is the statement that $\mathcal{B}$ is the Pareto frontier of $\{(S, U) : U = 0\}$. The Z-test characterization (Theorem~\ref{thm:testable}) describes the boundary between families. The FIM Impossibility (Theorem~\ref{thm:fim-impossibility}) provides a sufficient condition for the Rashomon property (the prerequisite).
 
 \begin{figure}[t]
 \centering
@@ -1221,7 +1221,7 @@ The first inequality follows because $\Var_f(\E_x[g]) = \Var_{f,x}(g) - \E_f[\Va
 Thus global instability ($\Var_f$ of the averaged attribution) is bounded by the total instability, which includes the average local instability as a component. When model randomness and data-point variation are approximately independent (as when models differ only by training seed and $x$ is a fixed test point), the bound simplifies: $\Var_f(\E_x[|\varphi_j|]) \leq \E_x[\Var_f(|\varphi_j|)]$.
 Since the flip rate is a monotone function of the variance-to-gap ratio $\sigma/\Delta$, and averaging reduces $\sigma$ without changing $\Delta$, the global flip rate is a lower bound on the average local flip rate under this independence condition.
 
-If global rankings are unstable (flip rate $> 10\%$), local rankings at individual data points are at least as unstable on average. Practitioners who report per-instance SHAP explanations face the same or worse instability. The F1 diagnostic (computed on global attributions) is therefore a conservative screen for local instability.
+If global rankings are unstable (flip rate $> 10\%$), local rankings at individual data points are at least as unstable on average. Practitioners who report per-instance SHAP explanations face the same or worse instability. The multi-model Z-test (computed on global attributions) is therefore a conservative screen for local instability.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 9. DIAGNOSTICS
@@ -1230,7 +1230,7 @@ If global rankings are unstable (flip rate $> 10\%$), local rankings at individu
 \section{Diagnostics}
 \label{sec:diagnostics}
 
-\subsection{F1 Multi-Model Diagnostic}
+\subsection{Multi-Model Z-Test}
 \label{sec:f1}
 
 Let $D_j = \varphi_j(f) - \varphi_k(f)$ denote the attribution difference for a single random model $f$. Define $\mu_{jk} = \E[D_j]$ (population attribution gap), $\sigma_{jk}^2 = \Var(D_j)$ (attribution difference variance), and $\gamma_{jk} = \E[|D_j - \mu_{jk}|^3]$ (third absolute central moment, for Berry--Esseen). We require: (A1) models $f_1, \ldots, f_M$ are i.i.d.; (A2) $\sigma_{jk}^2 > 0$ (guaranteed by Theorem~\ref{thm:rashomon-inevitability} for $\rho > 0$); (A3) $\gamma_{jk} < \infty$ (finite third moment---satisfied by any bounded attribution method).
@@ -1284,13 +1284,13 @@ Since $Z_{jk}$ and flip rate are both computed from the same attribution arrays,
 \paragraph{When the CLT fails.}
 The Berry--Esseen error $\varepsilon_{\text{BE}} \leq C_0 \gamma_{jk}/\sigma_{jk}^3$ can be large when: (i) the attribution distribution is \emph{heavy-tailed} (large $\gamma_{jk}$), as occurs for deep networks with high initialization variance; or (ii) the attribution distribution is \emph{bimodal}, as for Lasso where $\varphi_j$ takes value either $c > 0$ (selected) or $0$ (not selected). For gradient-boosted trees, the Shapiro--Wilk test on 50 Breast Cancer models gives $p > 0.10$ for 412/435 feature pairs; the Berry--Esseen correction is negligible in practice.
 
-\subsection{F5 Single-Model Screen}
+\subsection{Single-Model Screen}
 \label{sec:f5}
 
 For a gradient-boosted ensemble with $T$ trees, define the per-tree split indicator $n_j(t) \in \{0,1\}$ (whether feature $j$ is used as a split variable in tree $t$) and split frequency $\hat{p}_j = \frac{1}{T}\sum_{t=1}^T n_j(t)$.
 
 \paragraph{Exchangeability conditions.}
-The theoretical validity of the F5 diagnostic depends on the dependence structure of the indicators $\{n_j(t)\}_{t=1}^T$:
+The theoretical validity of the single-model screen depends on the dependence structure of the indicators $\{n_j(t)\}_{t=1}^T$:
 
 \begin{itemize}
     \item \textbf{Exact exchangeability under sub-sampling.} If the boosting algorithm uses row sub-sampling (\texttt{subsample} $= q < 1$) and feature sub-sampling (\texttt{colsample\_bytree} $= r < 1$) with independent random subsets per tree, then the per-tree data subsets are independent across trees, and conditional on the residuals, the split indicators $n_j(1), \ldots, n_j(T)$ are conditionally exchangeable. The marginal split probability $p_j = \E[n_j(t)]$ is identical for all $t$.
@@ -1313,7 +1313,7 @@ Under the exchangeability conditions above (sub-sampling, or no sub-sampling wit
 
 \textbf{Part I (Null distribution).} Under $H_0: p_j = p_k$ (equal split frequencies, implied by DGP symmetry), $Z^{\text{split}}_{jk}$ is asymptotically $N(0,1)$ as $T_{\text{eff}} \to \infty$.
 
-\textbf{Part II (Connection to attributions).} Under the proportionality axiom ($\varphi_j = c \cdot n_j$), $p_j = p_k$ iff $\E[\varphi_j] = \E[\varphi_k]$. The F5 test is therefore a proxy for the F1 test (Theorem~\ref{thm:testable}), computable from a single model.
+\textbf{Part II (Connection to attributions).} Under the proportionality axiom ($\varphi_j = c \cdot n_j$), $p_j = p_k$ iff $\E[\varphi_j] = \E[\varphi_k]$. The screen is therefore a proxy for the Z-test (Theorem~\ref{thm:testable}), computable from a single model.
 
 \textbf{Part III (Power).} Under the alternative $p_j \neq p_k$, the power at level $\alpha$ is:
 \[
@@ -1321,10 +1321,10 @@ Under the exchangeability conditions above (sub-sampling, or no sub-sampling wit
 \]
 \end{theorem}
 
-\paragraph{F5 screening accuracy.}
-On the Breast Cancer dataset (435 pairs, threshold: flip rate $> 0.1$ defines ``truly unstable''): F5 flags 49 pairs with \textbf{94\% precision} (46 true positives, 3 false positives) and 27\% recall. F1 (the full test) flags 47 pairs with \textbf{100\% precision} (zero false positives). Both diagnostics are conservative: they rarely flag stable pairs but miss moderate-instability pairs. For production use, the high precision is the key property---a flagged pair is almost certainly unstable.
+\paragraph{Screen screening accuracy.}
+On the Breast Cancer dataset (435 pairs, threshold: flip rate $> 0.1$ defines ``truly unstable''): the screen flags 49 pairs with \textbf{94\% precision} (46 true positives, 3 false positives) and 27\% recall. The Z-test (the full test) flags 47 pairs with \textbf{100\% precision} (zero false positives). Both diagnostics are conservative: they rarely flag stable pairs but miss moderate-instability pairs. For production use, the high precision is the key property---a flagged pair is almost certainly unstable.
 
-F5 precision is 94--100\% on small/clean datasets (Breast Cancer, Wine, Heart Disease) where split counts are reliable, but drops to 48--67\% on high-dimensional datasets (Ames, Communities) where split counts are sparse. This confirms F5 as a conservative screening tool that should be supplemented by the full F1 test for high-dimensional settings.
+Screen precision is 94--100\% on small/clean datasets (Breast Cancer, Wine, Heart Disease) where split counts are reliable, but drops to 48--67\% on high-dimensional datasets (Ames, Communities) where split counts are sparse. This confirms the screen as a conservative screening tool that should be supplemented by the full Z-test for high-dimensional settings.
 
 \subsection{SNR Calibration}
 \label{sec:snr}
@@ -1359,21 +1359,21 @@ $[3.0, \infty)$ & 113 & 0.000 & 0.000 & Exact \\
 
 \begin{enumerate}
     \item[\textbf{Step 0.}] \textbf{Identify correlated groups.} Compute the $P \times P$ absolute correlation matrix. Group features with $|\rho_{jk}| > 0.5$.
-    \item[\textbf{Step 1.}] Train one model. Compute $Z^{\text{split}}_{jk}$ for all pairs in correlated groups (F5 screen). Cost: $O(P^2 T)$.
+    \item[\textbf{Step 1.}] Train one model. Compute $Z^{\text{split}}_{jk}$ for all pairs in correlated groups (single-model screen). Cost: $O(P^2 T)$.
     \item[\textbf{Step 2.}] If $Z^{\text{split}}_{jk} < 1.96$ for any pair: flag as potentially unstable.
-    \item[\textbf{Step 3.}] For flagged pairs: train $M = 5$ models, compute $Z_{jk}$ (F1 test). If $Z_{jk} < 1.96$: use \DASH{} with $M \geq 25$.
+    \item[\textbf{Step 3.}] For flagged pairs: train $M = 5$ models, compute $Z_{jk}$ (Z-test). If $Z_{jk} < 1.96$: use \DASH{} with $M \geq 25$.
     \item[\textbf{Step 4.}] If no pairs are flagged: single-model SHAP is reliable.
 \end{enumerate}
 
 \paragraph{Production deployment guide.}
 \begin{itemize}
-    \item \textbf{If subsample $< 1.0$ (stochastic, recommended):} Run F5 (single-model screen) $\to$ F1 (5-model validation) $\to$ \DASH{} ($M \geq 25$) for flagged pairs.
-    \item \textbf{If subsample $= 1.0$ (deterministic):} A single pipeline version produces reproducible rankings. However, \emph{any} change to the pipeline (data refresh, feature engineering, hyperparameter update) produces a new model that may rank features differently. Run F1 validation whenever the pipeline changes. For ongoing model risk management, maintain an ensemble and report \DASH{} consensus.
+    \item \textbf{If subsample $< 1.0$ (stochastic, recommended):} Run the single-model screen $\to$ the Z-test (5-model validation) $\to$ \DASH{} ($M \geq 25$) for flagged pairs.
+    \item \textbf{If subsample $= 1.0$ (deterministic):} A single pipeline version produces reproducible rankings. However, \emph{any} change to the pipeline (data refresh, feature engineering, hyperparameter update) produces a new model that may rank features differently. Run Z-test validation whenever the pipeline changes. For ongoing model risk management, maintain an ensemble and report \DASH{} consensus.
     \item \textbf{Minimum ensemble size:} $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$ for 5\% between-group flip rate. Estimate $\sigma$ and $\Delta$ from a pilot run of 5 models.
 \end{itemize}
 
 \paragraph{Reporting.}
-For feature pairs flagged as unstable, we recommend reporting within-group features as interchangeable contributors (with the group's total attribution) rather than forcing a ranking. For regulatory contexts requiring defensible explanations \citep{occ2011sr117}, the \DASH{} consensus provides a stable alternative. The F5 and F1 diagnostics are formal hypothesis tests; the companion first-mover bias paper introduces complementary exploratory diagnostics (FSI, IS~Plot) for auditing the full instability landscape.
+For feature pairs flagged as unstable, we recommend reporting within-group features as interchangeable contributors (with the group's total attribution) rather than forcing a ranking. For regulatory contexts requiring defensible explanations \citep{occ2011sr117}, the \DASH{} consensus provides a stable alternative. The single-model screen and Z-test are formal hypothesis tests; the companion first-mover bias paper introduces complementary exploratory diagnostics (FSI, IS~Plot) for auditing the full instability landscape.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 10. EMPIRICAL VALIDATION
@@ -1482,12 +1482,12 @@ Metric & XGBoost & LightGBM & CatBoost \\
 \midrule
 Unstable pairs (flip $> 10\%$) & 162 & 183 & 160 \\
 Max flip rate & 0.500 & 0.500 & 0.500 \\
-F1 correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
+Z-test correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500, and F1 diagnostic correlation $|r| > 0.89$ in all three.
+The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500, and Z-test correlation $|r| > 0.89$ in all three.
 
 \subsection{Non-SHAP Attribution Validation}
 
@@ -1499,12 +1499,12 @@ Metric & TreeSHAP & Permutation Importance \\
 \midrule
 Unstable pairs (flip $>10\%$) & 180 (41\%) & 396 (91\%) \\
 Max flip rate & 0.500 & 0.500 \\
-F1 correlation $r(Z, \text{flip})$ & $-0.895$ & $-0.927$ \\
+Z-test correlation $r(Z, \text{flip})$ & $-0.895$ & $-0.927$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Permutation importance shows \emph{more} instability than TreeSHAP (91\% vs.\ 41\%), because permutation-based scores have higher variance across seeds than SHAP values. Both methods hit the theoretical maximum flip rate (0.500). The F1 diagnostic achieves $|r| > 0.89$ for both, confirming it is method-agnostic.
+Permutation importance shows \emph{more} instability than TreeSHAP (91\% vs.\ 41\%), because permutation-based scores have higher variance across seeds than SHAP values. Both methods hit the theoretical maximum flip rate (0.500). The Z-test achieves $|r| > 0.89$ for both, confirming it is method-agnostic.
 
 The cross-method correlation of flip rates is $r = 0.46$ ($p < 10^{-23}$): the \emph{same pairs} tend to be unstable under both methods, confirming the instability is driven by feature collinearity, not by the attribution algorithm. Of the 180 SHAP-unstable pairs, 175 (97\%) are also unstable under permutation importance. TreeSHAP shows lower instability (41\% vs 91\%) likely because its game-theoretic averaging over feature coalitions provides implicit regularization, reducing within-model attribution variance compared to permutation importance's direct shuffling.
 
@@ -1519,7 +1519,7 @@ Metric & Neural Network & XGBoost (paper) \\
 Unstable pairs (flip $> 10\%$) & 380/435 (87\%) & 162/435 (37\%) \\
 Max flip rate & 0.500 & 0.500 \\
 Key pair flip (worst perim.\ vs.\ area) & 0.400 & 0.480 \\
-F1 correlation $r(Z, \text{flip})$ & $-0.871$ & $-0.898$ \\
+Z-test correlation $r(Z, \text{flip})$ & $-0.871$ & $-0.898$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1543,7 +1543,7 @@ The lower instability of SHAP relative to permutation importance (41\% vs.\ 91\%
 \small
 \begin{tabular}{@{}rrrrrr@{}}
 \toprule
-$P$ & Total pairs & Correlated pairs & Unstable & F1 $|r|$ & Wall time \\
+$P$ & Total pairs & Correlated pairs & Unstable & Z-test $|r|$ & Wall time \\
 \midrule
 100 & 4,950 & 450 & 305 & 0.846 & 33\,s \\
 200 & 19,900 & 900 & 641 & 0.788 & 64\,s \\
@@ -1552,7 +1552,7 @@ $P$ & Total pairs & Correlated pairs & Unstable & F1 $|r|$ & Wall time \\
 \end{tabular}
 \end{center}
 
-The F1 diagnostic maintains $|r| > 0.78$ at $P = 500$. Correlation-based grouping reduces pairs by $55\times$. Full workflow completes in under 2.5 minutes.
+The Z-test maintains $|r| > 0.78$ at $P = 500$. Correlation-based grouping reduces pairs by $55\times$. Full workflow completes in under 2.5 minutes.
 
 \subsection{Proportionality Axiom Validation}
 
@@ -1606,7 +1606,7 @@ In practice, this is not a limitation: the XGBoost default (\texttt{subsample=0.
 \subsection{Financial Case Studies}
 
 \paragraph{German Credit.}
-We demonstrate the full F5$\to$F1$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (F5): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (F1): 5 models confirm instability ($Z_{\text{F1}} = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7 \citep{occ2011sr117}), the DASH ranking provides a defensible explanation.
+We demonstrate the full Screen$\to$Z-test$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (single-model screen): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (Z-test): 5 models confirm instability ($Z = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7 \citep{occ2011sr117}), the DASH ranking provides a defensible explanation.
 
 \paragraph{Taiwan Credit Card Default.}
 Bill-amount features (6 consecutive months, up to $|\rho| = 0.95$) produce persistent instability---29 correlated pairs at $|\rho| > 0.5$, with the highest giving a theoretical ratio of $1/(1{-}0.95^2) \approx 10.3\times$. With $M = 25$, mean flip rate across correlated pairs is 4\%, but one pair (months 5 vs.\ 6, $|\rho| = 0.946$) retains 16\% flip rate, illustrating that very high collinearity requires larger ensembles.
@@ -1714,12 +1714,12 @@ Under Config~A, 5/8 (62\%) datasets exhibit instability; Config~B (deep trees), 
 
 \begin{table}[t]
 \centering
-\caption{F1 and F5 diagnostic generality across 11 datasets (see also Figure~\ref{fig:comprehensive-f1}).}
+\caption{Z-test and screen diagnostic generality across 11 datasets (see also Figure~\ref{fig:comprehensive-f1}).}
 \label{tab:f1-generality}
 \small
 \begin{tabular}{@{}lccccc@{}}
 \toprule
-Dataset & $P$ & Pairs & Unstable & $r(Z_{\text{F1}}, \text{flip})$ & F5 prec. \\
+Dataset & $P$ & Pairs & Unstable & $r(Z, \text{flip})$ & Screen prec. \\
 \midrule
 Breast Cancer & 30 & 435 & 168 & $-0.89$ & 0.94 \\
 California Housing & 8 & 28 & 1 & $-0.99$ & --- \\
@@ -1739,7 +1739,7 @@ Iris (binary) & 4 & 6 & 0 & --- & --- \\
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/comprehensive_f1.pdf}
-\caption{F1 test statistic vs.\ flip rate across four datasets. The negative correlation confirms the diagnostic across domains.}
+\caption{Z-test statistic vs.\ flip rate across four datasets. The negative correlation confirms the diagnostic across domains.}
 \label{fig:comprehensive-f1}
 \end{figure}
 
@@ -1823,7 +1823,7 @@ DASH breakdown & Robust to contaminated ensembles & \texttt{dash\_breakdown\_poi
 \subsection{Implementation}
 \label{sec:quickstart}
 
-\DASH{} requires training $M$ models with different seeds, computing SHAP values for each, and averaging the absolute SHAP values across models. A reference implementation with the full F5$\to$F1$\to$\DASH{} diagnostic workflow is available at \url{https://github.com/DrakeCaraker/dash-shap}.
+\DASH{} requires training $M$ models with different seeds, computing SHAP values for each, and averaging the absolute SHAP values across models. A reference implementation with the full Screen$\to$Z-test$\to$\DASH{} diagnostic workflow is available at \url{https://github.com/DrakeCaraker/dash-shap}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 11. LEAN FORMALIZATION
@@ -2030,7 +2030,7 @@ The prevalence survey uses 20 models per dataset, achieving approximately 60\% p
 The 10\% flip rate threshold defining ``instability'' is a practical convention; at a 5\% threshold the prevalence would be higher, at 15\% lower.
 
 \paragraph{Computational cost and practical deployment.}
-For batch pipelines, training $M{=}25$ models is feasible. For real-time explanations, use the F5 diagnostic to flag unstable pairs. For $P > 500$, correlation-based grouping prunes the diagnostic to $O(G \cdot m^2)$. At $P{=}500$ with 20 models, the full workflow completes in under 2.5 minutes.
+For batch pipelines, training $M{=}25$ models is feasible. For real-time explanations, use the single-model screen to flag unstable pairs. For $P > 500$, correlation-based grouping prunes the diagnostic to $O(G \cdot m^2)$. At $P{=}500$ with 20 models, the full workflow completes in under 2.5 minutes.
 
 \paragraph{Broader implications.}
 In a survey of 77 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and 68\% exhibit attribution instability (93\%, CI: [81\%, 98\%], for $P \geq 20$)---the impossibility is a practical reality. Our theorem proves this is a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii) \citep{euaiact2024}.
@@ -2062,7 +2062,7 @@ The formalization uses 16 axioms total (14 domain-specific + 2 query-complexity)
 \end{itemize}
 This stratification directly addresses the proportionality axiom's empirical variance (CV $\approx 0.35$--$0.66$): the axiom is unnecessary for the impossibility and ratio bound, which depend only on split-count structure.
 
-The following are fully formalized in Lean (305 theorems, 0 \texttt{sorry}, 54 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, and the Pareto dominance of DASH. The F1 diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
+The following are fully formalized in Lean (305 theorems, 0 \texttt{sorry}, 54 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, and the Pareto dominance of DASH. The Z-test characterization, information loss analysis, and multi-dataset validation are empirical.
 
 \paragraph{Approximate faithfulness--stability tradeoff.}
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\pi(j) - \pi(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.

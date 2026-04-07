@@ -19,10 +19,10 @@
 
 **Lead with the PROBLEM in academic channels, the GIFT in practitioner channels:**
 - Academic: "We prove it's impossible..." → theorem → bounds → resolution
-- Practitioner: "Here's how to check (F5)..." → "Here's how to fix it (DASH)..." → "Here's why it's fundamental..."
+- Practitioner: "Here's how to check (single-model screen)..." → "Here's how to fix it (DASH)..." → "Here's why it's fundamental..."
 
 **The "enemy":** The assumption that single-model SHAP rankings are reliable (NOT SHAP itself).
-**The "gift":** F5 diagnostic (1 model) + F1 test (5 models) + DASH (25 models) + M_min formula.
+**The "gift":** single-model screen (1 model) + Z-test (5 models) + DASH (25 models) + M_min formula.
 
 ## Channel Strategy
 
@@ -49,7 +49,7 @@ Implementation: 5 lines of Python.
 - Core impossibility: ZERO axiom dependencies
 - First formally verified impossibility in explainable AI
 
-**5/5:** For practitioners: Run F5 to check your model. One line of code tells you which feature pairs are unreliable.
+**5/5:** For practitioners: Run the screen to check your model. One line of code tells you which feature pairs are unreliable.
 
 For regulators: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
 

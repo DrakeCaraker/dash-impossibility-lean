@@ -62,8 +62,8 @@ $\Phi$ & Standard normal cumulative distribution function \\
 $n_j(f)$ & Split count (utilization count) of feature $j$ in model $f$ \\
 $c(f)$ & Proportionality constant: $\varphi_j(f) = c(f) \cdot n_j(f)$ \\
 $\text{SNR}$ & Signal-to-noise ratio: $\Delta_{jk}/\sigma_{jk}$ \\
-$\text{F1}$ & Multi-model $Z$-test diagnostic (requires $M \geq 5$ models) \\
-$\text{F5}$ & Single-model screening diagnostic (94\% precision) \\
+Z-test & Multi-model $Z$-test diagnostic (requires $M \geq 5$ models) \\
+Screen & Single-model screening diagnostic (94\% precision) \\
 $P$ & Total number of features \\
 $L$ & Number of collinear groups \\
 $m$ & Number of features within a collinear group \\
@@ -131,8 +131,8 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 
 \textbf{The practical toolkit.}
 \begin{enumerate}
-    \item \textbf{Diagnose}: The F5 single-model screen (94\% precision) identifies unstable feature pairs from one model.
-    \item \textbf{Validate}: The F1 multi-model test ($|r| > 0.89$ across 11 datasets) confirms instability with 5 models.
+    \item \textbf{Diagnose}: The single-model screen (94\% precision) identifies unstable feature pairs from one model.
+    \item \textbf{Validate}: The multi-model Z-test ($|r| > 0.89$ across 11 datasets) confirms instability with 5 models.
     \item \textbf{Resolve}: \DASH{} consensus averaging with $M \geq 25$ models reduces flip rate below 1\%.
     \item \textbf{Size}: The ensemble formula $M_{\min} = \lceil 2.71 \cdot \sigma^2/\Delta^2 \rceil$ gives the optimal model count.
 \end{enumerate}
@@ -1000,8 +1000,8 @@ For $\delta = 0.05$ (5\% flip rate), $\Phi^{-1}(0.95) = 1.645$, so $M_{\min} = \
 Training $M{=}25$ models for every explanation is wasteful when most feature pairs are stable. \emph{Progressive \DASH{}} starts with a small ensemble and adaptively increases $M$ only for pairs that remain unstable:
 
 \begin{enumerate}
-    \item \textbf{Screen} ($M_0 = 5$): Train 5 models. Run the F5 diagnostic. If no pairs are flagged, stop.
-    \item \textbf{Confirm} ($M_1 = 10$): For flagged pairs, train 5 more models ($M = 10$ total). Run the F1 $Z$-test. Pairs with $|Z| < 1.96$ are confirmed unstable; report as tied group.
+    \item \textbf{Screen} ($M_0 = 5$): Train 5 models. Run the single-model screen. If no pairs are flagged, stop.
+    \item \textbf{Confirm} ($M_1 = 10$): For flagged pairs, train 5 more models ($M = 10$ total). Run the multi-model Z-test. Pairs with $|Z| < 1.96$ are confirmed unstable; report as tied group.
     \item \textbf{Resolve} ($M_2 = 25$): For pairs where $|Z|$ is borderline ($1.5 < |Z| < 2.5$), train 15 more models ($M = 25$ total). Final classification: stable (distinct ranks) or unstable (tied group).
 \end{enumerate}
 
@@ -1123,7 +1123,7 @@ yields the expected-attribution ranking, which also produces ties
 for symmetric features --- the same as $\mathcal{B}$.
 \end{corollary}
 
-\begin{corollary}[F1 as a corollary]
+\begin{corollary}[Z-test as a corollary]
 The Rashomon Characterization (Theorem~\ref{thm:testable}) describes
 the \emph{boundary between families}: when $Z_{jk} < 1.96$, the
 pair $(j,k)$ is in the regime where Family $\mathcal{A}$ has
@@ -1619,7 +1619,7 @@ Intuitively, each model training provides one ``bit'' of evidence about
 the sign of $\Delta_{jk}$, and when the signal-to-noise ratio
 $\Delta_{jk}/\sigma_{jk}$ is small (the collinear regime), many bits are
 needed.
-The F1 diagnostic with $M{=}5$ is a fast \emph{screen} with limited
+The multi-model Z-test with $M{=}5$ is a fast \emph{screen} with limited
 power, not a certifier; the optimality result applies to the $Z$-test
 run at the information-theoretically optimal sample size.
 \end{remark}
@@ -1703,7 +1703,7 @@ If global rankings are unstable (flip rate $> 10\%$), local rankings
 at individual data points are at least as unstable on average.
 Practitioners who report per-instance SHAP explanations (e.g.,
 ``for this patient, feature X is most important'') face the same
-or worse instability as those reporting global rankings. The F1
+or worse instability as those reporting global rankings. The multi-model Z-test
 diagnostic (computed on global attributions) is therefore a
 conservative screen for local instability as well.
 
@@ -1714,7 +1714,7 @@ conservative screen for local instability as well.
 \section{Diagnostics}
 \label{sec:diagnostics}
 
-\subsection{F1 Multi-Model Diagnostic}
+\subsection{Multi-Model Z-Test Diagnostic}
 \label{sec:f1}
 
 Let $D_j = \varphi_j(f) - \varphi_k(f)$ denote the attribution difference for a single random model $f$. Define $\mu_{jk} = \E[D_j]$ (population attribution gap), $\sigma_{jk}^2 = \Var(D_j)$ (attribution difference variance), and $\gamma_{jk} = \E[|D_j - \mu_{jk}|^3]$ (third absolute central moment, for Berry--Esseen). We require: (A1) models $f_1, \ldots, f_M$ are i.i.d.; (A2) $\sigma_{jk}^2 > 0$ (guaranteed by Theorem~\ref{thm:rashomon-inevitability} for $\rho > 0$); (A3) $\gamma_{jk} < \infty$ (finite third moment---satisfied by any bounded attribution method).
@@ -1762,7 +1762,7 @@ and the relationship between $Z_{jk}$ and the flip rate is:
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/f1_f5_diagnostic.pdf}
-\caption{\textbf{Left:} F1 attribution test statistic vs.\ flip rate on Breast Cancer ($r = -0.89$). Pairs below $z = 1.96$ (dashed) have unreliable rankings. \textbf{Right:} F5 split-frequency diagnostic ($r = -0.78$). Both diagnostics predict which pairs are unstable.}
+\caption{\textbf{Left:} Multi-model Z-test statistic vs.\ flip rate on Breast Cancer ($r = -0.89$). Pairs below $z = 1.96$ (dashed) have unreliable rankings. \textbf{Right:} Single-model screen split-frequency diagnostic ($r = -0.78$). Both diagnostics predict which pairs are unstable.}
 \label{fig:f1-diagnostic}
 \end{figure}
 
@@ -1778,7 +1778,7 @@ The Berry--Esseen bounds provide a completeness guarantee: they bound the worst-
 \paragraph{When the CLT fails.}
 The Berry--Esseen error $\varepsilon_{\text{BE}} \leq C_0 \gamma_{jk}/\sigma_{jk}^3$ can be large when: (i) the attribution distribution is \emph{heavy-tailed} (large $\gamma_{jk}$), as occurs for deep networks with high initialization variance---a few seeds produce outlier attributions; or (ii) the attribution distribution is \emph{bimodal}, as for Lasso where $\varphi_j$ takes value either $c > 0$ (selected) or $0$ (not selected), giving a Bernoulli distribution where the Berry--Esseen bound is tight ($\varepsilon_{\text{BE}} \approx 0.47$) but the exact flip rate $\min(p, 1-p)$ is available analytically. For gradient-boosted trees, the Shapiro--Wilk test on 50 Breast Cancer models gives $p > 0.10$ for 412/435 feature pairs; the Berry--Esseen correction is negligible in practice.
 
-\subsection{F5 Single-Model Screen}
+\subsection{Single-Model Screen}
 \label{sec:f5}
 
 \begin{sloppypar}
@@ -1788,7 +1788,7 @@ and split frequency $\hat{p}_j = \frac{1}{T}\sum_{t=1}^T n_j(t)$.
 \end{sloppypar}
 
 \paragraph{Exchangeability conditions.}
-The theoretical validity of the F5 diagnostic depends on the dependence structure of the indicators $\{n_j(t)\}_{t=1}^T$:
+The theoretical validity of the single-model screen depends on the dependence structure of the indicators $\{n_j(t)\}_{t=1}^T$:
 
 \begin{lemma}[Exact exchangeability under sub-sampling]
 \label{lem:exchange-subsample}
@@ -1839,7 +1839,7 @@ Under the exchangeability conditions above (sub-sampling, or no sub-sampling wit
 
 \textbf{Part I (Null distribution).} Under $H_0: p_j = p_k$ (equal split frequencies, implied by DGP symmetry), $Z^{\text{split}}_{jk}$ is asymptotically $N(0,1)$ as $T_{\text{eff}} \to \infty$.
 
-\textbf{Part II (Connection to attributions).} Under the proportionality axiom ($\varphi_j = c \cdot n_j$), $p_j = p_k$ iff $\E[\varphi_j] = \E[\varphi_k]$. The F5 test is therefore a proxy for the F1 test (Theorem~\ref{thm:testable}), computable from a single model.
+\textbf{Part II (Connection to attributions).} Under the proportionality axiom ($\varphi_j = c \cdot n_j$), $p_j = p_k$ iff $\E[\varphi_j] = \E[\varphi_k]$. The single-model screen is therefore a proxy for the multi-model Z-test (Theorem~\ref{thm:testable}), computable from a single model.
 
 \textbf{Part III (Power).} Under the alternative $p_j \neq p_k$, the power at level $\alpha$ is:
 \[
@@ -1847,10 +1847,10 @@ Under the exchangeability conditions above (sub-sampling, or no sub-sampling wit
 \]
 \end{theorem}
 
-\paragraph{F5 screening accuracy.}
-On the Breast Cancer dataset (435 pairs, threshold: flip rate $> 0.1$ defines ``truly unstable''): F5 flags 49 pairs with \textbf{94\% precision} (46 true positives, 3 false positives) and 27\% recall. F1 (the full test) flags 47 pairs with \textbf{100\% precision} (zero false positives). Both diagnostics are conservative: they rarely flag stable pairs but miss moderate-instability pairs. For production use, the high precision is the key property---a flagged pair is almost certainly unstable.
+\paragraph{Screen accuracy.}
+On the Breast Cancer dataset (435 pairs, threshold: flip rate $> 0.1$ defines ``truly unstable''): the screen flags 49 pairs with \textbf{94\% precision} (46 true positives, 3 false positives) and 27\% recall. The Z-test (the full test) flags 47 pairs with \textbf{100\% precision} (zero false positives). Both diagnostics are conservative: they rarely flag stable pairs but miss moderate-instability pairs. For production use, the high precision is the key property---a flagged pair is almost certainly unstable.
 
-F5 precision is 94--100\% on small/clean datasets (Breast Cancer, Wine, Heart Disease) where split counts are reliable, but drops to 48--67\% on high-dimensional datasets (Ames, Communities) where split counts are sparse. This confirms F5 as a conservative screening tool that should be supplemented by the full F1 test for high-dimensional settings.
+Screen precision is 94--100\% on small/clean datasets (Breast Cancer, Wine, Heart Disease) where split counts are reliable, but drops to 48--67\% on high-dimensional datasets (Ames, Communities) where split counts are sparse. This confirms the screen as a conservative screening tool that should be supplemented by the full Z-test for high-dimensional settings.
 
 \paragraph{Sub-sampling requirement.}
 The theoretical guarantee (exact exchangeability,
@@ -1899,9 +1899,9 @@ $[3.0, \infty)$ & 113 & 0.000 & 0.000 & Exact \\
 
 \begin{enumerate}
     \item[\textbf{Step 0.}] \textbf{Identify correlated groups.} Compute the $P \times P$ absolute correlation matrix. Group features with $|\rho_{jk}| > 0.5$.
-    \item[\textbf{Step 1.}] Train one model. Compute $Z^{\text{split}}_{jk}$ for all pairs in correlated groups (F5 screen). Cost: $O(P^2 T)$.
+    \item[\textbf{Step 1.}] Train one model. Compute $Z^{\text{split}}_{jk}$ for all pairs in correlated groups (single-model screen). Cost: $O(P^2 T)$.
     \item[\textbf{Step 2.}] If $Z^{\text{split}}_{jk} < 1.96$ for any pair: flag as potentially unstable.
-    \item[\textbf{Step 3.}] For flagged pairs: train $M = 5$ models, compute $Z_{jk}$ (F1 test). If $Z_{jk} < 1.96$: use \DASH{} with $M \geq 25$.
+    \item[\textbf{Step 3.}] For flagged pairs: train $M = 5$ models, compute $Z_{jk}$ (Z-test). If $Z_{jk} < 1.96$: use \DASH{} with $M \geq 25$.
     \item[\textbf{Step 4.}] If no pairs are flagged: single-model SHAP is reliable.
 \end{enumerate}
 
@@ -1924,7 +1924,7 @@ shap_vals = np.array([
 # DASH consensus = mean across models
 dash = np.mean(shap_vals, axis=0)
 
-# F1 diagnostic: Z-test for each feature pair
+# Z-test diagnostic: Z-test for each feature pair
 for j in range(P):
     for k in range(j+1, P):
         diff = shap_vals[:, j] - shap_vals[:, k]
@@ -1935,13 +1935,13 @@ for j in range(P):
 
 \paragraph{Production deployment guide.}
 \begin{itemize}
-    \item \textbf{If subsample $< 1.0$ (stochastic, recommended):} Run F5 (single-model screen) $\to$ F1 (5-model validation) $\to$ \DASH{} ($M \geq 25$) for flagged pairs.
-    \item \textbf{If subsample $= 1.0$ (deterministic):} A single pipeline version produces reproducible rankings. However, \emph{any} change to the pipeline (data refresh, feature engineering, hyperparameter update) produces a new model that may rank features differently. Run F1 validation whenever the pipeline changes. For ongoing model risk management, maintain an ensemble and report \DASH{} consensus.
+    \item \textbf{If subsample $< 1.0$ (stochastic, recommended):} Run the single-model screen $\to$ Z-test (5-model validation) $\to$ \DASH{} ($M \geq 25$) for flagged pairs.
+    \item \textbf{If subsample $= 1.0$ (deterministic):} A single pipeline version produces reproducible rankings. However, \emph{any} change to the pipeline (data refresh, feature engineering, hyperparameter update) produces a new model that may rank features differently. Run Z-test validation whenever the pipeline changes. For ongoing model risk management, maintain an ensemble and report \DASH{} consensus.
     \item \textbf{Minimum ensemble size:} $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$ for 5\% between-group flip rate. Estimate $\sigma$ and $\Delta$ from a pilot run of 5 models.
 \end{itemize}
 
 \paragraph{Complementary diagnostics.}
-The F5 and F1 diagnostics developed here are formal hypothesis tests with controlled type~I error. The companion first-mover bias paper introduces complementary \emph{exploratory} diagnostics: FSI (Feature Stability Index, a per-feature coefficient of variation across models) and the IS~Plot (Importance-Stability scatter plot). The recommended combined workflow is: F5 (screen, 1 model) $\to$ F1 (confirm, 5 models) $\to$ \DASH{} (resolve, $M \geq 25$) $\to$ FSI/IS~Plot (audit).
+The single-model screen and multi-model Z-test developed here are formal hypothesis tests with controlled type~I error. The companion first-mover bias paper introduces complementary \emph{exploratory} diagnostics: FSI (Feature Stability Index, a per-feature coefficient of variation across models) and the IS~Plot (Importance-Stability scatter plot). The recommended combined workflow is: Screen (1 model) $\to$ Z-test (confirm, 5 models) $\to$ \DASH{} (resolve, $M \geq 25$) $\to$ FSI/IS~Plot (audit).
 
 \paragraph{Recommended instability disclosure.}
 When reporting SHAP rankings for a model with collinear features: ``Features [X, Y, Z] form a correlated group ($|\rho| > [\text{threshold}]$). Their relative ranking is unstable across training seeds (estimated flip rate: [X]\%). They should be interpreted as interchangeable contributors. The between-group ranking is stable ($Z > 1.96$).'' For regulatory reporting (EU AI Act, SR~11-7 \cite{occ2011sr117}), the \DASH{} consensus ranking provides a defensible explanation.
@@ -2083,20 +2083,20 @@ Metric & XGBoost & LightGBM & CatBoost \\
 \midrule
 Unstable pairs (flip $> 10\%$) & 162 & 183 & 160 \\
 Max flip rate & 0.500 & 0.500 & 0.500 \\
-F1 correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
+Z-test correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500 (the theoretical ceiling), and F1 diagnostic correlation $|r| > 0.89$ in all three. The instability is a property of sequential boosting under collinearity, not of any specific implementation.
+The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500 (the theoretical ceiling), and Z-test diagnostic correlation $|r| > 0.89$ in all three. The instability is a property of sequential boosting under collinearity, not of any specific implementation.
 
-\paragraph{F5 caveat.}
+\paragraph{Screen caveat.}
 \begin{sloppypar}
-The F5 split-frequency diagnostic requires access to per-tree split counts.
+The single-model screen requires access to per-tree split counts.
 CatBoost's \texttt{get\_feature\_importance()} returns gain-based importance
 (not raw split counts), producing a different $Z$-statistic distribution that
-does not transfer the XGBoost-calibrated threshold. For CatBoost, the F1
-multi-model diagnostic ($r = -0.892$) is recommended instead. LightGBM's feature
+does not transfer the XGBoost-calibrated threshold. For CatBoost, the multi-model
+Z-test ($r = -0.892$) is recommended instead. LightGBM's feature
 importance is split-count based and transfers with modest precision reduction.
 \end{sloppypar}
 
@@ -2110,12 +2110,12 @@ Metric & TreeSHAP & Permutation Importance \\
 \midrule
 Unstable pairs (flip $>10\%$) & 180 (41\%) & 396 (91\%) \\
 Max flip rate & 0.500 & 0.500 \\
-F1 correlation $r(Z, \text{flip})$ & $-0.895$ & $-0.927$ \\
+Z-test correlation $r(Z, \text{flip})$ & $-0.895$ & $-0.927$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Permutation importance shows \emph{more} instability than TreeSHAP (91\% vs.\ 41\%), because permutation-based scores have higher variance across seeds than SHAP values. Both methods hit the theoretical maximum flip rate (0.500). The F1 diagnostic achieves $|r| > 0.89$ for both, confirming it is method-agnostic.
+Permutation importance shows \emph{more} instability than TreeSHAP (91\% vs.\ 41\%), because permutation-based scores have higher variance across seeds than SHAP values. Both methods hit the theoretical maximum flip rate (0.500). The multi-model Z-test achieves $|r| > 0.89$ for both, confirming it is method-agnostic.
 
 The cross-method correlation of flip rates is $r = 0.46$ ($p < 10^{-23}$): the \emph{same pairs} tend to be unstable under both methods, confirming the instability is driven by feature collinearity, not by the attribution algorithm. Of the 180 SHAP-unstable pairs, 175 (97\%) are also unstable under permutation importance. TreeSHAP shows lower instability (41\% vs 91\%) likely because its game-theoretic averaging over feature coalitions provides implicit regularization, reducing within-model attribution variance compared to permutation importance's direct shuffling.
 
@@ -2130,7 +2130,7 @@ Metric & Neural Network & XGBoost (paper) \\
 Unstable pairs (flip $> 10\%$) & 380/435 (87\%) & 162/435 (37\%) \\
 Max flip rate & 0.500 & 0.500 \\
 Key pair flip (worst perim.\ vs.\ area) & 0.400 & 0.480 \\
-F1 correlation $r(Z, \text{flip})$ & $-0.871$ & $-0.898$ \\
+Z-test correlation $r(Z, \text{flip})$ & $-0.871$ & $-0.898$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -2258,7 +2258,7 @@ averaging structure, not by the efficiency axiom.
 \small
 \begin{tabular}{@{}rrrrrr@{}}
 \toprule
-$P$ & Total pairs & Correlated pairs & Unstable & F1 $|r|$ & Wall time \\
+$P$ & Total pairs & Correlated pairs & Unstable & Z-test $|r|$ & Wall time \\
 \midrule
 100 & 4,950 & 450 & 305 & 0.846 & 33\,s \\
 200 & 19,900 & 900 & 641 & 0.788 & 64\,s \\
@@ -2267,7 +2267,7 @@ $P$ & Total pairs & Correlated pairs & Unstable & F1 $|r|$ & Wall time \\
 \end{tabular}
 \end{center}
 
-The F1 diagnostic maintains $|r| > 0.78$ at $P = 500$. Correlation-based grouping reduces pairs by $55\times$. Full workflow completes in under 2.5 minutes.
+The multi-model Z-test maintains $|r| > 0.78$ at $P = 500$. Correlation-based grouping reduces pairs by $55\times$. Full workflow completes in under 2.5 minutes.
 
 \subsection{Proportionality Axiom Validation}
 
@@ -2323,7 +2323,7 @@ hyperparameter sweeps.
 \subsection{Financial Case Studies}
 
 \paragraph{German Credit.}
-We demonstrate the full F5$\to$F1$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (F5): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (F1): 5 models confirm instability ($Z_{\text{F1}} = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7 \cite{occ2011sr117}), the DASH ranking provides a defensible explanation.
+We demonstrate the full Screen$\to$Z-test$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (screen): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (Z-test): 5 models confirm instability ($Z = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7 \cite{occ2011sr117}), the DASH ranking provides a defensible explanation.
 
 \paragraph{Taiwan Credit Card Default.}
 To validate the impossibility on data with genuine high collinearity
@@ -2339,7 +2339,7 @@ $1/(1{-}0.95^2) \approx 10.3\times$).
 \emph{Step 0.} 29 correlated pairs identified at $|\rho| > 0.5$
 (no threshold lowering needed).
 
-\emph{Step 1 (F5).} A single model flags 4 of the 10 tracked pairs
+\emph{Step 1 (screen).} A single model flags 4 of the 10 tracked pairs
 as potentially unstable ($|Z^{\text{split}}| > 1.96$).
 
 \emph{Step 3 (DASH).} With $M = 25$ models, the mean flip rate
@@ -2401,7 +2401,7 @@ the impossibility theorem predicts instability requires \emph{both}
 collinearity AND similar true importance. Lending Club features are
 correlated but not similarly important (e.g., person\_age contributes
 $3\times$ more than credit history length), so no instability occurs.
-The F5$\to$F1$\to$\DASH{} pipeline correctly identifies this as a
+The Screen$\to$Z-test$\to$\DASH{} pipeline correctly identifies this as a
 stable setting, recommending no intervention.
 
 \emph{Implication.}
@@ -2570,12 +2570,12 @@ Under Config~A (original), 5/8 (62\%) datasets exhibit instability, consistent w
 
 \begin{table}[t]
 \centering
-\caption{F1 and F5 diagnostic generality across 11 datasets.}
+\caption{Multi-model Z-test and single-model screen diagnostic generality across 11 datasets.}
 \label{tab:f1-generality}
 \small
 \begin{tabular}{@{}lccccc@{}}
 \toprule
-Dataset & $P$ & Pairs & Unstable & $r(Z_{\text{F1}}, \text{flip})$ & F5 prec. \\
+Dataset & $P$ & Pairs & Unstable & $r(Z, \text{flip})$ & Screen prec. \\
 \midrule
 Breast Cancer & 30 & 435 & 168 & $-0.89$ & 0.94 \\
 California Housing & 8 & 28 & 1 & $-0.99$ & --- \\
@@ -2594,16 +2594,16 @@ Iris (binary) & 4 & 6 & 0 & --- & --- \\
 
 \paragraph{Interpretation.}
 \begin{sloppypar}
-The F1 diagnostic achieves $|r| > 0.8$ on 9/10 datasets with unstable pairs (all
+The multi-model Z-test achieves $|r| > 0.8$ on 9/10 datasets with unstable pairs (all
 except Digits). The weaker correlation on Digits ($r = -0.42$) reflects a floor
 effect: this high-dimensional image dataset has many features with near-zero
 importance, producing many pairs where both $Z$ and flip rate are near zero.
 Restricting to pairs with $Z < 5$ (the diagnostically interesting range) would
-improve this correlation. F5 precision is 94--100\% on small/clean datasets (Breast
+improve this correlation. Screen precision is 94--100\% on small/clean datasets (Breast
 Cancer, Wine, Heart Disease) where split counts are reliable, but drops to 48--67\%
 on high-dimensional datasets (Ames, Communities) where split counts are sparse.
-This confirms F5 as a conservative \emph{screening} tool that works well for
-moderate-$P$ datasets but should be supplemented by the full F1 test for
+This confirms the screen as a conservative \emph{screening} tool that works well for
+moderate-$P$ datasets but should be supplemented by the full Z-test for
 high-dimensional settings. All datasets use identical XGBoost hyperparameters
 ($T{=}100$, depth${=}6$, $\eta{=}0.1$); absolute flip rates are therefore not
 directly comparable across datasets of different sizes and dimensionalities.
@@ -2612,7 +2612,7 @@ directly comparable across datasets of different sizes and dimensionalities.
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/comprehensive_f1.pdf}
-\caption{F1 test statistic vs.\ flip rate across four datasets (Breast Cancer, Ames, Digits, Adult). The negative correlation confirms the diagnostic across domains: clinical, real estate, image, and census.}
+\caption{Multi-model Z-test statistic vs.\ flip rate across four datasets (Breast Cancer, Ames, Digits, Adult). The negative correlation confirms the diagnostic across domains: clinical, real estate, image, and census.}
 \label{fig:comprehensive-f1}
 \end{figure}
 
@@ -2943,7 +2943,7 @@ The empirical validation focuses on gradient boosting and neural networks; the L
 The 10\% flip rate threshold defining ``instability'' is a practical convention; at a 5\% threshold the prevalence would be higher, at 15\% lower.
 
 \paragraph{Computational cost and practical deployment.}
-For batch pipelines, training $M{=}25$ models is feasible. For real-time explanations, use the F5 diagnostic to flag unstable pairs. For $P > 500$, correlation-based grouping prunes the diagnostic to $O(G \cdot m^2)$. At $P{=}500$ with 20 models, the full workflow completes in under 2.5 minutes.
+For batch pipelines, training $M{=}25$ models is feasible. For real-time explanations, use the single-model screen to flag unstable pairs. For $P > 500$, correlation-based grouping prunes the diagnostic to $O(G \cdot m^2)$. At $P{=}500$ with 20 models, the full workflow completes in under 2.5 minutes.
 
 \paragraph{Broader implications.}
 \begin{sloppypar}
@@ -2960,7 +2960,7 @@ are provably unreliable under collinearity.
 \end{sloppypar}
 
 \paragraph{Distinction from classical multicollinearity.}
-The classical multicollinearity concern is about estimation variance ($\Var(\hat\beta_j - \hat\beta_k) \to \infty$ as $\rho \to 1$). Our result is qualitatively different: it concerns \emph{ranking impossibility}, not estimation imprecision. Even with infinite data and perfect estimates, the ranking of symmetric features is a coin flip---because different models in the Rashomon set rank them in opposite orders. The VIF diagnostic detects coefficient instability; our F5/F1 diagnostics detect \emph{attribution ranking} instability, which persists even when coefficients are well-estimated (e.g., in tree ensembles that do not estimate coefficients at all).
+The classical multicollinearity concern is about estimation variance ($\Var(\hat\beta_j - \hat\beta_k) \to \infty$ as $\rho \to 1$). Our result is qualitatively different: it concerns \emph{ranking impossibility}, not estimation imprecision. Even with infinite data and perfect estimates, the ranking of symmetric features is a coin flip---because different models in the Rashomon set rank them in opposite orders. The VIF diagnostic detects coefficient instability; our screen and Z-test diagnostics detect \emph{attribution ranking} instability, which persists even when coefficients are well-estimated (e.g., in tree ensembles that do not estimate coefficients at all).
 
 \paragraph{Rashomon set vs.\ deployed model.}
 The impossibility characterizes the Rashomon set, not a single deployed model. A fixed pipeline with a fixed seed produces a deterministic, reproducible ranking. The instability arises upon retraining, auditing, or model comparison---all routine in regulated settings.
@@ -3006,7 +3006,7 @@ constant.
 \end{sloppypar}
 This stratification directly addresses the proportionality axiom's empirical variance (CV $\approx 0.35$--$0.66$): the axiom is unnecessary for the impossibility and ratio bound, which depend only on split-count structure.
 
-The following are fully formalized in Lean (305 theorems, 0 \texttt{sorry}, 54 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, and the Pareto dominance of DASH. The F1 diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
+The following are fully formalized in Lean (305 theorems, 0 \texttt{sorry}, 54 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, and the Pareto dominance of DASH. The Z-test diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
 
 \paragraph{Approximate faithfulness--stability tradeoff.}
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\sigma(j) - \sigma(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.
@@ -3146,14 +3146,14 @@ Metric & XGBoost & LightGBM & CatBoost \\
 \midrule
 Unstable pairs (flip $> 10\%$) & 162 & 183 & 160 \\
 Max flip rate & 0.500 & 0.500 & 0.500 \\
-F1 correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
-F5 precision & 0.26 & 0.20 & --- \\
+Z-test correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
+Screen precision & 0.26 & 0.20 & --- \\
 \DASH{} max flip ($M{=}25$) & 0.48 & 0.48 & 0.48 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-CatBoost's \texttt{get\_feature\_importance()} returns gain-based importance (not raw split counts), producing a different $Z$-statistic distribution. For CatBoost, the F1 multi-model diagnostic ($r = -0.892$) is recommended. LightGBM's feature importance is split-count based and transfers with modest precision reduction.
+CatBoost's \texttt{get\_feature\_importance()} returns gain-based importance (not raw split counts), producing a different $Z$-statistic distribution. For CatBoost, the multi-model Z-test ($r = -0.892$) is recommended. LightGBM's feature importance is split-count based and transfers with modest precision reduction.
 
 \subsection{Prevalence Survey: Statistical Power Analysis}
 
@@ -3614,18 +3614,18 @@ Art.~13(3)(b)(ii) further requires providers to document:
 \end{quote}
 The impossibility theorem establishes that attribution instability under collinearity is a \emph{known} circumstance---not a speculative risk but a mathematical certainty. Any provider deploying a model with correlated features ($|\rho| > 0$) who does not disclose this instability is in potential non-compliance.
 
-\textbf{Recommended action (providers):} Run the F5 single-model screen on all deployed models. For any flagged feature pairs, include an instability disclosure in the technical documentation required by Art.~11.
+\textbf{Recommended action (providers):} Run the single-model screen on all deployed models. For any flagged feature pairs, include an instability disclosure in the technical documentation required by Art.~11.
 
 \subsection*{Art.~16: Provider Obligations}
 
 Art.~16 requires providers to ensure their AI systems comply with the requirements of Chapter~2 throughout the system's lifecycle. Since attribution instability is a structural property of the model class (not of a specific training run), providers must:
 \begin{enumerate}
-    \item Implement systematic instability testing (F5/F1 diagnostics) as part of the quality management system (Art.~17).
+    \item Implement systematic instability testing (screen/Z-test diagnostics) as part of the quality management system (Art.~17).
     \item Update technical documentation whenever the feature correlation structure changes (e.g., new data sources).
     \item Provide deployers with clear guidance on which feature rankings are reliable and which are unstable.
 \end{enumerate}
 
-\textbf{Recommended action (providers):} Integrate the F1 multi-model diagnostic into the CI/CD pipeline. Document all feature pairs with $|\rho| > 0.5$ as potentially unstable.
+\textbf{Recommended action (providers):} Integrate the multi-model Z-test into the CI/CD pipeline. Document all feature pairs with $|\rho| > 0.5$ as potentially unstable.
 
 \subsection*{Art.~26: Deployer Obligations}
 
@@ -3665,7 +3665,7 @@ The impossibility applies to all AI systems using feature attribution for explai
 
 \paragraph{Summary of recommended actions by actor.}
 \begin{itemize}
-    \item \textbf{Providers:} Run F5 screening on all models with correlated features; disclose instability for flagged pairs; integrate F1 diagnostics into CI/CD; document all pairs with $|\rho| > 0.5$.
+    \item \textbf{Providers:} Run the single-model screen on all models with correlated features; disclose instability for flagged pairs; integrate Z-test diagnostics into CI/CD; document all pairs with $|\rho| > 0.5$.
     \item \textbf{Deployers:} Require \DASH{} consensus or equivalent ensemble method for regulatory reporting; do not rely on single-model rankings when instability is disclosed.
     \item \textbf{Importers:} Include attribution stability in conformity assessment checklists; reject systems without instability documentation.
     \item \textbf{Market surveillance authorities:} Update technical standards to require multi-model attribution testing; treat undisclosed attribution instability as a potential non-conformity under Art.~13.

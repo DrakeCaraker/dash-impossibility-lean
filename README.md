@@ -262,7 +262,7 @@ dash-impossibility-lean/
 │   ├── scripts/                          # 42 experiment scripts + utilities
 │   │   ├── requirements.txt              # Pinned Python dependencies
 │   │   ├── axiom_consistency_model.py    # Constructs Fin 4 model, 16/16 axioms PASS
-│   │   ├── f1_f5_validation.py           # F1 multi-model + F5 single-model diagnostics
+│   │   ├── f1_f5_validation.py           # multi-model Z-test + F5 single-model diagnostics
 │   │   ├── monte_carlo_flip_rate.py      # 1K-trial Monte Carlo flip rate validation
 │   │   ├── prevalence_survey.py          # 77-dataset prevalence (68% unstable)
 │   │   ├── prevalence_survey_openml.py   # OpenML prevalence survey
@@ -432,7 +432,7 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 
 ## Who Is This For?
 
-**Data scientist using SHAP.** Your feature rankings for correlated features are unreliable. The instability is not noise or a software bug — it is a provable consequence of how gradient boosting interacts with collinearity. The fix is DASH: average SHAP values from multiple independently trained models. See the [dash-shap](https://github.com/DrakeCaraker/dash-shap) companion package and the [stability API in PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255) for the F5 (single-model screen) to F1 (multi-model validation) to DASH (ensemble consensus) workflow.
+**Data scientist using SHAP.** Your feature rankings for correlated features are unreliable. The instability is not noise or a software bug — it is a provable consequence of how gradient boosting interacts with collinearity. The fix is DASH: average SHAP values from multiple independently trained models. See the [dash-shap](https://github.com/DrakeCaraker/dash-shap) companion package and the [stability API in PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255) for the single-model screen to Z-test (multi-model validation) to DASH (ensemble consensus) workflow.
 
 **Researcher in XAI or ML theory.** This is a formally verified impossibility theorem with 305 Lean proofs and 0 sorry. The Symmetric Bayes Dichotomy (Section 6 of the definitive paper) is a general proof technique from invariant decision theory that applies to any symmetric decision problem — we demonstrate it on feature attribution, model selection, and causal discovery under Markov equivalence. The Design Space Theorem characterizes the full achievable set.
 

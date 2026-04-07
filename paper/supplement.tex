@@ -738,7 +738,7 @@ stability certification.
 The overestimation at low SNR is the ideal property for a diagnostic:
 the $\Phi(-\text{SNR})$ formula never gives a false ``stable'' verdict
 (it may falsely flag stable pairs as unstable, but never the reverse).
-For practitioners, this means the F1 diagnostic ($Z_{jk}$ threshold)
+For practitioners, this means the multi-model Z-test ($Z_{jk}$ threshold)
 is a \emph{conservative} screen: if it says a pair is stable, it is.
 Restricted to the diagnostic operating range ($\text{SNR} \geq 0.5$,
 $n = 225$ pairs on Breast Cancer), $R^2 = 0.94$ --- the formula is
@@ -962,7 +962,7 @@ demonstrating the practical recommendation of \S5: train $M \geq 25$
 models, average SHAP values, and diagnose instability via ranking flips.
 The full \DASH{} pipeline (population generation, $\varepsilon$-filtering,
 deduplication) is available in the companion repository.
-The code supplement also includes the F5$\to$F1$\to$DASH diagnostic
+The code supplement also includes the Screen$\to$Z-test$\to$DASH diagnostic
 pipeline (\texttt{f1\_f5\_validation.py}), the cross-implementation
 validation (\texttt{cross\_implementation\_validation.py}), the SNR
 calibration (\texttt{snr\_calibration.py}), and all figure generation
@@ -991,8 +991,8 @@ Metric & XGBoost & LightGBM & CatBoost \\
 \midrule
 Unstable pairs (flip $> 10\%$) & 162 & 183 & 160 \\
 Max flip rate & 0.500 & 0.500 & 0.500 \\
-F1 correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
-F5 precision & 0.26 & 0.20 & --- \\
+Z-test correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
+Screen precision & 0.26 & 0.20 & --- \\
 \DASH{} max flip ($M{=}25$) & 0.48 & 0.48 & 0.48 \\
 \bottomrule
 \end{tabular}
@@ -1001,26 +1001,26 @@ F5 precision & 0.26 & 0.20 & --- \\
 \paragraph{Key findings.}
 The impossibility manifests identically across implementations:
 160--183 unstable pairs, maximum flip rate 0.500 (the theoretical
-ceiling), and F1 diagnostic correlation $|r| > 0.89$ in all three.
+ceiling), and Z-test correlation $|r| > 0.89$ in all three.
 The instability is a property of sequential boosting under
 collinearity, not of any specific implementation.
 
-\paragraph{F5 caveat.}
-The F5 split-frequency diagnostic requires access to per-tree split
+\paragraph{Screen caveat.}
+The single-model screen requires access to per-tree split
 counts. CatBoost's \texttt{get\_feature\_importance()} returns
 gain-based importance (not raw split counts), producing a different
 $Z$-statistic distribution that does not transfer the XGBoost-calibrated
-threshold. For CatBoost, the F1 multi-model diagnostic ($r = -0.892$)
+threshold. For CatBoost, the multi-model Z-test ($r = -0.892$)
 is recommended instead. LightGBM's feature importance is split-count
 based and transfers with modest precision reduction (0.20 vs.\ 0.26).
-Note: the F5 precision values in Table~\ref{tab:cross-impl} use overall
+Note: the screen precision values in Table~\ref{tab:cross-impl} use overall
 feature importance values (\texttt{feature\_importances\_}), not the
-per-tree split indicators described in \S F5. The per-tree F5 diagnostic
+per-tree split indicators described in \S F5. The per-tree single-model screen
 (94\% precision on XGBoost) requires access to individual tree structures,
 which is available in all three implementations but requires
 implementation-specific extraction code. The values in
 Table~\ref{tab:cross-impl} represent a coarser approximation; the full
-per-tree F5 is recommended for production use.
+per-tree screen is recommended for production use.
 The reference implementation of the full \DASH{} pipeline is available
 at \url{https://github.com/DrakeCaraker/dash-shap}.
 
@@ -1064,14 +1064,14 @@ that traverses the Rashomon set produces the same phenomenon.
 \paragraph{Production deployment guide.}
 \begin{itemize}
   \item \textbf{If subsample $< 1.0$ (stochastic, recommended):}
-    Run F5 (single-model screen) $\to$ F1 (5-model validation) $\to$
+    Run the single-model screen $\to$ the Z-test (5-model validation) $\to$
     \DASH{} ($M \geq 25$) for flagged pairs. This is the standard
     workflow described in \S F5.
   \item \textbf{If subsample $= 1.0$ (deterministic):} A single
     pipeline version produces reproducible SHAP rankings. However,
     \emph{any} change to the pipeline (data refresh, feature
     engineering, hyperparameter update, library version upgrade)
-    produces a new model that may rank features differently. Run F1
+    produces a new model that may rank features differently. Run Z-test
     validation whenever the pipeline changes. For ongoing model risk
     management, maintain an ensemble of $M$ pipeline versions and
     report \DASH{} consensus.
@@ -1089,7 +1089,7 @@ Their relative ranking is unstable across training seeds
 (estimated flip rate: [X]\%).
 They should be interpreted as interchangeable contributors.
 The between-group ranking (these features vs.\ other features) is stable
-(F1 diagnostic: $Z > 1.96$).''
+(Z-test: $Z > 1.96$).''
 
 \paragraph{Group-level reporting.}
 When reporting feature importance for a model with correlated groups,
@@ -1120,7 +1120,7 @@ Metric & TreeSHAP & Permutation Importance \\
 \midrule
 Unstable pairs (flip $>10\%$) & 180 (41\%) & 396 (91\%) \\
 Max flip rate & 0.500 & 0.500 \\
-F1 correlation $r(Z, \text{flip})$ & $-0.895$ & $-0.927$ \\
+Z-test correlation $r(Z, \text{flip})$ & $-0.895$ & $-0.927$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1128,7 +1128,7 @@ F1 correlation $r(Z, \text{flip})$ & $-0.895$ & $-0.927$ \\
 Permutation importance shows \emph{more} instability than TreeSHAP
 (91\% vs.\ 41\% of pairs), because permutation-based scores have
 higher variance across seeds than SHAP values. Both methods hit the
-theoretical maximum flip rate (0.500). The F1 diagnostic achieves
+theoretical maximum flip rate (0.500). The Z-test achieves
 $|r| > 0.89$ for both, confirming the diagnostic is method-agnostic.
 
 The cross-method correlation of flip rates is $r = 0.46$
@@ -1166,7 +1166,7 @@ Metric & Neural Network & XGBoost (paper) \\
 Unstable pairs (flip $> 10\%$) & 380/435 (87\%) & 162/435 (37\%) \\
 Max flip rate & 0.500 & 0.500 \\
 Key pair flip (worst perim.\ vs.\ area) & 0.400 & 0.480 \\
-F1 correlation $r(Z, \text{flip})$ & $-0.871$ & $-0.898$ \\
+Z-test correlation $r(Z, \text{flip})$ & $-0.871$ & $-0.898$ \\
 Cross-method flip correlation & \multicolumn{2}{c}{$r = 0.206$} \\
 \bottomrule
 \end{tabular}
@@ -1179,7 +1179,7 @@ maximum flip rate reaches the theoretical ceiling of 0.500. The key
 correlated pair (worst perimeter vs.\ worst area, $|\rho| = 0.978$)
 flips 40\% of the time, near the 50\% maximum.
 
-The F1 diagnostic transfers to neural networks: $r(Z, \text{flip}) = -0.871$,
+The Z-test transfers to neural networks: $r(Z, \text{flip}) = -0.871$,
 comparable to the XGBoost value ($r = -0.898$). This confirms the diagnostic
 is model-agnostic---it operates on attribution arrays, not tree structures.
 
@@ -1208,7 +1208,7 @@ than enumerating all $2^P$ subsets). The reported flip rates include
 both genuine model instability and KernelSHAP sampling noise. A
 fixed-approximation design (same SHAP samples across models) would
 isolate the model effect; we leave this refinement to future work.
-The high F1 diagnostic correlation ($|r| = 0.871$) suggests the
+The high Z-test correlation ($|r| = 0.871$) suggests the
 genuine instability signal dominates the approximation noise.
 
 \subsection{KernelSHAP Noise vs.\ Model Instability}
@@ -1971,7 +1971,7 @@ Pinsker's inequality in place of the chi-squared bound.
 
 \begin{corollary}[Near-optimality of the $Z$-test diagnostic]
 \label{cor:z-test-optimal}
-The $Z$-test (equivalently, the F1 diagnostic with optimal $M$) detects a
+The $Z$-test (equivalently, the multi-model Z-test with optimal $M$) detects a
 gap $\Delta_0$ with error $\leq 1/3$ using
 $M = O(\sigma_{jk}^2 / \Delta_0^2 \cdot \log(1/\alpha))$ model trainings,
 where $\alpha$ is the significance level.
@@ -1999,7 +1999,7 @@ Intuitively, each model training provides one ``bit'' of evidence about
 the sign of $\Delta_{jk}$, and when the signal-to-noise ratio
 $\Delta_{jk}/\sigma_{jk}$ is small (the collinear regime), many bits are
 needed.
-The F1 diagnostic with $M{=}5$ is a fast \emph{screen} with limited
+The multi-model Z-test with $M{=}5$ is a fast \emph{screen} with limited
 power, not a certifier; the optimality result applies to the $Z$-test
 run at the information-theoretically optimal sample size.
 \end{remark}
@@ -2242,9 +2242,9 @@ attribution instability patterns.
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/f1_f5_diagnostic.pdf}
-\caption{\textbf{Left:} F1 attribution test statistic vs.\ flip rate
+\caption{\textbf{Left:} Z-test statistic vs.\ flip rate
 on Breast Cancer ($r = -0.89$). Pairs below $z = 1.96$ (dashed) have
-unreliable rankings. \textbf{Right:} F5 split-frequency diagnostic
+unreliable rankings. \textbf{Right:} Single-model screen (split-frequency)
 ($r = -0.78$). Both diagnostics predict which pairs are unstable.}
 \label{fig:f1-diagnostic}
 \end{figure}
@@ -2265,7 +2265,7 @@ The split frequency is $\hat{p}_j = \frac{1}{T}\sum_{t=1}^T n_j(t)$.
 
 \subsection{Exchangeability conditions}
 
-The theoretical validity of the F5 diagnostic depends on the
+The theoretical validity of the single-model screen depends on the
 dependence structure of the indicators $\{n_j(t)\}_{t=1}^T$.
 
 \begin{lemma}[Exact exchangeability under sub-sampling]
@@ -2360,7 +2360,7 @@ $N(0,1)$ as $T_{\text{eff}} \to \infty$:
 Under the proportionality axiom ($\varphi_j = c \cdot n_j$),
 the split frequency test is equivalent to the attribution test:
 $p_j = p_k$ iff $\mathbb{E}[\varphi_j] = \mathbb{E}[\varphi_k]$.
-The F5 test is therefore a proxy for the F1 test
+The screen is therefore a proxy for the Z-test
 (Theorem~\ref{thm:testable}), computable from a single model.
 
 \textbf{Part III (Power).}
@@ -2402,13 +2402,13 @@ with $T_{\text{eff}}$ observations per group.
 
 \subsection{Empirical validation}
 
-\paragraph{Comparison to F1.}
-The F1 diagnostic ($Z_{jk}$ from $M$ models, $r = -0.89$) is more
+\paragraph{Comparison to the Z-test.}
+The multi-model Z-test ($Z_{jk}$ from $M$ models, $r = -0.89$) is more
 accurate but requires training $M$ models.
-The F5 diagnostic ($Z^{\text{split}}_{jk}$ from 1 model, $r = -0.78$)
+The single-model screen ($Z^{\text{split}}_{jk}$ from 1 model, $r = -0.78$)
 is cheaper but noisier.
-For production pipelines, F5 serves as a fast screening test; features
-flagged by F5 can then be validated with the full F1 test.
+For production pipelines, the screen serves as a fast screening test; features
+flagged by the screen can then be validated with the full Z-test.
 
 \paragraph{Practitioner algorithm.}
 \begin{enumerate}
@@ -2422,39 +2422,39 @@ flagged by F5 can then be validated with the full F1 test.
     \item[\textbf{Step 2.}] If $Z^{\text{split}}_{jk} < 1.96$ for any pair: flag as
           potentially unstable.
     \item[\textbf{Step 3.}] For flagged pairs: train $M = 5$ models, compute $Z_{jk}$
-          (F1 test). If $Z_{jk} < 1.96$: use \DASH{} with $M \geq 25$.
+          (Z-test). If $Z_{jk} < 1.96$: use \DASH{} with $M \geq 25$.
     \item[\textbf{Step 4.}] If no pairs are flagged: single-model SHAP is reliable.
 \end{enumerate}
 
-\paragraph{F5 screening accuracy.}
+\paragraph{Screen screening accuracy.}
 On the Breast Cancer dataset (435 pairs, threshold: flip rate $> 0.1$
 defines ``truly unstable''):
-F5 flags 49~pairs with \textbf{94\% precision} (46 true positives,
+The screen flags 49~pairs with \textbf{94\% precision} (46 true positives,
 3~false positives) and 27\% recall.
-F1 (the full test) flags 47~pairs with \textbf{100\% precision}
+The Z-test (the full test) flags 47~pairs with \textbf{100\% precision}
 (zero false positives).
 Both diagnostics are conservative: they rarely flag stable pairs but
 miss moderate-instability pairs. For production use, the high precision
 is the key property---a flagged pair is almost certainly unstable.
 
 \paragraph{Multi-dataset generality.}
-Table~\ref{tab:f1-generality} shows the F1 diagnostic across two datasets.
-On Breast Cancer (many near-symmetric features), F1 detects instability
+Table~\ref{tab:f1-generality} shows the Z-test diagnostic across two datasets.
+On Breast Cancer (many near-symmetric features), the Z-test detects instability
 with $r = -0.89$. On California Housing (features have distinct importance),
-F1 correctly predicts stability: zero false alarms out of 28~pairs,
+the Z-test correctly predicts stability: zero false alarms out of 28~pairs,
 with only one mildly unstable pair (MedInc $\leftrightarrow$ Latitude,
 flip rate $0.32$, $Z = 3.4$).
 
 \begin{table}[h]
 \centering
-\caption{F1 and F5 diagnostic generality across 11 datasets. $P$: number of
-features. Unstable: pairs with flip rate $> 0.1$. F5 precision: fraction of
-F5-flagged pairs that are truly unstable.}
+\caption{Z-test and screen diagnostic generality across 11 datasets. $P$: number of
+features. Unstable: pairs with flip rate $> 0.1$. Screen precision: fraction of
+screen-flagged pairs that are truly unstable.}
 \label{tab:f1-generality}
 \small
 \begin{tabular}{@{}lccccc@{}}
 \toprule
-Dataset & $P$ & Pairs & Unstable & $r(Z_{\text{F1}}, \text{flip})$ & F5 prec. \\
+Dataset & $P$ & Pairs & Unstable & $r(Z, \text{flip})$ & Screen prec. \\
 \midrule
 Breast Cancer & 30 & 435 & 168 & $-0.89$ & 0.94 \\
 California Housing & 8 & 28 & 1 & $-0.99$ & --- \\
@@ -2472,7 +2472,7 @@ Iris (binary) & 4 & 6 & 0 & --- & --- \\
 \end{table}
 
 \paragraph{Interpretation.}
-The F1 diagnostic achieves $|r| > 0.8$ on 9/10 datasets with unstable
+The Z-test achieves $|r| > 0.8$ on 9/10 datasets with unstable
 pairs (all except Digits). The weaker correlation on
 Digits ($r = -0.42$) reflects a floor effect:
 this high-dimensional image dataset has many features with near-zero
@@ -2482,12 +2482,12 @@ $Z < 5$ (the diagnostically interesting range) would improve this
 correlation, as demonstrated for Breast Cancer in the restricted-range
 analysis above.
 
-F5 precision is 94--100\% on small/clean datasets (Breast Cancer, Wine,
+Screen precision is 94--100\% on small/clean datasets (Breast Cancer, Wine,
 Heart Disease) where split counts are reliable, but drops to
 48--67\% on high-dimensional datasets (Ames, Communities) where split
-counts are sparse. This confirms F5 as a conservative
+counts are sparse. This confirms the screen as a conservative
 \emph{screening} tool: it works well for moderate-$P$ datasets but
-should be supplemented by the full F1 test for high-dimensional settings.
+should be supplemented by the full Z-test for high-dimensional settings.
 All datasets use identical XGBoost hyperparameters ($T{=}100$,
 depth${=}6$, $\eta{=}0.1$); absolute flip rates are therefore not
 directly comparable across datasets of different sizes and
@@ -2505,7 +2505,7 @@ main experiments).
 \small
 \begin{tabular}{@{}rrrrrr@{}}
 \toprule
-$P$ & Total pairs & Correlated pairs & Unstable & F1 $|r|$ & Wall time \\
+$P$ & Total pairs & Correlated pairs & Unstable & Z-test $|r|$ & Wall time \\
 \midrule
 100 & 4{,}950 & 450 & 305 & 0.846 & 33\,s \\
 200 & 19{,}900 & 900 & 641 & 0.788 & 64\,s \\
@@ -2514,7 +2514,7 @@ $P$ & Total pairs & Correlated pairs & Unstable & F1 $|r|$ & Wall time \\
 \end{tabular}
 \end{center}
 
-The F1 diagnostic maintains $|r| > 0.78$ across all dimensionalities,
+The Z-test maintains $|r| > 0.78$ across all dimensionalities,
 confirming it scales to enterprise-sized feature spaces. The correlation-based
 grouping step reduces the 124{,}750 total pairs at $P{=}500$ to 2{,}250
 correlated pairs---a $55\times$ reduction---making the pairwise diagnostic
@@ -2528,7 +2528,7 @@ unstable when $\rho = 0.8$.
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/comprehensive_f1.pdf}
-\caption{F1 test statistic vs.\ flip rate across the four datasets with
+\caption{Z-test statistic vs.\ flip rate across the four datasets with
 the most unstable pairs. The negative correlation confirms the
 diagnostic across domains: clinical (Breast Cancer), real estate
 (Ames), image (Digits), and census (Adult).}
@@ -2561,7 +2561,7 @@ with the EU AI Act's requirement to disclose known limitations.''
 
 \subsection{Financial case study: German Credit}
 
-We demonstrate the full F5~$\to$~F1~$\to$~DASH workflow on the
+We demonstrate the full Screen~$\to$~Z-test~$\to$~DASH workflow on the
 German Credit dataset (1000 samples, 20 features, binary credit
 risk outcome). This dataset exhibits the correlation patterns common
 in financial modeling (duration~$\leftrightarrow$~credit amount,
@@ -2571,12 +2571,12 @@ $|\rho| = 0.63$; job~$\leftrightarrow$~own telephone, $|\rho| = 0.37$).
 at threshold $|\rho| > 0.3$ (lowered from the standard $0.5$ because
 German Credit has modest correlations; only 1 pair exceeds $0.5$).
 
-\paragraph{Step 1 (F5).} A single XGBoost model flags 1 pair as
+\paragraph{Step 1 (single-model screen).} A single XGBoost model flags 1 pair as
 potentially unstable: job~$\leftrightarrow$~own telephone
 ($Z^{\text{split}} = 0.69 < 1.96$).
 
-\paragraph{Step 2 (F1).} Training 5 models confirms the instability:
-$Z_{\text{F1}} = 0.64$, flip rate 40\%.
+\paragraph{Step 2 (Z-test).} Training 5 models confirms the instability:
+$Z = 0.64$, flip rate 40\%.
 
 \paragraph{Step 3 (DASH).} With $M = 25$ models, the flip rate drops
 from 40\% to 0\%. The consensus ranking is stable: checking status
@@ -2606,7 +2606,7 @@ $1/(1{-}0.95^2) \approx 10.3\times$).
 \paragraph{Step 0.} 29 correlated pairs identified at $|\rho| > 0.5$
 (no threshold lowering needed).
 
-\paragraph{Step 1 (F5).} A single model flags 4 of the 10 tracked pairs
+\paragraph{Step 1 (single-model screen).} A single model flags 4 of the 10 tracked pairs
 as potentially unstable ($|Z^{\text{split}}| > 1.96$).
 
 \paragraph{Step 3 (DASH).} With $M = 25$ models, the mean flip rate
@@ -2657,7 +2657,7 @@ the impossibility theorem predicts instability requires \emph{both}
 collinearity AND similar true importance. Lending Club features are
 correlated but not similarly important (e.g., person\_age contributes
 $3\times$ more than credit history length), so no instability occurs.
-The F5$\to$F1$\to$\DASH{} pipeline correctly identifies this as a
+The Screen$\to$Z-test$\to$\DASH{} pipeline correctly identifies this as a
 stable setting, recommending no intervention.
 
 \paragraph{Implication.}
@@ -2744,8 +2744,8 @@ If global rankings are unstable (flip rate $> 10\%$), local rankings
 at individual data points are at least as unstable on average.
 Practitioners who report per-instance SHAP explanations (e.g.,
 ``for this patient, feature X is most important'') face the same
-or worse instability as those reporting global rankings. The F1
-diagnostic (computed on global attributions) is therefore a
+or worse instability as those reporting global rankings. The multi-model Z-test
+(computed on global attributions) is therefore a
 conservative screen for local instability as well.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3081,7 +3081,7 @@ checked whether any correlated pair has a ranking flip rate exceeding
 Of 37 datasets, 34 (92\%) have at least one feature pair with
 $|\rho| > 0.5$, and 22 (60\%) exhibit attribution instability (flip
 rate $> 10\%$ for at least one pair), including Breast Cancer
-(max flip rate 50\%, confirming the F1 analysis). The impossibility is not a
+(max flip rate 50\%, confirming the Z-test analysis). The impossibility is not a
 theoretical curiosity: it affects the majority of real-world datasets
 across domains including medical, financial, image, and tabular data.
 
@@ -3941,7 +3941,7 @@ measurements), the signal cannot be uniquely attributed to specific
 measurements.
 
 In our setting, the correlation $|\rho_{jk}|$ plays the role of
-coherence, and the F1 diagnostic $Z_{jk}$ plays the role of the
+coherence, and the Z-test statistic $Z_{jk}$ plays the role of the
 incoherence condition:
 
 \begin{center}
