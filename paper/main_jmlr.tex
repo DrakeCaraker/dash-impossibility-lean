@@ -14,7 +14,7 @@
 \newcommand{\DASH}{\textsc{Dash}}
 \newcommand{\GBDT}{\textsc{GBDT}}
 
-\title{The Attribution Impossibility}
+\title{Faithful, Stable, Complete: Pick Two}
 
 \author{\Name{Drake Caraker} \Email{drakecaraker@gmail.com}\\
   \addr Independent Researcher
@@ -40,18 +40,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-No feature ranking can be simultaneously faithful, stable, and complete under collinearity. We prove this impossibility, characterize the complete design space (exactly two achievable families), and give the optimal resolution among unbiased aggregations.
-The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
-\DASH{} (\textbf{D}iversified \textbf{A}ggregation of \textbf{SH}AP) ensemble averaging is Pareto-optimal among unbiased aggregations on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
-In a survey of 77 public datasets, 68\% exhibit attribution instability (95\% CI: [56\%, 77\%]; rising to 93\% for $P \geq 20$, 95\% CI: [81\%, 98\%]).
-Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
-The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
-The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (305 theorems from 14 domain-specific + 2 query-complexity axioms, 0 \texttt{sorry})---to our knowledge, the first formally verified impossibility in explainable AI.
-Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
+Feature rankings from SHAP change when you retrain the model---in 68\% of 77 public datasets, the ``most important'' feature flips with the random seed. We prove this is not an engineering problem but a mathematical impossibility: no feature ranking can be simultaneously faithful (reflecting the model), stable (consistent across retrains), and complete (ordering all features) when features are collinear. The impossibility is quantitative, with architecture-discriminating bounds: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting and is infinite for Lasso, while random forests converge. The achievable design space consists of exactly two families; \DASH{} ensemble averaging is Pareto-optimal on the stable branch, achieving equitable attributions with Cram\'er--Rao-optimal variance. The impossibility, design space, and resolution are mechanically verified in Lean~4 (305 theorems, 16 axioms, 0~\texttt{sorry})---to our knowledge the first formally verified impossibility result in explainable AI.
 \end{abstract}
 
 \begin{keywords}
-Feature attribution impossibility, Shapley value stability, Rashomon effect, ensemble explanation methods, formal verification (Lean 4)
+Feature attribution impossibility, faithful stable complete, Shapley value stability, Rashomon effect, ensemble explanation methods, formal verification (Lean 4)
 \end{keywords}
 
 \section*{Notation}
@@ -87,7 +80,7 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 \section{Introduction}
 \label{sec:intro}
 
-Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes. In a survey of 77 public datasets, 68\% exhibit this instability. Before this work, practitioners assumed this was an engineering problem. We prove it is a mathematical impossibility---and we provide the complete theory: an impossibility theorem, quantitative architecture-discriminating bounds, a constructive resolution with provable optimality, and machine verification in Lean~4.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes---in 68\% of 77 public datasets. Before this work, practitioners assumed this was an engineering problem. We prove it is a mathematical impossibility---and we provide the complete theory: an impossibility theorem, quantitative architecture-discriminating bounds, a constructive resolution with provable optimality, and machine verification in Lean~4.
 
 For $m{=}2$ with exactly symmetric features, ranking collinear pairs reduces to a coin flip.
 
@@ -202,7 +195,7 @@ Our trilemma (faithfulness, stability, completeness) is structurally analogous.
 %% 3. SETUP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Setup}
+\section{Setup: Three Desiderata for Feature Rankings}
 \label{sec:setup}
 
 We consider a supervised learning setting with $P$ input features partitioned into $L$ groups by their correlation structure.
@@ -880,7 +873,7 @@ The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is the statement
 %% 7. THE SYMMETRIC BAYES DICHOTOMY
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{The Symmetric Bayes Dichotomy}
+\section{The Symmetric Bayes Dichotomy: A General Two-Families Theorem}
 \label{sec:sbd}
 
 The impossibility is not specific to feature attribution. It is an instance of a general pattern: any symmetric decision problem admits exactly two families of methods. We call this the Symmetric Bayes Dichotomy---a specialization of classical invariant decision theory \citep{lehmann2005testing} to finite symmetric groups, cast as a reusable reduction template for ML impossibility proofs.
@@ -985,7 +978,7 @@ The Symmetric Bayes Dichotomy is related to the theory of invariant decision rul
 %% 8. EXTENSIONS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Extensions}
+\section{Extensions: Conditional, Fairness, and Causal Barriers}
 \label{sec:extensions}
 
 \subsection{Conditional Attribution Impossibility}

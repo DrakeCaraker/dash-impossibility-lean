@@ -32,7 +32,7 @@
 \newcommand{\DASH}{\textsc{Dash}}
 \newcommand{\GBDT}{\textsc{GBDT}}
 
-\title{The Attribution Impossibility\\[8pt]\large Definitive Reference (Complete Version)}
+\title{Faithful, Stable, Complete: Pick Two\\[8pt]\large Definitive Reference (Complete Version)}
 
 \author{
   Drake Caraker\thanks{Corresponding author: \texttt{drakecaraker@gmail.com}} \quad
@@ -166,7 +166,7 @@ for j, k in pairs:
 \section{Introduction}
 \label{sec:intro}
 
-Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes. In a survey of 77 public datasets, 68\% exhibit this instability. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility. For $m{=}2$ collinear features, ranking the pair is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes---in 68\% of 77 public datasets. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility. For $m{=}2$ collinear features, ranking the pair is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
 
 This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three SBD instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, financial case studies, and a 305-theorem Lean~4 formalization.
 
@@ -226,7 +226,7 @@ This document provides the complete treatment of the Attribution Impossibility--
 %% 2. SETUP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Setup}
+\section{Setup: Three Desiderata for Feature Rankings}
 \label{sec:setup}
 
 We consider a supervised learning setting with $P$ input features partitioned into $L$ groups by their correlation structure.
@@ -1080,7 +1080,7 @@ and the achievable set is restricted to $\mathcal{A} \cup \mathcal{B}$.
 %% 7. THE SYMMETRIC BAYES DICHOTOMY
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{The Symmetric Bayes Dichotomy}
+\section{The Symmetric Bayes Dichotomy: A General Two-Families Theorem}
 \label{sec:sbd}
 
 The structural identity between the attribution and model selection impossibilities follows from a general theorem about decision problems with symmetric populations.
@@ -1241,7 +1241,7 @@ The Symmetric Bayes Dichotomy connects the classical theory of invariant decisio
 %% 8. EXTENSIONS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Extensions}
+\section{Extensions: Conditional, Fairness, and Causal Barriers}
 \label{sec:extensions}
 
 \subsection{Conditional Attribution Impossibility}
