@@ -2552,6 +2552,41 @@ FairnessAudit.lean & Thm.~\ref{thm:fairness-audit} & fairness\_audit\_impossibil
 FIMImpossibility.lean & Thm.~\ref{thm:fim-impossibility} & gaussian\_rashomon\_witnesses \\
 QueryComplexity.lean & Thm.~\ref{thm:query-complexity} & query\_complexity\_lower\_bound \\
 Consistency.lean & \S\ref{sec:lean} & axiom\_system\_consistent \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Bounds, universality, and infrastructure:}} \\
+EnsembleBound.lean & \S\ref{sec:resolution} & ensemble\_bound\_formula \\
+Efficiency.lean & \S\ref{sec:experiments} & across\_model\_no\_constraint \\
+AlphaFaithful.lean & \S\ref{sec:discussion} & alpha\_faithful\_bound \\
+GaussianFlipRate.lean & \S\ref{sec:gbdt-bounds} & Phi\_neg \\
+LocalGlobal.lean & \S\ref{sec:local-global} & local\_attribution\_impossibility \\
+RobustnessLipschitz.lean & \S\ref{sec:discussion} & flip\_rate\_robust \\
+SBDInstances.lean & \S\ref{sec:sbd} & attribution\_sbd\_unfaithful \\
+ModelSelectionDesignSpace.lean & \S\ref{sec:sbd} & model\_family\_a\_or\_family\_b \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Axiom strengthening:}} \\
+Qualitative.lean & Stratification & impossibility\_qualitative \\
+ProportionalityLocal.lean & Stratification & gbdt\_impossibility\_local \\
+LocalSufficiency.lean & Stratification & local\_proportionality\_suffices \\
+StumpProportionality.lean & \S\ref{sec:gbdt-bounds} & stump\_proportionality\_unique \\
+IntersectionalFairness.lean & \S\ref{sec:fairness} & intersectional\_audit\_impossibility \\
+MutualInformation.lean & \S\ref{sec:discussion} & mi\_is\_exact\_boundary \\
+Setup.lean & Bundled & attribution\_impossibility\_bundled \\
+ApproximateEquity.lean & Stratification & rashomon\_from\_bounded\_proportionality \\
+QueryComplexityParametric.lean & \S\ref{sec:query} & query\_complexity\_parametric \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{New derivations (this session, zero new axioms):}} \\
+MeasureHypotheses.lean & Definitions & IsDGPSymmetric, IsNonDegenerate \\
+UnfaithfulQuantitative.lean & Thm.~\ref{thm:unfaithfulness-bound} & attribution\_prob\_half \\
+VarianceDerivation.lean & \S\ref{sec:resolution} & consensus\_variance\_from\_independence \\
+QueryComplexityDerived.lean & \S\ref{sec:query} & chebyshev\_query\_bound \\
+BinaryQuantizer.lean & \S\ref{sec:gbdt-bounds} & binary\_quantizer\_fraction \\
+BayesOptimalTie.lean & \S\ref{sec:design-space} & tie\_dominates\_commitment \\
+LossPreservation.lean & \S\ref{sec:rashomon} & rashomon\_from\_swap\_with\_loss \\
+ParetoOptimality.lean & \S\ref{sec:dash-pareto} & dash\_unique\_pareto\_optimal \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Infrastructure:}} \\
+Basic.lean & Import hub & (all 54 files) \\
+RandomForest.lean & \S\ref{sec:rf} & (documentation only) \\
 \bottomrule
 \end{tabular}
 \end{table}
