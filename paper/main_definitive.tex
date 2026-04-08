@@ -12,6 +12,7 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{subcaption}
+\usepackage[round]{natbib}
 % Standard margins for JMLR-length paper
 \usepackage[margin=1in]{geometry}
 % Fix TOC spacing for double-digit subsection numbers (10.10+)
@@ -80,25 +81,25 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 \end{tabular}
 \end{center}
 
-\section*{List of Named Results}
+\section*{List of Named Results (by page)}
 \begin{enumerate}
 \item Theorem~\ref{thm:impossibility} (Attribution Impossibility) --- p.\pageref{thm:impossibility}
-\item Theorem~\ref{thm:design-space-main} (Attribution Design Space) --- p.\pageref{thm:design-space-main}
 \item Theorem~\ref{thm:rashomon-symmetry} (Rashomon from Symmetry) --- p.\pageref{thm:rashomon-symmetry}
 \item Theorem~\ref{thm:rashomon-inevitability} (Rashomon Inevitability) --- p.\pageref{thm:rashomon-inevitability}
+\item Lemma~\ref{lem:split-gap} (Split Gap) --- p.\pageref{lem:split-gap}
 \item Theorem~\ref{thm:ratio} (Attribution Ratio $1/(1-\rho^2)$) --- p.\pageref{thm:ratio}
-\item Theorem~\ref{thm:dash-optimal} (DASH Pareto Optimality) --- p.\pageref{thm:dash-optimal}
+\item Proposition~\ref{prop:exact-flip} (Exact GBDT Flip Rate) --- p.\pageref{prop:exact-flip}
 \item Corollary~\ref{cor:equity} (DASH Equity) --- p.\pageref{cor:equity}
-\item Theorem~\ref{thm:bayes-dichotomy} (Symmetric Bayes Dichotomy) --- p.\pageref{thm:bayes-dichotomy}
-\item Theorem~\ref{thm:fairness-audit} (Fairness Audit Impossibility) --- p.\pageref{thm:fairness-audit}
-\item Theorem~\ref{thm:fim-impossibility} (FIM Impossibility) --- p.\pageref{thm:fim-impossibility}
-\item Theorem~\ref{thm:conditional-impossibility} (Conditional Attribution Impossibility) --- p.\pageref{thm:conditional-impossibility}
-\item Theorem~\ref{thm:query-complexity} (Query Complexity Lower Bound) --- p.\pageref{thm:query-complexity}
+\item Theorem~\ref{thm:dash-optimal} (DASH Pareto Optimality) --- p.\pageref{thm:dash-optimal}
+\item Proposition~\ref{prop:ensemble-lower-bound} (Ensemble Size Lower Bound) --- p.\pageref{prop:ensemble-lower-bound}
+\item Theorem~\ref{thm:design-space-main} (Attribution Design Space) --- p.\pageref{thm:design-space-main}
 \item Theorem~\ref{thm:unfaithfulness-bound} (Unfaithfulness Bound) --- p.\pageref{thm:unfaithfulness-bound}
 \item Theorem~\ref{thm:path-convergence} (Path Convergence) --- p.\pageref{thm:path-convergence}
-\item Lemma~\ref{lem:split-gap} (Split Gap) --- p.\pageref{lem:split-gap}
-\item Proposition~\ref{prop:exact-flip} (Exact GBDT Flip Rate) --- p.\pageref{prop:exact-flip}
-\item Proposition~\ref{prop:ensemble-lower-bound} (Ensemble Size Lower Bound) --- p.\pageref{prop:ensemble-lower-bound}
+\item Theorem~\ref{thm:bayes-dichotomy} (Symmetric Bayes Dichotomy) --- p.\pageref{thm:bayes-dichotomy}
+\item Theorem~\ref{thm:conditional-impossibility} (Conditional Attribution Impossibility) --- p.\pageref{thm:conditional-impossibility}
+\item Theorem~\ref{thm:fairness-audit} (Fairness Audit Impossibility) --- p.\pageref{thm:fairness-audit}
+\item Theorem~\ref{thm:fim-impossibility} (FIM Impossibility) --- p.\pageref{thm:fim-impossibility}
+\item Theorem~\ref{thm:query-complexity} (Query Complexity Lower Bound) --- p.\pageref{thm:query-complexity}
 \end{enumerate}
 
 \newpage
@@ -122,17 +123,17 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 
 \section*{Executive Summary}
 
-\textbf{The problem.} SHAP feature importance rankings---the most widely used method for explaining machine learning predictions---are unreliable when features are correlated. Retraining the same model with a different random seed can invert which feature is ``most important.'' In a survey of 77 public datasets, 68\% exhibit this instability.
+\noindent\textbf{The problem.} SHAP feature importance rankings---the most widely used method for explaining machine learning predictions---are unreliable when features are correlated. Retraining the same model with a different random seed can invert which feature is ``most important.'' In a survey of 77 public datasets, 68\% exhibit this instability.
 
-\textbf{The theorem.} We prove this is not an engineering failure but a mathematical impossibility: no feature ranking can simultaneously be \emph{faithful} (reflect the model), \emph{stable} (robust to retraining), and \emph{complete} (rank all features). The proof requires only four lines from the Rashomon property---that collinear designs admit models ranking features in opposite orders.
+\noindent\textbf{The theorem.} We prove this is not an engineering failure but a mathematical impossibility: no feature ranking can simultaneously be \emph{faithful} (reflect the model), \emph{stable} (robust to retraining), and \emph{complete} (rank all features). The proof requires only four lines from the Rashomon property---that collinear designs admit models ranking features in opposite orders.
 
-\textbf{The design space.} The complete set of achievable methods consists of exactly two families:
+\noindent\textbf{The design space.} The complete set of achievable methods consists of exactly two families:
 \begin{itemize}
     \item \textbf{Family A} (single-model): Faithful and complete, but rankings flip up to 50\% of the time.
     \item \textbf{Family B} (\DASH{} ensemble): Stable, but reports ties for symmetric features. Provably Pareto-optimal.
 \end{itemize}
 
-\textbf{The practical toolkit.}
+\noindent\textbf{The practical toolkit.}
 \begin{enumerate}
     \item \textbf{Diagnose}: The single-model screen (94\% precision) identifies unstable feature pairs from one model.
     \item \textbf{Validate}: The multi-model Z-test ($|r| > 0.89$ across 11 datasets) confirms instability with 5 models.
@@ -140,11 +141,11 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
     \item \textbf{Size}: The ensemble formula $M_{\min} = \lceil 2.71 \cdot \sigma^2/\Delta^2 \rceil$ gives the optimal model count.
 \end{enumerate}
 
-\textbf{For regulators.} SHAP-based proxy discrimination audits are provably unreliable under collinearity: the audit conclusion is a coin flip across training seeds. This constitutes a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii). The instability disclosure template in Section~9 provides ready-to-use language for model documentation.
+\noindent\textbf{For regulators.} SHAP-based proxy discrimination audits are provably unreliable under collinearity: the audit conclusion is a coin flip across training seeds. This constitutes a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii). The instability disclosure template in Section~9 provides ready-to-use language for model documentation.
 
-\textbf{Verification.} The framework is mechanically verified in Lean~4: 305 theorems from 16 axioms with 0 \texttt{sorry} across 54 files. The formalization caught two logical inconsistencies that survived informal review.
+\noindent\textbf{Verification.} The framework is mechanically verified in Lean~4: 305 theorems from 16 axioms with 0 \texttt{sorry} across 54 files. The formalization caught two logical inconsistencies that survived informal review.
 
-\textbf{Code.} Reference implementation:
+\noindent\textbf{Code.} Reference implementation:
 \url{https://github.com/DrakeCaraker/dash-shap} (stability API in PR~\#255).
 Lean formalization:
 \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
@@ -174,7 +175,7 @@ for j, k in pairs:
 
 Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes---in 68\% of 77 public datasets. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility. For $m{=}2$ collinear features, ranking the pair is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
 
-This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three SBD instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, financial case studies, and a 305-theorem Lean~4 formalization.
+This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three Symmetric Bayes Dichotomy (SBD) instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, financial case studies, and a 305-theorem Lean~4 formalization.
 
 \paragraph{A concrete example.}
 Consider a credit model with annual income and debt-to-income ratio
@@ -267,12 +268,7 @@ proof errors \cite{nipkow2009social,zhang2026statistical}.
     from invariant decision theory \cite{lehmann2005testing}, demonstrated across three
     structurally distinct instances (feature attribution, model selection, and causal
     discovery under Markov equivalence) with different symmetry groups.
-    \item \textbf{Machine-verified proof}: formalized in Lean~4 (305 type-checked theorems
-    from 16 axioms, 0 \texttt{sorry}), publicly available at\\
-    \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
-    The axiom system is consistent: we construct an explicit model satisfying all
-    14 domain-specific axioms simultaneously, both in Lean
-    (\texttt{Consistency.lean}) and numerically.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (305 type-checked theorems from 16 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}. The axiom system is consistent: we construct an explicit model satisfying all 14 domain-specific axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and numerically.
 \end{enumerate}
 \end{sloppypar}
 
@@ -3696,7 +3692,7 @@ The three-layer verification (SymPy algebra, Lean type-checking, empirical valid
 \section*{Acknowledgments}
 The Lean formalization was developed with assistance from Claude Code (Anthropic). All proofs were machine-verified by the Lean~4 type-checker; no theorem was accepted solely on the basis of AI-generated output. The paper text was written by the human authors with AI editing assistance.
 
-\bibliographystyle{plainnat}
+\bibliographystyle{abbrvnat}
 \bibliography{references}
 
 \end{document}

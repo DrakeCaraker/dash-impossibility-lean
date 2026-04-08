@@ -36,7 +36,7 @@
 \contentsline {section}{\numberline {11}Extended Experimental Details}{18}{section.11}%
 \contentsline {section}{\numberline {12}Cross-Implementation Validation}{18}{section.12}%
 \contentsline {paragraph}{Key findings.}{19}{section*.22}%
-\contentsline {paragraph}{F5 caveat.}{19}{section*.23}%
+\contentsline {paragraph}{Screen caveat.}{19}{section*.23}%
 \contentsline {paragraph}{Determinism without subsampling.}{19}{section*.24}%
 \contentsline {paragraph}{Data-level stochasticity validation.}{19}{section*.25}%
 \contentsline {paragraph}{Production deployment guide.}{20}{section*.26}%
@@ -86,9 +86,9 @@
 \contentsline {subsection}{\numberline {20.2}Exchangeability conditions}{38}{subsection.20.2}%
 \contentsline {subsection}{\numberline {20.3}Rigorous theorem}{39}{subsection.20.3}%
 \contentsline {subsection}{\numberline {20.4}Empirical validation}{40}{subsection.20.4}%
-\contentsline {paragraph}{Comparison to F1.}{40}{section*.43}%
+\contentsline {paragraph}{Comparison to the Z-test.}{40}{section*.43}%
 \contentsline {paragraph}{Practitioner algorithm.}{40}{section*.44}%
-\contentsline {paragraph}{F5 screening accuracy.}{41}{section*.45}%
+\contentsline {paragraph}{Screen screening accuracy.}{41}{section*.45}%
 \contentsline {paragraph}{Multi-dataset generality.}{41}{section*.46}%
 \contentsline {paragraph}{Interpretation.}{41}{section*.47}%
 \contentsline {subsection}{\numberline {20.5}High-Dimensional Scalability}{41}{subsection.20.5}%
@@ -97,13 +97,13 @@
 \contentsline {paragraph}{Regulatory response for ties.}{42}{section*.50}%
 \contentsline {subsection}{\numberline {20.6}Financial case study: German Credit}{43}{subsection.20.6}%
 \contentsline {paragraph}{Step 0.}{43}{section*.51}%
-\contentsline {paragraph}{Step 1 (F5).}{43}{section*.52}%
-\contentsline {paragraph}{Step 2 (F1).}{43}{section*.53}%
+\contentsline {paragraph}{Step 1 (single-model screen).}{43}{section*.52}%
+\contentsline {paragraph}{Step 2 (Z-test).}{43}{section*.53}%
 \contentsline {paragraph}{Step 3 (DASH).}{43}{section*.54}%
 \contentsline {paragraph}{Practitioner output.}{43}{section*.55}%
 \contentsline {subsection}{\numberline {20.7}Financial case study: Taiwan Credit Card Default}{43}{subsection.20.7}%
 \contentsline {paragraph}{Step 0.}{43}{section*.56}%
-\contentsline {paragraph}{Step 1 (F5).}{43}{section*.57}%
+\contentsline {paragraph}{Step 1 (single-model screen).}{43}{section*.57}%
 \contentsline {paragraph}{Step 3 (DASH).}{44}{section*.58}%
 \contentsline {subsection}{\numberline {20.8}Synthetic credit data: income $\leftrightarrow $ DTI $\leftrightarrow $ credit score}{44}{subsection.20.8}%
 \contentsline {subsection}{\numberline {20.9}Lending Club validation (positive control)}{44}{subsection.20.9}%
