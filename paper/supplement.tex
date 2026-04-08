@@ -1018,7 +1018,7 @@ Screen precision & 0.26 & 0.20 & --- \\
 \paragraph{Key findings.}
 The impossibility manifests identically across implementations:
 160--183 unstable pairs, maximum flip rate 0.500 (the theoretical
-ceiling), and Z-test correlation $|r| > 0.89$ in all three.
+ceiling), and Z-test correlation $|r| \geq 0.89$ in all three.
 The instability is a property of sequential boosting under
 collinearity, not of any specific implementation.
 
@@ -1146,7 +1146,7 @@ Permutation importance shows \emph{more} instability than TreeSHAP
 (91\% vs.\ 41\% of pairs), because permutation-based scores have
 higher variance across seeds than SHAP values. Both methods hit the
 theoretical maximum flip rate (0.500). The Z-test achieves
-$|r| > 0.89$ for both, confirming the diagnostic is method-agnostic.
+$|r| \geq 0.89$ for both, confirming the diagnostic is method-agnostic.
 
 The cross-method correlation of flip rates is $r = 0.46$
 ($p < 10^{-23}$): the \emph{same pairs} tend to be unstable under
@@ -2968,11 +2968,11 @@ which approaches 1 as $M \to \infty$.
 
 This establishes $\mathcal{B}$.
 
-\textbf{Step 3: No method operating on per-model attributions lies outside $\mathcal{A} \cup \mathcal{B}$.}
+\textbf{Step 3: No method producing a deterministic binary ranking from per-model attributions lies outside $\mathcal{A} \cup \mathcal{B}$.}
 
-We show that any method $A$ that computes consensus from per-model
+We show that any method $A$ that computes a deterministic ranking from per-model
 attributions $(\varphi_j(f_1), \ldots, \varphi_j(f_M))$ must fall
-in one of the two families. (Methods that pool training data across
+in one of the two families. (Methods producing probabilistic rankings, confidence intervals, or set-valued outputs are outside this dichotomy. Methods that pool training data across
 models and train a single combined model fall outside this scope;
 such methods face different tradeoffs related to data leakage and
 are not standard attribution aggregation methods.)
@@ -4067,7 +4067,7 @@ about whether the model relies on a protected attribute.
 
 Under the EU AI Act Art.~13(3)(b)(ii), providers must disclose
 ``known and foreseeable circumstances'' which may lead to risks to health, safety or fundamental rights. Our
-theorem proves that this includes: ``SHAP-based proxy audits are
+theorem establishes that this includes: ``SHAP-based proxy audits are
 unreliable for features that are collinear with both the protected
 attribute and a non-protected feature.'' The remedy is ensemble
 auditing: train $M$ models and use \DASH{} consensus. The required
