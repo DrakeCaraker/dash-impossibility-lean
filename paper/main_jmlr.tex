@@ -146,7 +146,7 @@ To our knowledge, our result is the first to simultaneously address cross-model 
 \citet{decker2024provably} optimize aggregation across attribution \emph{methods} for a single model; we aggregate across \emph{models} via \DASH{}.
 \citet{jin2025probabilistic} give constructive stability certificates; we give the impossibility that necessitates them.
 \citet{noguer2025mathematical} derives information-theoretic limits on explanation complexity; our limits are about ranking consistency under feature correlation.
-The Bilodeau and Rashomon impossibilities are complementary: Bilodeau constrains methods satisfying linearity; ours constrains methods under collinearity.
+The Bilodeau and Rashomon impossibilities are complementary: Bilodeau constrains methods satisfying linearity; ours constrains methods under collinearity (Table~\ref{tab:prior-work}).
 
 \begin{table}[t]
 \centering
@@ -157,13 +157,13 @@ The Bilodeau and Rashomon impossibilities are complementary: Bilodeau constrains
 \toprule
 Result & Stability? & Quantitative? & Resolution? & Formal? \\
 \midrule
-Bilodeau et al.\ (2024) & No & No & No \\
-Huang et al.\ (2024) & No & No & No \\
-Srinivas et al.\ (2019) & No & No & No \\
-Rao (2025) & No & No & No \\
-Laberge et al.\ (2023) & Empirical & No & No \\
-Herren \& Hahn (2023) & Inference & No & No \\
-Jin et al.\ (2025) & Certificates & No & No \\
+Bilodeau et al.\ (2024) & No & No & No & No \\
+Huang et al.\ (2024) & No & No & No & No \\
+Srinivas et al.\ (2019) & No & No & No & No \\
+Rao (2025) & No & No & No & No \\
+Laberge et al.\ (2023) & Empirical & No & No & No \\
+Herren \& Hahn (2023) & Inference & No & No & No \\
+Jin et al.\ (2025) & Certificates & No & No & No \\
 \textbf{This paper} & \textbf{Impossibility} & \textbf{Yes} & \textbf{\DASH{}} & \textbf{Lean 4} \\
 \bottomrule
 \end{tabular}
