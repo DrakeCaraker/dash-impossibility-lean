@@ -43,7 +43,7 @@ axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}),
 are now derived theorems; \texttt{attribution\_variance} is now a definition
 from Mathlib's \texttt{ProbabilityTheory.variance}.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Complete axiom inventory (16 total: 6 type/constant, 6 property, 2 measure, 2 query).}
 \label{tab:axioms}
@@ -52,7 +52,7 @@ from Mathlib's \texttt{ProbabilityTheory.variance}.
 \toprule
 \textbf{Axiom} & \textbf{Lean~4 name} & \textbf{Justification} \\
 \midrule
-First-mover surjectivity & \texttt{firstMover\_surjective} & DGP symmetry: each feature can be first-mover \\
+First-mover surjectivity & \texttt{firstMover\_surjective} & Data-generating process (DGP) symmetry: each feature can be first-mover \\
 Split count (first-mover) & \texttt{splitCount\_firstMover} & Gaussian conditioning (Lemma~1 in main text) \\
 Split count (non-first-mover) & \texttt{splitCount\_nonFirstMover} & Residual signal after first-mover absorbs $\rho$-component \\
 Global proportionality & \texttt{proportionality\_global} & Uniform contribution model with constant $c$ across models \\
@@ -118,7 +118,8 @@ Defs.lean (14 axioms, type definitions, derived theorems)
   +-- SBDInstances.lean (abstract aggregation + instances)
   +-- FIMImpossibility.lean (Gaussian FIM -> Rashomon)
   +-- GaussianFlipRate.lean (Phi definition, flip rate formula)
-  +-- QueryComplexity.lean (query lower bound, Le~Cam constant axiomatized $C \geq 1/8$; Chebyshev $C=1/12$ derived in QueryComplexityDerived)
+  +-- QueryComplexity.lean (query lower bound,
+        Le Cam C>=1/8; Chebyshev C=1/12 in Derived)
   +-- QueryComplexityDerived.lean (Chebyshev alternative, C=1/12)
   +-- MeasureHypotheses.lean (independence + measure hypotheses)
   +-- VarianceDerivation.lean (consensus variance from IndepEnsemble)
@@ -146,7 +147,7 @@ Defs.lean (14 axioms, type definitions, derived theorems)
 Table~\ref{tab:lean-crossref} maps each Lean file to its corresponding
 supplement section and key theorem.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Lean file cross-reference (54 files, 305 theorems, 16 axioms).}
 \label{tab:lean-crossref}
@@ -198,7 +199,7 @@ BayesOptimalTie.lean & Theorem 5 Step 3 & bayes\_optimal\_tie & No \\
 LossPreservation.lean & \S Optimality & loss\_preservation\_tie & No \\
 ParetoOptimality.lean & \S F2 Pareto & dash\_pareto\_optimal & No \\
 Consistency.lean & \S Axiom Consistency & axiom\_system\_consistent & No \\
-Basic.lean & (import hub) & — & No \\
+Basic.lean & (import hub) & --- & No \\
 Setup.lean & \S Axiom System & attribution\_impossibility\_bundled (GBDTSetup) & No \\
 Qualitative.lean & Strengthening & impossibility\_qualitative (2 axioms) & No \\
 ProportionalityLocal.lean & Strengthening & gbdt\_impossibility\_local (per-model $c$) & No \\
@@ -507,7 +508,7 @@ quantifies the attribution instability: as $\rho \to 1$, the variance of
 the difference $\hat\beta_j - \hat\beta_k$ diverges, confirming that no
 finite sample can reliably determine which feature is more important.
 
-% definition and remark already defined in preamble — removed duplicates
+% definition and remark already defined in preamble --- removed duplicates
 
 \section{Extended Results: Universality and Relaxation Characterization}
 
@@ -819,7 +820,7 @@ Table~\ref{tab:depth-rho} reports the within-group split count ratio
 across tree depths and correlation levels (XGBoost, $T{=}100$, $\eta{=}1.0$,
 $P{=}10$ in 2 groups of 5, $N{=}2000$, 30 seeds).
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Within-group split count ratio by depth and $\rho$ ($\eta{=}1.0$).}
 \label{tab:depth-rho}
@@ -862,7 +863,7 @@ best stability--accuracy tradeoff.
 
 \section{Real-World Validation: Breast Cancer (Wisconsin)}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.55\textwidth]{figures/real_world_instability.pdf}
 \caption{SHAP ranking instability on the Breast Cancer (Wisconsin) dataset.
@@ -921,7 +922,7 @@ than producing a tie.
 
 \section{Extended Experimental Details}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Experimental configurations.}
 \small
@@ -979,7 +980,7 @@ and diagnostics are implementation-independent, we validate on LightGBM
 and CatBoost using the Breast Cancer dataset (50~models per
 implementation, matching hyperparameters).
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Attribution instability across three GBDT implementations
 on Breast Cancer (30~features, 50~models each).}
@@ -1022,7 +1023,7 @@ implementation-specific extraction code. The values in
 Table~\ref{tab:cross-impl} represent a coarser approximation; the full
 per-tree screen is recommended for production use.
 The reference implementation of the full \DASH{} pipeline is available
-at \url{https://github.com/DrakeCaraker/dash-shap}.
+at \url{[anonymized for review]}.
 
 \paragraph{Determinism without subsampling.}
 Without row or column subsampling (\texttt{subsample=1.0},
@@ -2445,7 +2446,7 @@ the Z-test correctly predicts stability: zero false alarms out of 28~pairs,
 with only one mildly unstable pair (MedInc $\leftrightarrow$ Latitude,
 flip rate $0.32$, $Z = 3.4$).
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Z-test and screen diagnostic generality across 11 datasets. $P$: number of
 features. Unstable: pairs with flip rate $> 0.1$. Screen precision: fraction of
@@ -3221,12 +3222,12 @@ If $\beta_j \neq \beta_k$ (unequal causal effects), the causal
 graph breaks the DGP symmetry: conditional SHAP can identify which
 feature has a larger causal effect, and the Rashomon property fails
 for conditional attributions. In this case, conditional SHAP CAN
-produce stable rankings — it resolves the pair by appealing to
+produce stable rankings --- it resolves the pair by appealing to
 causal structure rather than observational importance.
 
 \paragraph{When does the extension apply?}
 The extension applies whenever features in the same collinear group
-have genuinely equal roles in the data-generating process —
+have genuinely equal roles in the data-generating process ---
 e.g., multiple measurements of the same physical quantity (tumor
 radius measured by different instruments), redundant encodings
 (area vs.\ perimeter of the same shape), or features that are
@@ -3263,7 +3264,7 @@ and measure the flip rate.
 Table~\ref{tab:conditional-threshold} reports the flip rate
 as a function of $(\rho, \Delta\beta)$.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Flip rate (\%) as a function of within-group correlation
 $\rho$ and causal effect difference $\Delta\beta = |\beta_j - \beta_k|$.

@@ -59,7 +59,7 @@
 \midrule
 $\varphi_j(f)$ & Attribution (global importance) of feature $j$ in model $f$ \\
 $\rho$ & Pairwise correlation between collinear features within a group \\
-$T$ & Number of boosting rounds (trees) in a GBDT \\
+$T$ & Number of boosting rounds (trees) in a gradient-boosted decision tree (GBDT) \\
 $M$ & Ensemble size (number of independently trained models) \\
 $Z_{jk}$ & Test statistic for the pairwise $Z$-test: $Z_{jk} = \bar\Delta_{jk} / (\hat\sigma_{jk}/\sqrt{M})$ \\
 $\Phi$ & Standard normal cumulative distribution function \\
@@ -110,7 +110,7 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 
 \begin{abstract}
 No feature ranking can be simultaneously faithful, stable, and complete when features are collinear. For collinear pairs, ranking reduces to a coin flip.
-We prove this impossibility, quantify it for four model classes, resolve it via \DASH{} ensemble averaging, and machine-verify it with 305 Lean~4 theorems.
+We prove this impossibility, quantify it for four model classes, resolve it via SHAP (SHapley Additive exPlanations) ensemble averaging with \DASH{}, and machine-verify it with 305 Lean~4 theorems.
 We characterize the complete attribution design space: exactly two families of methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and no method lies outside this dichotomy.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} (\textbf{D}iversified \textbf{A}ggregation of \textbf{SH}AP) ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
@@ -145,10 +145,13 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 
 \noindent\textbf{Verification.} The framework is mechanically verified in Lean~4: 305 theorems from 16 axioms with 0 \texttt{sorry} across 54 files. The formalization caught two logical inconsistencies that survived informal review.
 
-\noindent\textbf{Code.} Reference implementation:
+\noindent\textbf{Code.}
+\begin{sloppypar}
+\noindent Reference implementation:
 \url{https://github.com/DrakeCaraker/dash-shap} (stability API in PR~\#255).
 Lean formalization:
 \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
+\end{sloppypar}
 
 \paragraph{Minimal implementation (5 lines).}
 {\small\begin{verbatim}
@@ -183,15 +186,15 @@ Consider a credit model with annual income and debt-to-income ratio
 reports income as the top driver 53\% of the time and DTI 47\%.
 A compliance report citing income as the primary adverse factor
 is a coin flip---the same model architecture, same data, different
-random seed. Under ECOA, the lender's adverse action notice
+random seed. Under the Equal Credit Opportunity Act (ECOA), the lender's adverse action notice
 changes based solely on the training randomness.
 
 \begin{sloppypar}
 Several recent results have established fundamental limits on feature attribution.
-\cite{bilodeau2024impossibility} prove that completeness and linearity cannot coexist;
-\cite{huang2024failings} show SHAP can misrank features in Boolean domains;
-\cite{srinivas2019full} show complete attributions cannot be weakly input-dependent;
-and \cite{rao2025limits} establishes Kolmogorov complexity barriers to explainability.
+\citet{bilodeau2024impossibility} prove that completeness and linearity cannot coexist;
+\citet{huang2024failings} show SHAP can misrank features in Boolean domains;
+\citet{srinivas2019full} show complete attributions cannot be weakly input-dependent;
+and \citet{rao2025limits} establish Kolmogorov complexity barriers to explainability.
 None of these results analyze \emph{stability}---the robustness of attributions to
 retraining---none provide quantitative architecture-discriminating bounds, and none
 offer a constructive resolution.
@@ -210,7 +213,7 @@ on collinear features, faithfulness, stability, and completeness are mutually
 incompatible.
 The impossibility has two layers.
 The first is model-agnostic: formalizing the Rashomon property
-\cite{rudin2024amazing}, we show symmetric features are necessarily ranked in
+\citep{rudin2024amazing}, we show symmetric features are necessarily ranked in
 opposite orders by different near-optimal models.
 The second is model-specific: we derive quantitative bounds on the attribution ratio
 (the factor by which the dominant feature is overweighted).
@@ -221,7 +224,7 @@ $O(1/\sqrt{T})$---converging rather than diverging.
 \end{sloppypar}
 
 \begin{sloppypar}
-The impossibility parallels the fairness impossibility of \cite{chouldechova2017fair} and \cite{kleinberg2017inherent}, who proved that calibration, balance, and equal false positive rates cannot coexist when base rates differ. Our result plays the same role for explainability: instability under collinearity is not an engineering deficiency but a mathematical inevitability. This has direct implications for EU AI Act Art.~13(3)(b)(ii) \cite{euaiact2024}, which requires disclosure of ``known and foreseeable circumstances'' that may lead to risks to health, safety, or fundamental rights.
+The impossibility parallels the fairness impossibility of \citep{chouldechova2017fair} and \citep{kleinberg2017inherent}, who proved that calibration, balance, and equal false positive rates cannot coexist when base rates differ. Our result plays the same role for explainability: instability under collinearity is not an engineering deficiency but a mathematical inevitability. This has direct implications for EU AI Act Art.~13(3)(b)(ii) \citep{euaiact2024}, which requires disclosure of ``known and foreseeable circumstances'' that may lead to risks to health, safety, or fundamental rights.
 \end{sloppypar}
 
 The impossibility also admits a principled relaxation.
@@ -244,7 +247,7 @@ from Le~Cam's method).
 The formalization also proved valuable beyond certification: during translation to
 Lean~4 we discovered two logical inconsistencies and one type mismatch in the
 original axiom system, echoing prior experiences where formalization uncovered subtle
-proof errors \cite{nipkow2009social,zhang2026statistical}.
+proof errors \citep{nipkow2009social,zhang2026statistical}.
 \end{sloppypar}
 
 \paragraph{Contributions.}
@@ -265,7 +268,7 @@ proof errors \cite{nipkow2009social,zhang2026statistical}.
     equitable attributions (derived for balanced ensembles) with variance $O(1/M)$,
     sacrificing within-group completeness.
     \item \textbf{The symmetric Bayes dichotomy} (\S\ref{sec:sbd}): a proof technique
-    from invariant decision theory \cite{lehmann2005testing}, demonstrated across three
+    from invariant decision theory \citep{lehmann2005testing}, demonstrated across three
     structurally distinct instances (feature attribution, model selection, and causal
     discovery under Markov equivalence) with different symmetry groups.
     \item \textbf{Machine-verified proof}: formalized in Lean~4 (305 type-checked theorems from 16 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}. The axiom system is consistent: we construct an explicit model satisfying all 14 domain-specific axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and numerically.
@@ -275,7 +278,7 @@ proof errors \cite{nipkow2009social,zhang2026statistical}.
 \noindent\textit{For practitioners and regulators:} The instability disclosure template is in Section~9, the fairness audit impossibility in Section~8, and the financial case studies in Section~10. The Executive Summary above provides a complete overview without technical prerequisites.
 
 The core impossibility proof is deliberately simple---a four-line contradiction from the Rashomon property.
-Like Arrow's original argument \cite{arrow1951social}, the mathematical contribution lies not in proof complexity but in identifying the right abstraction (the Rashomon property) and characterizing the complete achievable set (the Design Space Theorem).
+Like Arrow's original argument \citep{arrow1951social}, the mathematical contribution lies not in proof complexity but in identifying the right abstraction (the Rashomon property) and characterizing the complete achievable set (the Design Space Theorem).
 The quantitative depth comes from the architecture-specific bounds (\S\ref{sec:bounds}) and the Pareto optimality proof (\S\ref{sec:resolution}).
 
 This document provides the complete treatment of the Attribution Impossibility---from intuition to proof to deployment. A practitioner can find the diagnostic workflow (Section~9), a theorist can find every proof (Sections~3--8 with Lean cross-references in Section~11), and a regulator can find compliance guidance (Section~8 and the Regulatory Mapping appendix).
@@ -303,7 +306,7 @@ We require a proportionality axiom connecting attributions to model structure:
 For every model $f$, there exists a constant $c(f) > 0$ such that $\varphi_j(f) = c(f) \cdot n_j(f)$ for all $j \in [P]$, where $n_j(f)$ is the utilization count of feature $j$ in model $f$ (e.g., split count for tree ensembles, gradient norm for neural networks).
 \end{axiom}
 
-This axiom holds exactly under the uniform-contribution model of \cite{lundberg2017unified}, and approximately whenever per-split (or per-neuron) contributions are roughly homogeneous.
+This axiom holds exactly under the uniform-contribution model of \citep{lundberg2017unified}, and approximately whenever per-split (or per-neuron) contributions are roughly homogeneous.
 
 \paragraph{Sequential gradient boosting axioms.}
 For gradient-boosted decision trees (\GBDT{}) with $T$ boosting rounds, we axiomatize the split-count structure induced by Gaussian conditioning under collinearity.
@@ -314,7 +317,7 @@ Let $j_1$ denote the \emph{first-mover}---the feature selected at the root of th
 For every group $\ell$ and every feature $j$ in group $\ell$, there exists a model $f$ with $j_1(f) = j$.
 \end{axiom}
 
-This follows from the DGP symmetry: when features in a group have identical marginal distributions, sub-sampling and tie-breaking randomness ensure each can serve as first-mover.
+This follows from the data-generating process (DGP) symmetry: when features in a group have identical marginal distributions, sub-sampling and tie-breaking randomness ensure each can serve as first-mover.
 
 \begin{axiom}[Split counts]
 \label{ax:splits}
@@ -427,10 +430,10 @@ A model class satisfies the \emph{Rashomon property} if for every group $\ell$ a
 
 \begin{sloppypar}
 The Rashomon property is a consequence of the Rashomon effect
-\cite{rudin2024amazing,fisher2019models}: collinear designs admit many near-optimal
-models \cite{damour2022underspecification}, and within the set of good models,
+\citep{rudin2024amazing,fisher2019models}: collinear designs admit many near-optimal
+models \citep{damour2022underspecification}, and within the set of good models,
 symmetric features are utilized in all possible orderings.
-\cite{laberge2023partial} study consensus across such model sets and observe that
+\citet{laberge2023partial} study consensus across such model sets and observe that
 feature rankings are inherently partial---a conclusion our theorem makes precise.
 \end{sloppypar}
 
@@ -458,7 +461,7 @@ By stability, this relation holds for all models, including $f'$.
 But faithfulness applied to $f'$ requires $k \succ j$ (since $\varphi_k(f') > \varphi_j(f')$), contradicting $j \succ k$.
 \end{proof}
 
-The resolution echoes Arrow's impossibility theorem \cite{arrow1951social}: when desirable properties conflict, relaxing completeness (accepting ties or partial orders) restores consistency. \cite{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; our Lean~4 formalization follows the same spirit.
+The resolution echoes Arrow's impossibility theorem \citep{arrow1951social}: when desirable properties conflict, relaxing completeness (accepting ties or partial orders) restores consistency. \citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; our Lean~4 formalization follows the same spirit.
 \DASH{} achieves this by averaging attributions across the Rashomon set, producing $\E[\varphi_j] = \E[\varphi_k]$ for symmetric features---a tie rather than an arbitrary ordering.
 
 \subsection{From Abstract to Concrete: Iterative Optimizers}
@@ -1190,7 +1193,7 @@ The achievable set consists of exactly two families: $\mathcal{A}$ (faithful + c
 
 \begin{sloppypar}
 The Symmetric Bayes Dichotomy connects the classical theory of invariant decision
-rules \cite{lehmann2005testing,hunt1946} to modern ML impossibility proofs. The
+rules \citep{lehmann2005testing,hunt1946} to modern ML impossibility proofs. The
 classical Hunt--Stein theorem establishes that Bayes-optimal rules respect the
 invariance structure of the problem; our contribution is demonstrating that this
 classical machinery, when applied to finite symmetric groups arising in ML (feature
@@ -1317,7 +1320,7 @@ $\mathcal{D} =$ observational datasets.
 \paragraph{Connection to classical invariant decision theory.}
 \begin{sloppypar}
 The Symmetric Bayes Dichotomy connects the classical theory of invariant decision
-rules \cite{lehmann2005testing,hunt1946} to modern ML impossibility proofs. The
+rules \citep{lehmann2005testing,hunt1946} to modern ML impossibility proofs. The
 classical Hunt--Stein theorem establishes that Bayes-optimal rules respect the
 invariance structure of the problem; our contribution is demonstrating that this
 classical machinery, when applied to finite symmetric groups arising in ML (feature
@@ -1465,7 +1468,7 @@ In credit models, ``zip code'' (proxy for race) is often collinear with ``income
 \subsection{Direct FIM Impossibility}
 \label{sec:fim}
 
-The Rashomon property can be derived directly from the Fisher information matrix, providing an independent proof path from classical statistics that does not require the iterative optimizer abstraction.
+The Rashomon property can be derived directly from the Fisher information matrix (FIM), providing an independent proof path from classical statistics that does not require the iterative optimizer abstraction.
 
 \paragraph{Classical setup.}
 Consider the linear model $Y = \beta_j X_j + \beta_k X_k + \varepsilon$ where $X_j, X_k$ are jointly Gaussian with $\Var(X_j) = \Var(X_k) = 1$ and $\text{Cov}(X_j, X_k) = \rho$. The Fisher information matrix for $\boldsymbol{\beta} = (\beta_j, \beta_k)$ is:
@@ -1593,7 +1596,7 @@ $\text{TV} \leq \sqrt{M\Delta_0^2/(4\sigma^2)}$.
 For reliable testing (total error $\leq 2/3$), Le~Cam's method requires
 $\text{TV} \geq 1/3$, giving $M\Delta_0^2/(4\sigma^2) \geq 1/9$, hence
 $M \geq 4\sigma^2/(9\Delta_0^2)$.
-The standard constant $1/8$ from \cite{tsybakov2009nonparametric} (Theorem~2.2)
+The standard constant $1/8$ from \citep{tsybakov2009nonparametric} (Theorem~2.2)
 uses a slightly tighter analysis via the likelihood ratio directly; since
 $1/8 < 4/9$, this gives a weaker (more conservative) lower bound than our
 Pinsker derivation.
@@ -1943,7 +1946,7 @@ for j in range(P):
 The single-model screen and multi-model Z-test developed here are formal hypothesis tests with controlled type~I error. The companion first-mover bias paper introduces complementary \emph{exploratory} diagnostics: FSI (Feature Stability Index, a per-feature coefficient of variation across models) and the IS~Plot (Importance-Stability scatter plot). The recommended combined workflow is: Screen (1 model) $\to$ Z-test (confirm, 5 models) $\to$ \DASH{} (resolve, $M \geq 25$) $\to$ FSI/IS~Plot (audit).
 
 \paragraph{Recommended instability disclosure.}
-When reporting SHAP rankings for a model with collinear features: ``Features [X, Y, Z] form a correlated group ($|\rho| > [\text{threshold}]$). Their relative ranking is unstable across training seeds (estimated flip rate: [X]\%). They should be interpreted as interchangeable contributors. The between-group ranking is stable ($Z > 1.96$).'' For regulatory reporting (EU AI Act, SR~11-7 \cite{occ2011sr117}), the \DASH{} consensus ranking provides a defensible explanation.
+When reporting SHAP rankings for a model with collinear features: ``Features [X, Y, Z] form a correlated group ($|\rho| > [\text{threshold}]$). Their relative ranking is unstable across training seeds (estimated flip rate: [X]\%). They should be interpreted as interchangeable contributors. The between-group ranking is stable ($Z > 1.96$).'' For regulatory reporting (EU AI Act, SR~11-7 \citep{occ2011sr117}), the \DASH{} consensus ranking provides a defensible explanation.
 
 \paragraph{Group-level reporting.}
 When reporting feature importance for a model with correlated groups, we recommend the following format:
@@ -2037,7 +2040,7 @@ The within-group flip rate drops below 1\% at $M = 25$, consistent with the $O(1
 \subsection{Breast Cancer (Wisconsin)}
 \label{sec:breast-cancer}
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=0.55\textwidth]{figures/real_world_instability.pdf}
 \caption{SHAP ranking instability on Breast Cancer. Highly correlated pairs with similar importance (e.g., worst perimeter $\leftrightarrow$ worst area, $|\rho|{=}0.98$, flip rate 48\%) exhibit near-maximal instability. 50 XGBoost models.}
@@ -2322,7 +2325,7 @@ hyperparameter sweeps.
 \subsection{Financial Case Studies}
 
 \paragraph{German Credit.}
-We demonstrate the full Screen$\to$Z-test$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (screen): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (Z-test): 5 models confirm instability ($Z = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7 \cite{occ2011sr117}), the DASH ranking provides a defensible explanation.
+We demonstrate the full Screen$\to$Z-test$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (screen): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (Z-test): 5 models confirm instability ($Z = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7 \citep{occ2011sr117}), the DASH ranking provides a defensible explanation.
 
 \paragraph{Taiwan Credit Card Default.}
 To validate the impossibility on data with genuine high collinearity
@@ -2366,7 +2369,7 @@ years flips 12\% ($|\rho| = 0.92$). Pairs where one feature clearly
 dominates (income vs.\ credit score) show 0\% flips despite
 $|\rho| = 0.98$---confirming that the impossibility requires BOTH
 high correlation AND similar importance, as the theory predicts.
-For model validation under SR~11-7 \cite{occ2011sr117}, the recommendation is:
+For model validation under SR~11-7 \citep{occ2011sr117}, the recommendation is:
 report income and DTI as ``interchangeable key risk drivers'' rather than forcing
 a ranking that would flip under retraining.
 \end{sloppypar}
@@ -2486,7 +2489,7 @@ mean radius $\leftrightarrow$ mean perimeter & 0.99 & 28\% & Yes \\
 \end{tabular}
 \end{center}
 
-Any study reporting a specific ranking among these features from a single model is reporting an artifact of the training seed. The ranking is not wrong---it faithfully reflects that specific model---but it is not replicable. This has implications for reproducibility of scientific studies using feature importance to identify ``key predictors'': if the dataset has correlated features (60\% of datasets do), a single-model SHAP analysis may produce results that do not replicate.
+Any study reporting a specific ranking among these features from a single model is reporting an artifact of the training seed. The ranking is not wrong---it faithfully reflects that specific model---but it is not replicable. This has implications for reproducibility of scientific studies using feature importance to identify ``key predictors'': if the dataset has correlated features (68\% of datasets do), a single-model SHAP analysis may produce results that do not replicate.
 
 \subsection{Expected Ranking Discordance}
 
@@ -2542,7 +2545,7 @@ pair. Datasets with $> 10{,}000$ samples were subsampled to 10{,}000. Full resul
 in \texttt{prevalence\_survey.py}.
 \end{sloppypar}
 
-With 20 models, the measured flip rate exceeds the 10\% threshold with only 32\% power, making 60\% a conservative lower bound; the true prevalence is likely 75--85\%.
+With 20 models, the measured flip rate exceeds the 10\% threshold with only 32\% power, making 68\% a conservative lower bound; the true prevalence is likely 75--85\%.
 
 \paragraph{Healthcare datasets.}
 In a targeted survey of 9 healthcare-related datasets (breast cancer, diabetes, heart disease, QSAR biodegradation, liver disease, software defect prediction, Parkinson's, Pima diabetes, hepatitis), 6 (67\%) exhibit attribution instability. This rate matches the overall prevalence, confirming that clinical decision-support systems---where explanation stability is particularly consequential---are not immune.
@@ -2565,7 +2568,7 @@ C (shallow-fast) & 200 & 2 & 0.3 & Shallow, aggressive \\
 \end{tabular}
 \end{center}
 
-Under Config~A (original), 5/8 (62\%) datasets exhibit instability, consistent with the 60\% headline. Under Config~B (deep trees), 4/8 (50\%). Under Config~C (shallow-fast), 6/8 (75\%). Across all three configurations, 4/8 (50\%) datasets are consistently unstable; under at least one configuration, 6/8 (75\%) are unstable. The instability rate varies by $\pm 15$ percentage points across configurations but remains in the 50--75\% range. Shallow-fast trees (Config~C) produce \emph{higher} instability because aggressive learning rates compound the first-mover effect. The 60\% headline is conservative: the phenomenon is robust to standard hyperparameter variation.
+Under Config~A (original), 5/8 (62\%) datasets exhibit instability, consistent with the 68\% headline. Under Config~B (deep trees), 4/8 (50\%). Under Config~C (shallow-fast), 6/8 (75\%). Across all three configurations, 4/8 (50\%) datasets are consistently unstable; under at least one configuration, 6/8 (75\%) are unstable. The instability rate varies by $\pm 15$ percentage points across configurations but remains in the 50--75\% range. Shallow-fast trees (Config~C) produce \emph{higher} instability because aggressive learning rates compound the first-mover effect. The 68\% headline is conservative: the phenomenon is robust to standard hyperparameter variation.
 
 \begin{table}[t]
 \centering
@@ -2847,18 +2850,18 @@ RandomForest.lean & \S\ref{sec:rf} & (documentation only) \\
 
 \paragraph{Attribution impossibility results.}
 \begin{sloppypar}
-\cite{bilodeau2024impossibility} prove completeness and linearity cannot coexist;
-\cite{huang2024failings} show SHAP can misrank features in Boolean settings;
-\cite{srinivas2019full} prove complete attributions cannot be weakly
-input-dependent; \cite{rao2025limits} establishes Kolmogorov complexity barriers.
+\citet{bilodeau2024impossibility} prove completeness and linearity cannot coexist;
+\citet{huang2024failings} show SHAP can misrank features in Boolean settings;
+\citet{srinivas2019full} prove complete attributions cannot be weakly
+input-dependent; \citet{rao2025limits} establish Kolmogorov complexity barriers.
 To our knowledge, our result is the first to simultaneously address cross-model
 \emph{stability} as an impossibility, give quantitative architecture-discriminating
 bounds, and provide a constructive resolution with proved optimality.
-\cite{decker2024provably} optimize aggregation across attribution \emph{methods}
+\citet{decker2024provably} optimize aggregation across attribution \emph{methods}
 for a single model; we aggregate across \emph{models} via \DASH{}.
-\cite{jin2025probabilistic} give constructive stability certificates; we give the
+\citet{jin2025probabilistic} give constructive stability certificates; we give the
 impossibility that necessitates them.
-\cite{noguer2025mathematical} derives information-theoretic limits on explanation
+\citet{noguer2025mathematical} derives information-theoretic limits on explanation
 complexity; our limits are about ranking consistency under feature correlation.
 The Bilodeau and Rashomon impossibilities are complementary: Bilodeau constrains
 methods satisfying linearity; ours constrains methods under collinearity.
@@ -2890,34 +2893,34 @@ Jin et al.\ (2025) & Certificates & No & No & No \\
 \paragraph{Rashomon effect and model multiplicity.}
 \begin{sloppypar}
 Attribution rankings across Rashomon sets are inherently partial orders
-\cite{laberge2023partial}; \cite{rudin2024amazing} advocate embracing model
+\citet{laberge2023partial}; \citet{rudin2024amazing} advocate embracing model
 multiplicity.
 Our theorem shows the partial order is not a pragmatic choice but a mathematical
 necessity.
-\cite{herren2023statistical} develop statistical inference for feature rankings under
+\citet{herren2023statistical} develop statistical inference for feature rankings under
 model multiplicity; our contribution is to prove that the multiplicity is unavoidable
 under collinearity, not merely empirically common.
-\cite{krishna2022disagreement} document the ``disagreement problem'' in explainable
+\citet{krishna2022disagreement} document the ``disagreement problem'' in explainable
 ML---different explanation methods produce different outputs for the same
 model---complementary to our result that the \emph{same} method produces different
 outputs for different equivalent models.
 \end{sloppypar}
 
 \paragraph{Attribution sensitivity and fragility.}
-\cite{ghorbani2019data} demonstrate that neural network attributions are empirically fragile to small input perturbations.
-\cite{hooker2021unrestricted} show that unrestricted permutation-based importance forces extrapolation into out-of-distribution regions.
+\citet{ghorbani2019data} demonstrate that neural network attributions are empirically fragile to small input perturbations.
+\citet{hooker2021unrestricted} show that unrestricted permutation-based importance forces extrapolation into out-of-distribution regions.
 Our instability arises from a different mechanism (model multiplicity, not input perturbation or extrapolation), but the practical consequence---unreliable explanations---is shared.
 
 \paragraph{Foundational methods.}
-Feature attribution via Shapley values \cite{shapley1953value} was introduced to ML by \cite{lundberg2017unified}.
-The model architectures we analyze were introduced by \cite{breiman2001random} (random forests) and \cite{friedman2001greedy} (gradient boosting); LIME \cite{ribeiro2016should} provides an alternative local explanation framework.
+Feature attribution via Shapley values \citep{shapley1953value} was introduced to ML by \citet{lundberg2017unified}.
+The model architectures we analyze were introduced by \citet{breiman2001random} (random forests) and \citet{friedman2001greedy} (gradient boosting); LIME \citep{ribeiro2016should} provides an alternative local explanation framework.
 
 \paragraph{Fairness impossibility.}
-\cite{chouldechova2017fair} and \cite{kleinberg2017inherent} prove calibration, balance, and equal false positive rates cannot coexist when base rates differ. Our trilemma (faithfulness, stability, completeness) is structurally analogous.
+\citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove calibration, balance, and equal false positive rates cannot coexist when base rates differ. Our trilemma (faithfulness, stability, completeness) is structurally analogous.
 
 \paragraph{Formal verification for ML.}
 \begin{sloppypar}
-\cite{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \cite{zhang2026statistical} formalized statistical learning theory in Lean~4 \cite{demoura2021lean4} using Mathlib \cite{mathlib2020}. To our knowledge, our formalization is the first formally verified impossibility result in explainable~AI.
+\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning theory in Lean~4 \citep{demoura2021lean4} using Mathlib \citep{mathlib2020}. To our knowledge, our formalization is the first formally verified impossibility result in explainable~AI.
 \end{sloppypar}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2947,9 +2950,9 @@ For batch pipelines, training $M{=}25$ models is feasible. For real-time explana
 \paragraph{Broader implications.}
 \begin{sloppypar}
 In a survey of 77 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and
-approximately 60\% exhibit attribution instability---the impossibility is a practical
+68\% exhibit attribution instability---the impossibility is a practical
 reality. Our theorem proves this is a ``known and foreseeable circumstance'' under the
-EU AI Act (Art.~13(3)(b)(ii)) \cite{euaiact2024}.
+EU AI Act (Art.~13(3)(b)(ii)) \citep{euaiact2024}.
 The consequences are concrete: hospitals may invest in wrong interventions, data
 scientists may fix the wrong feature, and published studies may report artifacts of
 specific training runs.
@@ -2965,7 +2968,7 @@ The classical multicollinearity concern is about estimation variance ($\Var(\hat
 The impossibility characterizes the Rashomon set, not a single deployed model. A fixed pipeline with a fixed seed produces a deterministic, reproducible ranking. The instability arises upon retraining, auditing, or model comparison---all routine in regulated settings.
 
 \paragraph{Connection to underspecification.}
-\cite{damour2022underspecification} showed that ML pipelines are \emph{underspecified}: models with equivalent held-out performance can behave differently on deployment-relevant criteria. Our result formalizes the attribution-specific consequence of this phenomenon. Where D'Amour et al.\ demonstrate that predictions vary across equivalent models, we prove that feature \emph{rankings} must vary---and characterize exactly when, by how much, and what the complete space of solutions looks like. The Design Space Theorem can be viewed as the attribution-level analogue of their ``stress testing'' recommendation: rather than hoping a single model's explanation is stable, the practitioner should probe the full Rashomon set. DASH operationalizes this probe.
+\citep{damour2022underspecification} showed that ML pipelines are \emph{underspecified}: models with equivalent held-out performance can behave differently on deployment-relevant criteria. Our result formalizes the attribution-specific consequence of this phenomenon. Where D'Amour et al.\ demonstrate that predictions vary across equivalent models, we prove that feature \emph{rankings} must vary---and characterize exactly when, by how much, and what the complete space of solutions looks like. The Design Space Theorem can be viewed as the attribution-level analogue of their ``stress testing'' recommendation: rather than hoping a single model's explanation is stable, the practitioner should probe the full Rashomon set. DASH operationalizes this probe.
 
 \paragraph{Information loss.}
 \DASH{} discards exactly $\log_2(m!)$ bits per group of $m$ symmetric features---the bits encoding the unreliable within-group ordering. Between-group information is \emph{sharpened}: mutual information approaches 1 bit per pair as $M \to \infty$.
@@ -3172,7 +3175,7 @@ True minority-side prob $p$ & Power ($\Pr[\min \geq 3]$) & Interpretation \\
 \end{tabular}
 \end{center}
 
-At the 10\% threshold, the survey has only 32\% power: approximately two-thirds of truly borderline-unstable pairs are missed. The 60\% prevalence is a conservative lower bound.
+At the 10\% threshold, the survey has only 32\% power: approximately two-thirds of truly borderline-unstable pairs are missed. The 68\% prevalence is a conservative lower bound.
 
 \subsection{Class Imbalance Amplifies Instability}
 \label{sec:class-imbalance}

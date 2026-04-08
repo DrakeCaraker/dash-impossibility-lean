@@ -129,7 +129,7 @@ This axiom holds exactly under the uniform-contribution model of \citet{lundberg
 
 %% MOVED TO SUPPLEMENT: Sequential gradient boosting axioms (Axiom 2-3 with formulas)
 \paragraph{Sequential gradient boosting axioms.}
-For \GBDT{} with $T$ boosting rounds, we axiomatize the split-count structure induced by Gaussian conditioning under collinearity (supplement Axioms~2--3): the \emph{first-mover} $j_1$ (the feature selected at the first tree's root) receives $n_{j_1} = T/(2{-}\rho^2)$ splits while non-first-movers receive the $(1{-}\rho^2)$ residual fraction. By DGP symmetry, every feature in a group can serve as first-mover (surjectivity).
+For \GBDT{} with $T$ boosting rounds, we axiomatize the split-count structure induced by Gaussian conditioning under collinearity (supplement Axioms~2--3): the \emph{first-mover} $j_1$ (the feature selected at the first tree's root) receives $n_{j_1} = T/(2{-}\rho^2)$ splits while non-first-movers receive the $(1{-}\rho^2)$ residual fraction. By data-generating process (DGP) symmetry, every feature in a group can serve as first-mover (surjectivity).
 
 \paragraph{Ranking desiderata.}
 A \emph{feature ranking} is a binary relation $\succ$ on $[P]$.
@@ -446,7 +446,7 @@ For safety-critical deployments, report both single-model SHAP (with instability
 %% MOVED TO SUPPLEMENT: For batch pipelines ... through ... not the qualitative impossibility or the diagnostics.
 
 \paragraph{Broader implications.}
-In a survey of 77 public datasets (supplement), approximately 60\% exhibit attribution instability (conservative lower bound; survey power 32\%).
+In a survey of 77 public datasets (supplement), 68\% exhibit attribution instability (conservative lower bound; survey power 32\%).
 Our theorem proves this is a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}: single-model certification of feature attributions is formally infeasible under collinearity.
 The consequences are concrete: a hospital investing in the ``top'' SHAP feature may target the wrong intervention after retraining; published studies reporting single-model feature importance may report artifacts of the training run.
 For fairness auditing, a single-model SHAP audit of a collinear proxy concludes ``proxy reliance'' with probability exactly $1/2$---a coin flip (supplement).
@@ -457,7 +457,7 @@ The classical multicollinearity concern is about estimation variance ($\Var(\hat
 
 \paragraph{Rashomon set vs.\ deployed model.}
 The impossibility characterizes the Rashomon set, not a single deployed model.
-A fixed seed produces a deterministic ranking, but instability arises upon retraining, independent auditing, or model versioning---all routine in regulated settings (SR~11-7, ECOA).
+A fixed seed produces a deterministic ranking, but instability arises upon retraining, independent auditing, or model versioning---all routine in regulated settings (SR~11-7, Equal Credit Opportunity Act).
 Our result formalizes the attribution-specific consequence of underspecification \citep{damour2022underspecification}: where they show predictions vary, we prove rankings \emph{must} vary and characterize the complete solution space.
 Confidence-interval reporting ($\varphi_j = 0.42 \pm 0.15$) is an alternative to \DASH{} ties for communicating within-group indistinguishability.
 
