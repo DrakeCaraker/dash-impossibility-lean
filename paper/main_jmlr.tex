@@ -88,8 +88,8 @@ The classical multicollinearity concern is about estimation variance. Our result
 
 \paragraph{A concrete example.}
 Consider a credit model with annual income and debt-to-income ratio
-($|\rho| = 0.72$). Across 20 retrains with different seeds, SHAP
-reports income as the top driver 53\% of the time and DTI 47\%.
+(typically $|\rho| \approx 0.7$--$0.85$ in lending data). Across 20 retrains with different seeds, SHAP
+can report income as the top driver roughly half the time and DTI the other half.
 A compliance report citing income as the primary adverse factor
 is a coin flip---the same model architecture, same data, different
 random seed. Under the Equal Credit Opportunity Act (ECOA), the lender's adverse action notice
@@ -858,7 +858,7 @@ The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is the statement
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/trilemma.pdf}
-\caption{The Attribution Impossibility. No feature ranking can be simultaneously faithful, stable, and complete under collinearity. \emph{Faithful, Stable, Complete: Pick Two.} Family~$\mathcal{A}$ (single-model) is faithful and complete but rankings flip up to 50\% of the time. Family~$\mathcal{B}$ (\DASH{} ensemble) is faithful and stable but reports ties for symmetric features. No third option exists.}
+\caption{The Attribution Impossibility. No feature ranking can be simultaneously faithful, stable, and complete under collinearity. \emph{Faithful, Stable, Complete: Pick Two.} Family~$\mathcal{A}$ (single-model) is faithful and complete but rankings flip up to 50\% of the time. Family~$\mathcal{B}$ (\DASH{} ensemble) is stable with zero unfaithfulness but reports ties for symmetric features (sacrificing completeness). No third option exists.}
 \label{fig:trilemma}
 \end{figure}
 

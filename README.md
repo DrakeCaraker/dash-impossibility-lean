@@ -253,7 +253,7 @@ dash-impossibility-lean/
 │   └── Basic.lean                        # Import hub (all 54 files)
 │
 ├── paper/
-│   ├── main_definitive.tex               # 65-page monograph (source of truth)
+│   ├── main_definitive.tex               # 66-page monograph (source of truth)
 │   ├── main_jmlr.tex                     # 54-page JMLR submission
 │   ├── main.tex                          # 10-page NeurIPS version
 │   ├── supplement.tex                    # 79-page NeurIPS supplement
@@ -293,13 +293,13 @@ dash-impossibility-lean/
 
 | Version | File | Pages | Target | Role |
 |---------|------|-------|--------|------|
-| **Monograph** | `paper/main_definitive.tex` | 65 | arXiv / Internal | Source of truth — every result, proof, experiment, documented failure |
+| **Monograph** | `paper/main_definitive.tex` | 66 | arXiv / Internal | Source of truth — every result, proof, experiment, documented failure |
 | **JMLR** | `paper/main_jmlr.tex` | 54 | JMLR (primary) | Archival submission — full technical narrative |
 | **NeurIPS** | `paper/main.tex` | 10 | NeurIPS 2026 | Impact version — core story in 10 pages |
 | **Supplement** | `paper/supplement.tex` | 79 | NeurIPS | Everything that doesn't fit in 10 pages |
 
 ```
-main_definitive.tex  (65pp, monograph, source of truth)
+main_definitive.tex  (66pp, monograph, source of truth)
     ├── main_jmlr.tex    (54pp, JMLR submission)
     └── main.tex          (10pp, NeurIPS submission)
         └── supplement.tex   (79pp, NeurIPS supplement)

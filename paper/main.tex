@@ -67,7 +67,7 @@ Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a
 Before this work, practitioners attributed SHAP instability to fixable causes. After, they know it is a mathematical certainty under collinearity---and they have a provably optimal fix.
 
 \paragraph{A concrete example.}
-Consider a credit model with annual income and debt-to-income ratio ($|\rho| = 0.72$): across 20 retrains, SHAP reports income as the top driver 53\% of the time and DTI 47\%, so a compliance report citing ``income'' as the primary adverse factor is a coin flip that changes based solely on training randomness.
+Consider a credit model with annual income and debt-to-income ratio (typically $|\rho| \approx 0.7$--$0.85$ in lending data): across 20 retrains, SHAP can report income as the top driver roughly half the time and DTI the other half, so a compliance report citing ``income'' as the primary adverse factor is a coin flip that changes based solely on training randomness.
 
 Several recent results have established fundamental limits on feature attribution.
 \citet{bilodeau2024impossibility} prove that completeness and linearity cannot coexist; \citet{huang2024failings} show SHAP can misrank features in Boolean domains; \citet{srinivas2019full} show complete attributions cannot be weakly input-dependent; and \citet{rao2025limits} establishes Kolmogorov complexity barriers to explainability.
