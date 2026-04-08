@@ -136,7 +136,7 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 \noindent\textbf{The practical toolkit.}
 \begin{enumerate}
     \item \textbf{Diagnose}: The single-model screen (94\% precision on Breast Cancer; tree-based models only) identifies unstable feature pairs from one model.
-    \item \textbf{Validate}: The multi-model Z-test ($|r| \geq 0.89$ across 11 datasets) confirms instability with 5 models.
+    \item \textbf{Validate}: The multi-model Z-test ($|r| > 0.8$ on 9 of 10 datasets with unstable pairs) confirms instability with 5 models.
     \item \textbf{Resolve}: \DASH{} consensus averaging with $M \geq 25$ models reduces flip rate below 1\%.
     \item \textbf{Size}: The ensemble formula $M_{\min} = \lceil 2.71 \cdot \sigma^2/\Delta^2 \rceil$ gives the optimal model count.
 \end{enumerate}
@@ -165,7 +165,7 @@ for j, k in pairs:
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/trilemma.pdf}
-\caption{The Attribution Impossibility. No feature ranking can be simultaneously faithful, stable, and complete under collinearity. \emph{Faithful, Stable, Complete: Pick Two.} Family~$\mathcal{A}$ (single-model) is faithful and complete but rankings flip up to 50\% of the time. Family~$\mathcal{B}$ (\DASH{} ensemble) is faithful and stable but reports ties for symmetric features. No third option exists.}
+\caption{The Attribution Impossibility. No feature ranking can be simultaneously faithful, stable, and complete under collinearity. \emph{Faithful, Stable, Complete: Pick Two.} Family~$\mathcal{A}$ (single-model) is faithful and complete but rankings flip up to 50\% of the time. Family~$\mathcal{B}$ (\DASH{} ensemble) is stable with zero unfaithfulness but reports ties for symmetric features (sacrificing completeness). No third option exists.}
 \label{fig:trilemma}
 \end{figure}
 
@@ -182,8 +182,8 @@ This document is the complete reference: impossibility theorem, quantitative bou
 
 \paragraph{A concrete example.}
 Consider a credit model with annual income and debt-to-income ratio
-($|\rho| = 0.72$). Across 20 retrains with different seeds, SHAP
-reports income as the top driver 53\% of the time and DTI 47\%.
+(typically $|\rho| \approx 0.7$--$0.85$ in lending data). Across 20 retrains with different seeds, SHAP
+can report income as the top driver roughly half the time and DTI the other half.
 A compliance report citing income as the primary adverse factor
 is a coin flip---the same model architecture, same data, different
 random seed. Under the Equal Credit Opportunity Act (ECOA), the lender's adverse action notice
@@ -3189,7 +3189,7 @@ Class imbalance compounds attribution instability. On synthetic Gaussian data ($
 Imbalance ratio & Max pairwise flip rate\footnotemark & Unstable pairs & Total pairs \\
 \midrule
 1:1 (balanced)  & 0.480 & 7/20  & 20 \\
-1:3             & 0.517 & 20/20 & 20 \\
+1:3             & 0.517 & 19/20 & 20 \\
 1:5             & 0.517 & 20/20 & 20 \\
 1:10            & 0.517 & 20/20 & 20 \\
 1:20            & 0.517 & 20/20 & 20 \\
