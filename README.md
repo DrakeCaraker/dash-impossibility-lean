@@ -253,16 +253,16 @@ dash-impossibility-lean/
 │   └── Basic.lean                        # Import hub (all 54 files)
 │
 ├── paper/
-│   ├── main_definitive.tex               # 64-page monograph (source of truth)
-│   ├── main_jmlr.tex                     # 53-page JMLR submission
+│   ├── main_definitive.tex               # 65-page monograph (source of truth)
+│   ├── main_jmlr.tex                     # 54-page JMLR submission
 │   ├── main.tex                          # 10-page NeurIPS version
 │   ├── supplement.tex                    # 79-page NeurIPS supplement
-│   ├── references.bib                    # 30 references
+│   ├── references.bib                    # 49 references
 │   ├── FINDINGS_MAP.md                   # Complete 109-finding reference with tier classification
-│   ├── scripts/                          # 42 experiment scripts + utilities
+│   ├── scripts/                          # 51 experiment scripts + utilities
 │   │   ├── requirements.txt              # Pinned Python dependencies
 │   │   ├── axiom_consistency_model.py    # Constructs Fin 4 model, 16/16 axioms PASS
-│   │   ├── f1_f5_validation.py           # multi-model Z-test + F5 single-model diagnostics
+│   │   ├── f1_f5_validation.py           # multi-model Z-test + single-model screen diagnostics
 │   │   ├── monte_carlo_flip_rate.py      # 1K-trial Monte Carlo flip rate validation
 │   │   ├── prevalence_survey.py          # 77-dataset prevalence (68% unstable)
 │   │   ├── prevalence_survey_openml.py   # OpenML prevalence survey
@@ -275,7 +275,7 @@ dash-impossibility-lean/
 │   │   ├── generate_figures.py           # All figure generation
 │   │   └── ...                           # 37 more scripts (see paper/scripts/)
 │   ├── figures/                          # 12 PDF figures
-│   └── results_*.json                    # 32 JSON result files
+│   └── results_*.json                    # 33 JSON result files
 │
 ├── docs/
 │   ├── co-author-guide.md                # Plain English onboarding for collaborators
@@ -293,23 +293,23 @@ dash-impossibility-lean/
 
 | Version | File | Pages | Target | Role |
 |---------|------|-------|--------|------|
-| **Monograph** | `paper/main_definitive.tex` | 64 | Internal | Source of truth — every result, proof, experiment, documented failure |
-| **JMLR** | `paper/main_jmlr.tex` | 53 | JMLR (primary) | Archival submission — full technical narrative |
+| **Monograph** | `paper/main_definitive.tex` | 65 | arXiv / Internal | Source of truth — every result, proof, experiment, documented failure |
+| **JMLR** | `paper/main_jmlr.tex` | 54 | JMLR (primary) | Archival submission — full technical narrative |
 | **NeurIPS** | `paper/main.tex` | 10 | NeurIPS 2026 | Impact version — core story in 10 pages |
 | **Supplement** | `paper/supplement.tex` | 79 | NeurIPS | Everything that doesn't fit in 10 pages |
 
 ```
-main_definitive.tex  (64pp, monograph, source of truth)
-    ├── main_jmlr.tex    (53pp, JMLR submission)
-    └── main.tex         (10pp, NeurIPS submission)
-        └── supplement.tex  (79pp, NeurIPS supplement)
+main_definitive.tex  (65pp, monograph, source of truth)
+    ├── main_jmlr.tex    (54pp, JMLR submission)
+    └── main.tex          (10pp, NeurIPS submission)
+        └── supplement.tex   (79pp, NeurIPS supplement)
 ```
 
 **Edit flow:** monograph → JMLR → NeurIPS. Always update the monograph first.
 
 ## Proof Architecture
 
-**305 theorems. 16 axioms. 0 sorry. 54 files. 13 abstraction levels. 67 multi-step proofs (>=5 tactic lines).**
+**305 theorems. 16 axioms. 0 sorry. 54 files. 13 abstraction levels. 80 multi-step proofs (>=5 tactic lines).**
 
 The Lean formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review. The axiom consistency proof (a `Fin 4` construction in [`Consistency.lean`](DASHImpossibility/Consistency.lean)) demonstrates the axiom system is non-vacuous — there exists a concrete model satisfying all 16 axioms.
 
@@ -382,14 +382,14 @@ The paper distinguishes four levels of verification:
 
 ## Experiments & Results
 
-42 experiment scripts produce 32 JSON result files and 12 figures. 109 distinct findings are catalogued in [`paper/FINDINGS_MAP.md`](paper/FINDINGS_MAP.md) with tier classification.
+51 experiment scripts produce 33 JSON result files and 12 figures. 109 distinct findings are catalogued in [`paper/FINDINGS_MAP.md`](paper/FINDINGS_MAP.md) with tier classification.
 
 | Experiment | Key Finding | Script |
 |-----------|-------------|--------|
 | Synthetic Gaussian | 50% flip rate for rho=0.9, matches theory | `generate_figures.py` |
 | Monte Carlo flip rate | 1K trials, all 8 rho values validated | `monte_carlo_flip_rate.py` |
 | Breast Cancer (Wisconsin) | 48% flip rate for correlated features | `f1_f5_validation.py` |
-| 11 real datasets | F1 \|r\| > 0.89 across all datasets | `real_world_validation.py` |
+| 11 real datasets | Z-test \|r\| > 0.89 across all datasets | `real_world_validation.py` |
 | XGBoost/LightGBM/CatBoost | Instability is implementation-independent | `cross_implementation_validation.py` |
 | Permutation importance | 91% of correlated pairs unstable | `permutation_importance_validation.py` |
 | Neural networks | 87% unstable; KernelSHAP noise 11% vs model instability 87% | `nn_shap_validation.py` |
@@ -410,7 +410,7 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 ### Lean 4
 - Toolchain: `leanprover/lean4:v4.29.0-rc8`
 - Build: `lake build` or `make lean` (~5 min cached, ~20 min first build)
-- Expected: 2877 jobs, 0 errors, some unused-variable linter warnings
+- Expected: 2886 jobs, 0 errors, some unused-variable linter warnings
 
 ### LaTeX
 - Requires TeX Live (jmlr.cls bundled in paper/)
@@ -425,7 +425,7 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 ## CI Pipeline
 
 4 GitHub Actions jobs on every push:
-1. **Lean 4 Build** — `lake build` (2877 jobs)
+1. **Lean 4 Build** — `lake build` (2886 jobs)
 2. **Verify Theorem/Axiom Counts** — grep-based count check
 3. **Paper Compilation Check** — pdflatex+bibtex for all 3 submission papers
 4. **Axiom Consistency Model** — Python numerical verification of all 16 axioms
@@ -465,7 +465,7 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 5. Update paper/FINDINGS_MAP.md
 6. Propagate to JMLR paper
 
-## Current State (verified 2026-04-05)
+## Current State (verified 2026-04-08)
 
 ```
 Theorems+lemmas: 305
@@ -478,8 +478,8 @@ Files:           54
 
 ```bibtex
 @article{caraker2026attribution,
-  title={The Attribution Impossibility: Faithful, Stable, and Complete Feature
-         Rankings Cannot Coexist Under Collinearity},
+  title={The Attribution Impossibility: No Feature Ranking Is Faithful, Stable,
+         and Complete Under Collinearity},
   author={Caraker, Drake and Arnold, Bryan and Rhoads, David},
   year={2026},
   note={Lean 4 formalization: \url{https://github.com/DrakeCaraker/dash-impossibility-lean}}
@@ -537,6 +537,6 @@ Independent researchers. Contact: drakecaraker@gmail.com
 
 ---
 
-**Paper:** "The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity"
+**Paper:** "The Attribution Impossibility: No Feature Ranking Is Faithful, Stable, and Complete Under Collinearity"
 **Primary target:** JMLR | **Backup:** NeurIPS 2026 (abstract May 4, paper May 6)
 **arXiv:** Preprint forthcoming. Run `paper/scripts/prepare_arxiv.sh` to prepare submission.

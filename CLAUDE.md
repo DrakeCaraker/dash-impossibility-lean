@@ -71,11 +71,11 @@ DASHImpossibility/
   EnsembleBound.lean     — DASH variance optimality + ensemble size (S22, S26)
   Basic.lean             — Import hub
 paper/
-  main.tex           — NeurIPS 2026 paper (14 pages pre-restructure)
-  supplement.tex     — Supplementary (70 pages)
-  references.bib     — 44 citations
-  scripts/           — 30 scripts (figure generation, validation, diagnostics)
-  figures/           — PDF figures (ratio, instability, DASH, F1/F5, design space, SNR calibration, conditional threshold, etc.)
+  main.tex           — NeurIPS 2026 paper (10 pages)
+  supplement.tex     — Supplementary (79 pages)
+  references.bib     — 49 references
+  scripts/           — 51 scripts (figure generation, validation, diagnostics)
+  figures/           — PDF figures (ratio, instability, DASH, design space, SNR calibration, conditional threshold, etc.)
 ```
 
 ## Lean State: 54 files, 16 axioms, 305 theorems+lemmas, 0 sorry
@@ -121,10 +121,10 @@ make setup         # full setup for new contributors
 
 ## Submission
 
-- **JMLR** (primary target): `paper/main_jmlr.tex` (50 pages, `jmlr.cls` from TeX Live). JMLR class: https://jmlr.org/format/
-- **NeurIPS 2026** (backup): `paper/main.tex` (10 pages) + `paper/supplement.tex` (76 pages). Abstract May 4, Paper May 6. Official `neurips_2026.sty` (verified identical to neurips.cc download).
+- **JMLR** (primary target): `paper/main_jmlr.tex` (54 pages, `jmlr.cls` from TeX Live). JMLR class: https://jmlr.org/format/
+- **NeurIPS 2026** (backup): `paper/main.tex` (10 pages) + `paper/supplement.tex` (79 pages). Abstract May 4, Paper May 6. Official `neurips_2026.sty` (verified identical to neurips.cc download).
 - **arXiv**: Run `paper/scripts/prepare_arxiv.sh` to uncomment authors and fill URLs.
-- Title: "The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity"
+- Title: "The Attribution Impossibility: No Feature Ranking Is Faithful, Stable, and Complete Under Collinearity"
 - Authors: Drake Caraker, Bryan Arnold, David Rhoads
 - Companion code: [dash-shap PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255)
 

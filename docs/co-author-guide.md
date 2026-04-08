@@ -1,6 +1,6 @@
 # Co-Author Onboarding Guide
 
-**The Attribution Impossibility: Faithful, Stable, and Complete Feature Rankings Cannot Coexist Under Collinearity**
+**The Attribution Impossibility: No Feature Ranking Is Faithful, Stable, and Complete Under Collinearity**
 
 Welcome, Bryan and David. This document is your entry point into the project. It assumes you are smart researchers who have not been in the development conversation — you can read code if needed, but you should not need to. Everything you need is here.
 
