@@ -113,7 +113,7 @@ No feature ranking can be simultaneously faithful, stable, and complete when fea
 We prove this impossibility, quantify it for four model classes, resolve it via SHAP (SHapley Additive exPlanations) ensemble averaging with \DASH{}, and machine-verify it with 305 Lean~4 theorems.
 We characterize the complete attribution design space: exactly two families of methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and no method lies outside this dichotomy.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
-\DASH{} (\textbf{D}iversified \textbf{A}ggregation of \textbf{SH}AP) ensemble averaging is provably Pareto-optimal on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
+\DASH{} (\textbf{D}iversified \textbf{A}ggregation of \textbf{SH}AP) ensemble averaging is provably Pareto-optimal among unbiased aggregations on the stable branch, achieving the Cram\'er--Rao variance bound with a tight ensemble size formula.
 In a survey of 77 public datasets, 68\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
 The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
@@ -130,13 +130,13 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 \noindent\textbf{The design space.} The complete set of achievable methods consists of exactly two families:
 \begin{itemize}
     \item \textbf{Family A} (single-model): Faithful and complete, but rankings flip up to 50\% of the time.
-    \item \textbf{Family B} (\DASH{} ensemble): Stable, but reports ties for symmetric features. Provably Pareto-optimal.
+    \item \textbf{Family B} (\DASH{} ensemble): Stable, but reports ties for symmetric features. Provably Pareto-optimal among unbiased aggregations.
 \end{itemize}
 
 \noindent\textbf{The practical toolkit.}
 \begin{enumerate}
-    \item \textbf{Diagnose}: The single-model screen (94\% precision) identifies unstable feature pairs from one model.
-    \item \textbf{Validate}: The multi-model Z-test ($|r| > 0.89$ across 11 datasets) confirms instability with 5 models.
+    \item \textbf{Diagnose}: The single-model screen (94\% precision on Breast Cancer; tree-based models only) identifies unstable feature pairs from one model.
+    \item \textbf{Validate}: The multi-model Z-test ($|r| \geq 0.89$ across 11 datasets) confirms instability with 5 models.
     \item \textbf{Resolve}: \DASH{} consensus averaging with $M \geq 25$ models reduces flip rate below 1\%.
     \item \textbf{Size}: The ensemble formula $M_{\min} = \lceil 2.71 \cdot \sigma^2/\Delta^2 \rceil$ gives the optimal model count.
 \end{enumerate}
@@ -153,7 +153,7 @@ Lean formalization:
 \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
 \end{sloppypar}
 
-\paragraph{Minimal implementation (5 lines).}
+\paragraph{Pseudocode (5 lines).}
 {\small\begin{verbatim}
 models   = [XGBClassifier(random_state=i).fit(X, y) for i in range(25)]
 shap_vals = [mean(|TreeExplainer(m).shap_values(X_test)|) for m in models]
@@ -201,7 +201,7 @@ offer a constructive resolution.
 \end{sloppypar}
 
 \begin{sloppypar}
-This paper fills these gaps.
+This paper fills these gaps. Our result is not a criticism of SHAP, which correctly computes Shapley values for each model; rather, it reveals a fundamental limitation of the single-model paradigm under which any attribution method must operate.
 Our main result is the \emph{Attribution Design Space Theorem}
 (\S\ref{sec:design-space}, Figure~\ref{fig:design-space}): a complete
 characterization of what is achievable when explaining models with collinear features.
@@ -994,7 +994,7 @@ For any unbiased attribution aggregation method achieving between-group stabilit
 By the Cram\'er--Rao bound, any unbiased estimator $\hat\mu_j$ has $\Var(\hat\mu_j) \geq \sigma_j^2/M$. The between-group flip rate satisfies $1 - S_{jk} = \Pr[\hat\varphi_j < \hat\varphi_k] \geq \Phi(-\Delta_{jk}\sqrt{M}/\sigma_{jk})$. Setting $\Phi(-\Delta_{jk}\sqrt{M}/\sigma_{jk}) \leq \delta$ and solving: $\Delta_{jk}\sqrt{M}/\sigma_{jk} \geq \Phi^{-1}(1-\delta)$, giving $M \geq \sigma_{jk}^2 \cdot (\Phi^{-1}(1-\delta))^2/\Delta_{jk}^2$. \DASH{} achieves $\Var(\bar\varphi_j - \bar\varphi_k) = \sigma_{jk}^2/M$ (matching Cram\'er--Rao), so the bound is tight.
 \end{proof}
 
-For $\delta = 0.05$ (5\% flip rate), $\Phi^{-1}(0.95) = 1.645$, so $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$. For Breast Cancer's most unstable pair (worst perimeter vs.\ worst area, $\Delta/\sigma \approx 0.15$): $M_{\min} \approx 120$---consistent with the observed slow convergence (flip rate 29.8\% even at $M = 25$, reaching 0\% only at $M = 50$). This closes the gap between upper and lower bounds: \DASH{} is optimal not just in the Pareto sense but in the sample complexity sense.
+For $\delta = 0.05$ (5\% flip rate), $\Phi^{-1}(0.95) = 1.645$, so $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$, where $\sigma$ and $\Delta$ are estimated from a pilot run of $M_0 = 5$ models. For Breast Cancer's most unstable pair (worst perimeter vs.\ worst area, $\Delta/\sigma \approx 0.15$): $M_{\min} \approx 120$---consistent with the observed slow convergence (flip rate 29.8\% even at $M = 25$, reaching 0\% only at $M = 50$). Bootstrap validation (50 models, 200 trials): for all pairs with $\text{SNR} \geq 0.35$ ($M_{\min} \leq 25$), the \DASH{} flip rate at $M = 25$ is $\leq 3\%$, confirming the formula. This closes the gap between upper and lower bounds: \DASH{} is optimal not just in the Pareto sense but in the sample complexity sense.
 
 \subsection{Progressive DASH: Adaptive Ensemble Sizing}
 \label{sec:progressive-dash}
@@ -1044,8 +1044,8 @@ By the Rashomon property, for any within-group pair $(j,k)$, there exist models 
 \textbf{Step 2: Family $\mathcal{B}$ is achievable.}
 By Corollary~\ref{cor:equity}, \DASH{} achieves $U = 0$ with ties within groups. By Theorem~\ref{thm:dash-optimal}, between-group stability satisfies $S_M \geq 1 - \exp(-M\Delta^2/(2\sigma^2))$.
 
-\textbf{Step 3: No method operating on per-model attributions lies outside $\mathcal{A} \cup \mathcal{B}$.}
-We show any method $A$ computing consensus from per-model attributions $(\varphi_j(f_1), \ldots, \varphi_j(f_M))$ falls in one of the two families.
+\textbf{Step 3: No method producing a deterministic binary ranking from per-model attributions lies outside $\mathcal{A} \cup \mathcal{B}$.}
+We show any method $A$ computing a deterministic ranking from per-model attributions $(\varphi_j(f_1), \ldots, \varphi_j(f_M))$ falls in one of the two families. (Methods producing probabilistic rankings, confidence intervals, or set-valued outputs are outside this dichotomy.)
 
 \emph{Case 1:} If $A$ is faithful to individual models and complete, then $A \in \mathcal{A}$ by Step~1. (Formalized in Lean as \texttt{strongly\_faithful\_impossible} in \texttt{DesignSpace.lean}: any method faithful to each model's attributions contradicts the Rashomon property for $M \geq 2$.)
 
@@ -1447,7 +1447,7 @@ Direct corollary of the Attribution Impossibility applied to the pair $(j, k)$. 
 \paragraph{Implications for AI governance.}
 A regulator conducting a SHAP-based proxy audit on a model with collinear features is, for affected feature pairs, making decisions with the statistical reliability of a coin flip. Two auditors examining the \emph{same model architecture trained on the same data} with different random seeds may reach opposite conclusions about whether the model relies on a protected attribute.
 
-Under the EU AI Act Art.~13(3)(b)(ii), providers must disclose ``known and foreseeable circumstances'' which may lead to risks to health, safety or fundamental rights. Our theorem proves this includes: ``SHAP-based proxy audits are unreliable for features that are collinear with both the protected attribute and a non-protected feature.'' The remedy is ensemble auditing: train $M$ models and use \DASH{} consensus.
+Under the EU AI Act Art.~13(3)(b)(ii), providers must disclose ``known and foreseeable circumstances'' which may lead to risks to health, safety or fundamental rights. Our theorem establishes that this includes: ``SHAP-based proxy audits are unreliable for features that are collinear with both the protected attribute and a non-protected feature.'' The remedy is ensemble auditing: train $M$ models and use \DASH{} consensus.
 
 \paragraph{Worked example: adverse action notices.}
 Consider a credit model with two collinear features: \emph{income} and \emph{debt-to-income ratio} (DTI), with $|\rho| \approx 0.85$. Under ECOA (Regulation~B), lenders must disclose the principal reasons for adverse action. With a single model:
@@ -1455,7 +1455,7 @@ Consider a credit model with two collinear features: \emph{income} and \emph{deb
     \item \textbf{Seed 1:} SHAP ranks income as the top driver $\Rightarrow$ adverse action notice cites ``insufficient income.''
     \item \textbf{Seed 2:} SHAP ranks DTI as the top driver $\Rightarrow$ adverse action notice cites ``excessive debt-to-income ratio.''
 \end{itemize}
-The borrower receives a different regulatory disclosure depending on the random seed---a compliance failure. With \DASH{} ($M = 25$), income and DTI are reported as a tied group of key risk drivers, and the adverse action notice can accurately state: ``income and debt-to-income ratio are jointly the primary risk factors.'' The disclosure is stable, honest, and compliant.
+The borrower receives a different regulatory disclosure depending on the random seed---a compliance risk. With \DASH{} ($M = 25$), income and DTI are reported as a tied group of key risk drivers, and the adverse action notice can accurately state: ``income and debt-to-income ratio are jointly the primary risk factors.'' The disclosure is stable, honest, and compliant.
 
 The instability varies non-monotonically with correlation: at $\rho = 0.3$, 20\% of adverse action reasons change across models; at $\rho = 0.5$--$0.7$, the features separate cleanly (0\% instability); at $\rho = 0.9$, 28\% of reasons change. The non-monotonicity reflects the interaction between correlation (which drives the Rashomon property) and feature importance gaps (which stabilize rankings)---at moderate $\rho$, the gap is large enough to overcome the noise.
 
@@ -1871,7 +1871,7 @@ If a regulator asks why features are tied: ``These features are statistically in
 \subsection{SNR Calibration}
 \label{sec:snr}
 
-For features with importance gap $\Delta$ and noise $\sigma$, the flip rate is $\Phi(-\text{SNR})$ where $\text{SNR} = \Delta/\sigma$. Validated across 1,325 correlated feature pairs from 6 datasets.
+For features with importance gap $\Delta$ and noise $\sigma$, the flip rate is $\Phi(-\text{SNR})$ where $\text{SNR} = \Delta/\sigma$. Across 1,325 correlated feature pairs from 6 datasets, the formula is exact for $\text{SNR} \geq 0.5$ ($R^2 = 0.94$ on Breast Cancer) but overestimates at low SNR (predicting 40\% when the empirical rate is 18\%), making it a \emph{conservative} diagnostic: it flags more pairs than necessary but misses none in the actionable range.
 
 \begin{figure}[ht]
 \centering
@@ -2090,7 +2090,7 @@ Z-test correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
 \end{tabular}
 \end{table}
 
-The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500 (the theoretical ceiling), and Z-test diagnostic correlation $|r| > 0.89$ in all three. The instability is a property of sequential boosting under collinearity, not of any specific implementation.
+The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500 (the theoretical ceiling), and Z-test diagnostic correlation $|r| \geq 0.89$ in all three. The instability is a property of sequential boosting under collinearity, not of any specific implementation.
 
 \paragraph{Screen caveat.}
 \begin{sloppypar}
@@ -2117,7 +2117,7 @@ Z-test correlation $r(Z, \text{flip})$ & $-0.895$ & $-0.927$ \\
 \end{tabular}
 \end{center}
 
-Permutation importance shows \emph{more} instability than TreeSHAP (91\% vs.\ 41\%), because permutation-based scores have higher variance across seeds than SHAP values. Both methods hit the theoretical maximum flip rate (0.500). The multi-model Z-test achieves $|r| > 0.89$ for both, confirming it is method-agnostic.
+Permutation importance shows \emph{more} instability than TreeSHAP (91\% vs.\ 41\%), because permutation-based scores have higher variance across seeds than SHAP values. Both methods hit the theoretical maximum flip rate (0.500). The multi-model Z-test achieves $|r| \geq 0.89$ for both, confirming it is method-agnostic.
 
 The cross-method correlation of flip rates is $r = 0.46$ ($p < 10^{-23}$): the \emph{same pairs} tend to be unstable under both methods, confirming the instability is driven by feature collinearity, not by the attribution algorithm. Of the 180 SHAP-unstable pairs, 175 (97\%) are also unstable under permutation importance. TreeSHAP shows lower instability (41\% vs 91\%) likely because its game-theoretic averaging over feature coalitions provides implicit regularization, reducing within-model attribution variance compared to permutation importance's direct shuffling.
 
@@ -2869,7 +2869,7 @@ methods satisfying linearity; ours constrains methods under collinearity.
 
 \begin{table}[t]
 \centering
-\caption{Positioning relative to prior attribution impossibility results.}
+\caption{Positioning relative to prior attribution impossibility results. These criteria reflect the specific contributions of the present work; each prior result makes distinct contributions not captured by this comparison.}
 \label{tab:prior-work}
 \resizebox{\textwidth}{!}{%
 \small
@@ -2951,7 +2951,7 @@ For batch pipelines, training $M{=}25$ models is feasible. For real-time explana
 \begin{sloppypar}
 In a survey of 77 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and
 68\% exhibit attribution instability---the impossibility is a practical
-reality. Our theorem proves this is a ``known and foreseeable circumstance'' under the
+reality. Our theorem establishes this as a ``known and foreseeable circumstance'' under the
 EU AI Act (Art.~13(3)(b)(ii)) \citep{euaiact2024}.
 The consequences are concrete: hospitals may invest in wrong interventions, data
 scientists may fix the wrong feature, and published studies may report artifacts of
@@ -3180,13 +3180,13 @@ At the 10\% threshold, the survey has only 32\% power: approximately two-thirds 
 \subsection{Class Imbalance Amplifies Instability}
 \label{sec:class-imbalance}
 
-Class imbalance compounds attribution instability. On synthetic Gaussian data ($P{=}10$, 2 groups of $m{=}5$, $\rho{=}0.9$, 20 seeds), we sweep the positive-class ratio:
+Class imbalance compounds attribution instability. On synthetic Gaussian data ($P{=}10$, 2 groups of $m{=}5$, $\rho{=}0.8$, 30 models), we sweep the positive-class ratio:
 
 \begin{center}
 \small
 \begin{tabular}{@{}lccc@{}}
 \toprule
-Imbalance ratio & Max flip rate & Unstable pairs & Total pairs \\
+Imbalance ratio & Max pairwise flip rate\footnotemark & Unstable pairs & Total pairs \\
 \midrule
 1:1 (balanced)  & 0.480 & 7/20  & 20 \\
 1:3             & 0.517 & 20/20 & 20 \\
@@ -3197,13 +3197,15 @@ Imbalance ratio & Max flip rate & Unstable pairs & Total pairs \\
 \end{tabular}
 \end{center}
 
+\footnotetext{Pairwise flip rate: the fraction of model pairs $(f_i, f_j)$ where the relative ordering of features differs. For $M$ models with an even split, the maximum is $M/(2(M{-}1))$, which exceeds $1/2$ (e.g., $30/58 \approx 0.517$ for $M{=}30$). The per-model flip rate $\min(\#(j{>}k), \#(k{>}j))/M$ is bounded by $1/2$.}
+
 At 1:1 balance, 7/20 within-group pairs are unstable. At 1:5+ imbalance, \emph{all} 20 pairs become unstable. Imbalance amplifies the Rashomon effect: the minority class provides less constraining signal, allowing more models to achieve near-optimal loss with different feature utilization patterns. For healthcare and fraud detection (where class imbalance is standard), instability is essentially universal.
 Reproduce: \texttt{class\_imbalance\_instability.py}.
 
 \subsection{Missing Data Compounds Instability}
 \label{sec:missing-data}
 
-Missing data under all three standard mechanisms (MCAR, MAR, MNAR) compounds attribution instability. On synthetic Gaussian data ($P{=}10$, 2 groups of $m{=}5$, $\rho{=}0.9$, 20 seeds):
+Missing data under all three standard mechanisms (MCAR, MAR, MNAR) compounds attribution instability. On synthetic Gaussian data ($P{=}10$, 2 groups of $m{=}5$, $\rho{=}0.9$, 30 models):
 
 \begin{center}
 \small
@@ -3600,7 +3602,7 @@ language.
 \section{Regulatory Mapping: EU AI Act}
 \label{sec:regulatory-mapping}
 
-The EU AI Act (Regulation (EU) 2024/1689) imposes transparency and risk-management obligations on high-risk AI systems. The attribution impossibility has direct consequences for compliance under several articles.
+The EU AI Act (Regulation (EU) 2024/1689) imposes transparency and risk-management obligations on high-risk AI systems. The attribution impossibility has direct consequences for compliance under several articles. \emph{The following mapping represents our interpretation of how the attribution impossibility interacts with existing regulation. These recommendations have not been reviewed by regulatory authorities and do not constitute legal advice.}
 
 \subsection*{Art.~13: Transparency}
 
