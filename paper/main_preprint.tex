@@ -98,7 +98,7 @@ This is, to our knowledge, the first formally verified impossibility result in e
     \item \textbf{Architecture discrimination}: attribution ratios for \GBDT{} ($1/(1{-}\rho^2)$ Lean-verified; $1/(1{-}\alpha\rho^2)$ empirically corrected), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$, informal).
     \item \textbf{Constructive relaxation via \DASH{}}: ensemble averaging restores equitable attributions (derived for balanced ensembles) with variance $O(1/M)$, sacrificing within-group completeness.
     \item \textbf{The symmetric Bayes dichotomy} (supplement): a general proof technique from invariant decision theory \citep{lehmann2005testing}, demonstrated across three structurally distinct instances.
-    \item \textbf{Machine-verified proof}: formalized in Lean~4 (305 theorems from 16 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (305 theorems from 16 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}).
 \end{enumerate}
 
 The core impossibility proof is deliberately simple---a four-line contradiction from the Rashomon property.
@@ -497,7 +497,7 @@ A full-length JMLR version integrating the supplement is planned.
 
 \item \textbf{Experiments.}
   \begin{itemize}
-    \item Code: \url{https://github.com/DrakeCaraker/dash-impossibility-lean}
+    \item Code: \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379})
     \item Data: Synthetic Gaussian (generation code included)
     \item Compute: Standard laptop, no GPU required
     \item Seeds: 50 independent random seeds per configuration

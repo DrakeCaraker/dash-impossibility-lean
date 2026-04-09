@@ -2,6 +2,7 @@
 
 **No feature ranking can be simultaneously faithful, stable, and complete when features are correlated — and we prove it in Lean 4.**
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19468379.svg)](https://doi.org/10.5281/zenodo.19468379)
 ![Theorems](https://img.shields.io/badge/theorems-305-blue)
 ![Axioms](https://img.shields.io/badge/axioms-16-orange)
 ![Sorry](https://img.shields.io/badge/sorry-0-brightgreen)
@@ -482,6 +483,8 @@ Files:           54
          and Complete Under Collinearity},
   author={Caraker, Drake and Arnold, Bryan and Rhoads, David},
   year={2026},
+  doi={10.5281/zenodo.19468379},
+  url={https://doi.org/10.5281/zenodo.19468379},
   note={Lean 4 formalization: \url{https://github.com/DrakeCaraker/dash-impossibility-lean}}
 }
 ```

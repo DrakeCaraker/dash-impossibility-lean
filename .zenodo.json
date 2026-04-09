@@ -30,6 +30,7 @@
     "ensemble methods"
   ],
   "license": {"id": "Apache-2.0"},
+  "doi": "10.5281/zenodo.19468379",
   "related_identifiers": [
     {
       "identifier": "https://github.com/DrakeCaraker/dash-shap",

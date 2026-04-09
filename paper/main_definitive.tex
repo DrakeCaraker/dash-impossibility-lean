@@ -118,7 +118,7 @@ In a survey of 77 public datasets, 68\% exhibit attribution instability (conserv
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
 The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
 The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (305 theorems from 14 domain-specific + 2 query-complexity axioms, 0 \texttt{sorry})---to our knowledge, the first formally verified impossibility in explainable AI.
-Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
+Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}).
 \end{abstract}
 
 \section*{Executive Summary}
@@ -150,7 +150,7 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 \noindent Reference implementation:
 \url{https://github.com/DrakeCaraker/dash-shap} (stability API in PR~\#255).
 Lean formalization:
-\url{https://github.com/DrakeCaraker/dash-impossibility-lean}.
+\url{https://github.com/DrakeCaraker/dash-impossibility-lean} (archived at \url{https://doi.org/10.5281/zenodo.19468379}).
 \end{sloppypar}
 
 \paragraph{Pseudocode (5 lines).}
@@ -271,7 +271,7 @@ proof errors \citep{nipkow2009social,zhang2026statistical}.
     from invariant decision theory \citep{lehmann2005testing}, demonstrated across three
     structurally distinct instances (feature attribution, model selection, and causal
     discovery under Markov equivalence) with different symmetry groups.
-    \item \textbf{Machine-verified proof}: formalized in Lean~4 (305 type-checked theorems from 16 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean}. The axiom system is consistent: we construct an explicit model satisfying all 14 domain-specific axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and numerically.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (305 type-checked theorems from 16 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}). The axiom system is consistent: we construct an explicit model satisfying all 14 domain-specific axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and numerically.
 \end{enumerate}
 \end{sloppypar}
 
