@@ -42,3 +42,4 @@ catboost_info/
 # Failed experiment artifacts
 paper/figures/alpha_precision.pdf
 paper/scripts/alpha_precision_validation.py
+docs/private/
