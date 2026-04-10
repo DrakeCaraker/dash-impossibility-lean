@@ -130,6 +130,8 @@ make setup         # full setup for new contributors
 
 ## Do NOT
 
+- Summarize, filter, or curate lists of findings. Present ALL items in prioritized order. For audits, assessments, and analysis tasks, default to thorough and detailed. Only go brief when the user explicitly asks for a summary.
+- Skip or defer items in an execution plan. Execute everything identified. If an item is genuinely blocked, flag it as blocked with a specific unblocking condition — don't silently skip it.
 - Commit paper changes without verifying paper-code consistency. Run this verification block and confirm all numbers match the paper text before committing:
   ```bash
   grep -c "^theorem\|^lemma" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print "theorems+lemmas:", s}'
