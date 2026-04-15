@@ -3,20 +3,20 @@
 **No feature ranking can be simultaneously faithful, stable, and complete when features are correlated — and we prove it in Lean 4.**
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19468379.svg)](https://doi.org/10.5281/zenodo.19468379)
-![Theorems](https://img.shields.io/badge/theorems-315-blue)
+![Theorems](https://img.shields.io/badge/theorems-322-blue)
 ![Axioms](https://img.shields.io/badge/axioms-16-orange)
 ![Sorry](https://img.shields.io/badge/sorry-0-brightgreen)
 ![Lean 4](https://img.shields.io/badge/Lean-4-purple)
-![Files](https://img.shields.io/badge/Lean_files-56-informational)
+![Files](https://img.shields.io/badge/Lean_files-57-informational)
 
 <!-- Verify badges with:
-  grep -c '^theorem\|^lemma' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'  # 315
+  grep -c '^theorem\|^lemma' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'  # 322
   grep -c '^axiom' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'              # 16
   grep -rn 'sorry' DASHImpossibility/*.lean                                               # (empty)
-  ls DASHImpossibility/*.lean | wc -l                                                     # 56
+  ls DASHImpossibility/*.lean | wc -l                                                     # 57
 -->
 
-If you have ever retrained an XGBoost model and noticed the "most important feature" changed, this paper proves that is not a bug — it is a mathematical inevitability. When features are correlated, no attribution method can simultaneously tell you what the model computed (faithfulness), give you the same answer across retrains (stability), and decide every pair of features (completeness). You must pick two of three. We prove it, quantify it, characterize the entire design space of solutions, and give you a toolkit to handle it. The formalization comprises 315 theorems across 56 Lean 4 files with 16 axioms and 0 sorry. The core impossibility theorem is machine-checked with zero domain-specific axiom dependencies. The resolution — DASH (Diversified Aggregation of SHAP) — is proved to be the minimum-variance unbiased linear estimator via the Cauchy-Schwarz inequality (Titu's lemma), extended to all unbiased estimators by Rao-Blackwell, with a deeper connection to invariant decision theory via the Hunt-Stein theorem. For binary attribution questions (SHAP sign, feature selection), the impossibility is strictly stronger: faithful + stable alone is impossible (the bilemma).
+If you have ever retrained an XGBoost model and noticed the "most important feature" changed, this paper proves that is not a bug — it is a mathematical inevitability. When features are correlated, no attribution method can simultaneously tell you what the model computed (faithfulness), give you the same answer across retrains (stability), and decide every pair of features (completeness). You must pick two of three. We prove it, quantify it, characterize the entire design space of solutions, and give you a toolkit to handle it. The formalization comprises 322 theorems across 57 Lean 4 files with 16 axioms and 0 sorry. The core impossibility theorem is machine-checked with zero domain-specific axiom dependencies. The resolution — DASH (Diversified Aggregation of SHAP) — is proved to be the minimum-variance unbiased linear estimator via the Cauchy-Schwarz inequality (Titu's lemma), extended to all unbiased estimators by Rao-Blackwell, with a deeper connection to invariant decision theory via the Hunt-Stein theorem. For binary attribution questions (SHAP sign, feature selection), the impossibility is strictly stronger: faithful + stable alone is impossible (the bilemma).
 
 ---
 
@@ -175,7 +175,7 @@ Each extension is a self-contained theorem in its own Lean file:
 ```
 dash-impossibility-lean/
 │
-├── DASHImpossibility/                    # 56 Lean 4 files, 315 theorems, 16 axioms, 0 sorry
+├── DASHImpossibility/                    # 57 Lean 4 files, 322 theorems, 16 axioms, 0 sorry
 │   │
 │   │  ── Level 0: Pure Logic ──
 │   ├── Trilemma.lean                     # attribution_impossibility (zero axiom deps, 4-line proof)
@@ -251,7 +251,8 @@ dash-impossibility-lean/
 │   ├── GaussianFlipRate.lean             # Standard normal CDF, flip rate formula
 │   ├── FIMImpossibility.lean             # Gaussian FIM impossibility, Rashomon ellipsoid
 │   ├── RandomForest.lean                 # Contrast case (documentation, no formal proofs)
-│   └── Basic.lean                        # Import hub (all 56 files)
+│   ├── MechInterp.lean                   # Mechanistic interpretability impossibility bounds
+│   └── Basic.lean                        # Import hub (all 57 files)
 │
 ├── paper/
 │   ├── main_definitive.tex               # 66-page monograph (source of truth)
@@ -310,7 +311,7 @@ main_definitive.tex  (66pp, monograph, source of truth)
 
 ## Proof Architecture
 
-**315 theorems. 16 axioms. 0 sorry. 56 files. 14 abstraction levels. 90 multi-step proofs (>=5 tactic lines).**
+**322 theorems. 16 axioms. 0 sorry. 57 files. 14 abstraction levels. 97 multi-step proofs (>=5 tactic lines).**
 
 The Lean formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review. The axiom consistency proof (a `Fin 4` construction in [`Consistency.lean`](DASHImpossibility/Consistency.lean)) demonstrates the axiom system is non-vacuous — there exists a concrete model satisfying all 16 axioms.
 
@@ -435,11 +436,11 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 
 **Data scientist using SHAP.** Your feature rankings for correlated features are unreliable. The instability is not noise or a software bug — it is a provable consequence of how gradient boosting interacts with collinearity. The fix is DASH: average SHAP values from multiple independently trained models. See the [dash-shap](https://github.com/DrakeCaraker/dash-shap) companion package and the [stability API in PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255) for the single-model screen to Z-test (multi-model validation) to DASH (ensemble consensus) workflow.
 
-**Researcher in XAI or ML theory.** This is a formally verified impossibility theorem with 305 Lean proofs and 0 sorry. The Symmetric Bayes Dichotomy (Section 6 of the definitive paper) is a general proof technique from invariant decision theory that applies to any symmetric decision problem — we demonstrate it on feature attribution, model selection, and causal discovery under Markov equivalence. The Design Space Theorem characterizes the full achievable set.
+**Researcher in XAI or ML theory.** This is a formally verified impossibility theorem with 322 Lean proofs and 0 sorry. The Symmetric Bayes Dichotomy (Section 6 of the definitive paper) is a general proof technique from invariant decision theory that applies to any symmetric decision problem — we demonstrate it on feature attribution, model selection, and causal discovery under Markov equivalence. The Design Space Theorem characterizes the full achievable set.
 
 **Regulator or model risk officer.** Single-model SHAP explanations are provably unreliable under collinearity. In a survey of 77 public datasets, 68% exhibit attribution instability. This affects EU AI Act Art. 13(3)(b)(ii) requirements for disclosing "known and foreseeable circumstances" affecting accuracy, and SR 11-7 model risk management compliance. The paper provides disclosure templates and a diagnostic workflow.
 
-**Lean or Mathlib community.** 315 theorems across 56 files, 14 abstraction levels, using `MulAction` for orbit bounds, `ProbabilityTheory.cdf` for the Gaussian flip rate, and `Analysis.Calculus` for the FIM impossibility. The Gaussian CDF symmetry proofs (phi(0)=1/2, phi(-x)=1-phi(x)) via `NoAtoms` + `prob_compl_eq_one_sub` may be of independent interest. The axiom consistency proof constructs a `Fin 4` model satisfying all 16 axioms.
+**Lean or Mathlib community.** 322 theorems across 57 files, 14 abstraction levels, using `MulAction` for orbit bounds, `ProbabilityTheory.cdf` for the Gaussian flip rate, and `Analysis.Calculus` for the FIM impossibility. The Gaussian CDF symmetry proofs (phi(0)=1/2, phi(-x)=1-phi(x)) via `NoAtoms` + `prob_compl_eq_one_sub` may be of independent interest. The axiom consistency proof constructs a `Fin 4` model satisfying all 16 axioms.
 
 ## Contributing
 
@@ -466,13 +467,13 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 5. Update paper/FINDINGS_MAP.md
 6. Propagate to JMLR paper
 
-## Current State (verified 2026-04-08)
+## Current State (verified 2026-04-15)
 
 ```
-Theorems+lemmas: 305
+Theorems+lemmas: 322
 Axioms:          16
 Sorry:           0
-Files:           54
+Files:           57
 ```
 
 ## Citation

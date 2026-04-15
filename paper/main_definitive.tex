@@ -111,13 +111,13 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 \begin{abstract}
 No feature ranking can be simultaneously faithful, stable, and complete when features are collinear.
 We prove this impossibility and characterize the complete design space: exactly two families of attribution methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and \DASH{} ensemble averaging is Pareto-optimal on the stable branch.
-We quantify the impossibility for four model classes, resolve it via SHAP (SHapley Additive exPlanations) ensemble averaging with \DASH{}, and machine-verify it with 315 Lean~4 theorems.
+We quantify the impossibility for four model classes, resolve it via SHAP (SHapley Additive exPlanations) ensemble averaging with \DASH{}, and machine-verify it with 322 Lean~4 theorems.
 The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
 \DASH{} (\textbf{D}iversified \textbf{A}ggregation of \textbf{SH}AP) ensemble averaging is provably Pareto-optimal among unbiased aggregations on the stable branch, achieving the Cauchy--Schwarz lower bound (Titu's lemma; Lean-verified via \texttt{sum\_squares\_ge\_inv\_M}) with a tight ensemble size formula.
 In a survey of 77 public datasets, 68\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
 The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
-The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (315 theorems from 14 domain-specific + 2 query-complexity axioms, 0 \texttt{sorry}; 90 with multi-step proofs of ${\geq}5$ tactic lines; the remainder are definitions, wrappers, and single-step applications)---to our knowledge, the first formally verified impossibility in explainable AI.
+The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (322 theorems from 14 domain-specific + 2 query-complexity axioms, 0 \texttt{sorry}; 97 with multi-step proofs of ${\geq}5$ tactic lines; the remainder are definitions, wrappers, and single-step applications)---to our knowledge, the first formally verified impossibility in explainable AI.
 Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}).
 \end{abstract}
 
@@ -143,7 +143,7 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
 
 \noindent\textbf{For regulators.} SHAP-based proxy discrimination audits are provably unreliable under collinearity: the audit conclusion is a coin flip across training seeds. This constitutes a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii). The instability disclosure template in Section~9 provides ready-to-use language for model documentation.
 
-\noindent\textbf{Verification.} The framework is mechanically verified in Lean~4: 315 theorems from 16 axioms with 0 \texttt{sorry} across 56 files. The formalization caught two logical inconsistencies that survived informal review.
+\noindent\textbf{Verification.} The framework is mechanically verified in Lean~4: 322 theorems from 16 axioms with 0 \texttt{sorry} across 57 files. The formalization caught two logical inconsistencies that survived informal review.
 
 \noindent\textbf{Code.}
 \begin{sloppypar}
@@ -179,7 +179,7 @@ for j, k in pairs:
 Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes---in 68\% of 77 public datasets. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility. For $m{=}2$ collinear features, ranking the pair is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
 Beyond the impossibility, we characterize the complete design space: exactly two families of attribution methods exist, DASH is Pareto-optimal on the stable branch, and no method lies outside this dichotomy.
 
-This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three Symmetric Bayes Dichotomy (SBD) instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, financial case studies, and a 315-theorem Lean~4 formalization.
+This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three Symmetric Bayes Dichotomy (SBD) instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, financial case studies, and a 322-theorem Lean~4 formalization.
 
 \paragraph{A concrete example.}
 Consider a credit model with annual income and debt-to-income ratio
@@ -233,8 +233,8 @@ The impossibility also admits a principled relaxation.
 Practitioners can achieve between-group faithfulness and stability by aggregating across the Rashomon set, sacrificing within-group completeness (reporting ties for symmetric features).
 
 \begin{sloppypar}
-The proof is mechanically verified in Lean~4 using Mathlib: 315 type-checked theorems
-and lemmas across 56 files (80 with multi-step proofs of ${\geq}5$ tactic lines; the
+The proof is mechanically verified in Lean~4 using Mathlib: 322 type-checked theorems
+and lemmas across 57 files (80 with multi-step proofs of ${\geq}5$ tactic lines; the
 remainder are definitions, wrappers, and single-step applications; from 14
 domain-specific + 2 query-complexity axioms; 0 \texttt{sorry}).
 The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero axioms
@@ -272,7 +272,7 @@ proof errors \citep{nipkow2009social,zhang2026statistical}.
     from invariant decision theory \citep{lehmann2005testing}, demonstrated across three
     structurally distinct instances (feature attribution, model selection, and causal
     discovery under Markov equivalence) with different symmetry groups.
-    \item \textbf{Machine-verified proof}: formalized in Lean~4 (315 type-checked theorems from 16 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}). The axiom system is consistent: we construct an explicit model satisfying all 14 domain-specific axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and numerically.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (322 type-checked theorems from 16 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}). The axiom system is consistent: we construct an explicit model satisfying all 14 domain-specific axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and numerically.
 \end{enumerate}
 \end{sloppypar}
 
@@ -1758,6 +1758,32 @@ The bilemma applies to three common binary questions:
 \item \textbf{Counterfactual direction}: $H = \{\text{increase}, \text{decrease}\}$. ``Should the applicant increase or decrease feature $j$?'' No stable method can faithfully report the direction.
 \end{enumerate}
 
+\subsection{Instance: Mechanistic Interpretability}
+\label{sec:mech-interp}
+
+No circuit explanation of a neural network can be simultaneously faithful (report the actual circuit decomposition), stable (same circuit across functionally equivalent networks), and decisive (commit to a single decomposition).
+
+The bilemma applies with full force: circuit decomposition spaces are binary (each component is either part of the circuit or not), making them maximally incompatible. Faithful + stable alone is impossible --- even dropping decisiveness does not help. This is strictly stronger than the trilemma.
+
+\begin{theorem}[Mechanistic Interpretability Bilemma]\label{thm:mech-interp-bilemma}
+For any two functionally equivalent neural networks with incompatible circuit decompositions, no explanation method $E$ can be simultaneously faithful and stable. The Rashomon property is \textbf{derived} from constructive finite types (zero axioms).
+\end{theorem}
+
+\noindent\textit{Proof.}
+The circuit decomposition space $H = \{\text{decompAlpha}, \text{decompBeta}\}$ is maximally incompatible: compatible $\Rightarrow$ equal. By the bilemma (Theorem~\ref{thm:bilemma}), faithful forces $E = \text{explain}$, which is decisive, triggering the trilemma. \hfill$\square$
+
+\paragraph{Empirical grounding.}
+\citet{meloux2025circuits} found 85 distinct valid circuits with zero circuit error for a simple XOR task, each admitting an average of 535.8 valid interpretations. Less than 2\% of networks had a unique circuit mapping. This extreme multiplicity means the Rashomon property holds with overwhelming force for circuit explanations.
+
+\paragraph{Resolution: circuit equivalence classes.}
+The bilemma forecloses averaging-based resolutions (DASH) for circuits because the explanation space has no neutral element. The resolution requires \emph{enriching} the explanation space: report the equivalence class of valid circuits --- the computational structure shared across ALL valid decompositions --- rather than any individual decomposition. This is the circuit analogue of the CPDAG resolution for causal discovery: report what is shared, acknowledge what is underdetermined.
+
+\paragraph{Implications for AI safety.}
+Interpretability-based safety cases that depend on identifying ``the circuit'' for a behavior are subject to this impossibility. A circuit found in one training run may not exist in a functionally equivalent run. Safety claims built on single-network circuit analysis are as unstable as single-model SHAP rankings. The resolution: verify circuit-level claims across multiple equivalent networks, or qualify them as instance-specific.
+
+\paragraph{Lean formalization.}
+The mechanistic interpretability impossibility, bilemma, and unfaithfulness bound are machine-verified in \texttt{MechInterp.lean} with zero axiom dependencies. All types are finite inductives; the Rashomon property is derived via \texttt{decide}, not axiomatized.
+
 \begin{theorem}[Rashomon Unfaithfulness Bound]\label{thm:unfaith-bound}
 For any binary attribution question, any stable method is unfaithful at $\geq 1$ of every 2 Rashomon witnesses.
 On any pair of equivalent models that disagree on the sign/selection of a feature, a stable method must get it wrong for at least one of them.
@@ -2730,7 +2756,7 @@ directly comparable across datasets of different sizes and dimensionalities.
 \subsection{Proof Architecture}
 
 \begin{sloppypar}
-The formalization comprises 56 Lean~4 files with 16 axioms and 315 type-checked
+The formalization comprises 57 Lean~4 files with 16 axioms and 322 type-checked
 theorems and lemmas (0 \texttt{sorry}). Of these, 80 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or single-step applications.
 The core impossibility (\texttt{attribution\allowbreak\_impossibility}) depends on
@@ -2831,12 +2857,12 @@ The Lean formalization derives the Spearman bound $\rho_S \leq 1 - 3m^2/(P^3{-}P
 
 \subsection{Development Methodology}
 
-The initial formalization (49 theorems, 15 files) was developed by the first author with iterative Claude Code assistance over several weeks. The expansion from 49 to 315 theorems (56 files) was produced in a single development session by dispatching targeted Lean-writing agents with detailed mathematical specifications. All proofs were machine-verified by \texttt{lake build} (the Lean~4 type-checker); no proof was accepted on the basis of AI output alone.
+The initial formalization (49 theorems, 15 files) was developed by the first author with iterative Claude Code assistance over several weeks. The expansion from 49 to 322 theorems (57 files) was produced in a single development session by dispatching targeted Lean-writing agents with detailed mathematical specifications. All proofs were machine-verified by \texttt{lake build} (the Lean~4 type-checker); no proof was accepted on the basis of AI output alone.
 
 \subsection{Proof Depth Distribution}
 
-Of 315 type-checked declarations: 90 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are \texttt{attribution\_sum\_symmetric} (35 lines, derived symmetry via split-count decomposition), \texttt{Phi\_neg} (29 lines, Gaussian CDF properties), \texttt{gaussian\_rashomon\_witnesses} (27 lines, FIM ellipsoid construction), \texttt{sumSqRankDiff\_ge\_sq\_groupSize} (26 lines, midrank algebra), and \texttt{binary\_group\_firstmover\_is\_j\_or\_k} (23 lines, Finset cardinality argument).
-The 315 count includes both substantive multi-step proofs and definitional wrappers (e.g., backward-compatible aliases). Of these, 90 require ${\geq}5$ tactic lines and 21 require ${\geq}10$ lines.
+Of 322 type-checked declarations: 97 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are \texttt{attribution\_sum\_symmetric} (35 lines, derived symmetry via split-count decomposition), \texttt{Phi\_neg} (29 lines, Gaussian CDF properties), \texttt{gaussian\_rashomon\_witnesses} (27 lines, FIM ellipsoid construction), \texttt{sumSqRankDiff\_ge\_sq\_groupSize} (26 lines, midrank algebra), and \texttt{binary\_group\_firstmover\_is\_j\_or\_k} (23 lines, Finset cardinality argument).
+The 322 count includes both substantive multi-step proofs and definitional wrappers (e.g., backward-compatible aliases). Of these, 97 require ${\geq}5$ tactic lines and 21 require ${\geq}10$ lines.
 
 \subsection{Inconsistencies Found During Formalization}
 
@@ -2871,7 +2897,7 @@ The three-layer verification (SymPy algebra, Lean type-checking, empirical valid
 
 \begin{table}[t]
 \centering
-\caption{Lean file cross-reference (56 files, 315 theorems, 16 axioms).}
+\caption{Lean file cross-reference (57 files, 322 theorems, 16 axioms).}
 \label{tab:lean-crossref}
 \footnotesize
 \begin{tabular}{@{}lll@{}}
@@ -2938,9 +2964,10 @@ LossPreservation.lean & \S\ref{sec:rashomon} & rashomon\_from\_swap\_with\_loss 
 ParetoOptimality.lean & \S\ref{sec:dash-pareto} & dash\_unique\_pareto\_optimal \\
 ExplanationSystem.lean & \S\ref{sec:bilemma} & explanation\_impossibility \\
 Bilemma.lean & \S\ref{sec:bilemma} & bilemma\_of\_compatible\_eq \\
+MechInterp.lean & \S\ref{sec:mech-interp} & mech\_interp\_bilemma \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Infrastructure:}} \\
-Basic.lean & Import hub & (all 56 files) \\
+Basic.lean & Import hub & (all 57 files) \\
 RandomForest.lean & \S\ref{sec:rf} & (documentation only) \\
 \bottomrule
 \end{tabular}
@@ -3114,7 +3141,7 @@ constant.
 \end{sloppypar}
 This stratification directly addresses the proportionality axiom's empirical variance (CV $\approx 0.35$--$0.66$): the axiom is unnecessary for the impossibility and ratio bound, which depend only on split-count structure.
 
-The following are fully formalized in Lean (315 theorems, 0 \texttt{sorry}, 56 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, and the Pareto dominance of DASH. The Z-test diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
+The following are fully formalized in Lean (322 theorems, 0 \texttt{sorry}, 57 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, the Pareto dominance of DASH, and the mechanistic interpretability bilemma (derived Rashomon, zero axioms). The Z-test diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
 
 \paragraph{Approximate faithfulness--stability tradeoff.}
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\sigma(j) - \sigma(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.

@@ -21,7 +21,7 @@ Level 6 (design space):   DesignSpace.lean + DesignSpaceFull.lean (all 4 steps c
 Level 7 (derivation):     SymmetryDerive.lean (attribution_sum_symmetric, DERIVED)
 Level 8 (generalization):  SymmetricBayes.lean (general SBD theorem)
 Level 9 (instances):      ModelSelection.lean, CausalDiscovery.lean, SBDInstances.lean
-Level 10 (extensions):    ConditionalImpossibility.lean, FairnessAudit.lean, FlipRate.lean
+Level 10 (extensions):    ConditionalImpossibility.lean, FairnessAudit.lean, FlipRate.lean, MechInterp.lean
 Level 11 (bounds):        EnsembleBound.lean, Efficiency.lean, AlphaFaithful.lean
 Level 12 (universality):  RashomonUniversality.lean, RashomonInevitability.lean, LocalGlobal.lean
 Level 13 (abstract):      ExplanationSystem.lean (abstract ExplanationSystem, explanation_impossibility)
@@ -70,6 +70,7 @@ DASHImpossibility/
   CausalDiscovery.lean   — Causal discovery impossibility (S53-S55)
   SBDInstances.lean      — SBD instances + abstract aggregation (S51-S52, S58)
   FairnessAudit.lean     — Fairness audit impossibility (S56)
+  MechInterp.lean        — Mechanistic interpretability impossibility bounds
   EnsembleBound.lean     — DASH variance optimality + ensemble size (S22, S26)
   ExplanationSystem.lean — Abstract ExplanationSystem, faithful/stable/decisive, explanation_impossibility
   Bilemma.lean           — Bilemma (F+S impossible for binary H), unfaithfulness bound, all-or-nothing, SHAPSign, FeatureStatus
@@ -82,7 +83,7 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, design space, SNR calibration, conditional threshold, etc.)
 ```
 
-## Lean State: 56 files, 16 axioms, 315 theorems+lemmas, 0 sorry
+## Lean State: 57 files, 16 axioms, 322 theorems+lemmas, 0 sorry
 
 ## Axiom Inventory (16 total)
 
@@ -146,7 +147,7 @@ make setup         # full setup for new contributors
 - Use `sorry` without a `-- TODO:` comment explaining what's needed
 - Change axioms without re-running the SymPy verification (in companion repo: `dash-shap/paper/proofs/verify_lemma6_algebra.py`)
 - Add `autoImplicit true` — all variables must be explicit
-- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print s}'` (currently 315)
+- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print s}'` (currently 322)
 - Run parallel subagents that both modify the same file (causes build cache corruption)
 - Axiomatize quantities that can be defined — prefer definitions with axiomatized bounds (see SpearmanDef.lean pattern)
 - Claim empirical results as "proved" or "Lean-verified" — distinguish: **proved** (zero axiom deps), **derived** (from axioms), **argued** (supplement proof only), **empirical** (experiments). The paper's "Proof status transparency" paragraph is the reference.
