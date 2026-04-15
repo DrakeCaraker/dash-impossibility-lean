@@ -53,3 +53,4 @@ import DASHImpossibility.ParetoOptimality
 import DASHImpossibility.ExplanationSystem
 import DASHImpossibility.Bilemma
 import DASHImpossibility.MechInterp
+import DASHImpossibility.BeyondBinary
