@@ -3,20 +3,20 @@
 **No feature ranking can be simultaneously faithful, stable, and complete when features are correlated — and we prove it in Lean 4.**
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19468379.svg)](https://doi.org/10.5281/zenodo.19468379)
-![Theorems](https://img.shields.io/badge/theorems-305-blue)
+![Theorems](https://img.shields.io/badge/theorems-315-blue)
 ![Axioms](https://img.shields.io/badge/axioms-16-orange)
 ![Sorry](https://img.shields.io/badge/sorry-0-brightgreen)
 ![Lean 4](https://img.shields.io/badge/Lean-4-purple)
-![Files](https://img.shields.io/badge/Lean_files-54-informational)
+![Files](https://img.shields.io/badge/Lean_files-56-informational)
 
 <!-- Verify badges with:
-  grep -c '^theorem\|^lemma' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'  # 305
+  grep -c '^theorem\|^lemma' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'  # 315
   grep -c '^axiom' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'              # 16
   grep -rn 'sorry' DASHImpossibility/*.lean                                               # (empty)
-  ls DASHImpossibility/*.lean | wc -l                                                     # 54
+  ls DASHImpossibility/*.lean | wc -l                                                     # 56
 -->
 
-If you have ever retrained an XGBoost model and noticed the "most important feature" changed, this paper proves that is not a bug — it is a mathematical inevitability. When features are correlated, no attribution method can simultaneously tell you what the model computed (faithfulness), give you the same answer across retrains (stability), and decide every pair of features (completeness). You must pick two of three. We prove it, quantify it, characterize the entire design space of solutions, and give you a toolkit to handle it. The formalization comprises 305 theorems across 54 Lean 4 files with 16 axioms and 0 sorry. The core impossibility theorem is machine-checked with zero domain-specific axiom dependencies. The resolution — DASH (Diversified Aggregation of SHAP) — is proved to be the minimum-variance unbiased estimator via Cramer-Rao.
+If you have ever retrained an XGBoost model and noticed the "most important feature" changed, this paper proves that is not a bug — it is a mathematical inevitability. When features are correlated, no attribution method can simultaneously tell you what the model computed (faithfulness), give you the same answer across retrains (stability), and decide every pair of features (completeness). You must pick two of three. We prove it, quantify it, characterize the entire design space of solutions, and give you a toolkit to handle it. The formalization comprises 315 theorems across 56 Lean 4 files with 16 axioms and 0 sorry. The core impossibility theorem is machine-checked with zero domain-specific axiom dependencies. The resolution — DASH (Diversified Aggregation of SHAP) — is proved to be the minimum-variance unbiased linear estimator via the Cauchy-Schwarz inequality (Titu's lemma), extended to all unbiased estimators by Rao-Blackwell, with a deeper connection to invariant decision theory via the Hunt-Stein theorem. For binary attribution questions (SHAP sign, feature selection), the impossibility is strictly stronger: faithful + stable alone is impossible (the bilemma).
 
 ---
 
@@ -91,10 +91,10 @@ The GBDT ratio 1/(1-rho^2) means that at rho=0.9, the dominant feature gets appr
 
 ### 4. The Fix: DASH
 
-**DASH** (**D**iversified **A**ggregation of **SH**AP): average |SHAP| values across M independently trained models. This is not just "try averaging" — it is provably the minimum-variance unbiased estimator via the Cramer-Rao bound.
+**DASH** (**D**iversified **A**ggregation of **SH**AP): average |SHAP| values across M independently trained models. This is not just "try averaging" — it is provably the minimum-variance unbiased linear estimator via the Cauchy-Schwarz inequality (Titu's lemma; Lean-verified).
 
 - `consensus_equity` in [`Corollary.lean`](DASHImpossibility/Corollary.lean) — DASH achieves equity (zero unfaithfulness) for collinear feature pairs in balanced ensembles
-- `sum_squares_ge_inv_M` in [`EnsembleBound.lean`](DASHImpossibility/EnsembleBound.lean) — Cramer-Rao optimality via Titu's lemma (the sum of squares of weights is minimized by equal weights)
+- `sum_squares_ge_inv_M` in [`EnsembleBound.lean`](DASHImpossibility/EnsembleBound.lean) — Cauchy-Schwarz optimality via Titu's lemma (the sum of squares of weights is minimized by equal weights)
 - Variance decreases as 1/M, with tight ensemble size formula: **M_min = ceil(2.71 * sigma^2 / Delta^2)**
 
 DASH is Pareto-optimal: no attribution method achieves better stability without sacrificing more faithfulness. The proof is in [`DesignSpace.lean`](DASHImpossibility/DesignSpace.lean). The tradeoff: DASH produces ties for within-group features (it cannot distinguish features that are genuinely interchangeable), but ranks between-group features faithfully and stably.
@@ -175,7 +175,7 @@ Each extension is a self-contained theorem in its own Lean file:
 ```
 dash-impossibility-lean/
 │
-├── DASHImpossibility/                    # 54 Lean 4 files, 305 theorems, 16 axioms, 0 sorry
+├── DASHImpossibility/                    # 56 Lean 4 files, 315 theorems, 16 axioms, 0 sorry
 │   │
 │   │  ── Level 0: Pure Logic ──
 │   ├── Trilemma.lean                     # attribution_impossibility (zero axiom deps, 4-line proof)
@@ -251,7 +251,7 @@ dash-impossibility-lean/
 │   ├── GaussianFlipRate.lean             # Standard normal CDF, flip rate formula
 │   ├── FIMImpossibility.lean             # Gaussian FIM impossibility, Rashomon ellipsoid
 │   ├── RandomForest.lean                 # Contrast case (documentation, no formal proofs)
-│   └── Basic.lean                        # Import hub (all 54 files)
+│   └── Basic.lean                        # Import hub (all 56 files)
 │
 ├── paper/
 │   ├── main_definitive.tex               # 66-page monograph (source of truth)
@@ -310,7 +310,7 @@ main_definitive.tex  (66pp, monograph, source of truth)
 
 ## Proof Architecture
 
-**305 theorems. 16 axioms. 0 sorry. 54 files. 13 abstraction levels. 80 multi-step proofs (>=5 tactic lines).**
+**315 theorems. 16 axioms. 0 sorry. 56 files. 14 abstraction levels. 90 multi-step proofs (>=5 tactic lines).**
 
 The Lean formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review. The axiom consistency proof (a `Fin 4` construction in [`Consistency.lean`](DASHImpossibility/Consistency.lean)) demonstrates the axiom system is non-vacuous — there exists a concrete model satisfying all 16 axioms.
 
@@ -439,7 +439,7 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 
 **Regulator or model risk officer.** Single-model SHAP explanations are provably unreliable under collinearity. In a survey of 77 public datasets, 68% exhibit attribution instability. This affects EU AI Act Art. 13(3)(b)(ii) requirements for disclosing "known and foreseeable circumstances" affecting accuracy, and SR 11-7 model risk management compliance. The paper provides disclosure templates and a diagnostic workflow.
 
-**Lean or Mathlib community.** 305 theorems across 54 files, 13 abstraction levels, using `MulAction` for orbit bounds, `ProbabilityTheory.cdf` for the Gaussian flip rate, and `Analysis.Calculus` for the FIM impossibility. The Gaussian CDF symmetry proofs (phi(0)=1/2, phi(-x)=1-phi(x)) via `NoAtoms` + `prob_compl_eq_one_sub` may be of independent interest. The axiom consistency proof constructs a `Fin 4` model satisfying all 16 axioms.
+**Lean or Mathlib community.** 315 theorems across 56 files, 14 abstraction levels, using `MulAction` for orbit bounds, `ProbabilityTheory.cdf` for the Gaussian flip rate, and `Analysis.Calculus` for the FIM impossibility. The Gaussian CDF symmetry proofs (phi(0)=1/2, phi(-x)=1-phi(x)) via `NoAtoms` + `prob_compl_eq_one_sub` may be of independent interest. The axiom consistency proof constructs a `Fin 4` model satisfying all 16 axioms.
 
 ## Contributing
 
@@ -501,7 +501,7 @@ A programming language and interactive theorem prover. You write mathematical pr
 It is a placeholder that says "trust me, this is true" without providing a proof — the Lean equivalent of a TODO. This project has 0 sorry: every claim is machine-verified.
 
 **Is DASH just averaging?**
-Yes — but with provable optimality guarantees. DASH computes the mean |SHAP| across M independently trained models. The paper proves this is the minimum-variance unbiased estimator (via Cramer-Rao / Titu's lemma) and gives the tight ensemble size formula M_min = ceil(2.71 * sigma^2 / Delta^2). "Just averaging" is like saying OLS is "just matrix inversion." The value is in understanding exactly when and why it is optimal.
+Yes — but with provable optimality guarantees. DASH computes the mean |SHAP| across M independently trained models. The paper proves this is the minimum-variance unbiased linear estimator (via Cauchy-Schwarz / Titu's lemma; Lean-verified) and gives the tight ensemble size formula M_min = ceil(2.71 * sigma^2 / Delta^2). "Just averaging" is like saying OLS is "just matrix inversion." The value is in understanding exactly when and why it is optimal.
 
 **Does this apply to my dataset?**
 Check two things: (1) Do you have features with |correlation| > 0.5? (2) Do those features have similar importance? If both yes, your SHAP rankings for those features are unreliable. Adapt `paper/scripts/f1_f5_validation.py` to your data to check.
