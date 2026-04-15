@@ -30,7 +30,7 @@ namespace DASHImpossibility
     - explain: model true → positive (true), model false → negative (false)
     - incompatible: positive ≠ negative
 
-    Zero axioms, zero sorry. The bilemma holds by computation. -/
+    Zero axioms, zero unproved goals. The bilemma holds by computation. -/
 def concreteMLSystem : ExplanationSystem Bool Bool Unit where
   observe := fun _ => ()
   explain := fun b => b
@@ -49,7 +49,7 @@ theorem concreteML_irrefl (b : Bool) :
   fun h => h rfl
 
 /-- **Constructive ML bilemma.** Faithful + stable is impossible for the
-    concrete ML system. Zero axioms, zero sorry. -/
+    concrete ML system. Zero axioms, zero unproved goals. -/
 theorem concreteML_bilemma
     (E : Bool → Bool) (hf : faithful concreteMLSystem E)
     (hs : stable concreteMLSystem E) : False :=
