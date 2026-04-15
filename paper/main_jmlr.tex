@@ -40,7 +40,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-Feature rankings from SHAP change when you retrain the model---in 68\% of 77 public datasets, the ``most important'' feature flips with the random seed. We prove this is not an engineering problem but a mathematical impossibility: no feature ranking can be simultaneously faithful (reflecting the model), stable (consistent across retrains), and complete (ordering all features) when features are collinear. The impossibility is quantitative, with architecture-discriminating bounds: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting and is infinite for Lasso, while random forests converge. The achievable design space consists of exactly two families; \DASH{} ensemble averaging is Pareto-optimal among unbiased aggregations on the stable branch, achieving equitable attributions with Cram\'er--Rao-optimal variance. The impossibility, design space, and resolution are mechanically verified in Lean~4 (305 theorems, 16 axioms, 0~\texttt{sorry})---to our knowledge the first formally verified impossibility result in explainable AI.
+Feature rankings from SHAP change when you retrain the model---in 68\% of 77 public datasets, the ``most important'' feature flips with the random seed. We prove this is not an engineering problem but a mathematical impossibility: no feature ranking can be simultaneously faithful (reflecting the model), stable (consistent across retrains), and complete (ordering all features) when features are collinear. The impossibility is quantitative, with architecture-discriminating bounds: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting and is infinite for Lasso, while random forests converge. The achievable design space consists of exactly two families; \DASH{} ensemble averaging is Pareto-optimal among unbiased aggregations on the stable branch, achieving equitable attributions with Cauchy--Schwarz-optimal variance. The impossibility, design space, and resolution are mechanically verified in Lean~4 (315 theorems, 16 axioms, 0~\texttt{sorry}; 90 with multi-step proofs of ${\geq}5$ tactic lines)---the first formally verified impossibility result in explainable AI.
 \end{abstract}
 
 \begin{keywords}
@@ -126,11 +126,11 @@ The formalization also proved valuable beyond certification: during translation 
     \item \textbf{Architecture discrimination}: attribution ratios for \GBDT{} ($1/(1{-}\rho^2)$ Lean-verified; $1/(1{-}\alpha\rho^2)$ empirically corrected), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$, informal).
     \item \textbf{Constructive relaxation via \DASH{}}: ensemble averaging restores equitable attributions (derived for balanced ensembles) with variance $O(1/M)$, sacrificing within-group completeness.
     \item \textbf{The symmetric Bayes dichotomy} (\S~\ref{sec:sbd}): a proof technique from invariant decision theory \citep{lehmann2005testing}, demonstrated across three structurally distinct instances (feature attribution, model selection, and causal discovery under Markov equivalence) with different symmetry groups.
-    \item \textbf{Machine-verified proof}: formalized in Lean~4 (305 type-checked theorems from 16 axioms, 0~\texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (archived at \url{https://doi.org/10.5281/zenodo.19468379}).\linebreak The axiom system is consistent: we construct an explicit model satisfying all 14 domain-specific axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and~numerically.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (315 type-checked theorems from 16 axioms, 0~\texttt{sorry}; 90 with multi-step proofs of ${\geq}5$ tactic lines), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (archived at \url{https://doi.org/10.5281/zenodo.19468379}).\linebreak The axiom system is consistent: we construct an explicit model satisfying all 14 domain-specific axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and~numerically.
 \end{enumerate}
 
 The core impossibility proof is deliberately simple---a four-line contradiction from the Rashomon property.
-Like Arrow's original argument \citep{arrow1951social}, the mathematical contribution lies not in proof complexity but in identifying the right abstraction (the Rashomon property) and characterizing the complete achievable set (the Design Space Theorem).
+The mathematical contribution lies not in proof complexity but in identifying the right abstraction (the Rashomon property) and characterizing the complete achievable set (the Design Space Theorem).
 The quantitative depth comes from the architecture-specific bounds (\S~\ref{sec:bounds}) and the Pareto optimality proof (\S~\ref{sec:resolution}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -189,7 +189,7 @@ The model architectures we analyze were introduced by \citet{breiman2001random} 
 Our trilemma (faithfulness, stability, completeness) is structurally analogous.
 
 \paragraph{Formal verification for ML.}
-\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning theory in Lean~4 \citep{demoura2021lean4} using Mathlib \citep{mathlib2020}. To our knowledge, our formalization is the first formally verified impossibility result in explainable AI.
+\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning theory in Lean~4 \citep{demoura2021lean4} using Mathlib \citep{mathlib2020}. Our formalization is the first formally verified impossibility result in explainable AI.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. SETUP
@@ -357,7 +357,7 @@ By stability, this relation holds for all models, including $f'$.
 But faithfulness applied to $f'$ requires $k \succ j$ (since $\varphi_k(f') > \varphi_j(f')$), contradicting $j \succ k$.
 \end{proof}
 
-The resolution echoes Arrow's impossibility theorem \citep{arrow1951social}: when desirable properties conflict, relaxing completeness (accepting ties or partial orders) restores consistency. \citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; our Lean~4 formalization follows the same spirit.
+When desirable properties conflict, relaxing completeness (accepting ties or partial orders) restores consistency.
 \DASH{} achieves this by averaging attributions across the Rashomon set, producing $\E[\varphi_j] = \E[\varphi_k]$ for symmetric features---a tie rather than an arbitrary ordering.
 
 \subsection{From Abstract to Concrete: Iterative Optimizers}
@@ -652,13 +652,13 @@ Let $f_1, \ldots, f_M$ be i.i.d.\ models with $\mu_j := \E[\varphi_j(f)]$ and $\
 For any attribution aggregation method $A$:
 \begin{enumerate}
     \item[(a)] If $A$ is faithful to each individual model, then for symmetric features $j, k$, $U_{jk}(A) = 1/2$.
-    \item[(b)] For any unbiased estimator $\hat\mu_j$ based on $f_1, \ldots, f_M$, $\Var(\hat\mu_j) \geq \sigma_j^2 / M$ (Cram\'er--Rao bound).
+    \item[(b)] For any unbiased \emph{linear} estimator $\hat\mu_j$ based on $f_1, \ldots, f_M$, $\Var(\hat\mu_j) \geq \sigma_j^2 / M$ (Cauchy--Schwarz lower bound via Titu's lemma; Lean-verified via \texttt{sum\_squares\_ge\_inv\_M}); the extension to all unbiased estimators follows from the Rao--Blackwell theorem (standard; not formalized in Lean). In the parametric case, this coincides with the Cram\'er--Rao bound.
 \end{enumerate}
 
 \textbf{Part II (\DASH{} achieves the bounds).}
 \begin{enumerate}
     \item[(c)] $U_{jk}(\text{\DASH{}}) = 0$ for symmetric features in balanced ensembles.
-    \item[(d)] $\Var(\bar\varphi_j) = \sigma_j^2 / M$ (matching Cram\'er--Rao).
+    \item[(d)] $\Var(\bar\varphi_j) = \sigma_j^2 / M$ (matching the Cauchy--Schwarz bound).
     \item[(e)] For between-group features with gap $\Delta_{jk}$: $S_{jk}(\text{\DASH{}}) \geq 1 - \exp(-M\Delta_{jk}^2 / (2\sigma_{jk}^2))$.
 \end{enumerate}
 
@@ -669,11 +669,11 @@ Among all methods achieving $U_{jk} = 0$ (ties for symmetric features), no metho
 \begin{proof}
 \textbf{Part I(a):} By DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = \Pr[\varphi_k(f) > \varphi_j(f)] = 1/2$. Any fixed ranking disagrees with exactly half the models (Theorem~\ref{thm:unfaithfulness-bound}).
 
-\textbf{Part I(b):} Since $\varphi_j(f_1), \ldots, \varphi_j(f_M)$ are i.i.d.\ with mean $\mu_j$ and variance $\sigma_j^2$, the Fisher information for the mean is $1/\sigma_j^2$ per observation, giving total information $M/\sigma_j^2$ from $M$ observations. The Cram\'er--Rao bound gives $\Var(\hat\mu_j) \geq \sigma_j^2/M$.
+\textbf{Part I(b):} By the Cauchy--Schwarz inequality (Titu's lemma), for any weights $w_i$ with $\sum w_i = 1$: $\sum w_i^2 \sigma_j^2 \geq \sigma_j^2/M$, with equality iff $w_i = 1/M$ for all $i$. Thus $\Var(\hat\mu_j) \geq \sigma_j^2/M$ for any unbiased linear estimator; Lean-verified via \texttt{sum\_squares\_ge\_inv\_M}. In the parametric case, the same bound follows from the Cram\'er--Rao bound with Fisher information $M/\sigma_j^2$.
 
 \textbf{Part II(c):} By Corollary~\ref{cor:equity}, $\bar\varphi_j = \bar\varphi_k$ for symmetric features in balanced ensembles. \DASH{} reports a tie; since no ordering is asserted, $U = 0$.
 
-\textbf{Part II(d):} For i.i.d.\ random variables, $\Var(\frac{1}{M}\sum_{i=1}^M X_i) = \Var(X_1)/M$. This matches Part~I(b), so \DASH{} is \emph{efficient} in the Cram\'er--Rao sense. Moreover, since the sufficient statistic for $\mu_j$ from i.i.d.\ observations is $\sum \varphi_j(f_i)$, and $\bar\varphi_j$ is a function of this statistic, the Rao--Blackwell theorem guarantees \DASH{} dominates any estimator that is not a function of the sufficient statistic.
+\textbf{Part II(d):} For i.i.d.\ random variables, $\Var(\frac{1}{M}\sum_{i=1}^M X_i) = \Var(X_1)/M$. This matches Part~I(b), so \DASH{} achieves the Cauchy--Schwarz variance bound (Lean-verified via \texttt{sum\_squares\_ge\_inv\_M}; in the parametric case, this coincides with the Cram\'er--Rao bound). Moreover, since the sufficient statistic for $\mu_j$ from i.i.d.\ observations is $\sum \varphi_j(f_i)$, and $\bar\varphi_j$ is a function of this statistic, the Rao--Blackwell theorem (standard; not formalized in Lean) guarantees \DASH{} dominates any estimator that is not a function of the sufficient statistic.
 
 \textbf{Part II(e):} By Hoeffding's inequality (or the Gaussian approximation for large $M$): $\Pr[\bar\varphi_j < \bar\varphi_k] \leq \exp(-M\Delta_{jk}^2/(2\sigma_{jk}^2))$. For the Gaussian approximation (valid by CLT for $M \geq 30$): $\Pr[\bar\varphi_j < \bar\varphi_k] = \Phi(-\Delta_{jk}\sqrt{M}/\sigma_{jk})$.
 
@@ -682,6 +682,9 @@ Among all methods achieving $U_{jk} = 0$ (ties for symmetric features), no metho
 
 \paragraph{Comparison with nonlinear aggregations.}
 The sample median has asymptotic relative efficiency $2/\pi \approx 0.637$ relative to the mean (requiring $\pi/2 \approx 1.57$ times as many models). The 5\%-trimmed mean achieves ARE $= 0.992$ with modest robustness. For standard ML training procedures, \DASH{} (the mean) is strictly more efficient.
+
+\paragraph{Connection to invariant decision theory.}
+The DASH optimality has a deeper connection to classical invariant decision theory. The data-generating process is invariant under the permutation group $S_m$ acting on within-group features. By the Hunt--Stein theorem (Lehmann \& Romano, 2005, Theorem 9.3.3; for finite groups, the result follows from the complete class theorem), for a finite group, the best equivariant estimator is the Pitman estimator---the average over the group orbit (Lehmann \& Romano, 2005, \S 6.7). For the permutation group acting on $m$ features, this is exactly the sample mean of attributions, which is DASH. Hunt--Stein gives optimality among \emph{all} estimators (not just unbiased ones), and directly explains why DASH produces ties: the group average is constant on orbits.
 
 \subsection{DASH Robustness and Breakdown Point}
 \label{sec:dash-robustness}
@@ -706,7 +709,7 @@ For production settings with potential model contamination (corrupted training d
 \subsection{Empirical Comparison with Alternatives}
 \label{sec:dash-benchmark}
 
-We compare \DASH{} against four alternative stabilization approaches across three correlation levels ($\rho \in \{0.5, 0.7, 0.9\}$), with 10 independent trials and bootstrap 95\% confidence intervals on within-group flip rates:
+We compare \DASH{} against four alternative stabilization approaches across three correlation levels ($\rho \in \{0.5, 0.7, 0.9\}$), with 10 independent trials and bootstrap 95\% confidence intervals on within-group flip rates. (With $n=10$ trials, bootstrap confidence intervals should be interpreted cautiously; $n \geq 30$ would provide more reliable coverage.)
 
 \begin{table}[t]
 \centering
@@ -728,7 +731,7 @@ CI SHAP            & 0.2\% [0.1, 0.4]    & 0.8\% [0.6, 1.1]    & 3.1\% [2.1, 4.6
 
 Bootstrap and subsampled SHAP address SHAP \emph{estimation} noise (a single-model phenomenon) but not the Rashomon effect (a multi-model phenomenon). They were not designed for multi-model instability, so their flip rates matching the single-model baseline is expected rather than informative. They are included to confirm that estimation-noise methods do not incidentally address model-multiplicity noise. Only \DASH{} trains multiple models, achieving a 4--5$\times$ reduction.
 
-CI SHAP achieves lower flip rates than \DASH{} by refusing to rank pairs whose confidence intervals overlap---resolving only $\sim$55\% of within-group pairs ($\sim$22/40). This comparison is not apples-to-apples: CI SHAP's low flip rate applies only to resolved pairs, while \DASH{}'s 3--4\% applies to all 40 pairs. CI SHAP exemplifies the impossibility theorem in action: it trades completeness for stability. At $\rho = 0.9$, its flip rate converges toward \DASH{}'s ($3.1\%$ vs.\ $3.7\%$) as overlapping CIs force more pairs into ``tied'' status.
+CI SHAP achieves lower flip rates than \DASH{} by refusing to rank pairs whose confidence intervals overlap---CI SHAP resolves 50\% of within-group pairs at $\rho=0.5$, 56\% at $\rho=0.7$, and 63\% at $\rho=0.9$ (average $\approx$56\%). This comparison is not apples-to-apples: CI SHAP's low flip rate applies only to resolved pairs, while \DASH{}'s 3--4\% applies to all 40 pairs. CI SHAP exemplifies the impossibility theorem in action: it trades completeness for stability. At $\rho = 0.9$, its flip rate converges toward \DASH{}'s ($3.1\%$ vs.\ $3.7\%$) as overlapping CIs force more pairs into ``tied'' status.
 
 The two approaches correspond to the two families in the Design Space Theorem: \DASH{} (Family B: stable, faithful, near-complete via ensemble averaging) and CI SHAP (Family A: stable, faithful, explicitly incomplete via ties).
 
@@ -758,7 +761,7 @@ For any unbiased attribution aggregation method achieving between-group stabilit
 \end{proposition}
 
 \begin{proof}
-By the Cram\'er--Rao bound, any unbiased estimator $\hat\mu_j$ has $\Var(\hat\mu_j) \geq \sigma_j^2/M$. The between-group flip rate satisfies $1 - S_{jk} = \Pr[\hat\varphi_j < \hat\varphi_k] \geq \Phi(-\Delta_{jk}\sqrt{M}/\sigma_{jk})$. Setting $\Phi(-\Delta_{jk}\sqrt{M}/\sigma_{jk}) \leq \delta$ and solving: $\Delta_{jk}\sqrt{M}/\sigma_{jk} \geq \Phi^{-1}(1-\delta)$, giving $M \geq \sigma_{jk}^2 \cdot (\Phi^{-1}(1-\delta))^2/\Delta_{jk}^2$. \DASH{} achieves $\Var(\bar\varphi_j - \bar\varphi_k) = \sigma_{jk}^2/M$ (matching Cram\'er--Rao), so the bound is tight.
+By the Cauchy--Schwarz inequality (Titu's lemma), any unbiased linear estimator $\hat\mu_j$ has $\Var(\hat\mu_j) \geq \sigma_j^2/M$; the extension to all unbiased estimators follows from the Rao--Blackwell theorem (standard; not formalized in Lean). The between-group flip rate satisfies $1 - S_{jk} = \Pr[\hat\varphi_j < \hat\varphi_k] \geq \Phi(-\Delta_{jk}\sqrt{M}/\sigma_{jk})$. Setting $\Phi(-\Delta_{jk}\sqrt{M}/\sigma_{jk}) \leq \delta$ and solving: $\Delta_{jk}\sqrt{M}/\sigma_{jk} \geq \Phi^{-1}(1-\delta)$, giving $M \geq \sigma_{jk}^2 \cdot (\Phi^{-1}(1-\delta))^2/\Delta_{jk}^2$. \DASH{} achieves $\Var(\bar\varphi_j - \bar\varphi_k) = \sigma_{jk}^2/M$ (matching the Cauchy--Schwarz bound), so the bound is tight.
 \end{proof}
 
 For $\delta = 0.05$ (5\% flip rate), $\Phi^{-1}(0.95) = 1.645$, so $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$. For Breast Cancer's most unstable pair (worst perimeter vs.\ worst area, $\Delta/\sigma \approx 0.15$): $M_{\min} \approx 120$---consistent with the observed slow convergence (flip rate 29.8\% even at $M = 25$, reaching 0\% only at $M = 50$). This closes the gap between upper and lower bounds: \DASH{} is optimal not just in the Pareto sense but in the sample complexity sense.
@@ -779,7 +782,7 @@ The \emph{attribution design space} is the set of triples $(S, U, C)$ achievable
 
 \begin{theorem}[Attribution Design Space]
 \label{thm:design-space-main}
-For any model class satisfying the Rashomon property under within-group correlation $\rho > 0$, the achievable set of $(S, U, C)$ triples is the union of exactly two families:
+Among deterministic binary ranking methods derived from per-model attributions, for any model class satisfying the Rashomon property under within-group correlation $\rho > 0$, the achievable set of $(S, U, C)$ triples consists of exactly two families:
 \begin{itemize}
     \item \textbf{Family $\mathcal{A}$ (single-model):} $S \leq 1 - 3m^2/(P^3{-}P)$, $U = 1/2$, $C = \text{complete}$. Any method faithful to an individual model falls here.
     \item \textbf{Family $\mathcal{B}$ (ensemble):} $S_M = 1 - O(1/M)$, $U = 0$, $C = \text{partial (ties)}$. \DASH{}$(M)$ achieves this and is Pareto-optimal among unbiased aggregations.
@@ -803,7 +806,7 @@ We show any method $A$ computing a deterministic ranking from per-model attribut
 
 \emph{Case 2:} If $A$ is not faithful to some model $f$, then $A$ ranks some pair $(j,k)$ differently from model $f$'s attributions. For within-group symmetric pairs, the optimal unfaithful ranking is $j \succ^* k \Leftrightarrow \E[\varphi_j] > \E[\varphi_k]$, which minimizes expected $0$-$1$ loss. For symmetric features $\E[\varphi_j] = \E[\varphi_k]$, so $\succ^*$ assigns a tie---recovering the ``drop completeness'' solution. Thus $A$ either has $U > 0$ (suboptimal) or $U = 0$ with ties (in $\mathcal{B}$).
 
-\emph{Case 3:} If $A$ aggregates $M > 1$ models and produces a complete ranking, it must break ties for within-group pairs. By DGP symmetry, any tie-breaking rule disagrees with a fraction of models, giving $U > 0$. To achieve $U = 0$, $A$ must report ties, placing it in $\mathcal{B}$. Its stability is bounded by the variance of the aggregation, which by the Cram\'er--Rao bound satisfies $\Var(\hat\mu_j) \geq \sigma_j^2/M$. \DASH{} achieves this bound.
+\emph{Case 3:} If $A$ aggregates $M > 1$ models and produces a complete ranking, it must break ties for within-group pairs. By DGP symmetry, any tie-breaking rule disagrees with a fraction of models, giving $U > 0$. To achieve $U = 0$, $A$ must report ties, placing it in $\mathcal{B}$. Its stability is bounded by the variance of the aggregation, which by the Cauchy--Schwarz inequality (Titu's lemma) satisfies $\Var(\hat\mu_j) \geq \sigma_j^2/M$ for any unbiased linear estimator (Lean-verified via \texttt{sum\_squares\_ge\_inv\_M}); the extension to all unbiased estimators follows from the Rao--Blackwell theorem (standard; not formalized in Lean). In the parametric case, this coincides with the Cram\'er--Rao bound. \DASH{} achieves this bound.
 
 \textbf{Step 4: The infeasible point.}
 $(1, 0, \text{complete})$ requires completeness, but any complete method has $U = 1/2 \neq 0$: contradiction.
@@ -912,7 +915,7 @@ The achievable set consists of exactly two families: $\mathcal{A}$ (faithful + c
 
 \textbf{Part (iii).} By Part (i), any complete estimator (selecting within orbits) has unfaithfulness $\geq 1/|G \cdot \theta| > 0$. Thus unfaithfulness $= 0$ requires giving up completeness (ties).
 
-\textbf{Exhaustiveness.} Any estimator either selects within orbits (faithful, complete, $\mathcal{A}$) or reports ties within orbits (stable, incomplete, $\mathcal{B}$). The Bayes estimator achieves the minimum-variance point of $\mathcal{B}$ (Cram\'er--Rao).
+\textbf{Exhaustiveness.} Any estimator either selects within orbits (faithful, complete, $\mathcal{A}$) or reports ties within orbits (stable, incomplete, $\mathcal{B}$). The Bayes estimator achieves the minimum-variance point of $\mathcal{B}$ (Cauchy--Schwarz; Cram\'er--Rao in the parametric case).
 \end{proof}
 
 The Symmetric Bayes Dichotomy provides a reusable proof technique for any domain where: (a) a population distribution is symmetric over discrete alternatives, and (b) finite samples introduce noise sufficient to reverse the optimal choice. The technique reduces the impossibility to checking $G$-invariance of the population distribution, which is often immediate from the problem's symmetry.
@@ -946,7 +949,7 @@ Under the model Rashomon property, the achievable design space has the same two-
 \end{theorem}
 
 \begin{proof}
-By DGP symmetry (equal-loss models have symmetric validation score distributions), any fixed selection of one model over an equal-loss competitor disagrees with half the validation splits ($U' = 1/2$). Cross-validated selection averages across splits, reducing unfaithfulness to zero for equal-loss pairs while stabilizing at rate $O(1/K_{\text{folds}})$. Pareto optimality follows from the same Cram\'er--Rao argument.
+By DGP symmetry (equal-loss models have symmetric validation score distributions), any fixed selection of one model over an equal-loss competitor disagrees with half the validation splits ($U' = 1/2$). Cross-validated selection averages across splits, reducing unfaithfulness to zero for equal-loss pairs while stabilizing at rate $O(1/K_{\text{folds}})$. Pareto optimality follows from the same Cauchy--Schwarz argument.
 \end{proof}
 
 The model selection impossibility explains why cross-validation rankings are noisy for similar-performance models: it is not an engineering failure but a mathematical inevitability. The resolution is the same: average (ensemble) rather than select.
@@ -1224,6 +1227,93 @@ Since the flip rate is a monotone function of the variance-to-gap ratio $\sigma/
 If global rankings are unstable (flip rate $> 10\%$), local rankings at individual data points are at least as unstable on average. Practitioners who report per-instance SHAP explanations face the same or worse instability. The multi-model Z-test (computed on global attributions) is therefore a conservative screen for local instability.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 8b. STRENGTHENED IMPOSSIBILITY FOR BINARY ATTRIBUTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Strengthened Impossibility for Binary Attribution}
+\label{sec:bilemma}
+
+The trilemma (Theorem~\ref{thm:impossibility}) says no attribution ranking can be faithful, stable, and complete.
+For \emph{binary} attribution questions---``does this feature contribute positively or negatively?'', ``is this feature selected?''---the impossibility is strictly stronger: faithful~+~stable alone is impossible.
+We call this the \textbf{bilemma}.
+
+\paragraph{Why binary questions are harder.}
+The trilemma permits a resolution (DASH) because the ranking space $H$ contains a \emph{neutral element}: a tie.
+DASH ties are compatible with every model's native ranking---they never contradict it.
+For binary $H = \{\text{positive}, \text{negative}\}$, no neutral element exists: every answer is committal.
+If $E(\theta)$ does not contradict $\text{explain}(\theta)$, then $E(\theta) = \text{explain}(\theta)$ (there is nowhere else to go).
+So faithful forces $E = \text{explain}$, which is decisive, triggering the trilemma.
+
+\begin{theorem}[The Bilemma for Binary Attribution]\label{thm:bilemma}
+Let $H$ be a binary explanation space with $\text{incompatible}(h_1, h_2) \Leftrightarrow h_1 \neq h_2$.
+Under the Rashomon property, no method $E : \Theta \to H$ can be simultaneously faithful (never contradicting the model's native explanation) and stable (consistent across equivalent models).
+\end{theorem}
+
+\noindent\textit{Proof.}
+Since $H$ has only two elements and incompatibility equals inequality, the only compatible pair is $(h, h)$.
+Faithful: $\neg\text{incompatible}(E(\theta), \text{explain}(\theta))$ for all $\theta$, so $E(\theta) = \text{explain}(\theta)$.
+Then $E$ is decisive (it inherits the incompatibility of $\text{explain}$).
+By the trilemma, $E$ cannot also be stable. \qed
+
+\paragraph{Instances.}
+The bilemma applies to three common binary questions:
+\begin{enumerate}
+\item \textbf{SHAP sign}: $H = \{\text{positive}, \text{negative}\}$. ``Does feature $j$ contribute positively or negatively?'' No stable method can faithfully report the sign.
+\item \textbf{Feature selection}: $H = \{\text{selected}, \text{not selected}\}$. ``Is feature $j$ in the active set?'' No stable method can faithfully report selection status.
+\item \textbf{Counterfactual direction}: $H = \{\text{increase}, \text{decrease}\}$. ``Should the applicant increase or decrease feature $j$?'' No stable method can faithfully report the direction.
+\end{enumerate}
+
+\begin{theorem}[Rashomon Unfaithfulness Bound]\label{thm:unfaith-bound}
+For any binary attribution question, any stable method is unfaithful at $\geq 1$ of every 2 Rashomon witnesses.
+On any pair of equivalent models that disagree on the sign/selection of a feature, a stable method must get it wrong for at least one of them.
+\end{theorem}
+
+\noindent\textit{Proof.}
+Let $\theta_1, \theta_2$ be Rashomon witnesses with $\text{observe}(\theta_1) = \text{observe}(\theta_2)$ and $\text{explain}(\theta_1) \neq \text{explain}(\theta_2)$.
+Stability gives $E(\theta_1) = E(\theta_2)$.
+If $E(\theta_1) = \text{explain}(\theta_1)$, then $E(\theta_2) = \text{explain}(\theta_1) \neq \text{explain}(\theta_2)$, so $E$ is unfaithful at $\theta_2$. \qed
+
+\begin{theorem}[All-or-Nothing]\label{thm:all-or-nothing}
+For binary attribution, every method either (1) matches the model's native attribution exactly at every configuration, or (2) is unfaithful at some configuration.
+There is no ``approximately faithful'' middle ground.
+\end{theorem}
+
+\paragraph{The tightness diagnostic.}
+The key insight is a complete classification of which explanation problems admit stable faithful methods:
+whether faithful~+~stable is achievable depends on whether $H$ has a neutral element---a value compatible with all native explanations.
+
+\begin{center}
+\begin{tabular}{l|cc}
+ & Neutral exists & No neutral \\
+\hline
+\textbf{Committal exists} & F+D, F+S, S+D & F+D, S+D \\
+\textbf{No committal}     & F+D, F+S       & F+D only \\
+\end{tabular}
+\end{center}
+
+\noindent For feature \emph{rankings}, DASH averaging produces ties (neutral elements), so F+S is achievable (top row).
+For feature \emph{signs}, no neutral element exists, so F+S is impossible (bottom row).
+
+\paragraph{Actionable advice.}
+Don't ask binary questions of underspecified models.
+If you must, expect unfaithfulness at $\geq$50\% of each Rashomon pair.
+Convert binary questions to graded questions (confidence scores, intervals) where neutral elements exist and stability is achievable.
+
+\paragraph{Connection to existing results.}
+The bilemma complements the quantitative bounds:
+\begin{itemize}
+\item The ratio $1/(1{-}\rho^2)$ tells you \textit{how much} instability (magnitude).
+\item The Rashomon unfaithfulness bound tells you \textit{how often} ($\geq$50\% per pair).
+\item The tightness classification tells you \textit{which questions} are binary-hard vs.\ ranking-solvable.
+\item The all-or-nothing theorem tells you \textit{there's no soft fix}.
+\end{itemize}
+
+\paragraph{Lean formalization.}
+The bilemma, unfaithfulness bound, all-or-nothing theorem, and both ML instances (SHAP sign, feature selection) are machine-verified in \texttt{Bilemma.lean} with zero axiom dependencies beyond the Rashomon property.
+The abstract framework (\texttt{ExplanationSystem.lean}) defines the general explanation system, faithful, stable, and decisive, and proves the abstract impossibility.
+The abstract \texttt{ExplanationSystem} framework generalizes the attribution-specific impossibility: \texttt{attribution\_impossibility} (Theorem~\ref{thm:impossibility}) is recovered as an instance where $\Theta$ = models, $H$ = feature rankings, $Y$ = predictions, and $\text{incompatible}$ = opposite orderings. The bilemma then strengthens this for binary subproblems.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 9. DIAGNOSTICS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1282,7 +1372,7 @@ The headline correlation $r = -0.89$ between $Z_{jk}$ and flip rate on Breast Ca
 Since $Z_{jk}$ and flip rate are both computed from the same attribution arrays, part of the negative correlation is structural. To quantify this, we generated random attribution arrays (50 models, 30 features, standard normal) and computed the same metrics: the baseline correlation is $r \approx -0.56$ ($R^2 = 0.32$). The observed $r = -0.89$ ($R^2 = 0.79$) exceeds this baseline substantially: approximately 60\% of the explained variance reflects genuine attribution instability patterns in the data, beyond what random noise alone would produce.
 
 \paragraph{When the CLT fails.}
-The Berry--Esseen error $\varepsilon_{\text{BE}} \leq C_0 \gamma_{jk}/\sigma_{jk}^3$ can be large when: (i) the attribution distribution is \emph{heavy-tailed} (large $\gamma_{jk}$), as occurs for deep networks with high initialization variance; or (ii) the attribution distribution is \emph{bimodal}, as for Lasso where $\varphi_j$ takes value either $c > 0$ (selected) or $0$ (not selected). For gradient-boosted trees, the Shapiro--Wilk test on 50 Breast Cancer models gives $p > 0.10$ for 412/435 feature pairs; the Berry--Esseen correction is negligible in practice.
+The Berry--Esseen error $\varepsilon_{\text{BE}} \leq C_0 \gamma_{jk}/\sigma_{jk}^3$ can be large when: (i) the attribution distribution is \emph{heavy-tailed} (large $\gamma_{jk}$), as occurs for deep networks with high initialization variance---a few seeds produce outlier attributions; or (ii) the attribution distribution is \emph{bimodal}, as for Lasso where $\varphi_j$ takes value either $c > 0$ (selected) or $0$ (not selected), giving a Bernoulli distribution where the Berry--Esseen bound is tight ($\varepsilon_{\text{BE}} \approx 0.47$) but the exact flip rate $\min(p, 1-p)$ is available analytically. (For the Lasso's Bernoulli($1/2$) distribution, the exact flip rate is $1/2$ and the Gaussian approximation $\Phi(0) = 1/2$ is exact, making the Berry--Esseen correction vacuous in this special case.) For gradient-boosted trees, the Shapiro--Wilk test on 50 Breast Cancer models gives $p > 0.10$ for 412/435 feature pairs; the Berry--Esseen correction is negligible in practice.
 
 \subsection{Single-Model Screen}
 \label{sec:f5}
@@ -1480,14 +1570,14 @@ At $M{=}1$ the flip rate is 44.8\%, near the theoretical maximum. \DASH{} consen
 \toprule
 Metric & XGBoost & LightGBM & CatBoost \\
 \midrule
-Unstable pairs (flip $> 10\%$) & 162 & 183 & 160 \\
+Unstable pairs (flip $> 10\%$) & 162 (cross-impl.) & 183 & 160 \\
 Max flip rate & 0.500 & 0.500 & 0.500 \\
 Z-test correlation $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500, and Z-test correlation $|r| \geq 0.89$ in all three.
+The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500 (the theoretical ceiling), and Z-test diagnostic correlation $|r| \geq 0.89$ in all three.\footnote{Breast Cancer unstable-pair counts vary across experiments due to different model configurations, test set handling, and attribution methods: 162 (cross-implementation with varying test sets), 168 (comprehensive with 50 models), 180 (permutation importance). All use the 10\% flip rate threshold.}
 
 \subsection{Non-SHAP Attribution Validation}
 
@@ -1516,7 +1606,7 @@ The cross-method correlation of flip rates is $r = 0.46$ ($p < 10^{-23}$): the \
 \toprule
 Metric & Neural Network & XGBoost (paper) \\
 \midrule
-Unstable pairs (flip $> 10\%$) & 380/435 (87\%) & 162/435 (37\%) \\
+Unstable pairs (flip $> 10\%$) & 380/435 (87\%) & 162/435 (37\%; cross-impl.) \\
 Max flip rate & 0.500 & 0.500 \\
 Key pair flip (worst perim.\ vs.\ area) & 0.400 & 0.480 \\
 Z-test correlation $r(Z, \text{flip})$ & $-0.871$ & $-0.898$ \\
@@ -1834,7 +1924,7 @@ DASH breakdown & Robust to contaminated ensembles & \texttt{dash\_breakdown\_poi
 
 \subsection{Proof Architecture}
 
-The formalization comprises 54 Lean~4 files with 16 axioms and 305 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 80 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
+The formalization comprises 56 Lean~4 files with 16 axioms and 315 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 90 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
 The core impossibility (\textsf{attribution\_impossibility}) depends on zero axioms---only the Rashomon property as hypothesis.
 The DASH resolution (\textsf{consensus\_equity}) depends on the \textsf{attribution\_sum\_symmetric} theorem (derived); the variance convergence depends on \textsf{consensus\_variance\_bound} (also~derived).
 
@@ -1897,11 +1987,11 @@ The paper uses the Lean-derived bound $\rho_S \leq 1 - 3m^2/(P^3{-}P)$. The tigh
 
 \subsection{Development Methodology}
 
-The initial formalization (49 theorems, 15 files) was developed by the first author with iterative Claude Code assistance over several weeks. The expansion from 49 to 305 theorems (54 files) was produced in a single development session by dispatching targeted Lean-writing agents with detailed mathematical specifications. All proofs were machine-verified by \texttt{lake build} (the Lean~4 type-checker); no proof was accepted on the basis of AI output alone.
+The initial formalization (49 theorems, 15 files) was developed by the first author with iterative Claude Code assistance over several weeks. The expansion from 49 to 315 theorems (56 files) was produced in a single development session by dispatching targeted Lean-writing agents with detailed mathematical specifications. All proofs were machine-verified by \texttt{lake build} (the Lean~4 type-checker); no proof was accepted on the basis of AI output alone.
 
 \subsection{Proof Depth Distribution}
 
-Of 305 type-checked declarations: 80 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are listed below.
+Of 315 type-checked declarations: 90 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are listed below.
 
 \begin{center}
 \small
@@ -1951,7 +2041,7 @@ The three-layer verification (SymPy algebra, Lean type-checking, empirical valid
 
 \begin{table}[t]
 \centering
-\caption{Lean file cross-reference (54 files, 305 theorems, 16 axioms).}
+\caption{Lean file cross-reference (56 files, 315 theorems, 16 axioms).}
 \label{tab:lean-crossref}
 \scriptsize
 \begin{tabular}{@{}p{3.8cm}ll@{}}
@@ -2026,7 +2116,7 @@ Decorrelating via PCA removes collinearity but destroys original feature semanti
 An alternative is removing redundant features entirely (e.g., via VIF thresholding). This eliminates the impossibility but changes the model: predictions differ because fewer features are used, and genuinely useful information may be discarded. \DASH{} is the \emph{explanation-side} fix---it changes how the model is explained without changing what it predicts. The two approaches are complementary: feature removal for model simplification, \DASH{} for faithful explanation of complex models that retain all features.
 \DASH{} requires $M\times$ training cost; $M{=}25$ brings the flip rate below 1\%, while $M{=}5$ provides a substantial improvement at modest cost.
 The empirical validation focuses on gradient boosting and neural networks; the Lasso ($\varphi_{j_1}/\varphi_k = \infty$) and random forest ($1 + O(1/\sqrt{T})$) bounds are proved (Lean-verified and informal, respectively) but not empirically demonstrated.
-The prevalence survey uses 20 models per dataset, achieving approximately 60\% power to detect 10\% flip rates; the true prevalence may be higher than the reported 68\%.
+The prevalence survey uses 20 models per dataset, achieving 32\% power at the 10\% threshold (60\% at the 15\% threshold); the true prevalence may be higher than the reported 68\%.
 The 10\% flip rate threshold defining ``instability'' is a practical convention; at a 5\% threshold the prevalence would be higher, at 15\% lower.
 
 \paragraph{Computational cost and practical deployment.}
@@ -2062,7 +2152,7 @@ The formalization uses 16 axioms total (14 domain-specific + 2 query-complexity)
 \end{itemize}
 This stratification directly addresses the proportionality axiom's empirical variance (CV $\approx 0.35$--$0.66$): the axiom is unnecessary for the impossibility and ratio bound, which depend only on split-count structure.
 
-The following are fully formalized in Lean (305 theorems, 0 \texttt{sorry}, 54 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, and the Pareto dominance of DASH. The Z-test characterization, information loss analysis, and multi-dataset validation are empirical.
+The following are fully formalized in Lean (315 theorems, 0 \texttt{sorry}, 56 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, and the Pareto dominance of DASH. The Z-test characterization, information loss analysis, and multi-dataset validation are empirical.
 
 \paragraph{Approximate faithfulness--stability tradeoff.}
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\pi(j) - \pi(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.
