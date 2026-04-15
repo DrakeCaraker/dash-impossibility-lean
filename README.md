@@ -16,7 +16,7 @@
   ls DASHImpossibility/*.lean | wc -l                                                     # 57
 -->
 
-If you have ever retrained an XGBoost model and noticed the "most important feature" changed, this paper proves that is not a bug — it is a mathematical inevitability. When features are correlated, no attribution method can simultaneously tell you what the model computed (faithfulness), give you the same answer across retrains (stability), and decide every pair of features (completeness). You must pick two of three. We prove it, quantify it, characterize the entire design space of solutions, and give you a toolkit to handle it. The formalization comprises 322 theorems across 57 Lean 4 files with 16 axioms and 0 sorry. The core impossibility theorem is machine-checked with zero domain-specific axiom dependencies. The resolution — DASH (Diversified Aggregation of SHAP) — is proved to be the minimum-variance unbiased linear estimator via the Cauchy-Schwarz inequality (Titu's lemma), extended to all unbiased estimators by Rao-Blackwell, with a deeper connection to invariant decision theory via the Hunt-Stein theorem. For binary attribution questions (SHAP sign, feature selection), the impossibility is strictly stronger: faithful + stable alone is impossible (the bilemma).
+If you have ever retrained an XGBoost model and noticed the "most important feature" changed, this paper proves that is not a bug — it is a mathematical inevitability. More broadly, we prove that NO explanation of an underspecified system — feature rankings, attention maps, circuit decompositions, concept probes — can simultaneously be faithful, stable, and decisive. For binary explanation problems (SHAP sign, feature selection, circuit analysis), the impossibility is strictly stronger: faithful + stable alone is impossible (the bilemma). We characterize the complete design space, prove the optimal resolution is unique (via Hunt-Stein), and machine-verify everything in Lean 4: 322 theorems across 57 files with 16 axioms and 0 sorry.
 
 ---
 
@@ -224,11 +224,13 @@ dash-impossibility-lean/
 │   │  ── Level 11: Bounds ──
 │   ├── EnsembleBound.lean                # DASH variance optimality + ensemble size (Titu's lemma)
 │   ├── Efficiency.lean                   # SHAP efficiency amplification m/(m-1)
-│   ├── AlphaFaithful.lean                # alpha-faithfulness bound
+│   ├── AlphaFaithful.lean               # alpha-faithfulness and approximate tradeoff
 │   ├── UnfaithfulBound.lean              # Unfaithfulness >= 1/2, ties optimal
+│   ├── UnfaithfulQuantitative.lean       # Pr(unfaithfulness) = 1/2 under DGP symmetry
 │   ├── PathConvergence.lean              # Relaxation path convergence
 │   ├── QueryComplexity.lean              # Query complexity Omega(sigma^2/Delta^2), Le Cam
 │   ├── QueryComplexityParametric.lean    # Parametric query complexity bounds
+│   ├── QueryComplexityDerived.lean       # Chebyshev-derived query complexity lower bound
 │   ├── MutualInformation.lean            # Information-theoretic impossibility bounds
 │   ├── RobustnessLipschitz.lean          # Lipschitz robustness bounds
 │   ├── LocalSufficiency.lean             # Local sufficiency conditions
@@ -237,6 +239,18 @@ dash-impossibility-lean/
 │   ├── RashomonUniversality.lean         # Rashomon from symmetry via feature swap
 │   ├── RashomonInevitability.lean        # Impossibility is inescapable for standard ML
 │   ├── LocalGlobal.lean                  # Local instability >= global instability
+│   │
+│   │  ── Level 13: Universal Framework ──
+│   ├── ExplanationSystem.lean            # Abstract explanation system (Theta -> Y -> H)
+│   ├── Bilemma.lean                      # Strengthened impossibility for binary explanations
+│   ├── BinaryQuantizer.lean              # Binary quantizer capture fraction (decision stump)
+│   ├── MechInterp.lean                   # Mechanistic interpretability impossibility
+│   │
+│   │  ── Level 14: Optimality ──
+│   ├── ParetoOptimality.lean             # DASH Pareto-optimal over ALL methods
+│   ├── BayesOptimalTie.lean              # Bayes-optimality of ties for symmetric features
+│   ├── LossPreservation.lean             # Loss preservation for Rashomon-from-symmetry
+│   ├── VarianceDerivation.lean           # Derive Var(consensus) = Var(phi)/M from independence
 │   │
 │   │  ── Strengthening ──
 │   ├── ProportionalityLocal.lean         # Impossibility from per-model c only
@@ -247,11 +261,11 @@ dash-impossibility-lean/
 │   │
 │   │  ── Infrastructure ──
 │   ├── Defs.lean                         # FeatureSpace, 16 axioms, stability/equity defs, Mathlib
+│   ├── MeasureHypotheses.lean            # Measure-theoretic definitions for probabilistic claims
 │   ├── Consistency.lean                  # Axiom system consistency (Fin 4 construction)
 │   ├── GaussianFlipRate.lean             # Standard normal CDF, flip rate formula
 │   ├── FIMImpossibility.lean             # Gaussian FIM impossibility, Rashomon ellipsoid
 │   ├── RandomForest.lean                 # Contrast case (documentation, no formal proofs)
-│   ├── MechInterp.lean                   # Mechanistic interpretability impossibility bounds
 │   └── Basic.lean                        # Import hub (all 57 files)
 │
 ├── paper/
@@ -293,25 +307,22 @@ dash-impossibility-lean/
 
 ## Paper Versions
 
-| Version | File | Pages | Target | Role |
-|---------|------|-------|--------|------|
-| **Monograph** | `paper/main_definitive.tex` | 66 | arXiv / Internal | Source of truth — every result, proof, experiment, documented failure |
-| **JMLR** | `paper/main_jmlr.tex` | 54 | JMLR (primary) | Archival submission — full technical narrative |
-| **NeurIPS** | `paper/main.tex` | 10 | NeurIPS 2026 | Impact version — core story in 10 pages |
-| **Supplement** | `paper/supplement.tex` | 79 | NeurIPS | Everything that doesn't fit in 10 pages |
+| Paper | File | Pages | Target | Status |
+|-------|------|-------|--------|--------|
+| **Monograph** (source of truth) | `paper/main_definitive.tex` | 67 | arXiv / reference | [arXiv:XXXX](link) |
+| **JMLR submission** | `paper/main_jmlr.tex` | 56 | JMLR | In preparation |
+| **NeurIPS universal** | `paper/neurips_universal.tex` | 10 | NeurIPS 2026 | In preparation |
+| **NeurIPS attribution** | `paper/main.tex` | 10 | NeurIPS 2026 (backup) | Draft |
+| **NeurIPS supplement** | `paper/supplement.tex` | 79 | NeurIPS supplement | Draft |
+| **Preprint** | `paper/main_preprint.tex` | 10 | arXiv preprint | Draft |
 
-```
-main_definitive.tex  (66pp, monograph, source of truth)
-    ├── main_jmlr.tex    (54pp, JMLR submission)
-    └── main.tex          (10pp, NeurIPS submission)
-        └── supplement.tex   (79pp, NeurIPS supplement)
-```
+The monograph is the definitive reference containing all results. The JMLR version is the deep treatment of the attribution impossibility. The NeurIPS universal version covers the full framework including the bilemma and mechanistic interpretability instance.
 
 **Edit flow:** monograph → JMLR → NeurIPS. Always update the monograph first.
 
 ## Proof Architecture
 
-**322 theorems. 16 axioms. 0 sorry. 57 files. 14 abstraction levels. 97 multi-step proofs (>=5 tactic lines).**
+**322 theorems. 16 axioms. 0 sorry. 57 files. 15 abstraction levels. 97 multi-step proofs (>=5 tactic lines).**
 
 The Lean formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review. The axiom consistency proof (a `Fin 4` construction in [`Consistency.lean`](DASHImpossibility/Consistency.lean)) demonstrates the axiom system is non-vacuous — there exists a concrete model satisfying all 16 axioms.
 
@@ -330,6 +341,8 @@ The Lean formalization caught 2 logical inconsistencies and 1 type mismatch that
 | 10 (extensions) | Conditional SHAP, fairness, intersectional fairness, flip rates | `ConditionalImpossibility.lean`, `FairnessAudit.lean`, `IntersectionalFairness.lean`, `FlipRate.lean` |
 | 11 (bounds) | DASH optimality, efficiency, alpha-faithfulness, query complexity, mutual info, robustness, local sufficiency | `EnsembleBound.lean`, `Efficiency.lean`, `AlphaFaithful.lean`, `UnfaithfulBound.lean`, `PathConvergence.lean`, `QueryComplexity.lean`, `QueryComplexityParametric.lean`, `MutualInformation.lean`, `RobustnessLipschitz.lean`, `LocalSufficiency.lean` |
 | 12 (universality) | Rashomon is inescapable, local >= global | `RashomonUniversality.lean`, `RashomonInevitability.lean`, `LocalGlobal.lean` |
+| 13 (universal framework) | Abstract explanation system, bilemma for binary explanations, mechanistic interp impossibility | `ExplanationSystem.lean`, `Bilemma.lean`, `BinaryQuantizer.lean`, `MechInterp.lean` |
+| 14 (optimality) | Pareto-optimality of DASH, Bayes-optimal ties, loss preservation, variance derivation | `ParetoOptimality.lean`, `BayesOptimalTie.lean`, `LossPreservation.lean`, `VarianceDerivation.lean` |
 | Strengthening | Per-model impossibility, qualitative impossibility, approximate equity, stump proportionality, bundled setup | `ProportionalityLocal.lean`, `Qualitative.lean`, `ApproximateEquity.lean`, `StumpProportionality.lean`, `Setup.lean` |
 | Contrast | Bounded violations (documentation only) | `RandomForest.lean` |
 
@@ -440,7 +453,7 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 
 **Regulator or model risk officer.** Single-model SHAP explanations are provably unreliable under collinearity. In a survey of 77 public datasets, 68% exhibit attribution instability. This affects EU AI Act Art. 13(3)(b)(ii) requirements for disclosing "known and foreseeable circumstances" affecting accuracy, and SR 11-7 model risk management compliance. The paper provides disclosure templates and a diagnostic workflow.
 
-**Lean or Mathlib community.** 322 theorems across 57 files, 14 abstraction levels, using `MulAction` for orbit bounds, `ProbabilityTheory.cdf` for the Gaussian flip rate, and `Analysis.Calculus` for the FIM impossibility. The Gaussian CDF symmetry proofs (phi(0)=1/2, phi(-x)=1-phi(x)) via `NoAtoms` + `prob_compl_eq_one_sub` may be of independent interest. The axiom consistency proof constructs a `Fin 4` model satisfying all 16 axioms.
+**Lean or Mathlib community.** 322 theorems across 57 files, 15 abstraction levels, using `MulAction` for orbit bounds, `ProbabilityTheory.cdf` for the Gaussian flip rate, and `Analysis.Calculus` for the FIM impossibility. The Gaussian CDF symmetry proofs (phi(0)=1/2, phi(-x)=1-phi(x)) via `NoAtoms` + `prob_compl_eq_one_sub` may be of independent interest. The axiom consistency proof constructs a `Fin 4` model satisfying all 16 axioms.
 
 ## Contributing
 
@@ -512,6 +525,15 @@ It does not help when features have equal causal effects (beta_j = beta_k). The 
 
 **How does this relate to Arrow's theorem?**
 Same structure: Arrow proves no voting system can satisfy IIA + Pareto + non-dictatorship simultaneously. We prove no ranking can satisfy faithfulness + stability + completeness simultaneously. Both are resolved by allowing ties (partial orders). Our relaxation paths converge (unlike Arrow's, which diverge) — reflecting the DGP symmetry that Arrow's heterogeneous voters lack.
+
+**What is the bilemma?**
+For binary explanation problems (SHAP sign positive/negative, feature selected/not, circuit A or B), the impossibility is strictly stronger than the trilemma: faithful + stable alone is impossible. There is no neutral element (like a tie) to serve as a resolution. The only fix is to enrich the explanation space with equivalence classes. See [`Bilemma.lean`](DASHImpossibility/Bilemma.lean).
+
+**What is the mechanistic interpretability instance?**
+We prove that no circuit explanation of a neural network can be simultaneously faithful and stable (the bilemma applies). Meloux et al. (ICLR 2025) found 85 valid circuits for a simple XOR task — the Rashomon property holds with extreme force for circuits. The resolution: report circuit equivalence classes, not individual decompositions. See [`MechInterp.lean`](DASHImpossibility/MechInterp.lean).
+
+**What is the universal framework?**
+The `ExplanationSystem` abstraction ([`ExplanationSystem.lean`](DASHImpossibility/ExplanationSystem.lean)) generalizes beyond feature attribution. Any system with configurations (Theta), observables (Y), and explanations (H) faces the same trilemma when the Rashomon property holds. The attribution impossibility is Instance 1; mechanistic interpretability is another instance. The NeurIPS universal paper (`neurips_universal.tex`) presents the full framework.
 
 **What is the relationship to dash-shap?**
 This repository contains the theory (Lean proofs + paper). [dash-shap](https://github.com/DrakeCaraker/dash-shap) is the Python implementation: DASH pipeline, experiments, diagnostics. The stability API ([PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255)) provides `screen()`, `validate()`, `consensus()`, `report()`.
