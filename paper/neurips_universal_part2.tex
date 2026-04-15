@@ -1,0 +1,209 @@
+% neurips_universal_part2.tex — Sections 5–8 of NeurIPS 2026 paper
+% "The Explanation Impossibility: A Universal Trilemma for Interpreting Underspecified Systems"
+% This file is a LaTeX FRAGMENT. Insert after §4 in the main document.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% §5. THE RESOLUTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{The Resolution}
+\label{sec:resolution}
+
+The impossibility admits two qualitatively different resolutions, determined entirely by the structure of the explanation space~$H$.
+
+\subsection{Case 1: Neutral Element Exists (Rankings, Continuous Scores)}
+
+When $H$ contains a \emph{neutral element}---a value compatible with every native explanation (e.g., a tie in a ranking)---the $G$-invariant projection is uniquely optimal.
+
+\begin{theorem}[Hunt--Stein optimality {\citep[Theorem~9.3.3]{lehmann2005testing}}]
+\label{thm:hunt-stein}
+For a finite group $G$ acting on the parameter space, the best equivariant estimator is the Pitman estimator: the average over the group orbit.
+\end{theorem}
+
+For feature attributions under the permutation group $S_m$ acting on $m$ within-group features, the Pitman estimator is the sample mean---precisely DASH consensus averaging.
+
+\begin{definition}[DASH consensus attribution]
+\label{def:dash}
+Given $M$ independently trained models $f_1, \ldots, f_M$, the \emph{consensus attribution} for feature $j$ is $\bar{\varphi}_j = \frac{1}{M} \sum_{i=1}^{M} |\varphi_j(f_i)|$, where $\varphi_j(f_i)$ denotes the SHAP value of feature $j$ under model~$f_i$.
+\end{definition}
+
+DASH is a \emph{post-hoc explanation method}: the $M$ models are trained independently using the practitioner's existing pipeline; DASH only averages their SHAP values. No model is modified, no ensemble prediction is formed, and the deployed model remains unchanged.
+
+\begin{corollary}[DASH equity]
+\label{cor:equity}
+For a balanced ensemble (each feature serves as first-mover in exactly $M/m$ models), $\bar{\varphi}_j = \bar{\varphi}_k$ for any two features $j, k$ in the same symmetry group.
+\end{corollary}
+
+\paragraph{Optimality.}
+By the Cauchy--Schwarz inequality (Titu's lemma), any unbiased linear estimator satisfies $\Var(\hat{\mu}_j) \geq \sigma_j^2/M$, with equality iff $w_i = 1/M$ for all~$i$ (Lean-verified via \texttt{sum\_squares\_ge\_inv\_M}). DASH achieves this bound with $\Var(\bar{\varphi}_j) = \sigma_j^2/M$, making it the minimum-variance unbiased \emph{linear} estimator. By the Rao--Blackwell theorem (standard; not formalized in Lean), DASH is the minimum-variance unbiased estimator among \emph{all} estimators, since $\bar{\varphi}_j$ is a function of the sufficient statistic $\sum_i \varphi_j(f_i)$.
+
+\paragraph{Ensemble size.}
+For between-group stability $S_{jk} \geq 1 - \delta$ with importance gap~$\Delta_{jk}$ and attribution noise~$\sigma_{jk}$:
+\begin{equation}
+\label{eq:ensemble-size}
+M_{\min} = \left\lceil \frac{\sigma_{jk}^2}{\Delta_{jk}^2} \cdot \bigl(\Phi^{-1}(1-\delta)\bigr)^2 \right\rceil.
+\end{equation}
+At $\delta = 0.05$: $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2 / \Delta_{jk}^2 \rceil$. DASH achieves this bound with equality (to first order).
+
+\subsection{Case 2: No Neutral Element (Circuits, SHAP Sign)}
+
+For binary explanation spaces---$H = \{\text{positive}, \text{negative}\}$ (SHAP sign), $H = \{\text{selected}, \text{not selected}\}$ (feature selection), or circuit decompositions---no neutral element exists. Every answer is committal.
+
+\begin{theorem}[No averaging resolution for binary $H$]
+\label{thm:no-averaging}
+When $H$ has no neutral element, faithful forces $E(\theta) = \operatorname{explain}(\theta)$ for all~$\theta$. Then $E$ is decisive, and by the trilemma, $E$ cannot be stable. No averaging-based fix (including DASH) applies.
+\end{theorem}
+
+The resolution requires \emph{enriching} the explanation space: replace $H$ with an enlarged space $\tilde{H} \supset H$ that contains equivalence classes as valid outputs. For circuit explanations, this means reporting the equivalence class of valid decompositions---the ``CPDAG of circuits''---rather than any individual decomposition. This parallels the CPDAG resolution in causal discovery: report what is shared across all valid structures, acknowledge what is underdetermined.
+
+\paragraph{Practitioner diagnostic.}
+The tightness classification is a design tool: \emph{check whether your explanation space has a neutral element}. If yes (rankings, continuous scores), apply DASH. If no (binary decisions, circuit decompositions), enrich $H$ or accept unfaithfulness at $\geq 50\%$ of Rashomon pairs.
+
+\begin{center}
+\small
+\begin{tabular}{l|cc}
+ & Neutral exists & No neutral \\
+\hline
+\textbf{Resolution} & DASH (averaging) & Enrich $H$ (equiv.\ classes) \\
+\textbf{Cost} & $M \times$ training & Reduced decisiveness \\
+\textbf{Guarantee} & Variance $\sigma^2/M$ & Stability + faithfulness \\
+\end{tabular}
+\end{center}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% §6. EMPIRICAL VALIDATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Empirical Validation}
+\label{sec:experiments}
+
+We summarize four key results; the full experimental suite (18 experiments, 77 datasets) is in the supplement.
+
+\subsection{Prevalence}
+
+Of 77 public datasets (OpenML CC-18 + sklearn), 92\% have feature pairs with $|\rho| > 0.5$, and \textbf{52 (68\%)} exhibit attribution instability (flip rate $> 10\%$). The 95\% Wilson confidence interval is $[56\%, 77\%]$. For datasets with $P \geq 20$ features ($n = 43$), the rate rises to 93\% (40/43; Wilson CI: $[81\%, 98\%]$). With 20 models per dataset, the survey achieves only 32\% power at the 10\% threshold (60\% at 15\%), making 68\% a conservative lower bound; the true prevalence is likely 75--85\%.
+
+\subsection{Cross-Implementation Consistency}
+
+\begin{table}[t]
+\centering
+\caption{Attribution instability across three GBDT implementations on Breast Cancer (50 models each).}
+\label{tab:cross-impl}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Metric & XGBoost & LightGBM & CatBoost \\
+\midrule
+Unstable pairs (flip $> 10\%$) & 162 & 183 & 160 \\
+Max flip rate & 0.500 & 0.500 & 0.500 \\
+Z-test $r(Z, \text{flip})$ & $-0.898$ & $-0.901$ & $-0.892$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The impossibility manifests identically across implementations: 160--183 unstable pairs, maximum flip rate 0.500 (the theoretical ceiling), and diagnostic correlation $|r| \geq 0.89$ in all three (Table~\ref{tab:cross-impl}). The instability is a property of sequential boosting under collinearity, not of any specific software.
+
+\subsection{DASH Benchmark}
+
+\begin{table}[t]
+\centering
+\caption{Flip rate comparison: DASH vs.\ alternatives. Synthetic Gaussian data ($P{=}10$, $m{=}5$, $N{=}1000$). 95\% bootstrap CIs.}
+\label{tab:dash-benchmark}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Method & $\rho = 0.5$ & $\rho = 0.7$ & $\rho = 0.9$ & Pairs resolved \\
+\midrule
+Single model       & 16.0\% [13.8, 18.1] & 16.4\% [14.3, 18.5] & 18.7\% [16.4, 21.1] & 40/40 \\
+Bootstrap SHAP     & 16.2\% [13.8, 18.2] & 16.1\% [14.2, 18.0] & 18.8\% [16.4, 21.4] & 40/40 \\
+Subsampled SHAP    & 16.3\% [13.8, 18.5] & 16.1\% [14.2, 17.9] & 18.8\% [16.5, 21.3] & 40/40 \\
+\textbf{DASH ($M{=}25$)} & \textbf{3.8\%} [2.8, 4.9] & \textbf{3.1\%} [2.4, 3.9] & \textbf{3.7\%} [2.7, 4.7] & 40/40 \\
+CI SHAP            & 0.2\% [0.1, 0.4]    & 0.8\% [0.6, 1.1]    & 3.1\% [2.1, 4.6]    & $\sim$22/40 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+DASH dominates all alternatives at every $\rho$ when measured on resolved pairs (Table~\ref{tab:dash-benchmark}). Bootstrap and subsampled SHAP address estimation noise (a single-model phenomenon), not the Rashomon effect (a multi-model phenomenon): their flip rates match the single-model baseline. CI SHAP achieves lower rates only by refusing to rank ${\sim}45\%$ of pairs---the impossibility theorem in action. The two approaches correspond to the two families in the Design Space Theorem: DASH (Family $\mathcal{B}$: stable, faithful, with ties) and CI SHAP (Family $\mathcal{A}$: explicitly incomplete).
+
+\subsection{Monte Carlo Validation}
+
+The theoretical flip rate formula $\Phi(-\text{SNR})$ matches empirical rates within 1.35 percentage points across 10,000 trials at each of 8 correlation levels ($\rho \in \{0.1, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95, 0.99\}$). The maximum discrepancy occurs at $\rho = 0.5$ (empirical 39.9\% vs.\ theoretical 38.6\%). The SNR calibration on 1,325 feature pairs from 6 datasets achieves $R^2 = 0.94$; all 228 pairs with $\text{SNR} > 1.96$ have flip rate $< 5\%$.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% §7. RELATED WORK
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Attribution impossibilities.}
+\citet{bilodeau2024impossibility} prove that completeness and linearity cannot coexist for feature attributions---a constraint on the \emph{method} axis. Our result operates on a different axis: cross-model \emph{stability} under collinearity. The Bilodeau impossibility constrains which axioms a method can satisfy for a fixed model; ours constrains what any method can achieve across the Rashomon set. The two results are complementary: Bilodeau's applies even without collinearity; ours applies even to methods that are not linear. Our result additionally provides quantitative architecture-discriminating bounds ($1/(1-\rho^2)$ for GBDT, $\infty$ for Lasso), a constructive resolution (DASH), and machine verification (322 Lean~4 theorems).
+
+\paragraph{Fairness impossibilities.}
+\citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove that calibration, balance, and equal false positive rates cannot coexist when base rates differ. The structural parallel is precise: three desirable properties conflict, and the resolution requires sacrificing one. Our trilemma (faithfulness, stability, completeness) extends this pattern to the explanation domain, and our tightness classification provides a diagnostic for which sacrifice is necessary.
+
+\paragraph{Underspecification and model multiplicity.}
+\citet{damour2022underspecification} demonstrated that ML pipelines are underspecified: models with equivalent held-out performance behave differently on deployment-relevant criteria. Our impossibility is the explanation-level consequence of this phenomenon. Where D'Amour et~al.\ document that predictions vary, we prove that feature \emph{rankings} must vary---and characterize exactly when, by how much, and what the complete design space looks like. The Rashomon literature---\citet{breiman2001random}, \citet{fisher2019models}, \citet{semenova2022existence}---established model multiplicity as an empirical and theoretical concern; our theorem is the explanation-theoretic capstone, proving that the Rashomon property is \emph{sufficient} for attribution impossibility (zero additional axioms).
+
+\paragraph{Circuit multiplicity.}
+\citet{meloux2025circuits} found 85 distinct valid circuits with zero circuit error for a simple XOR task, each admitting an average of 535.8 valid interpretations. Our impossibility is the formal consequence: the bilemma (Theorem~\ref{thm:bilemma}) proves that no circuit explanation can be simultaneously faithful and stable, and the tightness classification shows that the resolution requires enriching the explanation space (equivalence classes) rather than averaging.
+
+\paragraph{Formalization methodology.}
+\citet{nipkow2009social} formalized Arrow's impossibility theorem in Isabelle/HOL. Our formalization is the first machine-verified impossibility result in explainable AI. Both demonstrate that formalization catches errors missed by informal proof (we found two logical inconsistencies). The Arrow and attribution impossibilities share surface structure (three desirable properties conflict) but differ fundamentally: Arrow aggregates many inputs; the attribution impossibility maps one input to one output.
+
+\paragraph{The disagreement problem.}
+\citet{krishna2022disagreement} document that different explanation methods produce different outputs for the same model---an empirical observation. Our result proves the complementary phenomenon: the \emph{same} method produces different outputs for different equivalent models, and this is a mathematical necessity, not an empirical accident.
+
+\begin{table}[t]
+\centering
+\caption{Positioning relative to prior work. Comparison criteria reflect the specific contributions of the present work.}
+\label{tab:prior-work}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Result & Stability? & Quantitative? & Resolution? & Formal? \\
+\midrule
+Bilodeau et al.\ (2024) & No & No & No & No \\
+D'Amour et al.\ (2022) & Empirical & No & No & No \\
+Meloux et al.\ (2025) & Empirical & No & No & No \\
+Krishna et al.\ (2022) & Empirical & No & No & No \\
+Chouldechova (2017) & (Fairness) & Yes & No & No \\
+\textbf{This paper} & \textbf{Impossibility} & \textbf{Yes} & \textbf{DASH} & \textbf{Lean 4} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% §8. DISCUSSION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Discussion}
+\label{sec:discussion}
+
+The central insight of this paper is that \emph{the ceiling of explainability depends on the explanation space}.
+
+\paragraph{Binary spaces are fundamentally harder.}
+For binary explanation spaces (circuit decompositions, SHAP sign, feature selection), no averaging fix exists. The bilemma proves that faithful + stable alone is impossible---even dropping completeness does not help. The only resolution is to \emph{enrich} $H$ with equivalence classes, trading decisiveness for stability and faithfulness. This has direct consequences for AI safety: circuit-based safety cases that depend on identifying ``the circuit'' for a behavior are subject to this impossibility. Safety claims built on single-network circuit analysis are as unstable as single-model SHAP rankings. The remedy is multi-network verification: verify circuit-level claims across multiple equivalent networks, or qualify them as instance-specific.
+
+\paragraph{Graded spaces admit averaging.}
+For ranking and continuous-score explanation spaces, DASH consensus averaging achieves the Cauchy--Schwarz variance bound with Hunt--Stein optimality. The ensemble size formula $M_{\min} = \lceil 2.71 \sigma^2/\Delta^2 \rceil$ gives practitioners a concrete budget. The tightness table (neutral element $\times$ committal element) serves as a design tool: before building an XAI system, check which cell your explanation space occupies to know which resolution applies.
+
+\paragraph{Regulatory implications.}
+Single-model feature explanations are unreliable under collinearity, affecting regulatory compliance in settings where explanation stability is required (e.g., EU AI Act Art.~13, US SR~11-7). Ensemble explanations provide a defensible alternative.
+
+\paragraph{Limitations.}
+Several assumptions warrant discussion.
+(i)~The equicorrelation structure (uniform $\rho$ within groups) simplifies the axioms; the Rashomon property holds pairwise for arbitrary correlation structures.
+(ii)~The mechanistic interpretability instance rests on \citet{meloux2025circuits}, which studies a single task (XOR with 3-bit inputs); extending to larger architectures and tasks is important future work.
+(iii)~Circuit equivalence classes are not yet formalized in Lean; the bilemma and unfaithfulness bound are verified, but the enrichment resolution is argued informally.
+(iv)~The global proportionality axiom has empirical CV of 0.35--0.66; under variable proportionality constants, DASH achieves approximate rather than exact equity, with the equity violation bounded by the CV of $c$ across models.
+(v)~The prevalence survey achieves only 32\% power at the 10\% flip rate threshold; the reported 68\% is a conservative lower bound.
+
+\paragraph{Lean formalization.}
+The impossibility, resolution, and design space are machine-verified in Lean~4: 322 theorems, 0~\texttt{sorry}, 57 files. The core impossibility (Theorem~\ref{thm:trilemma}) has \emph{zero} behavioral axiom dependencies---only the Rashomon property as a hypothesis. The mechanistic interpretability instance derives the Rashomon property from constructive finite types (zero axioms via \texttt{decide}). Beyond certifying correctness, the formalization served as a methodology: it caught two logical inconsistencies and one type mismatch that survived informal review. We recommend formalizing impossibility theorems as a general practice in ML theory.
+
+\paragraph{Broader impact.}
+Feature attribution methods are used to make consequential decisions: which clinical interventions to pursue, which loan applicants to approve, which model behaviors to trust. Our theorem establishes that single-model explanations of collinear features are unreliable---a ``known and foreseeable circumstance'' that practitioners, deployers, and regulators should account for. The constructive resolution (DASH for graded spaces, equivalence classes for binary spaces) provides actionable remedies. We encourage practitioners to adopt ensemble explanations and to report instability diagnostics alongside feature rankings, so that the consumers of explanations---patients, applicants, auditors---receive honest assessments of explanation reliability.

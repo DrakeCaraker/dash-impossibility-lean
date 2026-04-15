@@ -1,0 +1,519 @@
+% The Explanation Impossibility: A Universal Trilemma for Interpreting
+% Underspecified Systems
+%
+% NeurIPS 2026 submission — pages 1–5 (first half)
+
+\documentclass{article}
+\usepackage[preprint]{neurips_2026}
+% natbib loaded by neurips_2026.sty
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{enumitem}
+
+\DeclareMathOperator{\Var}{Var}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\title{The Explanation Impossibility:\\A Universal Trilemma for Interpreting Underspecified Systems}
+
+\author{
+  Anonymous Authors
+}
+
+\begin{document}
+
+\maketitle
+
+%% ===================================================================
+%% ABSTRACT
+%% ===================================================================
+\begin{abstract}
+We prove that no explanation of an underspecified system can be simultaneously
+\emph{faithful} (consistent with the system's native explanation),
+\emph{stable} (invariant across equivalent configurations), and
+\emph{decisive} (preserving genuine disagreements).
+For binary explanation problems---including mechanistic interpretability and
+SHAP sign attribution---the impossibility strengthens to a \emph{bilemma}:
+faithfulness and stability alone are jointly unachievable.
+The result is universal: a single four-line proof, with zero domain-specific
+axioms, covers every instance we tested.
+We classify which problems admit resolutions and which do not:
+the algebraic structure of the explanation space (presence or absence of a
+neutral element) determines the ceiling.
+We instantiate the framework across mechanistic interpretability (circuit
+identification), feature attribution (SHAP rankings), causal discovery
+(edge orientation), and attention-based token importance, showing each is a
+special case of the same theorem.
+When a resolution exists, we characterize the optimal one via the
+Hunt--Stein theorem: the Pitman estimator (group-orbit average).
+The entire framework---322 theorems, 0 \texttt{sorry}---is formalized in
+Lean~4, with the mechanistic interpretability Rashomon property
+\emph{derived} from constructive types (zero axioms).
+\end{abstract}
+
+%% ===================================================================
+%% 1. INTRODUCTION
+%% ===================================================================
+\section{Introduction}
+\label{sec:intro}
+
+The search for circuits in neural networks is a cornerstone of AI safety.
+Mechanistic interpretability aims to identify which internal components---neurons,
+attention heads, subnetworks---implement a given behavior, with the ultimate goal
+of verifying that a model's reasoning is aligned with human intent.
+We prove that this search faces a fundamental mathematical constraint:
+no circuit explanation can be simultaneously faithful to the network's internal
+structure, stable across functionally equivalent networks, and decisive about
+which decomposition is correct.
+For binary circuit questions---``is this component part of the circuit or
+not?''---the situation is strictly worse: faithfulness and stability alone
+are jointly impossible, regardless of whether decisiveness is required.
+
+This result is not specific to mechanistic interpretability.
+The same impossibility governs every explanation method we tested:
+SHAP feature rankings, causal edge orientations, attention-based token
+importance, feature selection, and counterfactual directions.
+All are instances of a single abstract theorem that requires
+\emph{zero domain-specific axioms}---only the observation that underspecified
+systems admit equivalent configurations with incompatible native explanations
+(the Rashomon property).
+
+The impossibility admits resolution for some problems but not others.
+The key structural diagnostic is whether the explanation space contains a
+\emph{neutral element}---a value compatible with every native explanation.
+Feature rankings admit ties (a neutral element), so ensemble averaging
+(DASH) resolves the trilemma.
+Circuit decompositions do not admit a neutral element, so the bilemma is
+inescapable; the only resolution is to enrich the explanation space by
+reporting equivalence classes of circuits.
+This classification is complete: the presence or absence of neutral and
+committal elements determines exactly which pairs of axioms can be jointly
+satisfied.
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=*,label=(\arabic*)]
+\item \textbf{Abstract framework and universal impossibility.}
+  We define an \texttt{ExplanationSystem} $(\Theta, H, Y, \mathrm{observe},
+  \mathrm{explain}, \mathrm{incompatible})$ and prove that no explanation
+  $E : \Theta \to H$ of a system with the Rashomon property can be
+  faithful, stable, and decisive (Theorem~\ref{thm:trilemma}).
+  The proof is four lines and uses zero domain-specific axioms.
+
+\item \textbf{The bilemma.}
+  For maximally incompatible explanation spaces (compatible $\Rightarrow$
+  equal), faithful + stable alone is impossible
+  (Theorem~\ref{thm:bilemma})---strictly stronger than the trilemma.
+  This applies to all binary explanation problems: SHAP sign, circuit
+  decomposition, feature selection, counterfactual direction.
+
+\item \textbf{Tightness classification.}
+  We give a complete $2 \times 2$ classification
+  (Table~\ref{tab:tightness}) showing which pairs of axioms are jointly
+  achievable as a function of the explanation space's algebraic structure
+  (neutral elements $\times$ committal elements).
+
+\item \textbf{Instances.}
+  We instantiate the framework across mechanistic interpretability
+  (\S\ref{sec:mech-interp}), feature attribution (\S\ref{sec:attribution}),
+  causal discovery (\S\ref{sec:causal}), and attention maps
+  (\S\ref{sec:attention}), with additional instances in the supplement.
+
+\item \textbf{Optimal resolution via Hunt--Stein.}
+  When a resolution exists (neutral element present), the optimal
+  explanation is the Pitman estimator---the average over the symmetry group
+  orbit. For feature rankings, this is DASH (ensemble SHAP averaging).
+  For causal discovery, this is the CPDAG.
+
+\item \textbf{Lean~4 formalization.}
+  The full framework is formalized across 54 files containing 322
+  theorems and lemmas with 0~\texttt{sorry}.
+  The mechanistic interpretability Rashomon property is \emph{derived}
+  from constructive finite types, not axiomatized.
+\end{enumerate}
+
+\paragraph{Relation to the companion paper.}
+The attribution impossibility for feature rankings under collinearity is
+treated in full quantitative detail---including the $1/(1{-}\rho^2)$
+divergence rate, Spearman instability bounds, and GBDT/Lasso/neural-net
+instantiations---in a companion paper~\citep{anonymous2026attribution}.
+The present paper abstracts the core mechanism into a domain-independent
+framework, proves the bilemma (which does not appear in the companion
+paper), and extends the impossibility to mechanistic interpretability,
+causal discovery, and attention maps.
+
+%% ===================================================================
+%% 2. THE FRAMEWORK
+%% ===================================================================
+\section{The Framework}
+\label{sec:framework}
+
+\begin{definition}[Explanation System]
+\label{def:explanation-system}
+An \emph{explanation system} is a tuple $S = (\Theta, H, Y,
+\mathrm{observe}, \mathrm{explain}, \mathrm{incompatible})$ where:
+\begin{itemize}[leftmargin=*]
+\item $\Theta$ is the \emph{configuration space} (e.g., trained models,
+  network weight vectors, DAGs);
+\item $H$ is the \emph{explanation space} (e.g., feature rankings, circuit
+  decompositions, edge orientations);
+\item $Y$ is the \emph{observable space} (e.g., predictions, I/O functions,
+  conditional independence structures);
+\item $\mathrm{observe} : \Theta \to Y$ maps each configuration to its
+  observable behavior;
+\item $\mathrm{explain} : \Theta \to H$ maps each configuration to its
+  \emph{native} explanation (the ground-truth interpretation that the
+  configuration's internals warrant);
+\item $\mathrm{incompatible} : H \times H \to \mathrm{Prop}$ is an
+  irreflexive relation on explanations capturing genuine disagreement.
+\end{itemize}
+\end{definition}
+
+An \emph{explanation method} is any function $E : \Theta \to H$.
+We require three properties:
+
+\paragraph{Faithfulness.}
+$E$ is \emph{faithful} if it never contradicts the system's native
+explanation:
+\[
+  \forall\, \theta \in \Theta,\quad
+  \neg\,\mathrm{incompatible}(E(\theta),\; \mathrm{explain}(\theta)).
+\]
+This is deliberately weak: $E(\theta)$ need not \emph{equal}
+$\mathrm{explain}(\theta)$, only be compatible with it.
+A faithful explanation may be vague (e.g., report a tie) but must not
+actively contradict the model.
+
+\paragraph{Stability.}
+$E$ is \emph{stable} if equivalent configurations receive the same
+explanation:
+\[
+  \forall\, \theta_1, \theta_2 \in \Theta,\quad
+  \mathrm{observe}(\theta_1) = \mathrm{observe}(\theta_2)
+  \;\Longrightarrow\;
+  E(\theta_1) = E(\theta_2).
+\]
+This is the explanation analogue of the statistical principle that
+functionally equivalent models should yield the same interpretation.
+Without stability, explanations depend on arbitrary implementation details
+(random seed, initialization, training order) rather than the system's
+behavior.
+
+\paragraph{Decisiveness.}
+$E$ is \emph{decisive} if it preserves the incompatibility of native
+explanations:
+\[
+  \forall\, \theta_1, \theta_2 \in \Theta,\quad
+  \mathrm{incompatible}(\mathrm{explain}(\theta_1),\;
+  \mathrm{explain}(\theta_2))
+  \;\Longrightarrow\;
+  \mathrm{incompatible}(E(\theta_1),\; E(\theta_2)).
+\]
+A decisive method does not smooth over genuine disagreements between
+configurations.
+When two models truly disagree about which feature is more important
+(or which circuit implements a behavior), a decisive method reports
+that disagreement rather than collapsing it.
+
+\paragraph{The Rashomon property.}
+An explanation system has the \emph{Rashomon property} if there exist
+configurations $\theta_1, \theta_2 \in \Theta$ such that
+$\mathrm{observe}(\theta_1) = \mathrm{observe}(\theta_2)$ and
+$\mathrm{incompatible}(\mathrm{explain}(\theta_1),\;
+\mathrm{explain}(\theta_2))$.
+That is, the system admits equivalent configurations whose native
+explanations genuinely disagree.
+This is the mechanism behind model multiplicity: the same predictive
+performance can arise from models with contradictory internal structures.
+
+%% ===================================================================
+%% 3. THE IMPOSSIBILITY
+%% ===================================================================
+\section{The Impossibility}
+\label{sec:impossibility}
+
+\begin{theorem}[The Explanation Trilemma]
+\label{thm:trilemma}
+Let $S = (\Theta, H, Y, \mathrm{observe}, \mathrm{explain},
+\mathrm{incompatible})$ be an explanation system where
+$\mathrm{incompatible}$ is irreflexive.
+If $S$ has the Rashomon property, then no explanation method
+$E : \Theta \to H$ can be simultaneously faithful, stable, and decisive.
+\end{theorem}
+
+\begin{proof}
+Let $\theta_1, \theta_2$ be Rashomon witnesses:
+$\mathrm{observe}(\theta_1) = \mathrm{observe}(\theta_2)$ and
+$\mathrm{incompatible}(\mathrm{explain}(\theta_1),
+\mathrm{explain}(\theta_2))$.
+(1)~Decisive: $\mathrm{incompatible}(E(\theta_1), E(\theta_2))$.
+(2)~Stable: $E(\theta_1) = E(\theta_2)$.
+(3)~Substituting: $\mathrm{incompatible}(E(\theta_1), E(\theta_1))$.
+(4)~This contradicts irreflexivity.
+\end{proof}
+
+\begin{theorem}[Tightness]
+\label{thm:tightness}
+The trilemma is tight: each pair of axioms is jointly satisfiable.
+\end{theorem}
+\begin{proof}[Proof sketch]
+(F+S, drop D): Let $E$ be a constant function mapping every $\theta$ to a
+  neutral element $h_0$ compatible with all native explanations. Then $E$ is
+  trivially faithful and stable, but not decisive.
+(F+D, drop S): Let $E = \mathrm{explain}$. Then $E$ is faithful and
+  decisive by definition, but not stable (Rashomon witnesses get different
+  explanations).
+(S+D, drop F): Let $E$ be a constant function mapping every $\theta$ to
+  some fixed $h^*$ that is incompatible with at least one native
+  explanation. Then $E$ is stable and (vacuously) decisive on pairs that
+  agree, but unfaithful.
+\end{proof}
+
+\begin{theorem}[The Bilemma]
+\label{thm:bilemma}
+Let $S$ be an explanation system with the Rashomon property, where $H$ is
+\emph{maximally incompatible}: $\neg\,\mathrm{incompatible}(h_1, h_2)
+\Rightarrow h_1 = h_2$.
+Then no explanation method $E : \Theta \to H$ can be simultaneously
+faithful and stable.
+\end{theorem}
+\begin{proof}
+Since incompatibility is the complement of equality, faithfulness
+($\neg\,\mathrm{incompatible}(E(\theta), \mathrm{explain}(\theta))$)
+forces $E(\theta) = \mathrm{explain}(\theta)$ for all $\theta$.
+But then $E = \mathrm{explain}$ is decisive (it inherits the
+incompatibility structure of $\mathrm{explain}$).
+So $E$ is faithful, stable, and decisive, contradicting
+Theorem~\ref{thm:trilemma}.
+\end{proof}
+
+\paragraph{The tightness classification.}
+Whether faithful + stable is achievable depends on the algebraic structure
+of the explanation space $H$.
+A \emph{neutral element} $h_0 \in H$ satisfies
+$\neg\,\mathrm{incompatible}(h_0, h)$ for all $h \in H$ (it is compatible
+with every native explanation).
+A \emph{committal element} $h^* \in H$ satisfies
+$\mathrm{incompatible}(h^*, h)$ for some $h \in H$ (it actively disagrees
+with at least one native explanation).
+
+\begin{table}[t]
+\centering
+\caption{Tightness classification. Which pairs of axioms are jointly
+achievable depends on whether $H$ contains neutral and committal
+elements. F+S+D is never achievable (the trilemma).}
+\label{tab:tightness}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+& Neutral exists & No neutral \\
+\midrule
+\textbf{Committal exists} & F+D,\; F+S,\; S+D & F+D,\; S+D \\
+\textbf{No committal}     & F+D,\; F+S         & F+D only \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The key insight: \emph{the explanation space's algebraic structure
+determines the ceiling.}
+Feature rankings have ties (neutral elements), so DASH achieves F+S.
+Circuit decompositions have no neutral element (every decomposition commits
+to a structure), so F+S is impossible---the bilemma is inescapable.
+The diagnostic is actionable: before building an explanation method,
+check whether $H$ has a neutral element.
+If not, no method can be both faithful and stable, and the only resolution
+is to enrich $H$ (e.g., report equivalence classes instead of individual
+explanations).
+
+%% ===================================================================
+%% 4. INSTANCES
+%% ===================================================================
+\section{Instances}
+\label{sec:instances}
+
+We instantiate the framework across four explanation domains.
+Each requires only specifying the tuple $(\Theta, H, Y, \mathrm{observe},
+\mathrm{explain}, \mathrm{incompatible})$ and verifying the Rashomon
+property; the impossibility then follows from Theorem~\ref{thm:trilemma}
+or~\ref{thm:bilemma} with no additional proof.
+
+%% ----- Instance 1: Mechanistic Interpretability -----
+\subsection{Instance 1: Mechanistic Interpretability}
+\label{sec:mech-interp}
+
+\paragraph{Setup.}
+$\Theta$ is the space of neural network configurations (weight vectors);
+$H$ is the space of circuit decompositions (which subnetwork implements a
+given behavior);
+$Y$ is the space of input-output functions.
+Two networks are equivalent ($\mathrm{observe}(\theta_1) =
+\mathrm{observe}(\theta_2)$) if they compute the same function.
+Two decompositions are incompatible if they identify different components
+as implementing the behavior.
+
+\paragraph{The bilemma applies.}
+Circuit decomposition is a binary question at the component level:
+each neuron or attention head is either part of the circuit or not.
+The explanation space is maximally incompatible
+($\neg\,\mathrm{incompatible}(d_1, d_2) \Rightarrow d_1 = d_2$),
+so Theorem~\ref{thm:bilemma} applies directly: no circuit explanation
+can be simultaneously faithful and stable, regardless of whether
+decisiveness is required.
+
+\paragraph{Rashomon is derived.}
+In the Lean formalization, the Rashomon property for circuits is
+\emph{derived} from constructive finite types, not axiomatized.
+We define two configurations (\texttt{circuitAlpha},
+\texttt{circuitBeta}) computing the same function with different
+decompositions; the Lean kernel verifies
+$\mathrm{observe}(\texttt{circuitAlpha}) =
+\mathrm{observe}(\texttt{circuitBeta})$ and
+$\mathrm{incompatible}(\mathrm{explain}(\texttt{circuitAlpha}),
+\mathrm{explain}(\texttt{circuitBeta}))$
+by \texttt{decide} (zero axioms).
+
+\paragraph{Empirical grounding.}
+\citet{meloux2025circuits} found 85 distinct valid circuits with zero
+circuit error for a simple XOR task, each admitting an average of 535.8
+valid interpretations.
+Less than 2\% of networks had a unique circuit mapping.
+This extreme multiplicity confirms that the Rashomon property holds with
+overwhelming force for circuit explanations in practice.
+
+\paragraph{Resolution.}
+The bilemma forecloses averaging-based resolutions because the circuit
+explanation space has no neutral element.
+The resolution requires \emph{enriching} the explanation space: report the
+equivalence class of valid circuits---the computational structure shared
+across \emph{all} valid decompositions---rather than any individual
+decomposition.
+This is the circuit analogue of the CPDAG in causal discovery: report what
+is shared, acknowledge what is underdetermined.
+
+\paragraph{Implication for AI safety.}
+Safety cases that depend on identifying ``the circuit'' for a behavior are
+subject to this impossibility: a circuit found in one training run may not
+exist in a functionally equivalent run.
+
+%% ----- Instance 2: Feature Attribution -----
+\subsection{Instance 2: Feature Attribution (SHAP)}
+\label{sec:attribution}
+
+\paragraph{Setup.}
+$\Theta$ is the space of trained models (e.g., GBDTs with different
+random seeds);
+$H$ is the space of feature importance rankings;
+$Y$ is the space of predictions (loss-equivalent models map to the same
+$y$).
+Two rankings are incompatible if they order some feature pair in opposite
+directions (feature~$j$ ranked above feature~$k$ vs.\ below).
+
+\paragraph{The trilemma applies (not the bilemma).}
+The ranking space admits \emph{ties} as a neutral element: a ranking that
+assigns equal importance to features $j$ and $k$ is compatible with both
+$j > k$ and $j < k$.
+Because a neutral element exists, F+S is achievable (top-left cell of
+Table~\ref{tab:tightness})---the bilemma does not apply.
+However, ties sacrifice decisiveness, so the full trilemma still holds.
+
+\paragraph{Resolution: DASH.}
+DASH (Deterministic Averaged SHAP) averages SHAP values across an ensemble
+of equivalent models, producing ties for feature pairs where the ensemble
+disagrees.
+These ties are the neutral elements that make F+S achievable.
+DASH is provably optimal: by the Hunt--Stein theorem for the permutation
+group $S_m$ acting on within-group features, the best equivariant estimator
+is the Pitman estimator---the group-orbit average---which is exactly DASH.
+Empirically, DASH resolves the instability on 68\% of 77 OpenML datasets
+tested.
+The full quantitative treatment---including the $1/(1{-}\rho^2)$ divergence
+rate, Spearman bounds, and model-specific
+instantiations---appears in the companion
+paper~\citep{anonymous2026attribution}.
+
+%% ----- Instance 3: Causal Discovery -----
+\subsection{Instance 3: Causal Discovery}
+\label{sec:causal}
+
+\paragraph{Setup.}
+$\Theta$ is the space of DAGs in a Markov equivalence class;
+$H$ is the space of fully oriented edge sets;
+$Y$ is the conditional independence (CI) structure shared by all DAGs in
+the class.
+Two edge orientations are incompatible if they disagree on the direction of
+at least one edge.
+
+\paragraph{The Rashomon property.}
+Markov equivalence is the canonical example of observational equivalence:
+DAGs that encode the same CI structure are indistinguishable from
+observational data.
+For the minimal case (3-node chain $A \to B \to C$ vs.\ fork
+$A \leftarrow B \to C$), same CI structure, different edge orientations.
+In the Lean formalization, this is derived by \texttt{decide} (zero
+axioms).
+
+\paragraph{Impossibility.}
+No stable orientation rule can be faithful to all datasets when the
+equivalence class contains $\geq 2$ DAGs.
+``Stable'' means the rule gives the same answer for all datasets consistent
+with the CI structure; ``faithful'' means the answer matches the
+data-optimal DAG.
+Since different datasets can make different DAGs optimal, stability forces
+a single answer, which cannot match all data-optimal DAGs simultaneously.
+
+\paragraph{Resolution: CPDAG.}
+The standard resolution in causal discovery is the CPDAG (completed
+partially directed acyclic graph): orient edges that have the same
+direction in all Markov-equivalent DAGs, leave the rest undirected.
+This is precisely the neutral-element resolution: undirected edges are
+compatible with both orientations.
+The CPDAG achieves F+S by sacrificing decisiveness on the ambiguous edges.
+
+%% ----- Instance 4: Attention Maps -----
+\subsection{Instance 4: Attention Maps}
+\label{sec:attention}
+
+\paragraph{Setup.}
+$\Theta$ is the space of transformer configurations (weight vectors after
+different training runs);
+$H$ is the space of token importance scores (or rankings) derived from
+attention weights;
+$Y$ is the space of input-output mappings.
+\citet{damour2022underspecification} established that equivalent networks
+(same loss on held-out data) can have markedly different internal
+representations, including attention patterns.
+
+\paragraph{The bilemma applies for argmax attention.}
+When the explanation is the identity of the most-attended token
+($H = \{\text{token}_1, \ldots, \text{token}_n\}$ with
+$\mathrm{incompatible}(t_i, t_j) \Leftrightarrow i \neq j$),
+the explanation space is maximally incompatible.
+Theorem~\ref{thm:bilemma} applies: no method for identifying ``the most
+important token'' can be simultaneously faithful and stable.
+
+\paragraph{The trilemma applies for full attention distributions.}
+When $H$ is the space of full attention distributions (probability vectors
+over tokens), ties exist as neutral elements (uniform attention is
+compatible with any native distribution under a suitable incompatibility
+relation).
+The trilemma applies but the bilemma does not; F+S is achievable via
+averaging.
+
+\paragraph{Empirical evidence.}
+Using DistilBERT with 10 weight-perturbed variants ($\sigma = 0.02$),
+88\% of adjacent token pairs exhibit flip rates exceeding 10\%.
+Under actual fine-tuning (5 seeds, 1 epoch on SST-2), 14.5\% of pairs
+are unstable---structural instability that persists across training
+durations (identical at 1 and 3 epochs).
+Mean Spearman correlation of token rankings across variants is 0.637,
+comparable to single-model SHAP instability at moderate collinearity
+($\rho \approx 0.5$).
+
+% === PAGES 6-10 (merged from neurips_universal_part2.tex) ===
+\input{neurips_universal_part2}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
