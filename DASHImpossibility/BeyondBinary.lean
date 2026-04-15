@@ -189,4 +189,57 @@ theorem concreteML_coverageConflict :
   · exact ⟨true, by simp [concreteMLSystem]⟩
   · exact ⟨false, by simp [concreteMLSystem]⟩
 
+/-! ### 5. Positive result: F+S achievable for graded -/
+
+/-- A graded system where both models explain in the same direction
+    (positive vs weakPositive) rather than opposite directions.
+    The graded space allows this — the two models agree on direction
+    but disagree on magnitude. This is the key insight: enriching
+    {positive, negative} to {positive, weakPositive, negative} creates
+    room for models that differ without conflicting. -/
+def gradedResolvableSystem : ExplanationSystem Bool GradedAttribution Unit where
+  observe := fun _ => ()
+  explain := fun b => if b then .positive else .weakPositive
+  incompatible := GradedAttribution.incomp
+
+/-- weakPositive is compatible with every explain-value in the graded resolvable system.
+    This is the neutral element that enables F+S resolution. -/
+theorem graded_weakPositive_neutral :
+    ∀ (θ : Bool), ¬gradedResolvableSystem.incompatible GradedAttribution.weakPositive (gradedResolvableSystem.explain θ) := by
+  intro θ
+  cases θ <;> simp [gradedResolvableSystem, GradedAttribution.incomp]
+
+/-- The constant method E(θ) = weakPositive is faithful for the graded resolvable system. -/
+theorem graded_constant_faithful :
+    faithful gradedResolvableSystem (fun _ => GradedAttribution.weakPositive) := by
+  intro θ
+  exact graded_weakPositive_neutral θ
+
+/-- The constant method E(θ) = weakPositive is stable (trivially — constant functions are always stable). -/
+theorem graded_constant_stable :
+    stable gradedResolvableSystem (fun _ => GradedAttribution.weakPositive) := by
+  intro _ _ _
+  rfl
+
+/-- **Positive result: F+S is achievable for graded attributions.**
+    Enriching the binary space {positive, negative} to the graded space
+    {positive, weak_positive, negative} introduces a neutral element
+    (weak_positive) that enables a faithful + stable method.
+    This closes the loop: the bilemma shows binary is impossible;
+    this theorem shows graded is possible. The practical message:
+    convert binary questions to graded questions. -/
+theorem graded_fs_achievable :
+    ∃ (E : Bool → GradedAttribution),
+      faithful gradedResolvableSystem E ∧ stable gradedResolvableSystem E :=
+  ⟨fun _ => .weakPositive, graded_constant_faithful, graded_constant_stable⟩
+
+/-- The graded resolvable system does NOT have coverage conflict — weakPositive
+    is compatible with all explain-values. This confirms the bilemma
+    does not apply. -/
+theorem graded_no_coverageConflict :
+    ¬hasCoverageConflict gradedResolvableSystem := by
+  intro hcc
+  obtain ⟨θ, hinc⟩ := hcc GradedAttribution.weakPositive
+  exact graded_weakPositive_neutral θ hinc
+
 end DASHImpossibility

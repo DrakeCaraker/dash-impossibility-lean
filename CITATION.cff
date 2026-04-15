@@ -21,7 +21,7 @@ url: "https://github.com/DrakeCaraker/dash-impossibility-lean"
 abstract: >-
   Lean 4 formalization of the Attribution Impossibility: no feature
   ranking can be simultaneously faithful, stable, and complete when
-  features are collinear. 335 type-checked theorems from 16 axioms
+  features are collinear. 340 type-checked theorems from 16 axioms
   with 0 sorry across 58 files. Includes the core impossibility
   (zero axiom dependencies), architecture-discriminating bounds
   (GBDT, Lasso, neural networks), DASH resolution with Pareto
