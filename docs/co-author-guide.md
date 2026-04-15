@@ -17,7 +17,7 @@ When you train a machine learning model on correlated features and ask "which fe
 - **Impossibility.** No single-model attribution method can be faithful, stable, and complete under collinearity. Proved in Lean 4. The proof depends on zero domain-specific axioms — only propext, Classical.choice, and Quot.sound (the standard foundations of Lean).
 - **Design space.** Every attribution method falls into one of two families: faithful-and-complete methods (with unfaithfulness rate 1/2 for within-group pairs) or ensemble methods (DASH, with ties). The boundary is sharp and proved.
 - **DASH.** Ensemble averaging over balanced sets of independently trained models achieves exact ties (zero unfaithfulness) for collinear feature pairs, with variance decreasing as 1/M. This is the provably optimal resolution.
-- **Lean formalization.** 57 Lean files, 322 theorems+lemmas, 16 axioms (6 type/constant + 6 property + 2 measure + 2 query-complexity), 0 `sorry`. The five deepest proofs are `attribution_sum_symmetric` (35 lines), `Phi_neg` (29 lines), `gaussian_rashomon_witnesses` (27 lines), `sumSqRankDiff_ge_sq_groupSize` (26 lines), and `binary_group_firstmover_is_j_or_k` (23 lines).
+- **Lean formalization.** 58 Lean files, 335 theorems+lemmas, 16 axioms (6 type/constant + 6 property + 2 measure + 2 query-complexity), 0 `sorry`. The five deepest proofs are `attribution_sum_symmetric` (35 lines), `Phi_neg` (29 lines), `gaussian_rashomon_witnesses` (27 lines), `sumSqRankDiff_ge_sq_groupSize` (26 lines), and `binary_group_firstmover_is_j_or_k` (23 lines).
 - **Experiments.** Validated across XGBoost, LightGBM, and CatBoost on 11 datasets, 2 attribution methods (TreeSHAP and permutation importance), with 42 experiment scripts and 32 JSON result files. CV of 0.35–0.66 for within-group feature rankings confirms the instability.
 - **Extensions.** Fairness audit impossibility (protected attributes as collinear features), causal discovery extension, LLM attention extension. These are in the supplement and empirically validated.
 
@@ -110,7 +110,7 @@ Search Google Scholar for: "feature attribution stability", "SHAP collinearity",
 Read the "Proof status transparency" paragraph in the paper. Then pick 5 claims from the body of the paper labeled "proved" and verify they trace to Lean theorems without `sorry`. Run: `grep -r "sorry" DASHImpossibility/*.lean`. Red flag: any `sorry` found.
 
 **[V6] Axiom count consistency (10 min, anyone)**
-Run: `grep -c "^axiom" DASHImpossibility/*.lean` and compare to what the paper claims (16 total). Run: `grep -c "^theorem\|^lemma" DASHImpossibility/*.lean` and compare to the paper's claimed 322. Red flag: any discrepancy.
+Run: `grep -c "^axiom" DASHImpossibility/*.lean` and compare to what the paper claims (16 total). Run: `grep -c "^theorem\|^lemma" DASHImpossibility/*.lean` and compare to the paper's claimed 335. Red flag: any discrepancy.
 
 **[V7] DASH experiment validity (1 hour, David)**
 Verify that the DASH experiment (ensemble averaging) is implemented correctly. Is the ensemble truly balanced (equal first-mover counts)? Is the Spearman correlation computed correctly? Red flag: systematic bias in the ensemble construction.
