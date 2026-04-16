@@ -56,8 +56,8 @@ structure GBDTSetup (fs : FeatureSpace) where
 /-- The global axioms form a GBDTSetup instance. -/
 noncomputable def axiomSetup (fs : FeatureSpace) : GBDTSetup fs where
   ModelType := Model
-  numTrees := numTrees
-  numTrees_pos := numTrees_pos
+  numTrees := fs.T
+  numTrees_pos := fs.hT
   attribution := attribution fs
   splitCount := splitCount fs
   firstMover := firstMover fs

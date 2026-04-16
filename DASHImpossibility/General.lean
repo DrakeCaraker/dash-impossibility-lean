@@ -25,8 +25,8 @@ theorem splitCount_firstMover_gt (f : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
     splitCount fs k f < splitCount fs j f := by
   have hne : firstMover fs f ≠ k := by rw [hfm]; exact hjk
   have hgap := split_gap_exact fs f j k ℓ hj hk hfm hne
-  have hpos : 0 < fs.ρ ^ 2 * (numTrees : ℝ) / (2 - fs.ρ ^ 2) :=
-    div_pos (mul_pos (pow_pos fs.hρ_pos 2) (Nat.cast_pos.mpr numTrees_pos)) (denom_pos fs)
+  have hpos : 0 < fs.ρ ^ 2 * (fs.T : ℝ) / (2 - fs.ρ ^ 2) :=
+    div_pos (mul_pos (pow_pos fs.hρ_pos 2) (Nat.cast_pos.mpr fs.hT)) (denom_pos fs)
   linarith
 
 /-- The first-mover's attribution strictly exceeds that of any other

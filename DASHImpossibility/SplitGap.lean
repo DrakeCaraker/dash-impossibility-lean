@@ -43,7 +43,7 @@ theorem split_gap_exact (f : Model) (j₁ j₂ : Fin fs.P) (ℓ : Fin fs.L)
     (hj₁ : j₁ ∈ fs.group ℓ) (hj₂ : j₂ ∈ fs.group ℓ)
     (hfm : firstMover fs f = j₁) (hne : firstMover fs f ≠ j₂) :
     splitCount fs j₁ f - splitCount fs j₂ f =
-      fs.ρ ^ 2 * (numTrees : ℝ) / (2 - fs.ρ ^ 2) := by
+      fs.ρ ^ 2 * (fs.T : ℝ) / (2 - fs.ρ ^ 2) := by
   have hfm_grp : firstMover fs f ∈ fs.group ℓ := by rw [hfm]; exact hj₁
   rw [splitCount_firstMover fs f j₁ hfm,
       splitCount_nonFirstMover fs f j₂ ℓ hj₂ hne hfm_grp]
@@ -53,12 +53,12 @@ theorem split_gap_exact (f : Model) (j₁ j₂ : Fin fs.P) (ℓ : Fin fs.L)
 
 /-- The gap ρ²T/(2-ρ²) is at least ½ρ²T, since 2 - ρ² ≤ 2. -/
 theorem split_gap_ge_half :
-    fs.ρ ^ 2 * (numTrees : ℝ) / (2 - fs.ρ ^ 2) ≥
-      1 / 2 * (fs.ρ ^ 2 * (numTrees : ℝ)) := by
+    fs.ρ ^ 2 * (fs.T : ℝ) / (2 - fs.ρ ^ 2) ≥
+      1 / 2 * (fs.ρ ^ 2 * (fs.T : ℝ)) := by
   rw [ge_iff_le, le_div_iff₀ (denom_pos fs)]
-  nlinarith [sq_nonneg fs.ρ, Nat.cast_nonneg (α := ℝ) numTrees,
+  nlinarith [sq_nonneg fs.ρ, Nat.cast_nonneg (α := ℝ) fs.T,
              mul_nonneg (sq_nonneg fs.ρ) (mul_nonneg (sq_nonneg fs.ρ)
-               (Nat.cast_nonneg (α := ℝ) numTrees))]
+               (Nat.cast_nonneg (α := ℝ) fs.T))]
 
 /-- Combined: the split gap between first-mover and non-first-mover
     in the same group is at least ½ρ²T. -/
@@ -66,7 +66,7 @@ theorem split_gap_lower_bound (f : Model) (j₁ j₂ : Fin fs.P) (ℓ : Fin fs.L
     (hj₁ : j₁ ∈ fs.group ℓ) (hj₂ : j₂ ∈ fs.group ℓ)
     (hfm : firstMover fs f = j₁) (hne : firstMover fs f ≠ j₂) :
     splitCount fs j₁ f - splitCount fs j₂ f ≥
-      1 / 2 * (fs.ρ ^ 2 * (numTrees : ℝ)) := by
+      1 / 2 * (fs.ρ ^ 2 * (fs.T : ℝ)) := by
   rw [split_gap_exact fs f j₁ j₂ ℓ hj₁ hj₂ hfm hne]
   exact split_gap_ge_half fs
 
