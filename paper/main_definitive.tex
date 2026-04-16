@@ -133,6 +133,8 @@ Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-
     \item \textbf{Family B} (\DASH{} ensemble): Stable, but reports ties for symmetric features. Provably Pareto-optimal among unbiased aggregations.
 \end{itemize}
 
+The 50\% flip rate is the worst case (maximally collinear pair, $\rho \to 1$). For moderate collinearity ($\rho \approx 0.7$), empirical flip rates are lower but still significant (typically 15--30\%). The average-case flip rate across all feature pairs depends on the dataset's correlation structure.
+
 \noindent\textbf{The practical toolkit.}
 \begin{enumerate}
     \item \textbf{Diagnose}: The single-model screen (94\% precision on Breast Cancer; tree-based models only) identifies unstable feature pairs from one model.
@@ -237,12 +239,12 @@ The proof is mechanically verified in Lean~4 using Mathlib: 340 type-checked the
 and lemmas across 58 files (115 with multi-step proofs of ${\geq}5$ tactic lines; the
 remainder are definitions, wrappers, and single-step applications; from 14
 domain-specific + 2 query-complexity axioms; 0 \texttt{sorry}).
-The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero axioms
+The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero domain-specific axioms
 beyond the Rashomon property; the DASH equity result (Corollary~\ref{cor:equity})
 depends on the \texttt{attribution\_sum\_symmetric} theorem (derived in
 \texttt{SymmetryDerive.lean} from the proportionality and split-count axioms).
 This is the first formally verified impossibility result in
-explainable AI (the core impossibility uses zero axioms; quantitative bounds are
+explainable AI (the core impossibility uses zero domain-specific axioms; quantitative bounds are
 conditional on 6 domain-specific axioms; query complexity uses 2 additional axioms
 from Le~Cam's method).
 The formalization also proved valuable beyond certification: during translation to
@@ -260,7 +262,7 @@ proof errors \citep{nipkow2009social,zhang2026statistical}.
     Pareto-optimal on the ensemble branch. All other results are corollaries.
     \item \textbf{The Attribution Impossibility} (Theorem~\ref{thm:impossibility}):
     the base case of the Design Space Theorem---a model-agnostic impossibility
-    requiring only the Rashomon property, with zero axiom dependencies in the Lean
+    requiring only the Rashomon property, with zero domain-specific axiom dependencies in the Lean
     formalization.
     \item \textbf{Architecture discrimination}: attribution ratios for \GBDT{}
     ($1/(1{-}\rho^2)$ Lean-verified; $1/(1{-}\alpha\rho^2)$ empirically corrected),
@@ -837,6 +839,9 @@ Among all methods achieving $U_{jk} = 0$ (ties for symmetric features), no metho
 \paragraph{Summary of optimality.}
 \DASH{} is the unique method that: (1) achieves zero within-group unfaithfulness (ties for symmetric features); (2) achieves the Cauchy--Schwarz variance bound $\sigma^2/M$ for ranking stability (Lean-verified via \texttt{sum\_squares\_ge\_inv\_M}; in the parametric case, this coincides with the Cram\'er--Rao bound); and (3) is the minimum-variance unbiased estimator of $\E[\varphi_j]$ among \emph{all} estimators (not just linear ones), by the Rao--Blackwell theorem (standard; not formalized in Lean): since the sufficient statistic for $\mu_j$ from i.i.d.\ observations is $\sum \varphi_j(f_i)$, and $\bar\varphi_j$ is a function of this sufficient statistic, it dominates any estimator that is not.
 
+\paragraph{Connection to estimation-theoretic bounds.}
+Faithfulness can be viewed as an unbiasedness condition: $\mathbb{E}[E(\theta)] = \text{explain}(\theta)$ for each $\theta$. Under this reading, the attribution impossibility is a Cram\'er--Rao-type result: no unbiased estimator of the explanation achieves zero variance when the Fisher information (determined by the Rashomon set geometry) is finite. The design space theorem refines this: it characterises the full Pareto frontier of (bias, variance, completeness) trade-offs, not just the variance lower bound.
+
 \paragraph{Connection to invariant decision theory.}
 The DASH optimality has a deeper connection to classical invariant decision theory. The data-generating process is invariant under the permutation group $S_m$ acting on within-group features. By the Hunt--Stein theorem (Lehmann \& Romano, 2005, Theorem 9.3.3; for finite groups, the result follows from the complete class theorem), for a finite group, the best equivariant estimator is the Pitman estimator---the average over the group orbit (Lehmann \& Romano, 2005, \S 6.7). For the permutation group acting on $m$ features, this is exactly the sample mean of attributions, which is DASH. Hunt--Stein gives optimality among \emph{all} estimators (not just unbiased ones), and directly explains why DASH produces ties: the group average is constant on orbits. The loss function is squared error on the consensus attribution: $L(\hat\varphi, \varphi) = (\hat\varphi_j - \varphi_j)^2$. This loss is invariant under the permutation group $S_m$ acting on within-group features (permuting features permutes both the estimate and the target identically), satisfying the Hunt--Stein invariance requirement.
 
@@ -1160,6 +1165,9 @@ and the achievable set is restricted to $\mathcal{A} \cup \mathcal{B}$.
 \caption{The Attribution Design Space. Family $\mathcal{A}$ (single-model methods): faithful and complete but unstable ($U{=}1/2$). Family $\mathcal{B}$ (\DASH{} ensemble): stable with ties ($U{=}0$, $S$ increasing with $M$). The ideal point $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. There is no third option.}
 \label{fig:design-space}
 \end{figure}
+
+\paragraph{Biased alternatives and James--Stein phenomena.}
+The design space theorem characterises unbiased linear aggregators. A natural question: can biased methods (e.g., ridge-regularised Shapley values, $L_1$ shrinkage) circumvent the impossibility by accepting controlled bias in exchange for stability and decisiveness? Shrinkage can reduce variance (improving stability) but introduces systematic bias toward a prior (reducing faithfulness). The trilemma's qualitative impossibility holds regardless: for any method, if the Rashomon property holds, at least one of faithfulness, stability, or decisiveness must be sacrificed. Shrinkage shifts \emph{which} property is sacrificed (from stability to faithfulness) without escaping the trilemma. Quantifying the bias--variance--decisiveness Pareto frontier for shrinkage estimators is future work.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 7. THE SYMMETRIC BAYES DICHOTOMY
@@ -1766,7 +1774,7 @@ No circuit explanation of a neural network can be simultaneously faithful (repor
 The bilemma applies with full force: circuit decomposition spaces are binary (each component is either part of the circuit or not), making them maximally incompatible. Faithful + stable alone is impossible --- even dropping decisiveness does not help. This is strictly stronger than the trilemma.
 
 \begin{theorem}[Mechanistic Interpretability Bilemma]\label{thm:mech-interp-bilemma}
-For any two functionally equivalent neural networks with incompatible circuit decompositions, no explanation method $E$ can be simultaneously faithful and stable. The Rashomon property is \textbf{derived} from constructive finite types (zero axioms).
+For any two functionally equivalent neural networks with incompatible circuit decompositions, no explanation method $E$ can be simultaneously faithful and stable. The Rashomon property is \textbf{derived} from constructive finite types (zero custom axioms).
 \end{theorem}
 
 \noindent\textit{Proof.}
@@ -1782,7 +1790,7 @@ The bilemma forecloses averaging-based resolutions (DASH) for circuits because t
 Interpretability-based safety cases that depend on identifying ``the circuit'' for a behavior are subject to this impossibility. A circuit found in one training run may not exist in a functionally equivalent run. Safety claims built on single-network circuit analysis are as unstable as single-model SHAP rankings. The resolution: verify circuit-level claims across multiple equivalent networks, or qualify them as instance-specific.
 
 \paragraph{Lean formalization.}
-The mechanistic interpretability impossibility, bilemma, and unfaithfulness bound are machine-verified in \texttt{MechInterp.lean} with zero axiom dependencies. All types are finite inductives; the Rashomon property is derived via \texttt{decide}, not axiomatized.
+The mechanistic interpretability impossibility, bilemma, and unfaithfulness bound are machine-verified in \texttt{MechInterp.lean} with zero custom axiom dependencies. All types are finite inductives; the Rashomon property is derived via \texttt{decide}, not axiomatized.
 
 \begin{theorem}[Rashomon Unfaithfulness Bound]\label{thm:unfaith-bound}
 For any binary attribution question, any stable method is unfaithful at $\geq 1$ of every 2 Rashomon witnesses.
@@ -1832,7 +1840,7 @@ The bilemma complements the quantitative bounds:
 \end{itemize}
 
 \paragraph{Lean formalization.}
-The bilemma, unfaithfulness bound, all-or-nothing theorem, and both ML instances (SHAP sign, feature selection) are machine-verified in \texttt{Bilemma.lean} with zero axiom dependencies beyond the Rashomon property.
+The bilemma, unfaithfulness bound, all-or-nothing theorem, and both ML instances (SHAP sign, feature selection) are machine-verified in \texttt{Bilemma.lean} with zero custom axiom dependencies beyond the Rashomon property.
 The abstract framework (\texttt{ExplanationSystem.lean}) defines the general explanation system, faithful, stable, and decisive, and proves the abstract impossibility.
 The abstract \texttt{ExplanationSystem} framework generalizes the attribution-specific impossibility: \texttt{attribution\_impossibility} (Theorem~\ref{thm:impossibility}) is recovered as an instance where $\Theta$ = models, $H$ = feature rankings, $Y$ = predictions, and $\text{incompatible}$ = opposite orderings. The bilemma then strengthens this for binary subproblems.
 
@@ -2762,12 +2770,15 @@ The formalization comprises 58 Lean~4 files with 16 axioms and 340 type-checked
 theorems and lemmas (0 \texttt{sorry}). Of these, 115 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or single-step applications.
 The core impossibility (\texttt{attribution\allowbreak\_impossibility}) depends on
-zero axioms---only the Rashomon property as hypothesis. The DASH resolution
+zero domain-specific axioms---only the Rashomon property as hypothesis. The DASH resolution
 (\texttt{consensus\allowbreak\_equity}) depends on the
 \texttt{attribution\allowbreak\_sum\allowbreak\_symmetric} theorem (derived from
 axioms); the variance convergence depends on the
 \texttt{consensus\allowbreak\_variance\allowbreak\_bound} theorem (also derived).
 \end{sloppypar}
+
+\paragraph{Scope of formal verification.}
+Lean verification guarantees that all theorems follow from the stated axioms with no logical gaps (internal consistency). It does not guarantee that the axioms correctly model the phenomena they are intended to capture (external validity). The 16 axioms are motivated by the structure of gradient-boosted decision trees and SHAP value computation (\S\ref{sec:axiom-audit}), but their adequacy for any particular model or dataset is an empirical question.
 
 \paragraph{Scope of verification.}
 \begin{sloppypar}
@@ -3084,6 +3095,9 @@ The 10\% flip rate threshold defining ``instability'' is a practical convention;
 \paragraph{Computational cost and practical deployment.}
 For batch pipelines, training $M{=}25$ models is feasible. For real-time explanations, use the single-model screen to flag unstable pairs. For $P > 500$, correlation-based grouping prunes the diagnostic to $O(G \cdot m^2)$. At $P{=}500$ with 20 models, the full workflow completes in under 2.5 minutes.
 
+\paragraph{Computational cost of \DASH{}.}
+\DASH{} requires training $M$ models instead of one. For gradient-boosted trees (XGBoost/LightGBM), training time scales linearly: $M = 25$ models on a dataset with $N = 10{,}000$ and $P = 50$ takes ${\sim}5$~minutes on a single CPU core. SHAP computation is per-model and parallelisable. The total cost is $O(M)$ times single-model cost, with no increase in per-prediction inference cost (the deployed model is unchanged; only explanation aggregation changes). For $M_{\min} = \lceil 2.71 \cdot \sigma^2/\Delta^2 \rceil$, a pilot run of 5 models suffices to estimate $\sigma$ and $\Delta$.
+
 \paragraph{Broader implications.}
 \begin{sloppypar}
 In a survey of 77 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and
@@ -3145,7 +3159,7 @@ constant.
 \end{sloppypar}
 This stratification directly addresses the proportionality axiom's empirical variance (CV $\approx 0.35$--$0.66$): the axiom is unnecessary for the impossibility and ratio bound, which depend only on split-count structure.
 
-The following are fully formalized in Lean (340 theorems, 0 \texttt{sorry}, 58 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, the Pareto dominance of DASH, and the mechanistic interpretability bilemma (derived Rashomon, zero axioms). The Z-test diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
+The following are fully formalized in Lean (340 theorems, 0 \texttt{sorry}, 58 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, the Pareto dominance of DASH, and the mechanistic interpretability bilemma (derived Rashomon, zero custom axioms). The Z-test diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
 
 \paragraph{Approximate faithfulness--stability tradeoff.}
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\sigma(j) - \sigma(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.
@@ -3771,6 +3785,9 @@ The impossibility applies to all AI systems using feature attribution for explai
     \item \textbf{Importers:} Include attribution stability in conformity assessment checklists; reject systems without instability documentation.
     \item \textbf{Market surveillance authorities:} Update technical standards to require multi-model attribution testing; treat undisclosed attribution instability as a potential non-conformity under Art.~13.
 \end{itemize}
+
+\paragraph{Liability implications.}
+If an organisation relies on single-model SHAP explanations for high-stakes decisions (loan denials, medical diagnoses) and the Rashomon property holds, the explanation is unreliable in a legally meaningful sense: two independent audits using different random seeds could reach opposite conclusions about which feature drove the decision. \DASH{} consensus with $M \geq 25$ provides a defensible alternative: the explanation is stable, the uncertainty is quantified, and the limitations are documented. \emph{Note:} This analysis reflects our reading of the regulatory text and should be reviewed by a legal scholar before being relied upon in compliance contexts.
 
 \section{SymPy Verification: Full Details}
 
