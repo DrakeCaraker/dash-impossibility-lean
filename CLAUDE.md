@@ -83,7 +83,7 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, design space, SNR calibration, conditional threshold, etc.)
 ```
 
-## Lean State: 58 files, 6 axioms, 352 theorems+lemmas, 0 sorry
+## Lean State: 58 files, 6 axioms, 357 theorems+lemmas, 0 sorry
 
 ## Axiom Inventory (10 total)
 

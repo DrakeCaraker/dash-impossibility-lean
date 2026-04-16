@@ -140,6 +140,26 @@ theorem FeatureStatus.compatible_eq (h₁ h₂ : FeatureStatus) :
     ¬FeatureStatus.incomp h₁ h₂ → h₁ = h₂ := by
   cases h₁ <;> cases h₂ <;> simp [FeatureStatus.incomp]
 
+/-- Counterfactual direction: increase or decrease a feature. -/
+inductive CounterfactualDir where
+  | increase
+  | decrease
+  deriving DecidableEq
+
+/-- Incompatibility for counterfactual directions: opposite directions incompatible. -/
+def CounterfactualDir.incomp : CounterfactualDir → CounterfactualDir → Prop
+  | .increase, .decrease => True
+  | .decrease, .increase => True
+  | _, _ => False
+
+theorem CounterfactualDir.incomp_irrefl (h : CounterfactualDir) :
+    ¬CounterfactualDir.incomp h h := by
+  cases h <;> simp [CounterfactualDir.incomp]
+
+theorem CounterfactualDir.compatible_eq (h₁ h₂ : CounterfactualDir) :
+    ¬CounterfactualDir.incomp h₁ h₂ → h₁ = h₂ := by
+  cases h₁ <;> cases h₂ <;> simp [CounterfactualDir.incomp]
+
 /-! ### Instance Impossibilities -/
 
 /-- **SHAP sign bilemma.** No method for determining a feature's attribution
@@ -170,6 +190,21 @@ theorem feature_selection_bilemma {Θ Y : Type}
   exact bilemma_of_compatible_eq S
     (fun h => by rw [hS]; exact FeatureStatus.incomp_irrefl h)
     (fun h₁ h₂ hc => FeatureStatus.compatible_eq h₁ h₂ (by rwa [hS] at hc))
+    θ₁ θ₂ hobs hinc E hf hs
+
+/-- **Counterfactual direction bilemma.** No method for determining
+    the counterfactual direction (increase/decrease) can be simultaneously
+    faithful and stable under model multiplicity. -/
+theorem counterfactual_bilemma {Θ Y : Type}
+    (S : ExplanationSystem Θ CounterfactualDir Y)
+    (hS : S.incompatible = CounterfactualDir.incomp)
+    (θ₁ θ₂ : Θ) (hobs : S.observe θ₁ = S.observe θ₂)
+    (hinc : S.incompatible (S.explain θ₁) (S.explain θ₂))
+    (E : Θ → CounterfactualDir) (hf : faithful S E) (hs : stable S E) :
+    False := by
+  exact bilemma_of_compatible_eq S
+    (fun h => by rw [hS]; exact CounterfactualDir.incomp_irrefl h)
+    (fun h₁ h₂ hc => CounterfactualDir.compatible_eq h₁ h₂ (by rwa [hS] at hc))
     θ₁ θ₂ hobs hinc E hf hs
 
 end DASHImpossibility

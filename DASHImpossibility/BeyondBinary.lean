@@ -181,6 +181,28 @@ theorem neutral_destroys_coverageConflict {Θ H Y : Type}
   intro hcc
   exact coverageConflict_implies_no_neutral S hcc hn
 
+/-- A neutral element makes F+S achievable: the constant function E(θ) = c
+    is faithful (c compatible with all) and stable (constant).
+    This is the explanation direction of the direction theorem:
+    enlarging H with neutral elements WEAKENS the impossibility. -/
+theorem neutral_implies_FS_achievable {Θ H Y : Type}
+    (S : ExplanationSystem Θ H Y)
+    (c : H) (hc : ∀ θ, ¬S.incompatible c (S.explain θ)) :
+    ∃ E : Θ → H, faithful S E ∧ stable S E :=
+  ⟨fun _ => c, fun θ => hc θ, fun _ _ _ => rfl⟩
+
+/-- The tightness classification: F+S achievability depends entirely on
+    whether H has a neutral element (equivalent to absence of coverage conflict).
+
+    For feature RANKINGS, DASH ties are neutral → F+S achievable.
+    For feature SIGNS, no neutral exists → F+S impossible (bilemma). -/
+theorem tightness_dichotomy {Θ H Y : Type}
+    (S : ExplanationSystem Θ H Y) :
+    (hasNeutralElement S → ∃ E : Θ → H, faithful S E ∧ stable S E) ∧
+    (hasCoverageConflict S → ¬hasNeutralElement S) :=
+  ⟨fun ⟨c, hc⟩ => neutral_implies_FS_achievable S c hc,
+   fun hcc => coverageConflict_implies_no_neutral S hcc⟩
+
 /-- The concrete ML system has coverage conflict. -/
 theorem concreteML_coverageConflict :
     hasCoverageConflict concreteMLSystem := by
