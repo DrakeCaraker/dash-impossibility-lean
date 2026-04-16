@@ -40,7 +40,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-Feature rankings from SHAP change when you retrain the model---in 68\% of 77 public datasets (under the standard workflow; model variation accounts for ${\sim}63\%$ of the total), the ``most important'' feature flips with the random seed. We prove this is not an engineering problem but a mathematical impossibility: no feature ranking can be simultaneously faithful (reflecting the model), stable (consistent across retrains), and complete (ordering all features) when features are collinear with similar true importance. The impossibility is quantitative, with architecture-discriminating bounds: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting and is infinite for Lasso, while random forests converge. The achievable design space consists of exactly two families; \DASH{} ensemble averaging is Pareto-optimal among unbiased aggregations on the stable branch, achieving equitable attributions with Cauchy--Schwarz-optimal variance. The impossibility, design space, and resolution are mechanically verified in Lean~4 (352 theorems, 6 axioms, 0~\texttt{sorry}; 115 with multi-step proofs of ${\geq}5$ tactic lines)---the first formally verified impossibility result in explainable AI.
+Feature rankings from SHAP change when you retrain the model---in 68\% of 77 public datasets (under the standard workflow; model variation accounts for ${\sim}63\%$ of the total), the ``most important'' feature flips with the random seed. We prove this is not an engineering problem but a mathematical impossibility: no feature ranking can be simultaneously faithful (reflecting the model), stable (consistent across retrains), and complete (ordering all features) when features are collinear with similar true importance. The impossibility is quantitative, with architecture-discriminating bounds: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting and is infinite for Lasso, while random forests converge. The achievable design space consists of exactly two families; \DASH{} ensemble averaging is Pareto-optimal among unbiased aggregations on the stable branch, achieving equitable attributions with Cauchy--Schwarz-optimal variance. The impossibility, design space, and resolution are mechanically verified in Lean~4 (352 theorems, 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines)---the first formally verified impossibility result in explainable AI.
 \end{abstract}
 
 \begin{keywords}
@@ -126,7 +126,7 @@ The formalization also proved valuable beyond certification: during translation 
     \item \textbf{Architecture discrimination}: attribution ratios for \GBDT{} ($1/(1{-}\rho^2)$ Lean-verified; $1/(1{-}\alpha\rho^2)$ empirically corrected), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$, informal).
     \item \textbf{Constructive relaxation via \DASH{}}: ensemble averaging restores equitable attributions (derived for balanced ensembles) with variance $O(1/M)$, sacrificing within-group completeness.
     \item \textbf{The symmetric Bayes dichotomy} (\S~\ref{sec:sbd}): a proof technique from invariant decision theory \citep{lehmann2005testing}, demonstrated across three structurally distinct instances (feature attribution, model selection, and causal discovery under Markov equivalence) with different symmetry groups.
-    \item \textbf{Machine-verified proof}: formalized in Lean~4 (352 type-checked theorems from 6 axioms, 0~\texttt{sorry}; 115 with multi-step proofs of ${\geq}5$ tactic lines), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (archived at \url{https://doi.org/10.5281/zenodo.19468379}).\linebreak The axiom system is consistent: we construct an explicit model satisfying all 6 axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and~numerically.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (352 type-checked theorems from 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (archived at \url{https://doi.org/10.5281/zenodo.19468379}).\linebreak The axiom system is consistent: we construct an explicit model satisfying all 6 axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and~numerically.
 \end{enumerate}
 
 The core impossibility proof is deliberately simple---a four-line contradiction from the Rashomon property.
@@ -246,34 +246,31 @@ The formalization uses 6 axioms total: 2 type declarations (\texttt{Model}, \tex
 
 \begin{table}[t]
 \centering
-\caption{Complete axiom inventory (10 total: 5 type/constant, 3 property, 2 measure). Six former axioms (split-count function, 4 split-count properties, query-complexity constant) are now definitions or derived theorems.}
+\caption{Complete axiom inventory (6 axioms). Ten former axioms are now definitions or derived theorems.}
 \label{tab:axioms}
 \footnotesize
-\begin{tabular}{@{}llp{5cm}@{}}
+\begin{tabular}{@{}llp{5.5cm}@{}}
 \toprule
 \textbf{Axiom} & \textbf{Lean~4 name} & \textbf{Justification} \\
 \midrule
+Model type & \texttt{Model} & Abstract type for trained models \\
+First-mover function & \texttt{firstMover} & The dominant feature in each model \\
 First-mover surjectivity & \texttt{firstMover\_surjective} & DGP symmetry: each feature can be first-mover \\
-Split count (first-mover) & \texttt{splitCount\_firstMover} & Gaussian conditioning (Lemma~\ref{lem:split-gap}) \\
-Split count (non-first-mover) & \texttt{splitCount\_nonFirstMover} & Residual signal after first-mover absorbs $\rho$-component \\
-Global proportionality & \texttt{proportionality\_global} & Uniform contribution model with constant $c$ across models \\
-Cross-group symmetry & \texttt{splitCount\_crossGroup\_symmetric} & DGP symmetry: equal split counts when first-mover elsewhere \\
-Cross-group stability & \texttt{splitCount\_crossGroup\_stable} & Changing first-mover within a group does not affect other groups \\
-\multicolumn{3}{@{}p{0.95\textwidth}}{\emph{Both cross-group axioms assume an approximately additive model; feature interactions between groups can break cross-group independence. The core impossibility and ratio bound do not depend on these axioms (see \S~\ref{sec:discussion}).}} \\
-Model measurable space & \texttt{modelMeasurableSpace} & Mathlib infrastructure: $\sigma$-algebra on Model \\
-Model measure & \texttt{modelMeasure} & Mathlib infrastructure: probability measure on Model \\
+Cross-group baseline & \texttt{crossGroupBaselineCore} & Split counts for features in other groups depend only on group indices \\
+Proportionality constant & \texttt{proportionalityConstant} & $\varphi_j(f) = c \cdot n_j(f)$ with $c > 0$ uniform across models \\
+Training measure & \texttt{modelMeasure} & Probability measure on Model (the training distribution) \\
 \midrule
-\multicolumn{3}{@{}l}{\emph{Query complexity (Le~Cam's method, axiomatized):}} \\
-Testing constant & \texttt{testing\_constant} & Universal constant $C \geq 1/8$ from Tsybakov (2009) \\
-Constant positivity & \texttt{testing\_constant\_pos} & $C > 0$ \\
-\midrule
-\multicolumn{3}{@{}l}{\emph{Formerly axiomatized, now derived:}} \\
-Spearman bound & \texttt{spearman\_instability\_bound} & \textbf{Theorem} in \texttt{SpearmanDef.lean} (from midranks) \\
-Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & \textbf{Theorem} in \texttt{SymmetryDerive.lean} \\
-Attribution variance & \texttt{attribution\_variance} & \textbf{Definition} from \texttt{ProbabilityTheory.variance} \\
-Variance nonnegativity & \texttt{attribution\_variance\_nonneg} & \textbf{Theorem} from Mathlib's \texttt{variance\_nonneg} \\
-Consensus variance bound & \texttt{consensus\_variance\_bound} & \textbf{Theorem} in \texttt{Defs.lean} (algebraic) \\
-Testing lower bound & \texttt{le\_cam\_lower\_bound} & \textbf{Theorem} in \texttt{QueryComplexity.lean} (contrapositive) \\
+\multicolumn{3}{@{}l}{\emph{Formerly axiomatized, now defined or derived (10 eliminated):}} \\
+Split count & \texttt{splitCount} & \textbf{Definition}: if-then-else on first-mover group membership \\
+Split count (first-mover) & \texttt{splitCount\_firstMover} & \textbf{Theorem}: derived from \texttt{splitCount} definition \\
+Split count (non-first-mover) & \texttt{splitCount\_nonFirstMover} & \textbf{Theorem}: derived from \texttt{splitCount} definition \\
+Cross-group symmetry & \texttt{splitCount\_crossGroup\_symmetric} & \textbf{Theorem}: same \texttt{crossGroupBaselineCore} for same-group features \\
+Cross-group stability & \texttt{splitCount\_crossGroup\_stable} & \textbf{Theorem}: \texttt{crossGroupBaselineCore} depends only on group indices \\
+Attribution function & \texttt{attribution} & \textbf{Definition}: $\texttt{proportionalityConstant} \cdot \texttt{splitCount}$ \\
+Global proportionality & \texttt{proportionality\_global} & \textbf{Theorem}: derived from \texttt{attribution} definition \\
+Boosting rounds & \texttt{numTrees}, \texttt{numTrees\_pos} & \textbf{Fields} of \texttt{FeatureSpace} structure ($T$, $T > 0$) \\
+Measurable space & \texttt{modelMeasurableSpace} & \textbf{Instance}: discrete $\sigma$-algebra ($\top$, works for any type) \\
+Testing constant & \texttt{testing\_constant}, \texttt{testing\_constant\_pos} & \textbf{Definition}: $C := 1/8$ from Tsybakov (2009); positivity by \texttt{norm\_num} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1927,7 +1924,7 @@ DASH breakdown & Robust to contaminated ensembles & \texttt{dash\_breakdown\_poi
 
 \subsection{Proof Architecture}
 
-The formalization comprises 58 Lean~4 files with 6 axioms and 352 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 115 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
+The formalization comprises 58 Lean~4 files with 6 axioms and 352 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 139 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
 The core impossibility (\textsf{attribution\_impossibility}) depends on zero axioms---only the Rashomon property as hypothesis.
 The DASH resolution (\textsf{consensus\_equity}) depends on the \textsf{attribution\_sum\_symmetric} theorem (derived); the variance convergence depends on \textsf{consensus\_variance\_bound} (also~derived).
 
@@ -1981,7 +1978,7 @@ The consistency model demonstrates that the axiom system is non-trivially satisf
 \begin{sloppypar}
 The single-model variance \textsf{attribution\_variance} is \emph{defined} from
 Mathlib's \textsf{ProbabilityTheory.variance}, and its nonnegativity is \emph{derived} from Mathlib's \textsf{variance\_nonneg}.
-This required two infrastructure axioms (\textsf{modelMeasurableSpace}, \textsf{modelMeasure}) connecting the abstract \texttt{Model} type to Mathlib's measure theory.
+This requires one infrastructure axiom (\textsf{modelMeasure}, the training distribution); the measurable space uses the discrete $\sigma$-algebra ($\top$), which is derived for any type.
 \end{sloppypar}
 
 The consensus variance bound ($\Var(\bar\varphi_j) = \Var(\varphi_j)/M$) remains axiomatized; the full derivation via \textsf{IndepFun.variance\_sum} would require a product measure formulation and independence axioms for ensemble draws---deferred to future~work.
@@ -1997,7 +1994,7 @@ The initial formalization (49 theorems, 15 files) was developed by the first aut
 
 \subsection{Proof Depth Distribution}
 
-Of 350 type-checked declarations: 115 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are listed below.
+Of 352 type-checked declarations: 139 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are listed below.
 
 \begin{center}
 \small
@@ -2154,9 +2151,9 @@ This paper contributes three reusable techniques: (1) the \emph{Rashomon reducti
 The formalization uses 6 axioms total, but not all results require all axioms. Six former axioms (split-count function, 4 split-count properties, and the query-complexity constant) are now definitions or derived theorems. The Lean type-checker's \texttt{\#print axioms} command verifies exact dependencies:
 \begin{itemize}
 \item \textbf{Zero behavioral axioms:} The core impossibility (Theorem~\ref{thm:impossibility}) depends only on the Rashomon property as a hypothesis---no domain-specific axioms whatsoever. A qualitative variant (\texttt{impossibility\_qualitative} in \texttt{Qualitative.lean}) proves the impossibility from just two properties---dominance and surjectivity---as hypotheses.
-\item \textbf{Four axioms:} The GBDT impossibility holds from surjectivity and split-count axioms alone (\texttt{gbdt\_impossibility\_local} in \texttt{ProportionalityLocal.lean}), without \texttt{proportionality\_global}.
-\item \textbf{Nine axioms:} The ratio bound $1/(1{-}\rho^2)$ and the equity violation hold from per-model proportionality (each model has its own constant $c_f$). The global proportionality axiom ($\exists\, c > 0$ uniform across models) is \emph{not required}---$c_f$ cancels in every ratio (\texttt{local\_proportionality\_suffices} in \texttt{LocalSufficiency.lean}).
-\item \textbf{Sixteen axioms:} The full set is needed only for DASH convergence (cross-model consistency via cross-group axioms) and the query complexity scaling constant.
+\item \textbf{Three axioms:} The GBDT impossibility holds from \texttt{firstMover}, \texttt{firstMover\_surjective}, and \texttt{crossGroupBaselineCore} alone (\texttt{gbdt\_impossibility\_local} in \texttt{ProportionalityLocal.lean}).
+\item \textbf{Five axioms:} The DASH equity result adds \texttt{proportionalityConstant}.
+\item \textbf{Six axioms:} The full set adds \texttt{modelMeasure} for the variance bound. Ten former axioms (split-count function, 4 split-count properties, attribution function, proportionality\_global, numTrees/numTrees\_pos, modelMeasurableSpace, testing\_constant/testing\_constant\_pos) are now definitions or derived theorems.
 \end{itemize}
 This stratification directly addresses the proportionality axiom's empirical variance (CV $\approx 0.35$--$0.66$): the axiom is unnecessary for the impossibility and ratio bound, which depend only on split-count structure.
 
