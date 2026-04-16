@@ -83,16 +83,15 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, design space, SNR calibration, conditional threshold, etc.)
 ```
 
-## Lean State: 58 files, 16 axioms, 340 theorems+lemmas, 0 sorry
+## Lean State: 58 files, 10 axioms, 350 theorems+lemmas, 0 sorry
 
-## Axiom Inventory (16 total)
+## Axiom Inventory (10 total)
 
 | Category | Axioms | Used by |
 |----------|--------|---------|
-| Type declarations | Model, numTrees, numTrees_pos, attribution, splitCount, firstMover | Infrastructure (bundled in Setup.lean) |
-| Core properties | firstMover_surjective, splitCount_firstMover, splitCount_nonFirstMover, proportionality_global, splitCount_crossGroup_symmetric, splitCount_crossGroup_stable | GBDT bounds |
+| Type declarations | Model, numTrees, numTrees_pos, attribution, firstMover | Infrastructure (bundled in Setup.lean) |
+| Core properties | firstMover_surjective, crossGroupBaselineCore, proportionality_global | GBDT bounds |
 | Measure infrastructure | modelMeasurableSpace, modelMeasure | Variance (Mathlib connection) |
-| Query complexity | testing_constant, testing_constant_pos | Query complexity scaling |
 
 **Axiom stratification (verified by `#print axioms`):**
 - **Core impossibility** (`attribution_impossibility`): ZERO behavioral axioms (only Model + attribution types)
@@ -102,9 +101,15 @@ paper/
 - **DASH resolution** (`consensus_equity`): 6 axioms (+ cross-group symmetric)
 - **Bundled impossibility** (`attribution_impossibility_bundled`): ZERO axioms (fully parametric via GBDTSetup)
 
-**Formerly axiomatized, now derived:**
-- `spearman_classical_bound` → `spearman_instability_bound` in SpearmanDef.lean (derived from split-count structure; bound 3(m-1)²/(P³-P) is weaker than classical m³/P³ but fully proved)
-- `le_cam_lower_bound` — theorem in QueryComplexity.lean (provable by `not_lt.mp`; the contrapositive formulation ¬(n < bound) → bound ≤ n is a tautology in any linear order)
+**Formerly axiomatized, now defined/derived:**
+- `splitCount` — now a `def` from firstMover, ρ, T, and crossGroupBaselineCore
+- `splitCount_firstMover`, `splitCount_nonFirstMover` — derived from splitCount def
+- `splitCount_crossGroup_symmetric` — derived from splitCount def (same crossGroupBaselineCore for same-group features)
+- `splitCount_crossGroup_stable` — derived from crossGroupBaseline_stable (crossGroupBaselineCore depends only on group indices)
+- `testing_constant` — now `def testing_constant := 1/8` (Le Cam's value from Tsybakov 2009)
+- `testing_constant_pos` — derived by `norm_num`
+- `spearman_classical_bound` → `spearman_instability_bound` in SpearmanDef.lean
+- `le_cam_lower_bound` — theorem in QueryComplexity.lean (provable by `not_lt.mp`)
 - `consensus_variance_bound` — theorem in Defs.lean (from attribution_variance_nonneg + Nat.cast_nonneg)
 - `attribution_sum_symmetric` — theorem in SymmetryDerive.lean (from proportionality + split-count + cross-group + balance)
 - `attribution_variance` — noncomputable def from ProbabilityTheory.variance (Mathlib)
@@ -147,7 +152,7 @@ make setup         # full setup for new contributors
 - Use `sorry` without a `-- TODO:` comment explaining what's needed
 - Change axioms without re-running the SymPy verification (in companion repo: `dash-shap/paper/proofs/verify_lemma6_algebra.py`)
 - Add `autoImplicit true` — all variables must be explicit
-- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print s}'` (currently 340)
+- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print s}'` (currently 350)
 - Run parallel subagents that both modify the same file (causes build cache corruption)
 - Axiomatize quantities that can be defined — prefer definitions with axiomatized bounds (see SpearmanDef.lean pattern)
 - Claim empirical results as "proved" or "Lean-verified" — distinguish: **proved** (zero axiom deps), **derived** (from axioms), **argued** (supplement proof only), **empirical** (experiments). The paper's "Proof status transparency" paragraph is the reference.

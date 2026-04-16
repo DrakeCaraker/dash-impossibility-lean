@@ -68,36 +68,63 @@ variable (fs : FeatureSpace)
 /-- Attribution (global feature importance) for feature j in model f -/
 axiom attribution : Fin fs.P → Model → ℝ
 
-/-- Split count for feature j in model f.
-    Returns ℝ (not ℕ) to avoid inconsistency: the axiomatized values T/(2-ρ²)
-    are generally irrational. The values represent idealized leading-order
-    split counts from the paper's Gaussian conditioning argument. -/
-axiom splitCount : Fin fs.P → Model → ℝ
-
 /-- The first-mover feature in a model (the feature selected at root of tree 1) -/
 axiom firstMover : Model → Fin fs.P
 
+/-! ## Helpers for group membership -/
+
+theorem self_mem_group (j : Fin fs.P) : j ∈ fs.group (fs.groupOf j) := by
+  simp [FeatureSpace.group, Finset.mem_filter]
+
+theorem mem_group_iff (j : Fin fs.P) (ℓ : Fin fs.L) :
+    j ∈ fs.group ℓ ↔ fs.groupOf j = ℓ := by
+  simp [FeatureSpace.group, Finset.mem_filter]
+
 /-! ## Axioms: properties of sequential gradient boosting under Gaussian DGP -/
 
-/-- AXIOM 1: Every feature in a group can be the first-mover.
-    By DGP symmetry and randomness in sub-sampling/tie-breaking,
-    each feature in a group serves as first-mover for some model. -/
+/-- AXIOM 1: Every feature in a group can be the first-mover. -/
 axiom firstMover_surjective (ℓ : Fin fs.L) (j : Fin fs.P) (hj : j ∈ fs.group ℓ) :
     ∃ f : Model, firstMover fs f = j
 
-/-- AXIOM 2: Split count for first-mover = T/(2-ρ²).
-    Leading-order behavior from Gaussian conditioning (Lemma 1). -/
-axiom splitCount_firstMover (f : Model) (j : Fin fs.P)
-    (hfm : firstMover fs f = j) :
-    splitCount fs j f = numTrees / (2 - fs.ρ ^ 2)
+/-- Cross-group baseline core: split count when first-mover is in a different
+    group. Depends only on (target group, source group). -/
+axiom crossGroupBaselineCore : Fin fs.L → Fin fs.L → ℝ
 
-/-- AXIOM 3: Split count for non-first-mover in same group = (1-ρ²)T/(2-ρ²).
-    Residual signal after the first-mover absorbs the ρ-aligned component. -/
-axiom splitCount_nonFirstMover (f : Model) (j : Fin fs.P)
+noncomputable def crossGroupBaseline (ℓ_target : Fin fs.L) (f : Model) : ℝ :=
+  crossGroupBaselineCore fs ℓ_target (fs.groupOf (firstMover fs f))
+
+theorem crossGroupBaseline_stable (f f' : Model) (ℓ_target ℓ_source : Fin fs.L)
+    (hfm : fs.groupOf (firstMover fs f) = ℓ_source)
+    (hfm' : fs.groupOf (firstMover fs f') = ℓ_source)
+    (_hne : ℓ_target ≠ ℓ_source) :
+    crossGroupBaseline fs ℓ_target f = crossGroupBaseline fs ℓ_target f' := by
+  unfold crossGroupBaseline; rw [hfm, hfm']
+
+/-! ## Split count: DEFINED (formerly axiomatized) -/
+
+noncomputable def splitCount (j : Fin fs.P) (f : Model) : ℝ :=
+  if fs.groupOf (firstMover fs f) = fs.groupOf j then
+    if firstMover fs f = j then
+      numTrees / (2 - fs.ρ ^ 2)
+    else
+      (1 - fs.ρ ^ 2) * numTrees / (2 - fs.ρ ^ 2)
+  else
+    crossGroupBaseline fs (fs.groupOf j) f
+
+theorem splitCount_firstMover (f : Model) (j : Fin fs.P)
+    (hfm : firstMover fs f = j) :
+    splitCount fs j f = numTrees / (2 - fs.ρ ^ 2) := by
+  unfold splitCount; simp [hfm]
+
+theorem splitCount_nonFirstMover (f : Model) (j : Fin fs.P)
     (ℓ : Fin fs.L) (hj : j ∈ fs.group ℓ)
     (hfm : firstMover fs f ≠ j)
     (hfm_group : firstMover fs f ∈ fs.group ℓ) :
-    splitCount fs j f = (1 - fs.ρ ^ 2) * numTrees / (2 - fs.ρ ^ 2)
+    splitCount fs j f = (1 - fs.ρ ^ 2) * numTrees / (2 - fs.ρ ^ 2) := by
+  unfold splitCount
+  have hgj : fs.groupOf j = ℓ := (mem_group_iff fs j ℓ).mp hj
+  have hgfm : fs.groupOf (firstMover fs f) = ℓ := (mem_group_iff fs _ ℓ).mp hfm_group
+  simp [hgfm, hgj, hfm]
 
 /-- AXIOM 4 (strengthened): Proportionality with UNIFORM constant.
     Under the uniform-contribution model with identical hyperparameters,
@@ -209,27 +236,45 @@ theorem consensus_variance_bound (M : ℕ) (_hM : 0 < M) (j : Fin fs.P) :
 
 /-! ## Cross-group symmetry -/
 
-/-- AXIOM: Features in a group have equal split counts when the first-mover
-    is in a different group. By DGP symmetry: if the dominant feature is
-    elsewhere, all features in this group receive identical residual signal.
-    This complements Axiom 3 (which covers same-group first-movers). -/
-axiom splitCount_crossGroup_symmetric (f : Model)
+/-- Features in a group have equal split counts when the first-mover
+    is in a different group. DERIVED from splitCount definition. -/
+theorem splitCount_crossGroup_symmetric (f : Model)
     (j k : Fin fs.P) (ℓ : Fin fs.L)
     (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ)
     (hfm_not_group : firstMover fs f ∉ fs.group ℓ) :
-    splitCount fs j f = splitCount fs k f
+    splitCount fs j f = splitCount fs k f := by
+  have hgj : fs.groupOf j = ℓ := (mem_group_iff fs j ℓ).mp hj
+  have hgk : fs.groupOf k = ℓ := (mem_group_iff fs k ℓ).mp hk
+  have hne_j : fs.groupOf (firstMover fs f) ≠ fs.groupOf j := by
+    rw [hgj]; intro h; exact hfm_not_group ((mem_group_iff fs _ ℓ).mpr h)
+  have hne_k : fs.groupOf (firstMover fs f) ≠ fs.groupOf k := by
+    rw [hgk]; intro h; exact hfm_not_group ((mem_group_iff fs _ ℓ).mpr h)
+  unfold splitCount
+  rw [if_neg hne_j, if_neg hne_k, hgj, hgk]
 
-/-- AXIOM: Cross-group stability — changing the first-mover within a group
+/-- Cross-group stability: changing the first-mover within a group
     does not affect split counts for features outside that group.
-    Justified: features in other groups have independent signal;
-    the first-mover choice within one group only affects the
-    signal partitioning within that group. -/
-axiom splitCount_crossGroup_stable (f f' : Model)
+    DERIVED from crossGroupBaseline_stable. -/
+theorem splitCount_crossGroup_stable (f f' : Model)
     (j : Fin fs.P) (ℓ : Fin fs.L)
     (hj : j ∉ fs.group ℓ)
     (hfm : firstMover fs f ∈ fs.group ℓ)
     (hfm' : firstMover fs f' ∈ fs.group ℓ) :
-    splitCount fs j f = splitCount fs j f'
+    splitCount fs j f = splitCount fs j f' := by
+  have hgj_ne : fs.groupOf j ≠ ℓ := by
+    intro h; exact hj ((mem_group_iff fs j ℓ).mpr h)
+  have hgfm : fs.groupOf (firstMover fs f) = ℓ := (mem_group_iff fs _ ℓ).mp hfm
+  have hgfm' : fs.groupOf (firstMover fs f') = ℓ := (mem_group_iff fs _ ℓ).mp hfm'
+  have hne_f : fs.groupOf (firstMover fs f) ≠ fs.groupOf j := by
+    rw [hgfm]; exact Ne.symm hgj_ne
+  have hne_f' : fs.groupOf (firstMover fs f') ≠ fs.groupOf j := by
+    rw [hgfm']; exact Ne.symm hgj_ne
+  unfold splitCount
+  rw [if_neg hne_f, if_neg hne_f']
+  exact crossGroupBaseline_stable fs f f' (fs.groupOf j) ℓ hgfm hgfm' hgj_ne
+
+-- Make splitCount opaque for downstream proofs
+attribute [irreducible] splitCount
 
 /-! ## Symmetry theorem for DASH analysis
 
