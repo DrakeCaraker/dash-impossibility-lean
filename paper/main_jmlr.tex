@@ -40,7 +40,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-Feature rankings from SHAP change when you retrain the model---in 68\% of 77 public datasets, the ``most important'' feature flips with the random seed. We prove this is not an engineering problem but a mathematical impossibility: no feature ranking can be simultaneously faithful (reflecting the model), stable (consistent across retrains), and complete (ordering all features) when features are collinear. The impossibility is quantitative, with architecture-discriminating bounds: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting and is infinite for Lasso, while random forests converge. The achievable design space consists of exactly two families; \DASH{} ensemble averaging is Pareto-optimal among unbiased aggregations on the stable branch, achieving equitable attributions with Cauchy--Schwarz-optimal variance. The impossibility, design space, and resolution are mechanically verified in Lean~4 (340 theorems, 16 axioms, 0~\texttt{sorry}; 115 with multi-step proofs of ${\geq}5$ tactic lines)---the first formally verified impossibility result in explainable AI.
+Feature rankings from SHAP change when you retrain the model---in 68\% of 77 public datasets (under the standard SHAP workflow, which includes both model and evaluation-set variation; the model-only contribution is approximately 63\%), the ``most important'' feature flips with the random seed. We prove this is not an engineering problem but a mathematical impossibility: no feature ranking can be simultaneously faithful (reflecting the model), stable (consistent across retrains), and complete (ordering all features) when features are collinear with similar true importance. The impossibility is quantitative, with architecture-discriminating bounds: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting and is infinite for Lasso, while random forests converge. The achievable design space consists of exactly two families; \DASH{} ensemble averaging is Pareto-optimal among unbiased aggregations on the stable branch, achieving equitable attributions with Cauchy--Schwarz-optimal variance. The impossibility, design space, and resolution are mechanically verified in Lean~4 (340 theorems, 16 axioms, 0~\texttt{sorry}; 115 with multi-step proofs of ${\geq}5$ tactic lines)---the first formally verified impossibility result in explainable AI.
 \end{abstract}
 
 \begin{keywords}
@@ -80,7 +80,7 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 \section{Introduction}
 \label{sec:intro}
 
-Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes---in 68\% of 77 public datasets. Before this work, practitioners assumed this was an engineering problem. We prove it is a mathematical impossibility---and we provide the complete theory: an impossibility theorem, quantitative architecture-discriminating bounds, a constructive resolution with provable optimality, and machine verification in Lean~4.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes---in 68\% of 77 public datasets (under the standard workflow; \S~\ref{sec:experiments} isolates the model-only component at approximately 63\% of the total variation). Before this work, practitioners assumed this was an engineering problem. We prove it is a mathematical impossibility---and we provide the complete theory: an impossibility theorem, quantitative architecture-discriminating bounds, a constructive resolution with provable optimality, and machine verification in Lean~4.
 
 For $m{=}2$ with exactly symmetric features, ranking collinear pairs reduces to a coin flip.
 
@@ -872,6 +872,9 @@ The Attribution Impossibility (Theorem~\ref{thm:impossibility}) is the statement
 \label{fig:design-space}
 \end{figure}
 
+\paragraph{Summary of core results.}
+The preceding sections constitute the core contribution: the Attribution Impossibility (Theorem~\ref{thm:impossibility}), the quantitative architecture-discriminating bounds (\S~\ref{sec:bounds}), the \DASH{} resolution with Pareto optimality (Theorem~\ref{thm:dash-optimal}), and the Design Space Theorem (Theorem~\ref{thm:design-space-main}). The remaining sections extend these results: the Symmetric Bayes Dichotomy generalizes the framework to other domains (\S~\ref{sec:sbd}); the extensions establish conditional, fairness, FIM, query-complexity, and local-vs-global variants (\S~\ref{sec:extensions}); the bilemma strengthens the impossibility for binary attribution questions (\S~\ref{sec:bilemma}); the diagnostics provide actionable tools (\S~\ref{sec:diagnostics}); and the empirical validation confirms the theory across datasets and model classes (\S~\ref{sec:experiments}).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 7. THE SYMMETRIC BAYES DICHOTOMY
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1066,7 +1069,7 @@ Direct corollary of the Attribution Impossibility applied to the pair $(j, k)$. 
 \paragraph{Implications for AI governance.}
 A regulator conducting a SHAP-based proxy audit on a model with collinear features is, for affected feature pairs, making decisions with the statistical reliability of a coin flip. Two auditors examining the \emph{same model architecture trained on the same data} with different random seeds may reach opposite conclusions about whether the model relies on a protected attribute.
 
-Under the EU AI Act Art.~13(3)(b)(ii), providers must disclose ``known and foreseeable circumstances'' which may lead to risks to health, safety or fundamental rights. Our theorem establishes that this includes: ``SHAP-based proxy audits are unreliable for features that are collinear with both the protected attribute and a non-protected feature.'' The remedy is ensemble auditing: train $M$ models and use \DASH{} consensus.
+Under the EU AI Act Art.~13(3)(b)(ii), providers must disclose ``known and foreseeable circumstances'' which may lead to risks to health, safety or fundamental rights. We argue that our theorem identifies such a circumstance: in our reading, SHAP-based proxy audits are unreliable for features that are collinear with both the protected attribute and a non-protected feature. The remedy is ensemble auditing: train $M$ models and use \DASH{} consensus.
 
 \paragraph{Intersectional considerations.}
 When multiple protected attributes (race, gender, age) are each proxied by collinear non-protected features, the impossibility applies independently to each proxy pair. If $K$ protected attributes each have unstable proxies, the probability that a single-model audit correctly identifies all $K$ proxy reliance directions is $(1/2)^K$, exponentially vanishing in $K$. For $K = 3$ (a common intersectional setting), joint correctness is $1/8 = 12.5\%$.
@@ -1968,6 +1971,9 @@ Defs.lean (14 axioms, type definitions, derived theorems)
 
 The 14 domain-specific axioms are jointly consistent: \texttt{Consistency.lean} constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$, $T{=}100$, Fin~4 models) satisfying all 14 simultaneously. The 2 query-complexity axioms are independently consistent: instantiating $C := 1/8$ satisfies all three. The two axiom sets reside in separate Lean files (\texttt{Defs.lean} and \texttt{QueryComplexity.lean}) with no cross-dependencies, so joint consistency follows from individual consistency.
 
+\paragraph{Axiom system: consistency vs.\ faithfulness.}
+The consistency model demonstrates that the axiom system is non-trivially satisfiable, but it does not show the axioms faithfully describe real GBDT behavior. The empirical evidence for faithfulness comes from \S~\ref{sec:experiments}: the proportionality axiom holds with CV~$\approx 0.35$ for stumps and CV~$\approx 0.66$ for deeper trees; the split-count axioms are verified by SymPy and match empirical ratios ($R^2 = 0.89$ with $\alpha$-correction). The axiom stratification (\S~\ref{sec:discussion}) addresses this gap directly: the core impossibility (Theorem~\ref{thm:impossibility}) requires \emph{zero} domain-specific axioms---only the Rashomon property as hypothesis---so the faithfulness question affects only the quantitative bounds, not the impossibility itself.
+
 \paragraph{Attribution sum symmetry: now derived.}
 \texttt{attribution\_sum\_symmetric} is proved (not axiomatized) in \texttt{SymmetryDerive.lean}. The proof uses (a) \texttt{proportionality\_global} (uniform $c$ across models), (b) \texttt{splitCount\_crossGroup\_symmetric} (equal split counts when first-mover is in a different group), and (c) \texttt{IsBalanced} (equal first-mover counts). The derivation factors out $c$, classifies each model's split-count difference by first-mover identity ($+\text{gap}$ for fm$=j$, $-\text{gap}$ for fm$=k$, $0$ otherwise), decomposes the sum via \texttt{Finset.sum\_ite}, and uses balance to cancel the gap terms.
 
@@ -2125,7 +2131,7 @@ The 10\% flip rate threshold defining ``instability'' is a practical convention;
 For batch pipelines, training $M{=}25$ models is feasible. For real-time explanations, use the single-model screen to flag unstable pairs. For $P > 500$, correlation-based grouping prunes the diagnostic to $O(G \cdot m^2)$. At $P{=}500$ with 20 models, the full workflow completes in under 2.5 minutes.
 
 \paragraph{Broader implications.}
-In a survey of 77 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and 68\% exhibit attribution instability (93\%, CI: [81\%, 98\%], for $P \geq 20$)---the impossibility is a practical reality. Our theorem establishes this as a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii) \citep{euaiact2024}.
+In a survey of 77 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and 68\% exhibit attribution instability under the standard SHAP workflow (93\%, CI: [81\%, 98\%], for $P \geq 20$); the model-only component accounts for approximately 63\% of the total variation (\S~\ref{sec:experiments})---the impossibility is a practical reality. We argue that our theorem identifies a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii) \citep{euaiact2024}.
 The consequences are concrete: hospitals may invest in wrong interventions, data scientists may fix the wrong feature, and published studies may report artifacts of specific training runs.
 The impossibility has direct consequences for fairness auditing (Theorem~\ref{thm:fairness-audit}): single-model SHAP audits for proxy discrimination are provably unreliable under collinearity.
 
