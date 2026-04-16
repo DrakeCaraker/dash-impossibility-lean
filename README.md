@@ -3,15 +3,15 @@
 **No feature ranking can be simultaneously faithful, stable, and complete when features are correlated — and we prove it in Lean 4.**
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19468379.svg)](https://doi.org/10.5281/zenodo.19468379)
-![Theorems](https://img.shields.io/badge/theorems-340-blue)
+![Theorems](https://img.shields.io/badge/theorems-352-blue)
 ![Axioms](https://img.shields.io/badge/axioms-6-blue)
 ![Sorry](https://img.shields.io/badge/sorry-0-brightgreen)
 ![Lean 4](https://img.shields.io/badge/Lean-4-purple)
 ![Files](https://img.shields.io/badge/Lean_files-58-informational)
 
 <!-- Verify badges with:
-  grep -c '^theorem\|^lemma' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'  # 340
-  grep -c '^axiom' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'              # 16
+  grep -c '^theorem\|^lemma' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'  # 352
+  grep -c '^axiom' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'              # 6
   grep -rn 'sorry' DASHImpossibility/*.lean                                               # (empty)
   ls DASHImpossibility/*.lean | wc -l                                                     # 58
 -->
@@ -357,26 +357,30 @@ The paper distinguishes four levels of verification:
 
 ## Axiom System
 
-6 axioms total. The core impossibility (Level 0) uses **none** of these — only the Rashomon property as a hypothesis.
+**6 axioms.** Reduced from 16 by defining splitCount, attribution, testing_constant, and modelMeasurableSpace as definitions with derived properties. The core impossibility (Level 0) uses **none** of these — only the Rashomon property as a hypothesis.
 
 | # | Lean Name | Category | Plain English |
 |---|-----------|----------|---------------|
-| 1 | `Model` | Type declaration | "There exist trained models" |
-| 2 | `numTrees` | Type declaration | "Models have T boosting rounds" |
-| 3 | `numTrees_pos` | Type declaration | "T > 0" |
-| 4 | `attribution` | Type declaration | "Each feature has an importance score in each model" |
-| 5 | `splitCount` | Type declaration | "Each feature has a utilization count" |
-| 6 | `firstMover` | Type declaration | "Each model has a first-mover feature" |
-| 7 | `firstMover_surjective` | Domain | "Every feature can be the first-mover in some model" |
-| 8 | `splitCount_firstMover` | Domain | "The first-mover gets T/(2-rho^2) splits" |
-| 9 | `splitCount_nonFirstMover` | Domain | "Other features get (1-rho^2)T/(2-rho^2) splits" |
-| 10 | `proportionality_global` | Domain | "Attribution = constant * split count" |
-| 11 | `splitCount_crossGroup_symmetric` | Domain | "Features in different groups get equal splits" |
-| 12 | `splitCount_crossGroup_stable` | Domain | "Cross-group splits are stable across models" |
-| 13 | `modelMeasurableSpace` | Measure | "Models form a measurable space" |
-| 14 | `modelMeasure` | Measure | "Models have a probability distribution" |
-| 15 | `testing_constant` | Query complexity | "Le Cam testing constant exists" |
-| 16 | `testing_constant_pos` | Query complexity | "Testing constant > 0" |
+| 1 | `Model` | Type | "There exist trained models" |
+| 2 | `firstMover` | Function | "Each model has a dominant feature" |
+| 3 | `firstMover_surjective` | Domain | "Every feature can be the first-mover in some model" |
+| 4 | `crossGroupBaselineCore` | Domain | "Cross-group split counts depend only on group indices" |
+| 5 | `proportionalityConstant` | Domain | "Attribution = c * split count, with c > 0" |
+| 6 | `modelMeasure` | Measure | "Models have a probability distribution (training distribution)" |
+
+**Formerly axiomatized, now defined or derived (10 eliminated):**
+
+| Former axiom | Now | How |
+|-------------|-----|-----|
+| `splitCount` | `def` | If-then-else on firstMover group membership |
+| `splitCount_firstMover` | theorem | Derived from splitCount def |
+| `splitCount_nonFirstMover` | theorem | Derived from splitCount def |
+| `splitCount_crossGroup_symmetric` | theorem | Same crossGroupBaselineCore for same-group features |
+| `splitCount_crossGroup_stable` | theorem | crossGroupBaselineCore depends only on group indices |
+| `numTrees` + `numTrees_pos` | fields of `FeatureSpace` | Bundled into structure (T, hT) |
+| `attribution` + `proportionality_global` | `def` + theorem | `attribution := c * splitCount` |
+| `modelMeasurableSpace` | `instance := ⊤` | Discrete sigma-algebra (works for any type) |
+| `testing_constant` + `testing_constant_pos` | `def := 1/8` + `norm_num` | Le Cam's value from Tsybakov 2009 |
 
 **Axiom stratification (verified by `#print axioms`):**
 
@@ -385,16 +389,9 @@ The paper distinguishes four levels of verification:
 | `attribution_impossibility` (core) | **0** (only Rashomon as hypothesis) |
 | `impossibility_qualitative` | **0** (dominance + surjectivity as hypotheses) |
 | `attribution_impossibility_bundled` | **0** (fully parametric via GBDTSetup) |
-| `gbdt_impossibility_local` | **4** (surj, fm, nfm — no proportionality_global) |
-| `impossibility` (quantitative) | **5** (+ proportionality_global for ratio) |
-| `consensus_equity` (DASH) | **6** (+ cross-group symmetric) |
-| Full system (DASH convergence + query complexity) | **16** |
-
-**Formerly axiomatized, now derived:**
-- `spearman_classical_bound` → `spearman_instability_bound` in SpearmanDef.lean (derived from split-count structure)
-- `consensus_variance_bound` — theorem in Defs.lean (from attribution_variance_nonneg + Nat.cast_nonneg)
-- `attribution_sum_symmetric` — theorem in SymmetryDerive.lean (from proportionality + split-count + cross-group + balance)
-- `le_cam_lower_bound` — theorem in QueryComplexity.lean (contrapositive tautology)
+| `gbdt_impossibility_local` | **3** (firstMover, surjective, crossGroupBaselineCore) |
+| `consensus_equity` (DASH) | **5** (+ proportionalityConstant) |
+| Full system (variance + query complexity) | **6** |
 
 ## Experiments & Results
 
@@ -450,7 +447,7 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 
 **Data scientist using SHAP.** Your feature rankings for correlated features are unreliable. The instability is not noise or a software bug — it is a provable consequence of how gradient boosting interacts with collinearity. The fix is DASH: average SHAP values from multiple independently trained models. See the [dash-shap](https://github.com/DrakeCaraker/dash-shap) companion package and the [stability API in PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255) for the single-model screen to Z-test (multi-model validation) to DASH (ensemble consensus) workflow.
 
-**Researcher in XAI or ML theory.** This is a formally verified impossibility theorem with 340 Lean proofs and 0 sorry. The Symmetric Bayes Dichotomy (Section 6 of the definitive paper) is a general proof technique from invariant decision theory that applies to any symmetric decision problem — we demonstrate it on feature attribution, model selection, and causal discovery under Markov equivalence. The Design Space Theorem characterizes the full achievable set.
+**Researcher in XAI or ML theory.** This is a formally verified impossibility theorem with 352 Lean proofs and 0 sorry. The Symmetric Bayes Dichotomy (Section 6 of the definitive paper) is a general proof technique from invariant decision theory that applies to any symmetric decision problem — we demonstrate it on feature attribution, model selection, and causal discovery under Markov equivalence. The Design Space Theorem characterizes the full achievable set.
 
 **Regulator or model risk officer.** Single-model SHAP explanations are provably unreliable under collinearity. In a survey of 77 public datasets, 68% exhibit attribution instability. This affects EU AI Act Art. 13(3)(b)(ii) requirements for disclosing "known and foreseeable circumstances" affecting accuracy, and SR 11-7 model risk management compliance. The paper provides disclosure templates and a diagnostic workflow.
 
@@ -481,11 +478,11 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 5. Update paper/FINDINGS_MAP.md
 6. Propagate to JMLR paper
 
-## Current State (verified 2026-04-15)
+## Current State (verified 2026-04-16)
 
 ```
-Theorems+lemmas: 340
-Axioms:          16
+Theorems+lemmas: 352
+Axioms:          6
 Sorry:           0
 Files:           58
 ```
