@@ -2,7 +2,7 @@
 
 > **Synced with:** `main_definitive.tex` (monograph, 64 pages)
 > **Last audit:** 2026-04-04
-> **Census:** 54 Lean files, 305 theorems, 16 axioms, 0 sorry, 89 definitions, 42 experiment scripts, 32 JSON result files, 12 figures
+> **Census:** 58 Lean files, 352 theorems, 6 axioms, 0 sorry, 89 definitions, 42 experiment scripts, 32 JSON result files, 12 figures
 > **Monograph:** 64 pages, 23 sections, 78 subsections, 19 theorems, 14 propositions, 3 lemmas, 16 definitions, 11 corollaries, 11 tables, 30 citations
 > **Total distinct findings:** 109
 
@@ -168,7 +168,7 @@ When updating the monograph, update this map. When adding experiments or Lean th
 
 | # | Finding | What It Shows |
 |---|---------|---------------|
-| I1 | 305 theorems, 16 axioms, 0 sorry, 54 files | Scale of verification |
+| I1 | 352 theorems, 6 axioms, 0 sorry, 58 files | Scale of verification |
 | I2 | Axiom stratification: 0→4→9→16 levels | Core result robust to axiom weakening |
 | I3 | Explicit consistency model (Fin 4) | Axiom system not vacuously true |
 | I4 | attribution_sum_symmetric derived (35 lines) | Reduced axiom count |

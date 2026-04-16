@@ -41,7 +41,7 @@ Methodology: Non-adversarial, full-spectrum audience analysis. No scores, no "we
 
 It occupies a position most comparable to **Chouldechova** — a clean impossibility in an applied domain that is politically and practically salient — with the added distinction of formal verification (like Nipkow) and a companion library (like Lundberg).
 
-The core impossibility is simpler than Arrow but less general. The formalization is more ambitious than Nipkow (188 theorems vs. a single theorem). The practical tools (DASH, diagnostics) give it a Lundberg-like software path to adoption.
+The core impossibility is simpler than Arrow but less general. The formalization is more ambitious than Nipkow (352 theorems vs. a single theorem). The practical tools (DASH, diagnostics) give it a Lundberg-like software path to adoption.
 
 **Honest comparison**: The core impossibility is not as deep as Arrow or as surprising as Chouldechova. Its strength is in the COMBINATION — impossibility + quantification + resolution + verification + software — which no single predecessor achieves. Whether this combination drives impact depends on whether the DASH library gets adopted, not on whether the theorem gets cited.
 
@@ -61,14 +61,14 @@ A senior data scientist at a fintech company. Uses SHAP daily. Has noticed that 
 ### Reader 2: The JMLR Reviewer
 An associate professor in statistical ML. Assigned this paper. Has 3 weeks. Reads everything carefully.
 
-- **What they focus on**: The axiom system first. Are the 18 axioms reasonable? Then the Design Space exhaustiveness proof. Then the SBD — is it genuinely new vs. classical invariant decision theory?
+- **What they focus on**: The axiom system first. Are the 6 axioms reasonable? Then the Design Space exhaustiveness proof. Then the SBD — is it genuinely new vs. classical invariant decision theory?
 - **Their honest assessment**: "The core theorem is trivial — it's literally a four-line contradiction from the Rashomon property. But the Design Space Theorem is nontrivial, the quantitative bounds are useful, and the formalization is genuine. The proportionality axiom (CV=0.66) is the weak link."
 - **Their recommendation**: Major revision. Asks for cleaner separation between what is proved (zero axiom dependencies) vs. derived (conditional on axioms). Likely accepts on second round.
 
 ### Reader 3: The NeurIPS Reviewer
 A postdoc with 200 papers. Spends 20 minutes on this one.
 
-- **What they notice**: The title. The "coin flip" line in the abstract. The trilemma figure (if visible). The "188 theorems, 0 sorry" claim. The three experimental figures.
+- **What they notice**: The title. The "coin flip" line in the abstract. The trilemma figure (if visible). The "352 theorems, 0 sorry" claim. The three experimental figures.
 - **Their gut reaction**: "Interesting but the core result is basically 'you can't stably rank things that are essentially the same.'" Gives credit for completeness and the Lean verification.
 - **Their score**: 5-6 out of 10. High marks for completeness and clarity, moderate for novelty. The paper's fate depends on the other two reviewers and whether one is a champion.
 
@@ -83,7 +83,7 @@ VP at a top-10 US bank. Responsible for SR 11-7 compliance. Doesn't read papers 
 ### Reader 5: The Formal Methods Researcher
 Active in Lean/Mathlib. Sees the repo on GitHub or the Lean Zulip.
 
-- **What impresses them**: 188 theorems, 0 sorry, clean axiom system. The Gaussian CDF symmetry proofs (Φ(0)=1/2 via NoAtoms + prob_compl_eq_one_sub). The MulAction usage for the SBD.
+- **What impresses them**: 352 theorems, 0 sorry, clean axiom system. The Gaussian CDF symmetry proofs (Φ(0)=1/2 via NoAtoms + prob_compl_eq_one_sub). The MulAction usage for the SBD.
 - **What doesn't**: The proofs are mostly short tactic scripts — not deep Lean engineering. The axiom system does heavy lifting; the proofs are consequences. This is a well-executed application of Lean, not a Mathlib contribution.
 - **Do they build on it**: Possibly — may contribute a PR deriving the spearman_classical_bound. More likely, they note it as an example of "Lean for ML theory" and move on.
 
@@ -153,7 +153,7 @@ The formalization adds certainty, not surprise. Its value is that it closes the 
 
 **For the core impossibility**: No. The proof is four lines. Anyone can check it by hand.
 
-**For the full package (188 theorems, Design Space exhaustiveness, SBD instances)**: Yes, meaningfully:
+**For the full package (352 theorems, Design Space exhaustiveness, SBD instances)**: Yes, meaningfully:
 - The formalization caught two genuine logical inconsistencies in the original axiom system.
 - The zero-sorry guarantee means a reviewer can skip proof-checking and focus on whether the axioms are appropriate.
 - The axiom consistency proof (Fin 4 model) demonstrates the system is non-vacuous.

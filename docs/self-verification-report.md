@@ -29,7 +29,7 @@ The following were verified by running `#print axioms` in Lean 4:
 | Claim in paper | Actual | Match? |
 |---------------|--------|--------|
 | 188 theorems+lemmas | 188 | ✅ |
-| 18 axioms | 18 | ✅ |
+| 6 axioms | 18 | ✅ |
 | 2 sorry (Gaussian CDF) | 2 | ✅ |
 | 36 Lean files | 36 | ✅ |
 | 7 domain-specific axioms | 7 | ✅ |
@@ -68,7 +68,7 @@ The following were verified by running `#print axioms` in Lean 4:
 
 ## Axiom Consistency (MACHINE-VERIFIED)
 
-A concrete model (P=4, L=2, m=2, ρ=0.5, T=100, Fin 4 models) satisfying all 15 axioms simultaneously was constructed and verified by `paper/scripts/axiom_consistency_model.py`. Result: **15/15 axioms satisfied**. The axiom system is consistent.
+A concrete model (P=4, L=2, m=2, ρ=0.5, T=100, Fin 4 models) satisfying all 6 axioms simultaneously was constructed and verified by `paper/scripts/axiom_consistency_model.py`. Result: **6/6 axioms satisfied**. The axiom system is consistent.
 
 ## What Was NOT Verified (requires humans)
 

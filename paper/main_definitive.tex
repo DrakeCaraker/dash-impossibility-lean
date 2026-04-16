@@ -117,7 +117,7 @@ The impossibility is quantitative: we derive architecture-discriminating bounds 
 In a survey of 77 public datasets, 68\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
 Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
 The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
-The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (340 theorems from 14 domain-specific + 2 query-complexity axioms, 0 \texttt{sorry}; 115 with multi-step proofs of ${\geq}5$ tactic lines; the remainder are definitions, wrappers, and single-step applications)---to our knowledge, the first formally verified impossibility in explainable AI.
+The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (352 theorems from 6 axioms, 0 \texttt{sorry}; 115 with multi-step proofs of ${\geq}5$ tactic lines; the remainder are definitions, wrappers, and single-step applications)---to our knowledge, the first formally verified impossibility in explainable AI.
 Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}).
 \end{abstract}
 
@@ -145,7 +145,7 @@ The 50\% flip rate is the worst case (maximally collinear pair, $\rho \to 1$). F
 
 \noindent\textbf{For regulators.} SHAP-based proxy discrimination audits are provably unreliable under collinearity: the audit conclusion is a coin flip across training seeds. This constitutes a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii). The instability disclosure template in Section~9 provides ready-to-use language for model documentation.
 
-\noindent\textbf{Verification.} The framework is mechanically verified in Lean~4: 340 theorems from 16 axioms with 0 \texttt{sorry} across 58 files. The formalization caught three inconsistencies (two logical and one type mismatch) that survived informal review.
+\noindent\textbf{Verification.} The framework is mechanically verified in Lean~4: 352 theorems from 6 axioms with 0 \texttt{sorry} across 58 files. The formalization caught three inconsistencies (two logical and one type mismatch) that survived informal review.
 
 \noindent\textbf{Code.}
 \begin{sloppypar}
@@ -235,10 +235,10 @@ The impossibility also admits a principled relaxation.
 Practitioners can achieve between-group faithfulness and stability by aggregating across the Rashomon set, sacrificing within-group completeness (reporting ties for symmetric features).
 
 \begin{sloppypar}
-The proof is mechanically verified in Lean~4 using Mathlib: 340 type-checked theorems
+The proof is mechanically verified in Lean~4 using Mathlib: 352 type-checked theorems
 and lemmas across 58 files (115 with multi-step proofs of ${\geq}5$ tactic lines; the
 remainder are definitions, wrappers, and single-step applications; from 14
-domain-specific + 2 query-complexity axioms; 0 \texttt{sorry}).
+axioms; 0 \texttt{sorry}).
 The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero domain-specific axioms
 beyond the Rashomon property; the DASH equity result (Corollary~\ref{cor:equity})
 depends on the \texttt{attribution\_sum\_symmetric} theorem (derived in
@@ -274,7 +274,7 @@ proof errors \citep{nipkow2009social,zhang2026statistical}.
     from invariant decision theory \citep{lehmann2005testing}, demonstrated across three
     structurally distinct instances (feature attribution, model selection, and causal
     discovery under Markov equivalence) with different symmetry groups.
-    \item \textbf{Machine-verified proof}: formalized in Lean~4 (340 type-checked theorems from 16 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}). The axiom system is consistent: we construct an explicit model satisfying all 14 domain-specific axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and numerically.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (352 type-checked theorems from 6 axioms, 0 \texttt{sorry}), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}). The axiom system is consistent: we construct an explicit model satisfying all 6 axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and numerically.
 \end{enumerate}
 \end{sloppypar}
 
@@ -337,11 +337,11 @@ The formulas are verified algebraically by SymPy.
 \paragraph{Complete axiom inventory.}
 Table~\ref{tab:axioms} lists all property axioms in the formalization.
 The core impossibility theorem requires none of them---only the Rashomon property as hypothesis.
-The formalization uses 16 axioms total (14 domain-specific axioms in \texttt{Defs.lean} plus 2 query-complexity scaling constants in \texttt{QueryComplexity.lean}): 6 type/constant declarations, 2 measure-theoretic infrastructure axioms, 6 domain-specific property axioms, and 2 query-complexity axioms from Le~Cam's method.
+The formalization uses 6 axioms total.
 
 \begin{table}[t]
 \centering
-\caption{Complete axiom inventory (16 total: 6 type/constant, 6 property, 2 measure, 2 query).}
+\caption{Complete axiom inventory (6 total).}
 \label{tab:axioms}
 \small
 \begin{tabular}{@{}llp{5.5cm}@{}}
@@ -2766,7 +2766,7 @@ directly comparable across datasets of different sizes and dimensionalities.
 \subsection{Proof Architecture}
 
 \begin{sloppypar}
-The formalization comprises 58 Lean~4 files with 16 axioms and 340 type-checked
+The formalization comprises 58 Lean~4 files with 6 axioms and 352 type-checked
 theorems and lemmas (0 \texttt{sorry}). Of these, 115 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or single-step applications.
 The core impossibility (\texttt{attribution\allowbreak\_impossibility}) depends on
@@ -2778,13 +2778,13 @@ axioms); the variance convergence depends on the
 \end{sloppypar}
 
 \paragraph{Scope of formal verification.}
-Lean verification guarantees that all theorems follow from the stated axioms with no logical gaps (internal consistency). It does not guarantee that the axioms correctly model the phenomena they are intended to capture (external validity). The 16 axioms are motivated by the structure of gradient-boosted decision trees and SHAP value computation (\S\ref{sec:axiom-audit}), but their adequacy for any particular model or dataset is an empirical question.
+Lean verification guarantees that all theorems follow from the stated axioms with no logical gaps (internal consistency). It does not guarantee that the axioms correctly model the phenomena they are intended to capture (external validity). The 6 axioms are motivated by the structure of gradient-boosted decision trees and SHAP value computation (\S\ref{sec:axiom-audit}), but their adequacy for any particular model or dataset is an empirical question.
 
 \paragraph{Scope of verification.}
 \begin{sloppypar}
 The formalization covers the complete theoretical framework. The core impossibility
 (Theorem~\ref{thm:impossibility}) uses zero behavioral axioms. The quantitative
-bounds, DASH equity, and the Design Space Theorem are derived from the 16-axiom
+bounds, DASH equity, and the Design Space Theorem are derived from the 6-axiom
 system. The unfaithfulness probability of exactly $1/2$
 (\texttt{attribution\allowbreak\_prob\allowbreak\_half}), the Bayes-optimality of
 ties (\texttt{tie\allowbreak\_dominates\allowbreak\_commitment}), the consensus
@@ -2804,7 +2804,7 @@ is argued informally in the proof of Theorem~\ref{thm:dash-optimal}.
 \end{sloppypar}
 
 {\small\begin{verbatim}
-Defs.lean (14 axioms, type definitions, derived theorems)
+Defs.lean (6 axioms, type definitions, derived theorems)
   +-- SymmetryDerive.lean (attribution_sum_symmetric, DERIVED)
   +-- Trilemma.lean (RashimonProperty, attribution_impossibility)
   |  +-- Iterative.lean, Lasso.lean, NeuralNet.lean
@@ -2834,7 +2834,7 @@ Defs.lean (14 axioms, type definitions, derived theorems)
 
 \subsection{Axiom System and Consistency}
 
-The 14 domain-specific axioms are jointly consistent: \texttt{Consistency.lean} constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$, $T{=}100$, Fin~4 models) satisfying all 14 simultaneously. The construction uses \texttt{Fin 4} as the model type, defines explicit split-count functions returning the axiomatized values $T/(2-\rho^2)$ and $(1-\rho^2)T/(2-\rho^2)$, and verifies all 14 axiom predicates hold by computation. The 2 query-complexity axioms (\texttt{testing\_constant}, \texttt{testing\_constant\_pos}, \texttt{le\_cam\_lower\_bound}) are independently consistent: instantiating $C := 1/8$ satisfies all three. The two axiom sets reside in separate Lean files (\texttt{Defs.lean} and \texttt{QueryComplexity.lean}) with no cross-dependencies, so their joint consistency follows from the individual consistency of each set.
+The 6 axioms are jointly consistent: \texttt{Consistency.lean} constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$, $T{=}100$, Fin~4 models) satisfying all 6 simultaneously. The construction uses \texttt{Fin 4} as the model type, defines explicit split-count functions returning the axiomatized values $T/(2-\rho^2)$ and $(1-\rho^2)T/(2-\rho^2)$, and verifies all 6 axiom predicates hold by computation. The 2 query-complexity axioms (\texttt{testing\_constant}, \texttt{testing\_constant\_pos}, \texttt{le\_cam\_lower\_bound}) are independently consistent: instantiating $C := 1/8$ satisfies all three. The two axiom sets reside in separate Lean files (\texttt{Defs.lean} and \texttt{QueryComplexity.lean}) with no cross-dependencies, so their joint consistency follows from the individual consistency of each set.
 
 \paragraph{Attribution sum symmetry: now derived.}
 \texttt{attribution\_sum\_symmetric} is proved (not axiomatized) in \texttt{SymmetryDerive.lean}. The proof uses (a) \texttt{proportionality\_global} (uniform $c$ across models), (b) \texttt{splitCount\_crossGroup\_symmetric} (equal split counts when first-mover is in a different group), and (c) \texttt{IsBalanced} (equal first-mover counts). The derivation factors out $c$, classifies each model's split-count difference by first-mover identity ($+\text{gap}$ for fm$=j$, $-\text{gap}$ for fm$=k$, $0$ otherwise), decomposes the sum via \texttt{Finset.sum\_ite}, and uses balance to cancel the gap terms.
@@ -2870,11 +2870,11 @@ The Lean formalization derives the Spearman bound $\rho_S \leq 1 - 3m^2/(P^3{-}P
 
 \subsection{Development Methodology}
 
-The initial formalization (49 theorems, 15 files) was developed by the first author with iterative Claude Code assistance over several weeks. The expansion from 49 to 340 theorems (58 files) was produced in a single development session by dispatching targeted Lean-writing agents with detailed mathematical specifications. All proofs were machine-verified by \texttt{lake build} (the Lean~4 type-checker); no proof was accepted on the basis of AI output alone.
+The initial formalization (49 theorems, 15 files) was developed by the first author with iterative Claude Code assistance over several weeks. The expansion from 49 to 352 theorems (58 files) was produced in a single development session by dispatching targeted Lean-writing agents with detailed mathematical specifications. All proofs were machine-verified by \texttt{lake build} (the Lean~4 type-checker); no proof was accepted on the basis of AI output alone.
 
 \subsection{Proof Depth Distribution}
 
-Of 340 type-checked declarations: 115 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are \texttt{attribution\_sum\_symmetric} (35 lines, derived symmetry via split-count decomposition), \texttt{Phi\_neg} (29 lines, Gaussian CDF properties), \texttt{gaussian\_rashomon\_witnesses} (27 lines, FIM ellipsoid construction), \texttt{sumSqRankDiff\_ge\_sq\_groupSize} (26 lines, midrank algebra), and \texttt{binary\_group\_firstmover\_is\_j\_or\_k} (23 lines, Finset cardinality argument).
+Of 352 type-checked declarations: 115 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are \texttt{attribution\_sum\_symmetric} (35 lines, derived symmetry via split-count decomposition), \texttt{Phi\_neg} (29 lines, Gaussian CDF properties), \texttt{gaussian\_rashomon\_witnesses} (27 lines, FIM ellipsoid construction), \texttt{sumSqRankDiff\_ge\_sq\_groupSize} (26 lines, midrank algebra), and \texttt{binary\_group\_firstmover\_is\_j\_or\_k} (23 lines, Finset cardinality argument).
 The 340 count includes both substantive multi-step proofs and definitional wrappers (e.g., backward-compatible aliases). Of these, 115 require ${\geq}5$ tactic lines and 21 require ${\geq}10$ lines.
 
 \subsection{Inconsistencies Found During Formalization}
@@ -2910,14 +2910,14 @@ The three-layer verification (SymPy algebra, Lean type-checking, empirical valid
 
 \begin{table}[t]
 \centering
-\caption{Lean file cross-reference (58 files, 340 theorems, 16 axioms).}
+\caption{Lean file cross-reference (58 files, 352 theorems, 6 axioms).}
 \label{tab:lean-crossref}
 \footnotesize
 \begin{tabular}{@{}lll@{}}
 \toprule
 \textbf{File} & \textbf{Section} & \textbf{Key Result} \\
 \midrule
-Defs.lean & \S\ref{sec:setup} & 14 axioms + derived theorems \\
+Defs.lean & \S\ref{sec:setup} & 6 axioms + derived theorems \\
 Trilemma.lean & Thm.~\ref{thm:impossibility} & attribution\_impossibility \\
 Iterative.lean & \S\ref{sec:iterative} & iterative\_impossibility \\
 General.lean & \S\ref{sec:gbdt-bounds} & gbdt\_impossibility \\
@@ -3132,7 +3132,7 @@ This paper contributes three reusable techniques: (1) the \emph{Rashomon reducti
 
 \paragraph{Proof status transparency and axiom stratification.}
 \begin{sloppypar}
-The formalization uses 16 axioms total (14 domain-specific + 2 query-complexity),
+The formalization uses 6 axioms total,
 but not all results require all axioms. The Lean type-checker's
 \texttt{\#print axioms} command verifies exact dependencies:
 \begin{itemize}
@@ -3159,7 +3159,7 @@ constant.
 \end{sloppypar}
 This stratification directly addresses the proportionality axiom's empirical variance (CV $\approx 0.35$--$0.66$): the axiom is unnecessary for the impossibility and ratio bound, which depend only on split-count structure.
 
-The following are fully formalized in Lean (340 theorems, 0 \texttt{sorry}, 58 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, the Pareto dominance of DASH, and the mechanistic interpretability bilemma (derived Rashomon, zero custom axioms). The Z-test diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
+The following are fully formalized in Lean (352 theorems, 0 \texttt{sorry}, 58 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, the Pareto dominance of DASH, and the mechanistic interpretability bilemma (derived Rashomon, zero custom axioms). The Z-test diagnostic characterization, information loss analysis, and multi-dataset validation are empirical.
 
 \paragraph{Approximate faithfulness--stability tradeoff.}
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\sigma(j) - \sigma(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.

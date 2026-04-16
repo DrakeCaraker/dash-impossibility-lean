@@ -45,7 +45,7 @@ DASH averages attributions across 25 models. It is provably Pareto-optimal: mini
 Implementation: 5 lines of Python.
 
 **4/5:** The entire framework is machine-verified in Lean 4:
-- 305 theorems, 16 axioms, 0 sorry
+- 352 theorems, 6 axioms, 0 sorry
 - Core impossibility: ZERO axiom dependencies
 - First formally verified impossibility in explainable AI
 

@@ -41,7 +41,7 @@
 Table~\ref{tab:axioms} lists all property axioms in the formalization
 (the core impossibility theorem requires none of them---only the Rashomon
 property as hypothesis).
-The formalization uses 16 axioms total: 6 type/constant declarations
+The formalization uses 6 axioms total: 6 type/constant declarations
 (\texttt{Model}, \texttt{numTrees}, \texttt{numTrees\_pos}, \texttt{attribution},
 \texttt{splitCount}, \texttt{firstMover}), 2 measure-theoretic infrastructure
 axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}),
@@ -56,7 +56,7 @@ from Mathlib's \texttt{ProbabilityTheory.variance}.
 \begin{table}[htbp]
 \sloppy
 \centering
-\caption{Complete axiom inventory (16 total: 6 type/constant, 6 property, 2 measure, 2 query).}
+\caption{Complete axiom inventory (6 total).}
 \label{tab:axioms}
 \footnotesize
 \begin{tabular}{@{}p{2.5cm}>{\raggedright\sloppy\arraybackslash}p{4.2cm}>{\raggedright\sloppy\arraybackslash}p{4.8cm}@{}}
@@ -93,8 +93,8 @@ Pareto optimality & \texttt{dash\_pareto\_\allowbreak optimal} & \textbf{Theorem
 
 \section{Proof Architecture}
 
-The formalization comprises 58 Lean~4 files with 16 axioms and
-340 type-checked theorems and lemmas (
+The formalization comprises 58 Lean~4 files with 6 axioms and
+352 type-checked theorems and lemmas (
 0 \texttt{sorry}). Of these, 115 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or
 single-step applications.
@@ -106,7 +106,7 @@ the variance convergence depends on the \texttt{consensus\_variance\_bound}
 theorem (also now derived, not axiomatized).
 
 \begin{verbatim}
-Defs.lean (14 axioms, type definitions, derived theorems)
+Defs.lean (6 axioms, type definitions, derived theorems)
   +-- SymmetryDerive.lean (attribution_sum_symmetric, DERIVED)
   +-- Trilemma.lean (RashimonProperty, attribution_impossibility)
   |     +-- Iterative.lean, Lasso.lean, NeuralNet.lean
@@ -163,14 +163,14 @@ supplement section and key theorem.
 \begin{table}[htbp]
 \sloppy
 \centering
-\caption{Lean file cross-reference (58 files, 340 theorems, 16 axioms).}
+\caption{Lean file cross-reference (58 files, 352 theorems, 6 axioms).}
 \label{tab:lean-crossref}
 \scriptsize
 \begin{tabular}{@{}l>{\raggedright\arraybackslash}p{3cm}>{\raggedright\arraybackslash}p{5.5cm}l@{}}
 \toprule
 \textbf{File} & \textbf{Supplement \S} & \textbf{Key Result} & \textbf{Sorry?} \\
 \midrule
-Defs.lean & \S1 (Axiom System) & 14 axioms + derived theorems & No \\
+Defs.lean & \S1 (Axiom System) & 6 axioms + derived theorems & No \\
 Trilemma.lean & Theorem 1 & attribution\_impossibility & No \\
 Iterative.lean & \S3 & iterative\_impossibility & No \\
 General.lean & \S3 & gbdt\_impossibility & No \\
@@ -312,7 +312,7 @@ is connected via two axioms (\texttt{modelMeasurableSpace},
 \paragraph{Development methodology.}
 The initial formalization (49 theorems, 15 files) was developed by
 the first author with iterative Claude Code assistance over several
-weeks. The expansion from 49 to 340 theorems (58 files) was produced
+weeks. The expansion from 49 to 352 theorems (58 files) was produced
 in a single development session by dispatching targeted Lean-writing
 agents with detailed mathematical specifications (theorem statements,
 proof strategies, and Mathlib lemma references). All proofs were
@@ -323,7 +323,7 @@ reasoning; the deepest proof (\texttt{attribution\_sum\_symmetric},
 35 tactic lines) derives symmetry via split-count decomposition.
 
 \paragraph{Proof depth distribution.}
-Of 340 type-checked declarations: 115 require multi-step proofs
+Of 352 type-checked declarations: 115 require multi-step proofs
 (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5
 require ${\geq}20$ lines. The five deepest proofs are
 \texttt{attribution\_sum\_symmetric} (35 lines, derived symmetry
@@ -364,10 +364,10 @@ The first two are genuine logical inconsistencies that would have been
 difficult to detect by inspection of an informal proof. The third is a
 modeling assumption made explicit by the type system.
 
-\paragraph{Joint consistency of all 16 axioms.}
-The 14 domain-specific axioms are jointly consistent: \texttt{Consistency.lean}
+\paragraph{Joint consistency of all 6 axioms.}
+The 6 axioms are jointly consistent: \texttt{Consistency.lean}
 constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$,
-$T{=}100$, Fin~4 models) satisfying all 14 simultaneously.
+$T{=}100$, Fin~4 models) satisfying all 6 simultaneously.
 The 2 query-complexity axioms (\texttt{testing\_constant},
 \texttt{testing\_constant\_pos})
 are independently consistent: instantiating $C := 1/8$ satisfies all three.

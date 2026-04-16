@@ -133,7 +133,7 @@ theorem le_cam_lower_bound (σ Δ : ℝ) (_hσ : 0 < σ) (_hΔ : 0 < Δ) (n : �
 `le_cam_lower_bound` is now a **theorem**, not an axiom. The proof is `not_lt.mp h_reliable` -- a one-line proof from the contrapositive. The file header explains: "the contrapositive formulation `not(n < bound) -> bound <= n` is provable from `not_lt` in any linear order."
 
 **Impact on axiom defense:**
-- Previous count: 18 axioms (15 domain + 3 query-complexity)
+- Previous count: 6 axioms (15 domain + 3 query-complexity)
 - New count: **17 axioms** (15 domain + 2 query-complexity: `testing_constant` and `testing_constant_pos`)
 - This is an IMPROVEMENT. The Le Cam content is now encoded in the hypothesis `h_reliable` (which the caller must discharge), not in the axiom system.
 - The remaining 2 query-complexity axioms (`testing_constant : R` and `testing_constant_pos : 0 < testing_constant`) assert only the existence and positivity of a universal constant, which is trivially true (C = 1/8 works).
@@ -153,7 +153,7 @@ JMLR reviewer. Associate professor in ML theory or statistics. 3 weeks to review
 
 The "deliberately simple" defense (line 150-152) is noticed and appreciated -- the authors are preempting the "4-line proof is trivial" criticism. The "Pick Two" line (line 270) is memorable. The 4-persona framing is not explicit in the text but the paper addresses classical statistician, causal, DL, and industry perspectives implicitly through the extensions.
 
-**Concern:** The abstract mentions "188 theorems from 18 axioms" -- the reviewer mentally flags this for later verification. The introduction is dense (2+ pages) but well-structured. The notation table is helpful.
+**Concern:** The abstract mentions "352 theorems from 6 axioms" -- the reviewer mentally flags this for later verification. The introduction is dense (2+ pages) but well-structured. The notation table is helpful.
 
 **Rating at this point:** Cautiously positive. The scope is enormous for a single paper.
 

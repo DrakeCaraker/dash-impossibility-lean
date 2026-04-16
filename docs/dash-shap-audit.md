@@ -1,7 +1,7 @@
 # dash-shap Repository Audit
 
 Generated: 2026-04-02
-Based on: Attribution Impossibility findings (188 theorems, 18 axioms, 0 sorry)
+Based on: Attribution Impossibility findings (352 theorems, 6 axioms, 0 sorry)
 
 ## Critical Bugs (fix before merge)
 

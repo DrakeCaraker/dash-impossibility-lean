@@ -37,7 +37,7 @@ Contrast:                 RandomForest.lean (bounded violations, no formal proof
 
 ```
 DASHImpossibility/
-  Defs.lean              — FeatureSpace, 13 axioms, stability/equity defs, consensus, variance from Mathlib
+  Defs.lean              — FeatureSpace, 6 axioms, stability/equity defs, consensus, variance from Mathlib
   Trilemma.lean          — RashimonProperty, attribution_impossibility, attribution_impossibility_weak
   Iterative.lean         — IterativeOptimizer abstraction
   General.lean           — GBDT instance, gbdt_impossibility, gbdtOptimizer
@@ -83,7 +83,7 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, design space, SNR calibration, conditional threshold, etc.)
 ```
 
-## Lean State: 58 files, 10 axioms, 350 theorems+lemmas, 0 sorry
+## Lean State: 58 files, 6 axioms, 352 theorems+lemmas, 0 sorry
 
 ## Axiom Inventory (10 total)
 
