@@ -54,7 +54,7 @@ theorem attribution_ratio_local
       splitCount_nonFirstMover fs f j₂ ℓ hj₂ hne hfm_grp]
   have h1 := denom_ne_zero fs
   have h2 : (1 : ℝ) - fs.ρ ^ 2 ≠ 0 := ne_of_gt (one_minus_rho_sq_pos fs)
-  have h3 : (↑numTrees : ℝ) ≠ 0 := ne_of_gt (Nat.cast_pos.mpr numTrees_pos)
+  have h3 : (↑fs.T : ℝ) ≠ 0 := ne_of_gt (Nat.cast_pos.mpr fs.hT)
   field_simp
 
 /-- The ratio divergence still holds: as ρ → 1, ratio → ∞.

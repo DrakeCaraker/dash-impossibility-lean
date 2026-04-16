@@ -4,6 +4,12 @@
 
   Part (i):  Equity violation — attribution ratio exceeds any bound as ρ → 1
   Part (ii): Stability bound — Spearman ≤ 1 - 3(m-1)²/(P³-P)
+              Tight version:     Spearman ≤ 1 - 3m²/(P³-P)
+
+  The tight m² bound uses the tighter midrank gap of m/2 proved in
+  SpearmanDef.lean. Both versions are retained: `not_stable` and
+  `impossibility` use the original bound; `not_stable_tight` and
+  `impossibility_tight` use the improved bound.
 -/
 import DASHImpossibility.Ratio
 import DASHImpossibility.General
@@ -73,6 +79,39 @@ theorem impossibility (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
   refine ⟨?_, ?_⟩
   · exact attribution_ratio_ge fs f j k ℓ hj hk hfm (by rw [hfm]; exact hjk)
   · exact spearman_instability_bound fs f f' ℓ (by rw [hfm]; exact hj) (by rw [hfm']; exact hk)
+      (by rw [hfm, hfm']; exact hjk) hP
+
+/-! ### Part (ii) tight: Stability bound with m² -/
+
+/-- Stability is bounded (tight): Spearman ≤ 1 - 3m²/(P³-P) when first-movers differ.
+    Strictly stronger than `not_stable` by a factor of m²/(m-1)². -/
+theorem not_stable_tight (f f' : Model) (ℓ : Fin fs.L)
+    (hfm_grp : firstMover fs f ∈ fs.group ℓ)
+    (hfm'_grp : firstMover fs f' ∈ fs.group ℓ)
+    (hdiff : firstMover fs f ≠ firstMover fs f')
+    (hP : 2 ≤ fs.P)
+    (δ : ℝ) (hδ : δ < 3 * (fs.groupSize ℓ : ℝ) ^ 2 / ((fs.P : ℝ) ^ 3 - (fs.P : ℝ))) :
+    ¬ isStable δ (spearmanCorr fs (fun j => attribution fs j f)
+                                (fun j => attribution fs j f')) := by
+  unfold isStable
+  push Not
+  have h := spearman_instability_bound_tight fs f f' ℓ hfm_grp hfm'_grp hdiff hP
+  linarith
+
+/-! ### Combined impossibility (tight) -/
+
+/-- The impossibility (tight m² bound): equity and stability cannot both hold. -/
+theorem impossibility_tight (f f' : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
+    (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ)
+    (hfm : firstMover fs f = j) (hfm' : firstMover fs f' = k) (hjk : j ≠ k)
+    (hP : 2 ≤ fs.P) :
+    attribution fs j f / attribution fs k f ≥ 1 + fs.ρ ^ 2 / (1 - fs.ρ ^ 2) ∧
+    spearmanCorr fs (fun i => attribution fs i f) (fun i => attribution fs i f') ≤
+      1 - 3 * (fs.groupSize ℓ : ℝ) ^ 2 / ((fs.P : ℝ) ^ 3 - (fs.P : ℝ)) := by
+  refine ⟨?_, ?_⟩
+  · exact attribution_ratio_ge fs f j k ℓ hj hk hfm (by rw [hfm]; exact hjk)
+  · exact spearman_instability_bound_tight fs f f' ℓ
+      (by rw [hfm]; exact hj) (by rw [hfm']; exact hk)
       (by rw [hfm, hfm']; exact hjk) hP
 
 end DASHImpossibility

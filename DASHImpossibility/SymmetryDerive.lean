@@ -20,9 +20,9 @@ variable (fs : FeatureSpace)
 private lemma splitCount_diff_cases (f : Model) (j k : Fin fs.P) (ℓ : Fin fs.L)
     (hj : j ∈ fs.group ℓ) (hk : k ∈ fs.group ℓ) (hjk : j ≠ k) :
     (firstMover fs f = j → splitCount fs j f - splitCount fs k f =
-      fs.ρ ^ 2 * (numTrees : ℝ) / (2 - fs.ρ ^ 2)) ∧
+      fs.ρ ^ 2 * (fs.T : ℝ) / (2 - fs.ρ ^ 2)) ∧
     (firstMover fs f = k → splitCount fs j f - splitCount fs k f =
-      -(fs.ρ ^ 2 * (numTrees : ℝ) / (2 - fs.ρ ^ 2))) ∧
+      -(fs.ρ ^ 2 * (fs.T : ℝ) / (2 - fs.ρ ^ 2))) ∧
     (firstMover fs f ≠ j → firstMover fs f ≠ k →
       splitCount fs j f - splitCount fs k f = 0) := by
   refine ⟨fun hfmj => ?_, fun hfmk => ?_, fun hfmj hfmk => ?_⟩
@@ -30,7 +30,7 @@ private lemma splitCount_diff_cases (f : Model) (j k : Fin fs.P) (ℓ : Fin fs.L
     exact split_gap_exact fs f j k ℓ hj hk hfmj hne
   · have hne : firstMover fs f ≠ j := by rw [hfmk]; exact hjk.symm
     have : splitCount fs k f - splitCount fs j f =
-      fs.ρ ^ 2 * (numTrees : ℝ) / (2 - fs.ρ ^ 2) :=
+      fs.ρ ^ 2 * (fs.T : ℝ) / (2 - fs.ρ ^ 2) :=
       split_gap_exact fs f k j ℓ hk hj hfmk hne
     linarith
   · have := splitCount_eq_of_not_firstMover_j_or_k fs f j k ℓ hj hk hfmj hfmk
@@ -68,7 +68,7 @@ theorem attribution_sum_symmetric (M : ℕ) (_hM : 0 < M) (models : Fin M → Mo
       (g := fun i => splitCount fs k (models i))]
   -- Classify each term by first-mover
   -- Let gap = ρ²T/(2-ρ²)
-  set gap := fs.ρ ^ 2 * (numTrees : ℝ) / (2 - fs.ρ ^ 2) with hgap_def
+  set gap := fs.ρ ^ 2 * (fs.T : ℝ) / (2 - fs.ρ ^ 2) with hgap_def
   -- Partition Finset.univ into three parts: fm=j, fm=k, fm∉{j,k}
   -- For fm=j: difference = gap
   -- For fm=k: difference = -gap
