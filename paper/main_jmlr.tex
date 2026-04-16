@@ -242,7 +242,7 @@ The formulas are verified algebraically by SymPy.
 \paragraph{Complete axiom inventory.}
 Table~\ref{tab:axioms} lists all property axioms in the formalization.
 The core impossibility theorem requires none of them---only the Rashomon property as hypothesis.
-The formalization uses 6 axioms total: 5 type/constant declarations, 2 measure-theoretic infrastructure axioms, and 3 domain-specific property axioms. The split-count structure and query-complexity constant are now derived (see \S~\ref{sec:lean}).
+The formalization uses 6 axioms total: 2 type declarations (\texttt{Model}, \texttt{firstMover}), 3 domain-specific property axioms (\texttt{firstMover\_surjective}, \texttt{crossGroupBaselineCore}, \texttt{proportionalityConstant}), and 1 measure-theoretic axiom (\texttt{modelMeasure}). Ten former axioms---including the split-count structure, query-complexity constant, attribution function, and measurable space---are now definitions or derived theorems (see \S~\ref{sec:lean}).
 
 \begin{table}[t]
 \centering
@@ -1927,7 +1927,7 @@ DASH breakdown & Robust to contaminated ensembles & \texttt{dash\_breakdown\_poi
 
 \subsection{Proof Architecture}
 
-The formalization comprises 58 Lean~4 files with 6 axioms and 350 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 115 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
+The formalization comprises 58 Lean~4 files with 6 axioms and 352 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 115 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
 The core impossibility (\textsf{attribution\_impossibility}) depends on zero axioms---only the Rashomon property as hypothesis.
 The DASH resolution (\textsf{consensus\_equity}) depends on the \textsf{attribution\_sum\_symmetric} theorem (derived); the variance convergence depends on \textsf{consensus\_variance\_bound} (also~derived).
 
@@ -1969,7 +1969,7 @@ Defs.lean (6 axioms, type definitions, derived theorems)
 
 \subsection{Axiom System and Consistency}
 
-The 6 axioms are jointly consistent: \texttt{Consistency.lean} constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$, $T{=}100$, Fin~4 models) satisfying all 6 simultaneously. The 2 query-complexity axioms are independently consistent: instantiating $C := 1/8$ satisfies all three. The two axiom sets reside in separate Lean files (\texttt{Defs.lean} and \texttt{QueryComplexity.lean}) with no cross-dependencies, so joint consistency follows from individual consistency.
+The 6 axioms are jointly consistent: \texttt{Consistency.lean} constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$, $T{=}100$, Fin~4 models) satisfying all 6 simultaneously.
 
 \paragraph{Axiom system: consistency vs.\ faithfulness.}
 The consistency model demonstrates that the axiom system is non-trivially satisfiable, but it does not show the axioms faithfully describe real GBDT behavior. The empirical evidence for faithfulness comes from \S~\ref{sec:experiments}: the proportionality axiom holds with CV~$\approx 0.35$ for stumps and CV~$\approx 0.66$ for deeper trees; the split-count axioms are verified by SymPy and match empirical ratios ($R^2 = 0.89$ with $\alpha$-correction). The axiom stratification (\S~\ref{sec:discussion}) addresses this gap directly: the core impossibility (Theorem~\ref{thm:impossibility}) requires \emph{zero} domain-specific axioms---only the Rashomon property as hypothesis---so the faithfulness question affects only the quantitative bounds, not the impossibility itself.
