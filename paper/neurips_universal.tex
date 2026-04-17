@@ -49,9 +49,11 @@ identification), feature attribution (SHAP rankings), causal discovery
 special case of the same theorem.
 When a resolution exists, we characterize the optimal one via the
 Hunt--Stein theorem: the Pitman estimator (group-orbit average).
-The entire framework---340 theorems, 0 \texttt{sorry}---is formalized in
-Lean~4, with the mechanistic interpretability Rashomon property
-\emph{derived} from constructive types (zero axioms).
+The entire framework---357 theorems from 6 axioms, 0 \texttt{sorry}---is formalized in
+Lean~4, with all binary explanation types (\texttt{SHAPSign},
+\texttt{FeatureStatus}, \texttt{CounterfactualDir}) defined as
+constructive inductive types and the mechanistic interpretability
+Rashomon property \emph{derived} by computation (zero axioms).
 \end{abstract}
 
 %% ===================================================================
@@ -107,7 +109,11 @@ satisfied.
   equal), faithful + stable alone is impossible
   (Theorem~\ref{thm:bilemma})---strictly stronger than the trilemma.
   This applies to all binary explanation problems: SHAP sign, circuit
-  decomposition, feature selection, counterfactual direction.
+  decomposition, feature selection, and counterfactual direction
+  (increase vs.\ decrease a feature).
+  Each is formalized as a named bilemma instance
+  (\texttt{shap\_sign\_bilemma}, \texttt{feature\_selection\_bilemma},
+  \texttt{counterfactual\_bilemma}).
 
 \item \textbf{Tightness classification.}
   We give a complete $2 \times 2$ classification
@@ -128,21 +134,25 @@ satisfied.
   For causal discovery, this is the CPDAG.
 
 \item \textbf{Lean~4 formalization.}
-  The full framework is formalized across 58 files containing 340
-  theorems and lemmas with 0~\texttt{sorry}.
+  The full framework is formalized across 58 files containing 357
+  theorems and lemmas with 0~\texttt{sorry} and only 6 axioms
+  (all infrastructure: type declarations and measure setup).
   The mechanistic interpretability Rashomon property is \emph{derived}
   from constructive finite types, not axiomatized.
+  Three domain-specific inductive types---\texttt{SHAPSign},
+  \texttt{FeatureStatus}, \texttt{CounterfactualDir}---are
+  defined constructively with zero axioms.
 \end{enumerate}
 
-\paragraph{Relation to the companion paper.}
-The attribution impossibility for feature rankings under collinearity is
-treated in full quantitative detail---including the $1/(1{-}\rho^2)$
-divergence rate, Spearman instability bounds, and GBDT/Lasso/neural-net
-instantiations---in a companion paper~\citep{anonymous2026attribution}.
+\paragraph{Scope separation.}
+A companion paper~\citep{anonymous2026attribution} develops the
+quantitative theory for feature rankings under collinearity: the
+$1/(1{-}\rho^2)$ divergence rate, Spearman instability bounds, and
+GBDT/Lasso/neural-net instantiations.
 The present paper abstracts the core mechanism into a domain-independent
-framework, proves the bilemma (which does not appear in the companion
-paper), and extends the impossibility to mechanistic interpretability,
-causal discovery, and attention maps.
+framework, proves the bilemma (absent from the companion),
+and extends the impossibility to mechanistic interpretability,
+causal discovery, attention maps, and counterfactual directions.
 
 %% ===================================================================
 %% 2. THE FRAMEWORK
@@ -320,11 +330,31 @@ determines the ceiling.}
 Feature rankings have ties (neutral elements), so DASH achieves F+S.
 Circuit decompositions have no neutral element (every decomposition commits
 to a structure), so F+S is impossible---the bilemma is inescapable.
+This yields a \emph{direction theorem}: coverage conflict (the absence of neutral elements) is
+anti-monotone in $|H|$---enriching $H$ with neutral elements weakens the
+impossibility, the opposite of Arrow's theorem where enlarging the alternative set
+strengthens the impossibility by enabling preference cycles.
 The diagnostic is actionable: before building an explanation method,
 check whether $H$ has a neutral element.
 If not, no method can be both faithful and stable, and the only resolution
 is to enrich $H$ (e.g., report equivalence classes instead of individual
 explanations).
+
+\paragraph{Coverage conflict diagnostic.}
+We formalize the diagnostic as a predicate \texttt{hasCoverageConflict}
+(\texttt{BeyondBinary.lean}):
+an explanation system has \emph{coverage conflict} if every element
+$h \in H$ is incompatible with some native explanation value
+($\forall\, h,\; \exists\, \theta,\;
+\mathrm{incompatible}(h, \mathrm{explain}(\theta))$).
+Coverage conflict implies no neutral element exists
+(Lean-verified: \texttt{coverageConflict\_implies\_no\_neutral}),
+so the bilemma applies.
+Conversely, a neutral element destroys coverage conflict
+(\texttt{neutral\_destroys\_coverageConflict}).
+The tightness dichotomy---F+S achievable $\Leftrightarrow$ absence
+of coverage conflict---is proved as a single theorem
+(\texttt{tightness\_dichotomy}).
 
 %% ===================================================================
 %% 4. INSTANCES
@@ -426,11 +456,11 @@ DASH is provably optimal: by the Hunt--Stein theorem for the permutation
 group $S_m$ acting on within-group features, the best equivariant estimator
 is the Pitman estimator---the group-orbit average---which is exactly DASH.
 Empirically, DASH resolves the instability on 68\% of 77 OpenML datasets
-tested.
-The full quantitative treatment---including the $1/(1{-}\rho^2)$ divergence
+tested (under the standard workflow; the model-only component is ${\sim}63\%$
+of the total variation).
+The full quantitative treatment---$1/(1{-}\rho^2)$ divergence
 rate, Spearman bounds, and model-specific
-instantiations---appears in the companion
-paper~\citep{anonymous2026attribution}.
+instantiations---appears in~\citet{anonymous2026attribution}.
 
 %% ----- Instance 3: Causal Discovery -----
 \subsection{Instance 3: Causal Discovery}

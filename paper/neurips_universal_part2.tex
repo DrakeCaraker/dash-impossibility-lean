@@ -82,7 +82,7 @@ We summarize four key results; the full experimental suite (18 experiments, 77 d
 
 \subsection{Prevalence}
 
-Of 77 public datasets (OpenML CC-18 + sklearn), 92\% have feature pairs with $|\rho| > 0.5$, and \textbf{52 (68\%)} exhibit attribution instability (flip rate $> 10\%$). The 95\% Wilson confidence interval is $[56\%, 77\%]$. For datasets with $P \geq 20$ features ($n = 43$), the rate rises to 93\% (40/43; Wilson CI: $[81\%, 98\%]$). With 20 models per dataset, the survey achieves only 32\% power at the 10\% threshold (60\% at 15\%), making 68\% a conservative lower bound; the true prevalence is likely 75--85\%.
+Of 77 public datasets (OpenML CC-18 + sklearn), 92\% have feature pairs with $|\rho| > 0.5$, and \textbf{52 (68\%)} exhibit attribution instability (flip rate $> 10\%$; model-only component ${\sim}63\%$ of total variation). The 95\% Wilson confidence interval is $[56\%, 77\%]$. For datasets with $P \geq 20$ features ($n = 43$), the rate rises to 93\% (40/43; Wilson CI: $[81\%, 98\%]$). With 20 models per dataset, the survey achieves only 32\% power at the 10\% threshold (60\% at 15\%), making 68\% a conservative lower bound; the true prevalence is likely 75--85\%.
 
 \subsection{Cross-Implementation Consistency}
 
@@ -139,7 +139,7 @@ The theoretical flip rate formula $\Phi(-\text{SNR})$ matches empirical rates wi
 \label{sec:related}
 
 \paragraph{Attribution impossibilities.}
-\citet{bilodeau2024impossibility} prove that completeness and linearity cannot coexist for feature attributions---a constraint on the \emph{method} axis. Our result operates on a different axis: cross-model \emph{stability} under collinearity. The Bilodeau impossibility constrains which axioms a method can satisfy for a fixed model; ours constrains what any method can achieve across the Rashomon set. The two results are complementary: Bilodeau's applies even without collinearity; ours applies even to methods that are not linear. Our result additionally provides quantitative architecture-discriminating bounds ($1/(1-\rho^2)$ for GBDT, $\infty$ for Lasso), a constructive resolution (DASH), and machine verification (340 Lean~4 theorems).
+\citet{bilodeau2024impossibility} prove that completeness and linearity cannot coexist for feature attributions---a constraint on the \emph{method} axis. Our result operates on a different axis: cross-model \emph{stability} under collinearity. The Bilodeau impossibility constrains which axioms a method can satisfy for a fixed model; ours constrains what any method can achieve across the Rashomon set. The two results are complementary: Bilodeau's applies even without collinearity; ours applies even to methods that are not linear. Our result additionally provides quantitative architecture-discriminating bounds ($1/(1-\rho^2)$ for GBDT, $\infty$ for Lasso), a constructive resolution (DASH), and machine verification (357 Lean~4 theorems).
 
 \paragraph{Fairness impossibilities.}
 \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove that calibration, balance, and equal false positive rates cannot coexist when base rates differ. The structural parallel is precise: three desirable properties conflict, and the resolution requires sacrificing one. Our trilemma (faithfulness, stability, completeness) extends this pattern to the explanation domain, and our tightness classification provides a diagnostic for which sacrifice is necessary.
@@ -191,6 +191,26 @@ For binary explanation spaces (circuit decompositions, SHAP sign, feature select
 \paragraph{Graded spaces admit averaging.}
 For ranking and continuous-score explanation spaces, DASH consensus averaging achieves the Cauchy--Schwarz variance bound with Hunt--Stein optimality. The ensemble size formula $M_{\min} = \lceil 2.71 \sigma^2/\Delta^2 \rceil$ gives practitioners a concrete budget. The tightness table (neutral element $\times$ committal element) serves as a design tool: before building an XAI system, check which cell your explanation space occupies to know which resolution applies.
 
+\paragraph{Why this isn't trivial.}
+The four-line proof may suggest the result is obvious.
+It is not, for three reasons.
+First, the impossibility is \emph{not} a consequence of Arrow's theorem:
+Arrow aggregates many inputs into one output; our setting maps one input
+(model) to one output (explanation), so Arrow's axioms do not apply.
+Second, the coverage conflict diagnostic reveals a structural asymmetry
+with Arrow: coverage conflict is \emph{anti-monotone} in the size of~$H$
+(enlarging the explanation space weakens the impossibility), whereas
+Arrow's impossibility strengthens with more alternatives.
+This anti-monotonicity is why graded attributions escape the bilemma
+while binary signs do not---a distinction invisible without the
+formalization.
+Third, the bilemma (faithful + stable alone impossible) is strictly
+stronger than the trilemma for binary spaces, ruling out the natural
+fallback of ``just drop decisiveness.''
+The fact that this fallback works for rankings but not for circuits is a
+non-obvious structural consequence of the presence or absence of neutral
+elements.
+
 \paragraph{Regulatory implications.}
 Single-model feature explanations are unreliable under collinearity, affecting regulatory compliance in settings where explanation stability is required (e.g., EU AI Act Art.~13, US SR~11-7). Ensemble explanations provide a defensible alternative.
 
@@ -200,10 +220,10 @@ Several assumptions warrant discussion.
 (ii)~The mechanistic interpretability instance rests on \citet{meloux2025circuits}, which studies a single task (XOR with 3-bit inputs); extending to larger architectures and tasks is important future work.
 (iii)~Circuit equivalence classes are not yet formalized in Lean; the bilemma and unfaithfulness bound are verified, but the enrichment resolution is argued informally.
 (iv)~The global proportionality axiom has empirical CV of 0.35--0.66; under variable proportionality constants, DASH achieves approximate rather than exact equity, with the equity violation bounded by the CV of $c$ across models.
-(v)~The prevalence survey achieves only 32\% power at the 10\% flip rate threshold; the reported 68\% is a conservative lower bound.
+(v)~The prevalence survey achieves only 32\% power at the 10\% flip rate threshold; the reported 68\% (model-only component ${\sim}63\%$) is a conservative lower bound.
 
 \paragraph{Lean formalization.}
-The impossibility, resolution, and design space are machine-verified in Lean~4: 340 theorems, 0~\texttt{sorry}, 58 files. The core impossibility (Theorem~\ref{thm:trilemma}) has \emph{zero} behavioral axiom dependencies---only the Rashomon property as a hypothesis. The mechanistic interpretability instance derives the Rashomon property from constructive finite types (zero axioms via \texttt{decide}). Beyond certifying correctness, the formalization served as a methodology: it caught two logical inconsistencies and one type mismatch that survived informal review. We recommend formalizing impossibility theorems as a general practice in ML theory.
+The impossibility, resolution, and design space are machine-verified in Lean~4: 357 theorems, 0~\texttt{sorry}, 58 files. The core impossibility (Theorem~\ref{thm:trilemma}) has \emph{zero} behavioral axiom dependencies---only the Rashomon property as a hypothesis. The mechanistic interpretability instance derives the Rashomon property from constructive finite types (zero axioms via \texttt{decide}). Beyond certifying correctness, the formalization served as a methodology: it caught two logical inconsistencies and one type mismatch that survived informal review. We recommend formalizing impossibility theorems as a general practice in ML theory.
 
 \paragraph{Broader impact.}
 Feature attribution methods are used to make consequential decisions: which clinical interventions to pursue, which loan applicants to approve, which model behaviors to trust. Our theorem establishes that single-model explanations of collinear features are unreliable---a ``known and foreseeable circumstance'' that practitioners, deployers, and regulators should account for. The constructive resolution (DASH for graded spaces, equivalence classes for binary spaces) provides actionable remedies. We encourage practitioners to adopt ensemble explanations and to report instability diagnostics alongside feature rankings, so that the consumers of explanations---patients, applicants, auditors---receive honest assessments of explanation reliability.
