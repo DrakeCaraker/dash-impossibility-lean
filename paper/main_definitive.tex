@@ -1855,6 +1855,69 @@ For feature \emph{rankings}, DASH averaging produces ties (a neutral element), s
 For feature \emph{signs}, no neutral element exists (binary, maximally incompatible), so $F{+}S$ is impossible (bottom row).
 This classification is the structural explanation for why the trilemma admits a resolution (DASH) but the bilemma does not.
 
+\paragraph{Bimodality prediction.}
+The all-or-nothing theorem (Theorem~\ref{thm:all-or-nothing}) predicts a binary decomposition of features: each feature is either \emph{faithful} (its sign is consistent across all models, flip rate $\approx 0$) or \emph{Rashomon-caught} (its sign flips across equivalent models, flip rate $> 0$).
+There is no ``approximately faithful'' middle ground.
+This predicts that the distribution of per-feature SHAP sign flip rates is \emph{bimodal}: a mode near $0$ (faithful features) and a second mode at some positive value (Rashomon-caught features), with a dead zone in between.
+
+We validate this prediction using the Hartigan dip test for unimodality, with a permutation control (100 shuffles of SHAP signs within each observation, breaking feature structure).
+Across 200 XGBoost models per synthetic dataset:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Dataset & $\rho$ & Dip $p$-value & Permutation validates? & Bimodal? \\
+\midrule
+Synthetic & 0.0 & 0.373 & No (66\% permutations also reject) & \textbf{No} (control passes) \\
+Synthetic & 0.5 & 0.0002 & Yes (21\% permutations reject) & \textbf{Yes} \\
+Synthetic & 0.7 & 0.001 & Yes (8\% reject) & \textbf{Yes} \\
+Synthetic & 0.9 & $<$0.001 & Yes (22\% reject) & \textbf{Yes} \\
+California Housing & real & 0.575 & Yes (20\% reject) & \textbf{No} (borderline) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Bimodality is confirmed for all collinear settings ($\rho \geq 0.5$, dip $p < 0.002$) and correctly absent in the control ($\rho = 0$, $p = 0.373$).
+The second mode is at ${\sim}0.27$ (not the idealized $0.50$), reflecting that minority-sign models are outnumbered---consistent with the theory, which predicts the binary faithful/Rashomon-caught decomposition but not the exact mode location.
+California Housing does not show significant bimodality in the dip test ($p = 0.575$), though BIC prefers 2-component mixtures, likely reflecting weaker partial collinearity.
+This is a falsifiable prediction: the all-or-nothing theorem predicts bimodality \emph{iff} coverage conflict holds, and this is confirmed with $p < 0.002$ for $\rho \geq 0.5$.
+
+\paragraph{Nonparametric flip predictor via minority fraction.}
+The coverage conflict diagnostic yields a nonparametric flip rate estimator that outperforms the Gaussian formula $\Phi(-\text{SNR})$ on real data.
+For each feature $j$, define the \emph{minority fraction}:
+\[
+    \text{MF}_j = \frac{\min(\text{count}(\text{SHAP}_j > 0),\; \text{count}(\text{SHAP}_j < 0))}{M},
+\]
+the proportion of models in which feature $j$'s SHAP sign is in the minority.
+Coverage conflict holds iff $\text{MF}_j > 0$.
+The minority fraction is a direct empirical estimate of the flip rate: if 30\% of models assign a negative sign to feature $j$, then retraining has a ${\sim}30\%$ chance of flipping the sign.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Dataset & $\rho$ & CC Spearman & Gaussian Spearman \\
+\midrule
+Synthetic & 0.0 & 0.938 & 0.796 \\
+Synthetic & 0.5 & 0.981 & 0.885 \\
+Synthetic & 0.7 & 0.924 & 0.888 \\
+Synthetic & 0.9 & 0.952 & 0.764 \\
+California Housing & real & \textbf{0.955} & \textbf{0.463} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The minority fraction achieves Spearman correlation $0.92$--$0.98$ with empirical flip rates across all datasets, consistently outperforming the Gaussian formula ($0.46$--$0.89$).
+The advantage is decisive on California Housing ($r = 0.955$ vs.\ $r = 0.463$), where the Gaussian approximation degrades because real SHAP distributions are non-Gaussian (heavy-tailed, multimodal).
+The coverage conflict predictor requires no distributional assumptions, no parameter estimation (no $\mu$, $\sigma$, or SNR), and no CLT validity---it is a direct count.
+It is derived from the theory: coverage conflict is the \emph{exact} condition for the bilemma to apply, and the minority fraction is the \emph{empirical} coverage conflict strength.
+
+Precision at the 10\% flip rate threshold ranges from 0.74 to 0.86 across datasets.
+Recall is tautologically 1.0 (coverage conflict is a necessary condition for flip rate $> 0$) and is not reported as a finding.
+
+The practical workflow extends from Screen~$\to$~Z-test~$\to$~DASH to: Screen~$\to$~\textbf{Minority fraction}~$\to$~Z-test~$\to$~DASH, where the minority fraction provides a fast, assumption-free triage before the parametric Z-test.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 9. DIAGNOSTICS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

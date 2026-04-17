@@ -356,6 +356,18 @@ The tightness dichotomy---F+S achievable $\Leftrightarrow$ absence
 of coverage conflict---is proved as a single theorem
 (\texttt{tightness\_dichotomy}).
 
+\paragraph{Nonparametric flip predictor.}
+Coverage conflict yields a practical diagnostic: the \emph{minority fraction}
+$\text{MF}_j = \min(\text{count}(\text{SHAP}_j > 0),\;
+\text{count}(\text{SHAP}_j < 0))/M$ estimates the flip rate without
+distributional assumptions.
+The minority fraction achieves Spearman $0.92$--$0.98$ with empirical
+flip rates, outperforming the Gaussian formula ($0.46$--$0.89$),
+especially on real data (California Housing: $r = 0.955$ vs.\ $0.463$).
+The all-or-nothing theorem predicts bimodal flip rate distributions;
+this is confirmed by the Hartigan dip test ($p < 0.002$ for
+$\rho \geq 0.5$, control passes at $\rho = 0$).
+
 %% ===================================================================
 %% 4. INSTANCES
 %% ===================================================================

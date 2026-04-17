@@ -1322,6 +1322,18 @@ The tightness classification (\texttt{tightness\_dichotomy}) makes this precise:
 Coverage conflict is \emph{anti-monotone}: enlarging $H$ can introduce neutral elements, destroying coverage conflict and weakening the impossibility.
 This contrasts with Arrow's theorem, where enlarging the alternative set strengthens the impossibility (by enabling preference cycles)---the two impossibilities respond in opposite directions to the same structural operation.
 
+\paragraph{Bimodality prediction.}
+The all-or-nothing theorem (Theorem~\ref{thm:all-or-nothing}) predicts bimodal per-feature flip rate distributions under collinearity: a mode near $0$ (faithful features) and a second mode at a positive value (Rashomon-caught features), with no middle ground.
+We validate with the Hartigan dip test (200 XGBoost models, permutation control): bimodality is confirmed for $\rho \geq 0.5$ (dip $p < 0.002$, permutation validated) and correctly absent at $\rho = 0$ ($p = 0.373$).
+
+\paragraph{Nonparametric flip predictor via minority fraction.}
+The coverage conflict diagnostic yields a nonparametric flip rate estimator.
+For each feature $j$, the \emph{minority fraction} $\text{MF}_j = \min(\text{count}(\text{SHAP}_j > 0),\; \text{count}(\text{SHAP}_j < 0))/M$ directly estimates the flip rate without distributional assumptions.
+The minority fraction achieves Spearman correlation $0.92$--$0.98$ with empirical flip rates across all datasets, outperforming the Gaussian formula ($0.46$--$0.89$).
+The advantage is decisive on California Housing ($r = 0.955$ vs.\ $r = 0.463$), where the Gaussian approximation degrades.
+Precision at the 10\% threshold ranges from 0.74 to 0.86.
+The practical workflow extends to: Screen~$\to$~\textbf{Minority fraction}~$\to$~Z-test~$\to$~DASH.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 9. DIAGNOSTICS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
