@@ -1481,6 +1481,9 @@ When multiple protected attributes (race, gender, age) are each proxied by colli
 \paragraph{Example: lending.}
 In credit models, ``zip code'' (proxy for race) is often collinear with ``income bracket'' ($|\rho| \approx 0.6$--$0.8$). If both have similar predictive power, a single-model SHAP audit finding ``zip code is the 3rd most important feature'' may conclude proxy discrimination---but retraining with a different seed could produce a model where zip code drops to 8th and income rises to 3rd. The audit conclusion depends on the random seed, not on the model's actual reliance on the protected attribute.
 
+\paragraph{Fairness impossibilities as abstract framework instances.}
+The impossibility results of \citet{chouldechova2017fair} (calibration vs.\ balance vs.\ equal false positive rates) and \citet{kleinberg2017inherent} (same conclusion, different proof) can be cast as instances of the abstract impossibility framework: each defines an explanation system where the ``explanation'' is a fairness metric, the Rashomon property arises from base-rate differences, and the three fairness desiderata play the roles of faithful, stable, and decisive. The tightness classification would then characterise which pairs of fairness metrics are jointly achievable. We leave this formalisation to future work, noting that it would extend the framework's scope from explainability to algorithmic fairness and provide a unified Lean-verified treatment of both impossibility classes.
+
 \subsection{Direct FIM Impossibility}
 \label{sec:fim}
 
@@ -1840,12 +1843,44 @@ The bilemma, unfaithfulness bound, all-or-nothing theorem, and all three ML inst
 All instances use constructive inductive types (not axiomatized opaque types): \texttt{SHAPSign}, \texttt{FeatureStatus}, and \texttt{CounterfactualDir} are each two-element types with decidable equality and pattern-matching proofs.
 The abstract framework (\texttt{ExplanationSystem.lean}) defines the general explanation system, faithful, stable, and decisive, and proves the abstract impossibility.
 
+\subsection{Quantitative Bilemma for Continuous Explanations}
+\label{sec:quantitative-bilemma}
+
+The bilemma applies to binary explanation spaces ($|H| = 2$). But SHAP values are continuous. We extend the bilemma to continuous $H$ equipped with a metric $d$.
+
+\begin{definition}[Approximate stability and faithfulness]
+An explanation map $E$ is \emph{$(\varepsilon, \delta)$-stable} if $d(\text{obs}(\theta_1), \text{obs}(\theta_2)) \leq \varepsilon$ implies $d(E(\theta_1), E(\theta_2)) \leq \delta$. It is \emph{$\alpha$-faithful} if $d(E(\theta), \text{exp}(\theta)) \leq \alpha$ for all $\theta$.
+\end{definition}
+
+\begin{theorem}[Quantitative bilemma]\label{thm:quantitative-bilemma}
+For an $(\varepsilon, \delta)$-stable map $E$ on an $\varepsilon$-Rashomon pair $(\theta_1, \theta_2)$ with incompatibility gap $\Delta = d(\text{exp}(\theta_1), \text{exp}(\theta_2))$:
+$$\text{unfaith}(\theta_1) + \text{unfaith}(\theta_2) \geq \Delta - \delta$$
+where $\text{unfaith}(\theta) = d(E(\theta), \text{exp}(\theta))$. At least one witness is unfaithful by $\geq (\Delta - \delta)/2$.
+\end{theorem}
+
+\noindent\textit{Proof.} Triangle inequality: $\Delta = d(\text{exp}(\theta_1), \text{exp}(\theta_2)) \leq d(\text{exp}(\theta_1), E(\theta_1)) + d(E(\theta_1), E(\theta_2)) + d(E(\theta_2), \text{exp}(\theta_2)) \leq \text{unfaith}(\theta_1) + \delta + \text{unfaith}(\theta_2)$. Rearrange.  Proved in Lean (\texttt{ApproximateBilemma.lean}). \hfill$\square$
+
+\paragraph{Practical interpretation.}
+If two XGBoost models disagree on feature $j$'s SHAP value by $\Delta = 0.3$, and you want your method to be $\delta = 0.05$-stable (explanations change by $\leq 0.05$ for equivalent models), you must be unfaithful by $\geq (0.3 - 0.05)/2 = 0.125$ at one of them. The quantitative bilemma converts the binary impossibility (``SHAP sign flips'') into a continuous tradeoff (``SHAP magnitude deviates by at least $(\Delta - \delta)/2$'').
+
+This is testable: for each feature pair, measure $\Delta$ (SHAP magnitude disagreement across models) and $\delta$ (desired stability tolerance), then verify that no method achieves unfaithfulness below $(\Delta - \delta)/2$ at both witnesses.
+
 \paragraph{The coverage conflict diagnostic.}
 Whether the bilemma applies depends on a testable property of the explanation space.
 An explanation system has \emph{coverage conflict} if every candidate explanation clashes with some model's native explanation (\texttt{hasCoverageConflict} in \texttt{BeyondBinary.lean}).
 Coverage conflict implies no neutral element exists---there is no ``safe harbor'' that is compatible with all models.
 Conversely, a neutral element (such as a tie in feature rankings) makes faithful+stable achievable via the constant function $E(\theta) = c$ (\texttt{neutral\_implies\_FS\_achievable}).
 The tightness classification (\texttt{tightness\_dichotomy}) makes this precise: $F{+}S$ is achievable iff the explanation space has a neutral element.
+
+\paragraph{Topological characterisation: the compatibility complex.}
+The tightness classification has a clean topological interpretation. Define the \emph{compatibility complex} $K$ on $H$: the simplicial complex whose vertices are elements of $H$ and whose simplices are pairwise-compatible subsets. The bilemma's severity corresponds to the topology of $K$:
+\begin{itemize}
+  \item \textbf{Discrete $K$} (no edges): maximal incompatibility $\to$ bilemma. Only F+D achievable.
+  \item \textbf{Contractible $K$} (cone point = neutral element): F+S achievable via the constant map to the cone point.
+  \item \textbf{Intermediate}: partial achievability determined by the connected components and cone structure of $K$.
+\end{itemize}
+
+Enrichment adds a new vertex (the neutral element) to $K$, creating a cone and making $K$ contractible---resolving the stalk-emptiness obstruction at that level. This is NOT sheaf-theoretic contextuality (which is a gluing failure, $H^1 \neq 0$, on overlapping covers). The bilemma is a simpler obstruction: empty stalks ($H^0 = 0$) on a discrete cover. The explanation framework identifies a level of the obstruction hierarchy \emph{below} Abramsky-Brandenburger contextuality. The approximate Rashomon extension (overlapping $\varepsilon$-fibers) may have genuine sheaf-theoretic content---this is future work.
 
 Coverage conflict is \emph{anti-monotone}: enlarging $H$ can introduce neutral elements, destroying coverage conflict and weakening the impossibility.
 This contrasts with Arrow's theorem, where enlarging the alternative set strengthens the impossibility (by enabling preference cycles)---the two impossibilities respond in opposite directions to the same structural operation.
