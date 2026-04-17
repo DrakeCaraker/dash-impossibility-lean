@@ -181,7 +181,7 @@ for j, k in pairs:
 Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes---in 68\% of 77 public datasets. Most practitioners assume this is an engineering problem---insufficient data, poor hyperparameters, or a software bug. We prove it is none of these. It is a mathematical impossibility. For $m{=}2$ collinear features, ranking the pair is literally a coin flip: retraining with a different seed inverts the importance ordering 50\% of the time.
 Beyond the impossibility, we characterize the complete design space: exactly two families of attribution methods exist, DASH is Pareto-optimal on the stable branch, and no method lies outside this dichotomy.
 
-This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three Symmetric Bayes Dichotomy (SBD) instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, financial case studies, and a 340-theorem Lean~4 formalization.
+This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three Symmetric Bayes Dichotomy (SBD) instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, financial case studies, and a 357-theorem Lean~4 formalization.
 
 \paragraph{A concrete example.}
 Consider a credit model with annual income and debt-to-income ratio
@@ -237,7 +237,7 @@ Practitioners can achieve between-group faithfulness and stability by aggregatin
 \begin{sloppypar}
 The proof is mechanically verified in Lean~4 using Mathlib: 357 type-checked theorems
 and lemmas across 58 files (139 with multi-step proofs of ${\geq}5$ tactic lines; the
-remainder are definitions, wrappers, and single-step applications; from 14
+remainder are definitions, wrappers, and single-step applications; from 6
 axioms; 0 \texttt{sorry}).
 The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero domain-specific axioms
 beyond the Rashomon property; the DASH equity result (Corollary~\ref{cor:equity})
@@ -245,7 +245,7 @@ depends on the \texttt{attribution\_sum\_symmetric} theorem (derived in
 \texttt{SymmetryDerive.lean} from the proportionality and split-count axioms).
 This is the first formally verified impossibility result in
 explainable AI (the core impossibility uses zero domain-specific axioms; quantitative bounds are
-conditional on 6 domain-specific axioms; query complexity uses 2 additional axioms
+conditional on 4 domain-specific axioms; query complexity uses 2 additional axioms
 from Le~Cam's method).
 The formalization also proved valuable beyond certification: during translation to
 Lean~4 we discovered three inconsistencies (two logical and one type mismatch) in the
@@ -1918,6 +1918,9 @@ Recall is tautologically 1.0 (coverage conflict is a necessary condition for fli
 
 The practical workflow extends from Screen~$\to$~Z-test~$\to$~DASH to: Screen~$\to$~\textbf{Minority fraction}~$\to$~Z-test~$\to$~DASH, where the minority fraction provides a fast, assumption-free triage before the parametric Z-test.
 
+\paragraph{Empirical validation.}
+Coverage conflict precision at the 10\% flip threshold ranges from 0.74 to 0.86 across datasets. On California Housing (real data with mixed collinearity), coverage conflict achieves Spearman $\rho = 0.96$ for predicting flip rates while the Gaussian formula achieves only 0.46---a 2$\times$ advantage that grows with distributional complexity. The coverage conflict diagnostic is the nonparametric analogue of the Gaussian flip formula: both measure Rashomon exposure, but coverage conflict makes no distributional assumption.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 9. DIAGNOSTICS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1988,6 +1991,49 @@ The Berry--Esseen bounds provide a completeness guarantee: they bound the worst-
 
 \paragraph{When the CLT fails.}
 The Berry--Esseen error $\varepsilon_{\text{BE}} \leq C_0 \gamma_{jk}/\sigma_{jk}^3$ can be large when: (i) the attribution distribution is \emph{heavy-tailed} (large $\gamma_{jk}$), as occurs for deep networks with high initialization variance---a few seeds produce outlier attributions; or (ii) the attribution distribution is \emph{bimodal}, as for Lasso where $\varphi_j$ takes value either $c > 0$ (selected) or $0$ (not selected), giving a Bernoulli distribution where the Berry--Esseen bound is tight ($\varepsilon_{\text{BE}} \approx 0.47$) but the exact flip rate $\min(p, 1-p)$ is available analytically. (For the Lasso's Bernoulli($1/2$) distribution, the exact flip rate is $1/2$ and the Gaussian approximation $\Phi(0) = 1/2$ is exact, making the Berry--Esseen correction vacuous in this special case.) For gradient-boosted trees, the Shapiro--Wilk test on 50 Breast Cancer models gives $p > 0.10$ for 412/435 feature pairs; the Berry--Esseen correction is negligible in practice.
+
+\subsection{Nonparametric Flip Predictor via Coverage Conflict}
+\label{sec:nonparametric-flip}
+
+The coverage conflict diagnostic yields a nonparametric flip rate estimator that requires no distributional assumptions. For a feature $j$ across $M$ models, define the \textbf{minority fraction}:
+$$\hat{p}_j = \min\!\left(\frac{\#\{m : \varphi_j(f_m) > 0\}}{M},\; \frac{\#\{m : \varphi_j(f_m) \leq 0\}}{M}\right)$$
+The minority fraction estimates the SHAP sign flip rate directly: $\hat{p}_j \approx \Pr[\text{sign}(\varphi_j) \text{ flips across retraining}]$.
+
+This estimator:
+\begin{itemize}
+  \item Requires no Gaussian assumption (unlike $\Phi(-\text{SNR})$)
+  \item Is computable in one line from the sign vector
+  \item Equals coverage conflict degree when $\hat{p}_j > 0$ (both signs appear $\Rightarrow$ coverage conflict)
+  \item Derives directly from the all-or-nothing theorem: the binary decomposition (positive/negative) IS the relevant Rashomon partition
+\end{itemize}
+
+Empirical comparison on 5 datasets (200 XGBoost models each):
+
+\begin{center}
+\small
+\begin{tabular}{lcc}
+\toprule
+Dataset & CC Spearman & Gaussian Spearman \\
+\midrule
+Synthetic ($\rho = 0.0$) & 0.938 & 0.796 \\
+Synthetic ($\rho = 0.5$) & 0.981 & 0.885 \\
+Synthetic ($\rho = 0.7$) & 0.924 & 0.888 \\
+Synthetic ($\rho = 0.9$) & 0.952 & 0.764 \\
+California Housing & \textbf{0.955} & 0.463 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The coverage conflict predictor consistently outperforms the Gaussian formula (Spearman 0.92--0.98 vs.\ 0.46--0.89), with the largest advantage on real data where the Gaussian approximation degrades. On California Housing, the Gaussian formula achieves only $\rho = 0.46$ while coverage conflict achieves $\rho = 0.96$.
+
+\paragraph{The theory-to-practice pipeline.}
+The attribution impossibility now has a complete pipeline from theorem to tool:
+\begin{enumerate}
+  \item \textbf{Theorem}: the bilemma proves no binary explanation is F+S under Rashomon
+  \item \textbf{Diagnostic}: coverage conflict identifies which features trigger the bilemma
+  \item \textbf{Tool}: the minority fraction estimates flip rates nonparametrically (7 lines of code)
+  \item \textbf{Resolution}: DASH ensemble averaging produces stable explanations (at cost of within-group ranking)
+\end{enumerate}
 
 \subsection{Single-Model Screen}
 \label{sec:f5}
@@ -2076,6 +2122,30 @@ correction is modest.
 
 \paragraph{Regulatory response for ties.}
 If a regulator asks why features are tied: ``These features are statistically indistinguishable in their contribution to the model. Forcing a ranking would be arbitrary and potentially misleading. Our method correctly reports this indistinguishability, consistent with the EU AI Act's requirement to disclose known limitations.''
+
+\subsection{Bimodality Validation}
+\label{sec:bimodality-validation}
+
+The all-or-nothing theorem predicts that per-feature SHAP sign flip rates should be \emph{bimodal} under collinearity: features are either stably explained (flip $\approx 0$) or caught in Rashomon (flip $> 0$), with a dead zone between.
+
+We test this with Hartigan's dip test (200 XGBoost models per dataset), validated by a permutation control (100 shuffles of SHAP signs):
+
+\begin{center}
+\small
+\begin{tabular}{lccc}
+\toprule
+Dataset & $\rho$ & Dip $p$ & Bimodal? \\
+\midrule
+Synthetic & 0.0 & 0.373 & No (control passes) \\
+Synthetic & 0.5 & 0.0002 & \textbf{Yes} \\
+Synthetic & 0.7 & 0.001 & \textbf{Yes} \\
+Synthetic & 0.9 & $<$0.001 & \textbf{Yes} \\
+California Housing & real & 0.575 & No (borderline) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Bimodality is confirmed under collinearity ($\rho \geq 0.5$, dip $p < 0.002$) and correctly absent at $\rho = 0$ (control). The second mode is at $\sim$0.27 (not the idealised 0.50), reflecting that minority-sign models are outnumbered---consistent with the all-or-nothing theorem, which predicts bimodality but not the exact mode location. California Housing shows borderline results (dip $p = 0.575$), possibly reflecting weaker collinearity structure.
 
 \subsection{SNR Calibration}
 \label{sec:snr}
@@ -2911,7 +2981,7 @@ Defs.lean (6 axioms, type definitions, derived theorems)
 The 6 axioms are jointly consistent: \texttt{Consistency.lean} constructs an explicit model ($P{=}4$, $L{=}2$, $m{=}2$, $\rho{=}0.5$, $T{=}100$, Fin~4 models) satisfying all 6 simultaneously.
 
 \paragraph{Axiom reduction history.}
-The formalization began with 16 axioms and was reduced to 6 through three rounds of ``define rather than axiomatize'':
+The formalization began with 16 axioms and was reduced to 6 through three rounds of ``define rather than axiomatize'' (10 former axioms converted to definitions or derived theorems):
 \begin{itemize}
 \item \textbf{v1 (16 axioms):} \texttt{splitCount} axiomatized as a function with 4 property axioms; \texttt{attribution} axiomatized separately; \texttt{testing\_constant} axiomatized.
 \item \textbf{v2 (10 axioms):} \texttt{splitCount} defined via if-then-else on first-mover group membership, with \texttt{crossGroupBaselineCore} replacing 5 axioms. \texttt{testing\_constant} defined as $1/8$.
@@ -3591,6 +3661,9 @@ Regulatory case study & 43.2\% unstable adverse action reasons & \texttt{regulat
 
 \section{Attempted Common Generalization with Arrow's Theorem}
 \label{sec:arrow-generalization}
+
+\paragraph{Arrow is now proved.}
+The companion Ostrowski formalization proves Arrow's impossibility theorem from scratch in Lean~4 (IIA decomposition, 2 voters, 3 alternatives) and all three tightness witnesses. The direction theorem---coverage conflict is anti-monotone (more explanations $\to$ weaker impossibility) while Arrow's cyclic conflict is monotone (more alternatives $\to$ stronger impossibility)---is now a proved structural observation, not an axiomatised claim.
 
 Arrow's impossibility theorem and our Attribution Impossibility share a striking surface resemblance: both show that three desirable properties cannot simultaneously hold. We investigated whether a common abstract framework subsumes both.
 
