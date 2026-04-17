@@ -138,6 +138,11 @@ make setup         # full setup for new contributors
 - Authors: Drake Caraker, Bryan Arnold, David Rhoads
 - Companion code: [dash-shap PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255)
 
+## Output Preferences
+
+- When asked to run commands or show output, display the raw output directly. Do not summarize or post-process command output unless explicitly asked to summarize.
+- When editing shell scripts or running shell commands, account for macOS/zsh compatibility. Avoid bash-specific syntax. Escape `!` properly in strings.
+
 ## Do NOT
 
 - Summarize, filter, or curate lists of findings. Present ALL items in prioritized order. For audits, assessments, and analysis tasks, default to thorough and detailed. Only go brief when the user explicitly asks for a summary.
@@ -149,6 +154,7 @@ make setup         # full setup for new contributors
   grep -rc "sorry" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print "sorry:", s}'
   ls DASHImpossibility/*.lean | wc -l | awk '{print "files:", $1}'
   ```
+- Push reverts or force-pushes without explicit approval. Confirm intent before any destructive git operation.
 - Use `sorry` without a `-- TODO:` comment explaining what's needed
 - Change axioms without re-running the SymPy verification (in companion repo: `dash-shap/paper/proofs/verify_lemma6_algebra.py`)
 - Add `autoImplicit true` — all variables must be explicit
