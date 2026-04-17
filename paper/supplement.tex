@@ -94,8 +94,8 @@ Pareto optimality & \texttt{dash\_pareto\_\allowbreak optimal} & \textbf{Theorem
 \section{Proof Architecture}
 
 The formalization comprises 58 Lean~4 files with 6 axioms and
-352 type-checked theorems and lemmas (
-0 \texttt{sorry}). Of these, 115 require multi-line proofs
+357 type-checked theorems and lemmas (
+0 \texttt{sorry}). Of these, 139 require multi-line proofs
 ($\geq$5 tactic lines); 6 are definitional wrappers or
 single-step applications.
 The core impossibility (\texttt{attribution\_impossibility}) depends on
@@ -163,7 +163,7 @@ supplement section and key theorem.
 \begin{table}[htbp]
 \sloppy
 \centering
-\caption{Lean file cross-reference (58 files, 352 theorems, 6 axioms).}
+\caption{Lean file cross-reference (58 files, 357 theorems, 6 axioms).}
 \label{tab:lean-crossref}
 \scriptsize
 \begin{tabular}{@{}l>{\raggedright\arraybackslash}p{3cm}>{\raggedright\arraybackslash}p{5.5cm}l@{}}
@@ -312,7 +312,7 @@ is connected via two axioms (\texttt{modelMeasurableSpace},
 \paragraph{Development methodology.}
 The initial formalization (49 theorems, 15 files) was developed by
 the first author with iterative Claude Code assistance over several
-weeks. The expansion from 49 to 352 theorems (58 files) was produced
+weeks. The expansion from 49 to 357 theorems (58 files) was produced
 in a single development session by dispatching targeted Lean-writing
 agents with detailed mathematical specifications (theorem statements,
 proof strategies, and Mathlib lemma references). All proofs were
@@ -323,7 +323,7 @@ reasoning; the deepest proof (\texttt{attribution\_sum\_symmetric},
 35 tactic lines) derives symmetry via split-count decomposition.
 
 \paragraph{Proof depth distribution.}
-Of 352 type-checked declarations: 115 require multi-step proofs
+Of 357 type-checked declarations: 139 require multi-step proofs
 (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5
 require ${\geq}20$ lines. The five deepest proofs are
 \texttt{attribution\_sum\_symmetric} (35 lines, derived symmetry
