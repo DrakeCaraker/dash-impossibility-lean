@@ -2070,6 +2070,34 @@ The attribution impossibility now has a complete pipeline from theorem to tool:
   \item \textbf{Resolution}: DASH ensemble averaging produces stable explanations (at cost of within-group ranking)
 \end{enumerate}
 
+\paragraph{The 7-line predictor.}
+The complete nonparametric flip predictor:
+
+{\small
+\begin{verbatim}
+def predict_sign_instability(shap_matrix):
+    signs = np.sign(shap_matrix)  # M models x P features
+    n_pos = (signs > 0).sum(axis=0)
+    n_neg = (signs < 0).sum(axis=0)
+    total = n_pos + n_neg
+    return np.where(total > 0,
+        np.minimum(n_pos, n_neg) / total, 0)
+\end{verbatim}
+}
+
+\noindent This decomposes into coverage conflict (binary: are both signs present?) and minority fraction (continuous: what proportion is in the minority?). This decomposition IS the all-or-nothing theorem applied to practice. The Gaussian formula assumes normality; this assumes nothing.
+
+\paragraph{Variance budget: $\Var[\varphi_j]$ equals the explanation quality floor.}
+For each feature $j$, the variance $\Var_f[\varphi_j(f)]$ across the Rashomon set equals the minimum MSE any stable method achieves. \DASH{} (the mean) saturates this bound exactly---a mathematical identity (0/800 violations at machine precision across 5 datasets $\times$ 20 features $\times$ 8 configurations). The median costs 1.6\% more; the 5\%-trimmed mean 0.3\% more. The relative variance correlates with coverage conflict ($r = 0.91$, $p = 0.002$ per-dataset, not pooled): features with high sign instability also have high magnitude instability. This provides practitioners a per-feature \emph{quality budget} computable before choosing a method: $\Var[\varphi_j]$ is the irreducible explanation noise for feature $j$ under model multiplicity. See supplement for the full variance-bound derivation and comparison across estimators.
+
+\paragraph{Approximate bilemma.}
+A natural concern: does the bilemma require exact Rashomon pairs, making it fragile to perturbations? No. For binary $H$, $\varepsilon$-stability reduces to exact equality (the only $\varepsilon$-ball in $\{\text{pos}, \text{neg}\}$ with $\varepsilon < 1$ is the point itself). The bilemma holds at every tolerance level. Proved in Lean (\texttt{ApproximateBilemma.lean}).
+
+\paragraph{DASH binary optimality.}
+For binary $H$ (SHAP sign), \DASH{} (majority vote across models) is the \emph{uniquely} optimal stable method: any other stable method either agrees with the majority (same error rate) or picks the minority sign (strictly worse). This is not an empirical finding but a mathematical theorem. Average unfaithfulness $= p \cdot \bar{f}$ where $p$ is the coverage conflict rate and $\bar{f} \approx 0.23$--$0.28$ is the mean minority fraction (corrected from the earlier $p/2$ bound, which assumed minority fractions of $0.50$; actual minority fractions are $0.23$--$0.28$).
+
+For continuous $H$ (SHAP magnitude), \DASH{} (the mean) minimizes MSE among all unbiased estimators. The conditional mean minimizes MSE by standard decision theory; \DASH{} IS the conditional mean for i.i.d.\ models. The ``1.00$\times$ ratio'' in the variance budget comparison is a mathematical identity, not an empirical coincidence.
+
 \subsection{Single-Model Screen}
 \label{sec:f5}
 
