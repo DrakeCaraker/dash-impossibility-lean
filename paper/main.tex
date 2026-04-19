@@ -296,7 +296,7 @@ California Housing & 1 & 100\% & Yes \\
 \end{tabular}
 \end{table}
 
-Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds}---any published study reporting a specific top-3 is reporting one of 24 equally valid options. The ``most common'' ranking appears in only 12\% of runs. Two random seeds agree only 4.2\% of the time for the top-3. For the top-5: 46 distinct rankings, 0.4\% agreement.
+Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds} under standard XGBoost configuration with recommended regularization---any study reporting a specific top-3 from a single model is reporting one of 24 equally valid options. The ``most common'' ranking appears in only 12\% of runs. Two random seeds agree only 4.2\% of the time for the top-3. For the top-5: 46 distinct rankings, 0.4\% agreement. DASH consensus across all 50 seeds produces a single stable ranking: worst concave points, mean concave points, worst area, worst concavity, worst texture.
 
 The theory correctly predicts the boundary: California Housing, Heart Disease, and Wine Quality are perfectly stable (1 ranking, 100\% agreement) because their top features have clearly different importance---no similar-importance collinear pairs. The impossibility requires \emph{both} collinearity and similar importance.
 
