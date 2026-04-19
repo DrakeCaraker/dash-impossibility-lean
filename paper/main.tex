@@ -137,8 +137,11 @@ For binary $H$ with $\mathrm{incompatible}(h_1, h_2) \Leftrightarrow h_1 \neq h_
 Binary $H$ has no neutral element: every value contradicts the other. Faithful forces $E(\theta) = \mathrm{explain}(\theta)$ (there's nowhere else to go), making $E$ decisive. The trilemma gives $\bot$. \hfill Lean: \texttt{bilemma\_of\_compatible\_eq}, zero axioms.
 \end{proof}
 
+\paragraph{Approximate bilemma.}
+A natural concern: does the bilemma require exact Rashomon pairs, making it fragile to perturbations? No. For binary $H$, $\varepsilon$-stability reduces to exact equality (the only $\varepsilon$-ball in $\{\text{pos}, \text{neg}\}$ with $\varepsilon < 1$ is the point itself). The bilemma holds at every tolerance level. (Lean: \texttt{ApproximateBilemma.lean}.)
+
 \paragraph{Quantitative bilemma for continuous $H$.}
-For $(\varepsilon, \delta)$-stable $E$ on an $\varepsilon$-Rashomon pair with gap $\Delta$: $\text{unfaith}(\theta_1) + \text{unfaith}(\theta_2) \geq \Delta - \delta$. At least one witness is unfaithful by $\geq (\Delta - \delta)/2$. If models disagree by $\Delta = 0.3$ and you want $\delta = 0.05$ stability, unfaithfulness $\geq 0.125$ at one witness. (Lean: \texttt{ApproximateBilemma.lean}.)
+For $(\varepsilon, \delta)$-stable $E$ on an $\varepsilon$-Rashomon pair with gap $\Delta$: $\text{unfaith}(\theta_1) + \text{unfaith}(\theta_2) \geq \Delta - \delta$. At least one witness is unfaithful by $\geq (\Delta - \delta)/2$. Proof: triangle inequality. If models disagree by $\Delta = 0.3$ and you want $\delta = 0.05$ stability, unfaithfulness $\geq 0.125$ at one witness. (Lean: \texttt{ApproximateBilemma.lean}.)
 
 \paragraph{Tightness classification.}
 $F{+}S$ is achievable iff $H$ has a \emph{neutral element}---a value compatible with all native explanations (Lean: \texttt{tightness\_dichotomy}). Rankings have ties (neutral); SHAP signs do not. The classification is the structural explanation for why the trilemma admits a resolution (DASH) but the bilemma does not.
@@ -165,7 +168,26 @@ California Housing & \textbf{0.955} & \textbf{0.463} \\
 \end{tabular}
 \end{table}
 
-The minority fraction achieves Spearman $0.92$--$0.98$ across all datasets (Table~\ref{tab:cc-comparison}), outperforming the Gaussian formula ($0.46$--$0.89$). The advantage is decisive on real data where distributional assumptions break.
+The minority fraction achieves Spearman $0.92$--$0.98$ across all datasets (Table~\ref{tab:cc-comparison}), outperforming the Gaussian formula ($0.46$--$0.89$). The advantage is decisive on real data where distributional assumptions break. The complete predictor is 7 lines:
+
+{\small
+\begin{verbatim}
+def predict_sign_instability(shap_matrix):
+    signs = np.sign(shap_matrix)  # M models × P features
+    n_pos = (signs > 0).sum(axis=0)
+    n_neg = (signs < 0).sum(axis=0)
+    total = n_pos + n_neg
+    return np.where(total > 0,
+        np.minimum(n_pos, n_neg) / total, 0)
+\end{verbatim}
+}
+
+\paragraph{Variance budget: $\Var[\SHAP] =$ explanation quality floor.}
+For each feature $j$, the variance $\Var_f[\varphi_j(f)]$ across the Rashomon set equals the minimum MSE any stable method achieves.
+\DASH{} (the mean) saturates this bound exactly---a mathematical identity (0/800 violations at machine precision across 5 datasets $\times$ 20 features $\times$ 8 configurations).
+The median costs 1.6\% more; the 5\%-trimmed mean 0.3\% more.
+The relative variance correlates with coverage conflict ($r = 0.91$, $p = 0.002$ per-dataset): features with high sign instability also have high magnitude instability.
+This provides practitioners a per-feature \emph{quality budget} computable before choosing a method: $\Var[\varphi_j]$ is the irreducible explanation noise for feature $j$ under model multiplicity.
 
 \paragraph{Bimodality validation.}
 The all-or-nothing theorem predicts bimodal flip rate distributions under collinearity: a mode near $0$ (faithful features) and a second mode (Rashomon-caught features). The Hartigan dip test confirms: $p < 0.002$ for $\rho \geq 0.5$, control passes at $\rho = 0$ ($p = 0.373$). Permutation-validated (8--22\% spurious rejection vs.\ 66\% for control).
@@ -211,8 +233,10 @@ A single applicant can receive 6 different ``most important feature'' labels acr
 For a balanced ensemble, $\bar\varphi_j = \bar\varphi_k$ for features $j, k$ in the same group.
 \end{corollary}
 
-\paragraph{Pareto optimality.}
-For any unbiased linear estimator: $\Var(\hat\mu_j) \geq \sigma_j^2/M$ (Cauchy--Schwarz / Titu's lemma; Lean: \texttt{sum\_squares\_ge\_inv\_M}). \DASH{} achieves this bound with equality. By the Hunt--Stein theorem for the permutation group $S_m$, \DASH{} is the best equivariant estimator.
+\paragraph{Optimality.}
+\textbf{Binary $H$ (SHAP sign):} \DASH{} (majority vote across models) is the \emph{uniquely} optimal stable method. Any other stable method either agrees with the majority (same error rate) or picks the minority sign (strictly worse). Average unfaithfulness $= p \cdot \bar{f}$ where $p$ is the coverage conflict rate and $\bar{f} \approx 0.23$--$0.28$ is the mean minority fraction.
+
+\textbf{Continuous $H$ (SHAP magnitude):} For any unbiased linear estimator, $\Var(\hat\mu_j) \geq \sigma_j^2/M$ (Cauchy--Schwarz / Titu's lemma; Lean: \texttt{sum\_squares\_ge\_inv\_M}). \DASH{} achieves this bound with equality (0/800 violations at machine precision). The conditional mean minimizes MSE; \DASH{} IS the conditional mean for i.i.d.\ models. By the Hunt--Stein theorem for $S_m$, \DASH{} is the best equivariant estimator.
 
 \paragraph{Ensemble size.}
 $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$ for 5\% between-group flip rate. \DASH{} achieves this bound (to first order).
