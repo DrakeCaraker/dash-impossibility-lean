@@ -1,0 +1,644 @@
+{
+  "Breast Cancer": {
+    "n_samples": 569,
+    "n_features": 30,
+    "stochastic": {
+      "n_seeds": 50,
+      "subsample": 0.8,
+      "distinct_top3": 24,
+      "distinct_top5": 46,
+      "pairwise_agreement_top3": 0.0424,
+      "pairwise_agreement_top5": 0.0041,
+      "most_common_top3": {
+        "features": [
+          "worst concave points",
+          "mean concave points",
+          "worst area"
+        ],
+        "count": 6,
+        "fraction": 0.12
+      },
+      "most_common_top5": {
+        "features": [
+          "worst concave points",
+          "mean concave points",
+          "worst area",
+          "worst concavity",
+          "worst texture"
+        ],
+        "count": 3,
+        "fraction": 0.06
+      },
+      "dash_consensus_top5": [
+        "worst concave points",
+        "mean concave points",
+        "worst area",
+        "worst concavity",
+        "worst texture"
+      ],
+      "dash_consensus_top10": [
+        "worst concave points",
+        "mean concave points",
+        "worst area",
+        "worst concavity",
+        "worst texture",
+        "area error",
+        "mean texture",
+        "worst perimeter",
+        "worst symmetry",
+        "compactness error"
+      ],
+      "max_correlation_per_feature": {
+        "mean radius": 0.998,
+        "mean texture": 0.91,
+        "mean perimeter": 0.998,
+        "mean area": 0.987,
+        "mean smoothness": 0.808,
+        "mean compactness": 0.877,
+        "mean concavity": 0.915,
+        "mean concave points": 0.915,
+        "mean symmetry": 0.699,
+        "mean fractal dimension": 0.785,
+        "radius error": 0.974,
+        "texture error": 0.442,
+        "perimeter error": 0.974,
+        "area error": 0.951,
+        "smoothness error": 0.444,
+        "compactness error": 0.803,
+        "concavity error": 0.803,
+        "concave points error": 0.781,
+        "symmetry error": 0.442,
+        "fractal dimension error": 0.8,
+        "worst radius": 0.993,
+        "worst texture": 0.91,
+        "worst perimeter": 0.993,
+        "worst area": 0.983,
+        "worst smoothness": 0.808,
+        "worst compactness": 0.889,
+        "worst concavity": 0.889,
+        "worst concave points": 0.911,
+        "worst symmetry": 0.699,
+        "worst fractal dimension": 0.805
+      }
+    },
+    "deterministic_control": {
+      "n_seeds": 50,
+      "subsample": 1.0,
+      "distinct_top3": 1,
+      "distinct_top5": 1,
+      "pairwise_agreement_top3": 1.0,
+      "pairwise_agreement_top5": 1.0,
+      "most_common_top3": {
+        "features": [
+          "mean concave points",
+          "worst area",
+          "worst concave points"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "most_common_top5": {
+        "features": [
+          "mean concave points",
+          "worst area",
+          "worst concave points",
+          "worst texture",
+          "area error"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "dash_consensus_top5": [
+        "mean concave points",
+        "worst area",
+        "worst concave points",
+        "worst texture",
+        "area error"
+      ],
+      "dash_consensus_top10": [
+        "mean concave points",
+        "worst area",
+        "worst concave points",
+        "worst texture",
+        "area error",
+        "worst concavity",
+        "compactness error",
+        "worst symmetry",
+        "mean texture",
+        "symmetry error"
+      ],
+      "max_correlation_per_feature": {
+        "mean radius": 0.998,
+        "mean texture": 0.91,
+        "mean perimeter": 0.998,
+        "mean area": 0.987,
+        "mean smoothness": 0.808,
+        "mean compactness": 0.877,
+        "mean concavity": 0.915,
+        "mean concave points": 0.915,
+        "mean symmetry": 0.699,
+        "mean fractal dimension": 0.785,
+        "radius error": 0.974,
+        "texture error": 0.442,
+        "perimeter error": 0.974,
+        "area error": 0.951,
+        "smoothness error": 0.444,
+        "compactness error": 0.803,
+        "concavity error": 0.803,
+        "concave points error": 0.781,
+        "symmetry error": 0.442,
+        "fractal dimension error": 0.8,
+        "worst radius": 0.993,
+        "worst texture": 0.91,
+        "worst perimeter": 0.993,
+        "worst area": 0.983,
+        "worst smoothness": 0.808,
+        "worst compactness": 0.889,
+        "worst concavity": 0.889,
+        "worst concave points": 0.911,
+        "worst symmetry": 0.699,
+        "worst fractal dimension": 0.805
+      }
+    }
+  },
+  "California Housing": {
+    "n_samples": 20640,
+    "n_features": 8,
+    "stochastic": {
+      "n_seeds": 50,
+      "subsample": 0.8,
+      "distinct_top3": 1,
+      "distinct_top5": 1,
+      "pairwise_agreement_top3": 1.0,
+      "pairwise_agreement_top5": 1.0,
+      "most_common_top3": {
+        "features": [
+          "Latitude",
+          "Longitude",
+          "MedInc"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "most_common_top5": {
+        "features": [
+          "Latitude",
+          "Longitude",
+          "MedInc",
+          "AveOccup",
+          "AveRooms"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "dash_consensus_top5": [
+        "Latitude",
+        "Longitude",
+        "MedInc",
+        "AveOccup",
+        "AveRooms"
+      ],
+      "dash_consensus_top10": [
+        "Latitude",
+        "Longitude",
+        "MedInc",
+        "AveOccup",
+        "AveRooms",
+        "HouseAge",
+        "Population",
+        "AveBedrms"
+      ],
+      "max_correlation_per_feature": {
+        "MedInc": 0.336,
+        "HouseAge": 0.292,
+        "AveRooms": 0.836,
+        "AveBedrms": 0.836,
+        "Population": 0.292,
+        "AveOccup": 0.072,
+        "Latitude": 0.924,
+        "Longitude": 0.924
+      }
+    },
+    "deterministic_control": {
+      "n_seeds": 50,
+      "subsample": 1.0,
+      "distinct_top3": 1,
+      "distinct_top5": 1,
+      "pairwise_agreement_top3": 1.0,
+      "pairwise_agreement_top5": 1.0,
+      "most_common_top3": {
+        "features": [
+          "Latitude",
+          "Longitude",
+          "MedInc"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "most_common_top5": {
+        "features": [
+          "Latitude",
+          "Longitude",
+          "MedInc",
+          "AveOccup",
+          "AveRooms"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "dash_consensus_top5": [
+        "Latitude",
+        "Longitude",
+        "MedInc",
+        "AveOccup",
+        "AveRooms"
+      ],
+      "dash_consensus_top10": [
+        "Latitude",
+        "Longitude",
+        "MedInc",
+        "AveOccup",
+        "AveRooms",
+        "HouseAge",
+        "Population",
+        "AveBedrms"
+      ],
+      "max_correlation_per_feature": {
+        "MedInc": 0.336,
+        "HouseAge": 0.292,
+        "AveRooms": 0.836,
+        "AveBedrms": 0.836,
+        "Population": 0.292,
+        "AveOccup": 0.072,
+        "Latitude": 0.924,
+        "Longitude": 0.924
+      }
+    }
+  },
+  "Heart Disease": {
+    "n_samples": 270,
+    "n_features": 13,
+    "stochastic": {
+      "n_seeds": 50,
+      "subsample": 0.8,
+      "distinct_top3": 1,
+      "distinct_top5": 1,
+      "pairwise_agreement_top3": 1.0,
+      "pairwise_agreement_top5": 1.0,
+      "most_common_top3": {
+        "features": [
+          "age",
+          "sex",
+          "chest"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "most_common_top5": {
+        "features": [
+          "age",
+          "sex",
+          "chest",
+          "resting_blood_pressure",
+          "serum_cholestoral"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "dash_consensus_top5": [
+        "age",
+        "sex",
+        "chest",
+        "resting_blood_pressure",
+        "serum_cholestoral"
+      ],
+      "dash_consensus_top10": [
+        "age",
+        "sex",
+        "chest",
+        "resting_blood_pressure",
+        "serum_cholestoral",
+        "fasting_blood_sugar",
+        "resting_electrocardiographic_results",
+        "maximum_heart_rate_achieved",
+        "exercise_induced_angina",
+        "oldpeak"
+      ],
+      "max_correlation_per_feature": {
+        "age": 0.405,
+        "sex": 0.386,
+        "chest": 0.412,
+        "resting_blood_pressure": 0.26,
+        "serum_cholestoral": 0.244,
+        "fasting_blood_sugar": 0.186,
+        "resting_electrocardiographic_results": 0.201,
+        "maximum_heart_rate_achieved": 0.423,
+        "exercise_induced_angina": 0.423,
+        "oldpeak": 0.62,
+        "slope": 0.62,
+        "number_of_major_vessels": 0.384,
+        "thal": 0.386
+      }
+    },
+    "deterministic_control": {
+      "n_seeds": 50,
+      "subsample": 1.0,
+      "distinct_top3": 1,
+      "distinct_top5": 1,
+      "pairwise_agreement_top3": 1.0,
+      "pairwise_agreement_top5": 1.0,
+      "most_common_top3": {
+        "features": [
+          "age",
+          "sex",
+          "chest"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "most_common_top5": {
+        "features": [
+          "age",
+          "sex",
+          "chest",
+          "resting_blood_pressure",
+          "serum_cholestoral"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "dash_consensus_top5": [
+        "age",
+        "sex",
+        "chest",
+        "resting_blood_pressure",
+        "serum_cholestoral"
+      ],
+      "dash_consensus_top10": [
+        "age",
+        "sex",
+        "chest",
+        "resting_blood_pressure",
+        "serum_cholestoral",
+        "fasting_blood_sugar",
+        "resting_electrocardiographic_results",
+        "maximum_heart_rate_achieved",
+        "exercise_induced_angina",
+        "oldpeak"
+      ],
+      "max_correlation_per_feature": {
+        "age": 0.405,
+        "sex": 0.386,
+        "chest": 0.412,
+        "resting_blood_pressure": 0.26,
+        "serum_cholestoral": 0.244,
+        "fasting_blood_sugar": 0.186,
+        "resting_electrocardiographic_results": 0.201,
+        "maximum_heart_rate_achieved": 0.423,
+        "exercise_induced_angina": 0.423,
+        "oldpeak": 0.62,
+        "slope": 0.62,
+        "number_of_major_vessels": 0.384,
+        "thal": 0.386
+      }
+    }
+  },
+  "Diabetes": {
+    "n_samples": 768,
+    "n_features": 8,
+    "stochastic": {
+      "n_seeds": 50,
+      "subsample": 0.8,
+      "distinct_top3": 2,
+      "distinct_top5": 4,
+      "pairwise_agreement_top3": 0.8849,
+      "pairwise_agreement_top5": 0.6824,
+      "most_common_top3": {
+        "features": [
+          "plas",
+          "mass",
+          "age"
+        ],
+        "count": 47,
+        "fraction": 0.94
+      },
+      "most_common_top5": {
+        "features": [
+          "plas",
+          "mass",
+          "age",
+          "pedi",
+          "pres"
+        ],
+        "count": 41,
+        "fraction": 0.82
+      },
+      "dash_consensus_top5": [
+        "plas",
+        "mass",
+        "age",
+        "pedi",
+        "pres"
+      ],
+      "dash_consensus_top10": [
+        "plas",
+        "mass",
+        "age",
+        "pedi",
+        "pres",
+        "insu",
+        "skin",
+        "preg"
+      ],
+      "max_correlation_per_feature": {
+        "preg": 0.553,
+        "plas": 0.337,
+        "pres": 0.25,
+        "skin": 0.438,
+        "insu": 0.438,
+        "mass": 0.386,
+        "pedi": 0.175,
+        "age": 0.553
+      }
+    },
+    "deterministic_control": {
+      "n_seeds": 50,
+      "subsample": 1.0,
+      "distinct_top3": 1,
+      "distinct_top5": 1,
+      "pairwise_agreement_top3": 1.0,
+      "pairwise_agreement_top5": 1.0,
+      "most_common_top3": {
+        "features": [
+          "plas",
+          "mass",
+          "age"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "most_common_top5": {
+        "features": [
+          "plas",
+          "mass",
+          "age",
+          "pedi",
+          "pres"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "dash_consensus_top5": [
+        "plas",
+        "mass",
+        "age",
+        "pedi",
+        "pres"
+      ],
+      "dash_consensus_top10": [
+        "plas",
+        "mass",
+        "age",
+        "pedi",
+        "pres",
+        "insu",
+        "skin",
+        "preg"
+      ],
+      "max_correlation_per_feature": {
+        "preg": 0.553,
+        "plas": 0.337,
+        "pres": 0.25,
+        "skin": 0.438,
+        "insu": 0.438,
+        "mass": 0.386,
+        "pedi": 0.175,
+        "age": 0.553
+      }
+    }
+  },
+  "Wine Quality": {
+    "n_samples": 1599,
+    "n_features": 11,
+    "stochastic": {
+      "n_seeds": 50,
+      "subsample": 0.8,
+      "distinct_top3": 1,
+      "distinct_top5": 2,
+      "pairwise_agreement_top3": 1.0,
+      "pairwise_agreement_top5": 0.5559,
+      "most_common_top3": {
+        "features": [
+          "alcohol",
+          "sulphates",
+          "volatile_acidity"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "most_common_top5": {
+        "features": [
+          "alcohol",
+          "sulphates",
+          "volatile_acidity",
+          "total_sulfur_dioxide",
+          "chlorides"
+        ],
+        "count": 34,
+        "fraction": 0.68
+      },
+      "dash_consensus_top5": [
+        "alcohol",
+        "sulphates",
+        "volatile_acidity",
+        "total_sulfur_dioxide",
+        "chlorides"
+      ],
+      "dash_consensus_top10": [
+        "alcohol",
+        "sulphates",
+        "volatile_acidity",
+        "total_sulfur_dioxide",
+        "chlorides",
+        "pH",
+        "density",
+        "citric_acid",
+        "fixed_acidity",
+        "free_sulfur_dioxide"
+      ],
+      "max_correlation_per_feature": {
+        "fixed_acidity": 0.676,
+        "volatile_acidity": 0.545,
+        "citric_acid": 0.669,
+        "residual_sugar": 0.377,
+        "chlorides": 0.382,
+        "free_sulfur_dioxide": 0.668,
+        "total_sulfur_dioxide": 0.668,
+        "density": 0.661,
+        "pH": 0.676,
+        "sulphates": 0.382,
+        "alcohol": 0.48
+      }
+    },
+    "deterministic_control": {
+      "n_seeds": 50,
+      "subsample": 1.0,
+      "distinct_top3": 1,
+      "distinct_top5": 1,
+      "pairwise_agreement_top3": 1.0,
+      "pairwise_agreement_top5": 1.0,
+      "most_common_top3": {
+        "features": [
+          "alcohol",
+          "sulphates",
+          "volatile_acidity"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "most_common_top5": {
+        "features": [
+          "alcohol",
+          "sulphates",
+          "volatile_acidity",
+          "total_sulfur_dioxide",
+          "chlorides"
+        ],
+        "count": 50,
+        "fraction": 1.0
+      },
+      "dash_consensus_top5": [
+        "alcohol",
+        "sulphates",
+        "volatile_acidity",
+        "total_sulfur_dioxide",
+        "chlorides"
+      ],
+      "dash_consensus_top10": [
+        "alcohol",
+        "sulphates",
+        "volatile_acidity",
+        "total_sulfur_dioxide",
+        "chlorides",
+        "density",
+        "pH",
+        "fixed_acidity",
+        "citric_acid",
+        "free_sulfur_dioxide"
+      ],
+      "max_correlation_per_feature": {
+        "fixed_acidity": 0.676,
+        "volatile_acidity": 0.545,
+        "citric_acid": 0.669,
+        "residual_sugar": 0.377,
+        "chlorides": 0.382,
+        "free_sulfur_dioxide": 0.668,
+        "total_sulfur_dioxide": 0.668,
+        "density": 0.661,
+        "pH": 0.676,
+        "sulphates": 0.382,
+        "alcohol": 0.48
+      }
+    }
+  }
+}

@@ -275,8 +275,30 @@ Screen (single model) $\to$ Minority fraction (fast, nonparametric) $\to$ Z-test
 \paragraph{Synthetic Gaussian.}
 $P{=}20$, $L{=}4$, $m{=}5$, $T{=}100$, 50 seeds (Figure~\ref{fig:experiments}). At $\rho = 0.9$: 48\% within-group flips (near the 50\% theoretical maximum; Figure~\ref{fig:flips}). The corrected ratio $1/(1{-}\alpha\rho^2)$ with $\alpha \approx 2/\pi$ matches data ($R^2 = 0.89$; Figure~\ref{fig:ratio}). \DASH{} reduces flip rate below 1\% at $M = 25$ (Figure~\ref{fig:convergence}).
 
-\paragraph{Breast Cancer.}
-Worst perimeter vs.\ worst area ($|\rho| = 0.98$): 48\% flip rate across 50 seeds. Features with high correlation but distinct importance (e.g., $|\rho| = 0.82$, flip rate 2\%) remain stable---confirming the impossibility requires both collinearity and similar importance.
+\paragraph{The ranking lottery (Table~\ref{tab:ranking-lottery}).}
+We train 50 XGBoost models (seeds 0--49, \texttt{subsample=0.8}, fixed test set) on 5 public datasets and count how many distinct top-3 SHAP rankings appear.
+
+\begin{table}[t]
+\centering
+\caption{The ranking lottery: distinct top-3 SHAP rankings across 50 seeds. Breast Cancer produces 24 distinct rankings (4.2\% pairwise agreement); datasets without similar-importance collinear features are perfectly stable. Deterministic control (\texttt{subsample=1.0}) gives 1 ranking for all datasets.}
+\label{tab:ranking-lottery}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Dataset & Distinct top-3 & Agreement & Stable? \\
+\midrule
+Breast Cancer & \textbf{24} & \textbf{4.2\%} & No \\
+Diabetes & 2 & 88.5\% & Borderline \\
+Wine Quality & 1 & 100\% & Yes \\
+Heart Disease & 1 & 100\% & Yes \\
+California Housing & 1 & 100\% & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds}---any published study reporting a specific top-3 is reporting one of 24 equally valid options. The ``most common'' ranking appears in only 12\% of runs. Two random seeds agree only 4.2\% of the time for the top-3. For the top-5: 46 distinct rankings, 0.4\% agreement.
+
+The theory correctly predicts the boundary: California Housing, Heart Disease, and Wine Quality are perfectly stable (1 ranking, 100\% agreement) because their top features have clearly different importance---no similar-importance collinear pairs. The impossibility requires \emph{both} collinearity and similar importance.
 
 \paragraph{Cross-implementation.}
 XGBoost, LightGBM, CatBoost: 160--183 unstable pairs, max flip rate 0.500, Z-test $|r| \geq 0.89$ in all three. The instability is implementation-independent.
