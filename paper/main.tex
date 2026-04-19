@@ -108,7 +108,7 @@ Let $j, k$ be in the same group. Rashomon gives $f, f'$ with opposite orderings.
 The achievable set of $(S, U, C)$ triples consists of exactly two families:
 \textbf{Family~$\mathcal{A}$} (single-model): $U = 1/2$, $C = \text{complete}$;
 \textbf{Family~$\mathcal{B}$} (\DASH{} ensemble): $U = 0$, $C = \text{ties}$, $S = 1 - O(1/M)$.
-No third family exists. $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. \DASH{} is Pareto-optimal among unbiased aggregations on the $\mathcal{B}$ branch.
+No third family exists (Figure~\ref{fig:design-space}). $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. \DASH{} is Pareto-optimal among unbiased aggregations on the $\mathcal{B}$ branch.
 \end{theorem}
 
 \begin{figure}[t]
@@ -273,7 +273,7 @@ Screen (single model) $\to$ Minority fraction (fast, nonparametric) $\to$ Z-test
 \end{figure}
 
 \paragraph{Synthetic Gaussian.}
-$P{=}20$, $L{=}4$, $m{=}5$, $T{=}100$, 50 seeds. At $\rho = 0.9$: 48\% within-group flips (near the 50\% theoretical maximum). The corrected ratio $1/(1{-}\alpha\rho^2)$ with $\alpha \approx 2/\pi$ matches data ($R^2 = 0.89$). \DASH{} reduces flip rate below 1\% at $M = 25$.
+$P{=}20$, $L{=}4$, $m{=}5$, $T{=}100$, 50 seeds (Figure~\ref{fig:experiments}). At $\rho = 0.9$: 48\% within-group flips (near the 50\% theoretical maximum; Figure~\ref{fig:flips}). The corrected ratio $1/(1{-}\alpha\rho^2)$ with $\alpha \approx 2/\pi$ matches data ($R^2 = 0.89$; Figure~\ref{fig:ratio}). \DASH{} reduces flip rate below 1\% at $M = 25$ (Figure~\ref{fig:convergence}).
 
 \paragraph{Breast Cancer.}
 Worst perimeter vs.\ worst area ($|\rho| = 0.98$): 48\% flip rate across 50 seeds. Features with high correlation but distinct importance (e.g., $|\rho| = 0.82$, flip rate 2\%) remain stable---confirming the impossibility requires both collinearity and similar importance.
