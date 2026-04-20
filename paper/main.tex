@@ -296,12 +296,31 @@ California Housing & 1 & 100\% & Yes \\
 \end{tabular}
 \end{table}
 
-Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds} under standard XGBoost configuration with recommended regularization---any study reporting a specific top-3 from a single model is reporting one of 24 equally valid options. The ``most common'' ranking appears in only 12\% of runs. Two random seeds agree only 4.2\% of the time for the top-3. For the top-5: 46 distinct rankings, 0.4\% agreement. DASH consensus across all 50 seeds produces a single stable ranking: worst concave points, mean concave points, worst area, worst concavity, worst texture.
+Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds} (35 at 100 seeds)---any study reporting a specific top-3 is reporting one of dozens of equally valid options. The ``most common'' ranking appears in only 12\% of runs. For the top-5: 46 distinct rankings, 0.4\% agreement (84 at 100 seeds). DASH consensus produces a single stable ranking: worst concave points, mean concave points, worst area, worst concavity, worst texture.
+
+\paragraph{Subsample sensitivity (Figure~\ref{fig:subsample}).}
+The instability persists even at \texttt{subsample=0.95}: 17 distinct top-3 rankings. At \texttt{subsample=0.9}: 22. Only \texttt{subsample=1.0} (fully deterministic) eliminates it. ``Just use less stochasticity'' does not resolve the problem---it reduces the count from 24 to 17 but cannot reach 1.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.45\textwidth]{figures/subsample_sensitivity.pdf}
+\caption{Distinct top-3 SHAP rankings vs.\ subsample rate on Breast Cancer (50 seeds). The instability persists at every stochastic setting. Only fully deterministic training (\texttt{subsample=1.0}) produces one ranking.}
+\label{fig:subsample}
+\end{figure}
 
 The theory correctly predicts the boundary. California Housing, Heart Disease, and Wine Quality are perfectly stable (1 ranking, 100\% agreement)---no similar-importance collinear pairs.
 
 \paragraph{Gene expression: pathway-level consequence.}
-On a 10{,}935-gene colon-vs-kidney expression dataset (AP\_Colon\_Kidney, 546 samples, top 50 genes by variance), the \#1 gene alternates between TSPAN8 (\textbf{80\% of seeds}) and CEACAM5/CEA (\textbf{20\% of seeds}). Both are cell adhesion molecules enriched in colon tissue ($\rho = 0.86$), but with distinct roles in cancer biology: TSPAN8 in invasion/metastasis signaling (tetraspanin-enriched microdomains) and CEACAM5 in immune evasion and differentiation (GPI-anchored, the classical clinical colon cancer marker). A biomarker development pipeline reporting TSPAN8 as the top discriminator would target a different gene than one reporting CEA---and which one gets reported depends on the training seed. The broad pathway-level conclusion (colon identity genes drive the distinction) is preserved, but the specific biomarker target---the actionable output of a discovery pipeline---is a seed artifact. DASH consensus ranks both in the top-2, reporting that both contribute without privileging either.
+On a 10{,}935-gene colon-vs-kidney expression dataset (AP\_Colon\_Kidney, 546 samples, top 50 genes by variance), the \#1 gene alternates between TSPAN8 (\textbf{80\% of seeds}) and CEACAM5/CEA (\textbf{20\% of seeds}, Figure~\ref{fig:gene-pathway}). Both are cell adhesion molecules enriched in colon tissue ($\rho = 0.86$), but with distinct roles in cancer biology: TSPAN8 in invasion/metastasis signaling (tetraspanin-enriched microdomains) and CEACAM5 in immune evasion and differentiation (GPI-anchored, the classical clinical colon cancer marker). The broad pathway-level conclusion (colon identity) is preserved, but the specific biomarker target---the actionable output of a discovery pipeline---is a seed artifact. The result is robust to the gene count threshold: 8 distinct top-3 at 20 genes, 5 at 50, 7 at 100.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.4\textwidth]{figures/gene_expression_pathway.pdf}
+\caption{AP\_Colon\_Kidney: the \#1 biomarker gene for colon-kidney classification alternates between TSPAN8 (invasion) and CEACAM5/CEA (immune evasion) depending on the training seed ($\rho = 0.858$).}
+\label{fig:gene-pathway}
+\end{figure}
+
+DASH consensus ranks both in the top-2 (TSPAN8: 1.913, CEACAM5: 1.553), reporting that both contribute without privileging either.
 
 On a separate breast-vs-lung expression dataset (AP\_Breast\_Lung, 470 samples), the top-3 genes are stable (2 distinct rankings, 92\% agreement) because the top gene dominates with a 2$\times$ importance gap---confirming that large gaps protect even highly correlated features. The impossibility requires \emph{both} collinearity and similar importance.
 
