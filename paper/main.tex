@@ -190,6 +190,9 @@ The median costs 1.6\% more; the 5\%-trimmed mean 0.3\% more.
 The relative variance correlates with coverage conflict ($r = 0.91$, $p = 0.002$ per-dataset): features with high sign instability also have high magnitude instability.
 This provides practitioners a per-feature \emph{quality budget} computable before choosing a method: $\Var[\varphi_j]$ is the irreducible explanation noise for feature $j$ under model multiplicity.
 
+\paragraph{Model-class universality.}
+The coverage conflict diagnostic works across model classes: tested on XGBoost, Random Forest, Ridge, and LASSO across 3 datasets (Breast Cancer, Diabetes, California Housing), the minority fraction achieves Spearman $0.59$--$0.98$ with empirical flip rates for all model classes. Within-family instability patterns agree strongly (tree-tree $\rho = 0.79$--$0.92$; linear-linear $\rho = 0.94$), while cross-family agreement is non-significant---indicating a data-determined stable core (detectable by coverage conflict) plus model-family-specific variation in which \emph{unstable} features flip.
+
 \paragraph{Bimodality validation.}
 The all-or-nothing theorem predicts bimodal flip rate distributions under collinearity: a mode near $0$ (faithful features) and a second mode (Rashomon-caught features). The Hartigan dip test confirms: $p < 0.002$ for $\rho \geq 0.5$, control passes at $\rho = 0$ ($p = 0.373$). Permutation-validated (8--22\% spurious rejection vs.\ 66\% for control).
 
@@ -336,13 +339,8 @@ Multiple published studies report specific SHAP feature rankings on Breast Cance
 \paragraph{Prevalence.}
 Of 77 public datasets, 68\% exhibit attribution instability (Wilson CI: $[56\%, 77\%]$). For $P \geq 20$: 93\% ($[81\%, 98\%]$). Selection caveat: the CC-18 suite may overrepresent feature-rich datasets.
 
-\paragraph{SNR calibration.}
-The theoretical flip rate formula $\Phi(-\text{SNR})$ validates across 1,325 correlated feature pairs from 6 datasets ($R^2 = 0.94$ for $\text{SNR} \geq 0.5$). All 228 pairs with $\text{SNR} > 1.96$ have flip rate $< 5\%$.
-
-\paragraph{Z-test diagnostic.}
-The test statistic $Z_{jk} = |\bar\varphi_j - \bar\varphi_k| / (\hat\sigma_{jk}/\sqrt{M})$ predicts instability ($r = -0.89$ on Breast Cancer; $r = -0.88$ on Communities \& Crime). Pairs with $Z < 1.96$ are unreliable. A single-model screening variant achieves 94\% precision.
-
-Extended results (neural networks, SAGE, conditional SHAP, LLM attention, financial case studies, regulatory analysis) in supplement.
+\paragraph{Parametric diagnostics (supplement).}
+The Gaussian flip formula $\Phi(-\text{SNR})$ validates across 1,325 pairs ($R^2 = 0.94$). The $Z$-test predicts instability ($r = -0.89$ on Breast Cancer). Both are outperformed by the minority fraction on real data. Extended results (neural networks, SAGE, conditional SHAP, financial case studies, regulatory analysis) in supplement.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Work}
