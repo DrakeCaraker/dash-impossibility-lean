@@ -300,8 +300,10 @@ Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds} under
 
 The theory correctly predicts the boundary: California Housing, Heart Disease, and Wine Quality are perfectly stable (1 ranking, 100\% agreement) because their top features have clearly different importance---no similar-importance collinear pairs. The impossibility requires \emph{both} collinearity and similar importance.
 
-\paragraph{Cross-implementation.}
-XGBoost, LightGBM, CatBoost: 160--183 unstable pairs, max flip rate 0.500, Z-test $|r| \geq 0.89$ in all three. The instability is implementation-independent.
+\paragraph{Cross-implementation ranking lottery.}
+On Breast Cancer with stochastic training: XGBoost produces 24 distinct top-3 rankings (4.2\% agreement), LightGBM produces 29 (3.6\%), and Random Forest produces 40 (2.5\% agreement, permutation importance). The instability is implementation-independent. When subsampling is disabled (deterministic training), all implementations produce 1 ranking---confirming the instability is from model multiplicity, not from SHAP computation.
+
+\emph{``Just fix the seed''} does not resolve the problem: a fixed seed produces a reproducible but arbitrary ranking. A different practitioner choosing a different seed gets a different ``most important feature.'' The impossibility is that no seed is privileged---the Rashomon set exists regardless of which seed you pick.
 
 \paragraph{Prevalence.}
 Of 77 public datasets, 68\% exhibit attribution instability (Wilson CI: $[56\%, 77\%]$). For $P \geq 20$: 93\% ($[81\%, 98\%]$). Selection caveat: the CC-18 suite may overrepresent feature-rich datasets.
