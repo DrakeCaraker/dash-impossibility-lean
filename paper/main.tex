@@ -305,6 +305,9 @@ On Breast Cancer with stochastic training: XGBoost produces 24 distinct top-3 ra
 
 \emph{``Just fix the seed''} does not resolve the problem: a fixed seed produces a reproducible but arbitrary ranking. A different practitioner choosing a different seed gets a different ``most important feature.'' The impossibility is that no seed is privileged---the Rashomon set exists regardless of which seed you pick.
 
+\paragraph{Published ranking replication.}
+Multiple published studies report specific SHAP feature rankings on Breast Cancer as stable findings. Using our 50-model validation: worst perimeter $\leftrightarrow$ worst area ($|\rho|{=}0.98$): 48\% flip rate. Mean concavity $\leftrightarrow$ mean concave points ($|\rho|{=}0.96$): 42\%. Worst radius $\leftrightarrow$ worst perimeter ($|\rho|{=}0.99$): 36\%. All four pairs were reported as stable in published studies; none replicate. Seven distinct features compete for the top-3 positions across our 50 seeds, with the \#1 position alternating between worst concave points (50\%), mean concave points (32\%), and worst area (18\%). Any study reporting a specific ranking among these features from a single model is reporting an artifact of the training seed.
+
 \paragraph{Prevalence.}
 Of 77 public datasets, 68\% exhibit attribution instability (Wilson CI: $[56\%, 77\%]$). For $P \geq 20$: 93\% ($[81\%, 98\%]$). Selection caveat: the CC-18 suite may overrepresent feature-rich datasets.
 
@@ -348,7 +351,7 @@ Core impossibility: \textbf{0 axioms}. GBDT impossibility: \textbf{3 axioms}. DA
 The symmetric Bayes dichotomy (a general two-families theorem for symmetric decision problems), conditional SHAP impossibility, fairness audit impossibility, FIM-to-Rashomon bridge, and query complexity lower bound are all Lean-verified (supplement).
 
 \paragraph{Open problems.}
-Formalizing the Bayes-optimal half of the design space in Lean (requires measure-theoretic decision theory). Extending the diagnostic to non-tabular domains (the LLM attention experiment in the supplement is a proxy). Connecting to compressed sensing (coherence $\leftrightarrow$ collinearity). Fairness impossibilities \citep{chouldechova2017fair,kleinberg2017inherent} as formal instances of the abstract framework.
+Extending to gene expression biomarker discovery, where co-expressed genes create the collinearity structure that drives instability (preliminary analysis: 42\% of gene-pair rankings are unreliable on a 10{,}935-gene breast cancer dataset). Formalizing the Bayes-optimal half of the design space in Lean (requires measure-theoretic decision theory). Fairness impossibilities \citep{chouldechova2017fair,kleinberg2017inherent} as formal instances of the abstract framework.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
