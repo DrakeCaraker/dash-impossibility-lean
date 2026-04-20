@@ -2183,6 +2183,7 @@ For batch pipelines, training $M{=}25$ models is feasible. For real-time explana
 In a survey of 77 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and 68\% exhibit attribution instability under the standard SHAP workflow (93\%, CI: [81\%, 98\%], for $P \geq 20$); the model-only component accounts for approximately 63\% of the total variation on Breast Cancer (\S~\ref{sec:experiments})---the impossibility is a practical reality. We argue that our theorem identifies a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii) \citep{euaiact2024}.
 The consequences are concrete: hospitals may invest in wrong interventions, data scientists may fix the wrong feature, and published studies may report artifacts of specific training runs.
 The impossibility has direct consequences for fairness auditing (Theorem~\ref{thm:fairness-audit}): single-model SHAP audits for proxy discrimination are provably unreliable under collinearity.
+Preliminary evidence suggests the impossibility extends to mechanistic interpretability: 10 independently grokked transformers on modular addition (all 100\% accuracy) agree on only 36\% of the top-3 circuit components by activation patching importance (min pairwise Spearman $= -0.18$).
 
 \paragraph{Rashomon set vs.\ deployed model.}
 The impossibility characterizes the Rashomon set, not a single deployed model. A fixed pipeline with a fixed seed produces a deterministic, reproducible ranking. The instability arises upon retraining, auditing, or model comparison---all routine in regulated settings.
