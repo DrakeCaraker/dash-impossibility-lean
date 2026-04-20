@@ -38,19 +38,18 @@
 \section{Complete Axiom System}
 
 \begin{sloppypar}
-Table~\ref{tab:axioms} lists all property axioms in the formalization
+Table~\ref{tab:axioms} lists all axioms in the formalization
 (the core impossibility theorem requires none of them---only the Rashomon
 property as hypothesis).
-The formalization uses 6 axioms total: 6 type/constant declarations
-(\texttt{Model}, \texttt{numTrees}, \texttt{numTrees\_pos}, \texttt{attribution},
-\texttt{splitCount}, \texttt{firstMover}), 2 measure-theoretic infrastructure
-axioms (\texttt{modelMeasurableSpace}, \texttt{modelMeasure}),
-6 domain-specific property axioms, and
-2 query-complexity axioms from Le~Cam's method. Four former axioms
-(\texttt{attribution\_sum\_symmetric}, \texttt{attribution\_variance\_nonneg},
-\texttt{consensus\_variance\_bound}, \texttt{le\_cam\_lower\_bound})
-are now derived theorems; \texttt{attribution\_variance} is now a definition
-from Mathlib's \texttt{ProbabilityTheory.variance}.
+The formalization uses 6 axioms total: 2 type declarations
+(\texttt{Model}, \texttt{firstMover}), 3 domain-specific property axioms
+(\texttt{firstMover\_surjective}, \texttt{crossGroupBaselineCore},
+\texttt{proportionalityConstant}), and 1 measure-theoretic axiom
+(\texttt{modelMeasure}).
+Ten former axioms---including the split-count function, 4 split-count
+properties, attribution function, proportionality, boosting rounds,
+measurable space, and query-complexity constant---are now definitions or
+derived theorems (see axiom reduction history in main text).
 \end{sloppypar}
 
 \begin{table}[htbp]
@@ -63,30 +62,32 @@ from Mathlib's \texttt{ProbabilityTheory.variance}.
 \toprule
 \textbf{Axiom} & \textbf{Lean~4 name} & \textbf{Justification} \\
 \midrule
-First-mover surjectivity & \texttt{firstMover\_surjective} & Data-generating process (DGP) symmetry: each feature can be first-mover \\
-Split count (first-mover) & \texttt{splitCount\_firstMover} & Gaussian conditioning (Lemma~1 in main text) \\
-Split count (non-first-mover) & \texttt{splitCount\_\allowbreak nonFirstMover} & Residual signal after first-mover absorbs $\rho$-component \\
-Global proportionality & \texttt{proportionality\_global} & Uniform contribution model with constant $c$ across models \\
-Cross-group symmetry & \texttt{splitCount\_}\allowbreak\texttt{crossGroup\_}\allowbreak\texttt{symmetric} & DGP symmetry: equal split counts when first-mover elsewhere \\
-Cross-group stability & \texttt{splitCount\_\allowbreak crossGroup\_stable} & Changing first-mover within a group does not affect other groups \\
-Model measurable space & \texttt{modelMeasurableSpace} & Mathlib infrastructure: $\sigma$-algebra on Model \\
-Model measure & \texttt{modelMeasure} & Mathlib infrastructure: probability measure on Model \\
+Model type & \texttt{Model} & Abstract type for trained models \\
+First-mover function & \texttt{firstMover} & The dominant feature in each model \\
+First-mover surjectivity & \texttt{firstMover\_surjective} & DGP symmetry: each feature can be first-mover \\
+Cross-group baseline & \texttt{crossGroupBaselineCore} & Split counts for features in other groups depend only on group indices \\
+Proportionality constant & \texttt{proportionalityConstant} & $\varphi_j(f) = c \cdot n_j(f)$ with $c > 0$ uniform across models \\
+Training measure & \texttt{modelMeasure} & Probability measure on Model (the training distribution) \\
 \midrule
-\multicolumn{3}{@{}p{11.2cm}}{\emph{Query complexity (Le~Cam's method; $C\geq 1/8$ axiomatized, $C=1/12$ derived):}} \\
-Testing constant & \texttt{testing\_constant} & Axiom: universal constant $C \geq 1/8$ from Tsybakov (2009) \\
-Constant positivity & \texttt{testing\_constant\_pos} & Axiom: $C > 0$ (Chebyshev $C=1/12$ derived in \texttt{QueryComplexity\-Derived.lean}) \\
+\multicolumn{3}{@{}l}{\emph{Formerly axiomatized, now defined or derived (10 eliminated):}} \\
+Split count & \texttt{splitCount} & \textbf{Definition}: if-then-else on first-mover group membership \\
+Split count (first-mover) & \texttt{splitCount\_firstMover} & \textbf{Theorem}: derived from \texttt{splitCount} definition \\
+Split count (non-first-mover) & \texttt{splitCount\_\allowbreak nonFirstMover} & \textbf{Theorem}: derived from \texttt{splitCount} definition \\
+Cross-group symmetry & \texttt{splitCount\_crossGroup\_symmetric} & \textbf{Theorem}: same \texttt{crossGroupBaselineCore} for same-group features \\
+Cross-group stability & \texttt{splitCount\_crossGroup\_stable} & \textbf{Theorem}: \texttt{crossGroupBaselineCore} depends only on group indices \\
+Attribution function & \texttt{attribution} & \textbf{Definition}: $\texttt{proportionalityConstant} \cdot \texttt{splitCount}$ \\
+Global proportionality & \texttt{proportionality\_global} & \textbf{Theorem}: derived from \texttt{attribution} definition \\
+Boosting rounds & \texttt{numTrees}, \texttt{numTrees\_pos} & \textbf{Fields} of \texttt{FeatureSpace} structure ($T$, $T > 0$) \\
+Measurable space & \texttt{modelMeasurableSpace} & \textbf{Instance}: discrete $\sigma$-algebra ($\top$, works for any type) \\
+Testing constant & \texttt{testing\_constant}, \texttt{testing\_constant\_pos} & \textbf{Definition}: $C := 1/8$ from Tsybakov (2009); positivity by \texttt{norm\_num} \\
 \midrule
-\multicolumn{3}{@{}l}{\emph{Formerly axiomatized, now derived:}} \\
-Spearman bound (original) & \texttt{spearman\_instability\_bound} & \textbf{Theorem} in \texttt{SpearmanDef.lean} (from midranks; $1-3(m{-}1)^2/(P^3{-}P)$) \\
-Spearman bound (tight) & \texttt{spearmanCorr\_}\allowbreak\texttt{bound\_}\allowbreak\texttt{groupSize\_tight} & \textbf{Theorem} in \texttt{SpearmanDef.lean} (tighter; $1-3m^2/(P^3{-}P)$) \\
-Attribution sum symmetry & \texttt{attribution\_\allowbreak sum\_symmetric} & \textbf{Theorem} in \texttt{Symmetry\-Derive.lean} (from axioms above) \\
-Attribution variance & \texttt{attribution\_\allowbreak variance} & \textbf{Definition} from \texttt{Probability\-Theory.variance} \\
-Variance nonnegativity & \texttt{attribution\_\allowbreak variance\_nonneg} & \textbf{Theorem} from Mathlib's \texttt{variance\_nonneg} \\
-Consensus variance bound & \texttt{consensus\_\allowbreak variance\_bound} & \textbf{Theorem} in \texttt{Variance\-Derivation.lean} (from \texttt{IndepEnsemble}) \\
-Testing lower bound & \texttt{le\_cam\_\allowbreak lower\_bound} & \textbf{Theorem} in \texttt{Query\-Complexity.lean} (contrapositive) \\
-Chebyshev query bound & \texttt{chebyshev\_\allowbreak query\_bound} & \textbf{Theorem} in \texttt{QueryComplexity\-Derived.lean} ($C=1/12$, derived) \\
-Bayes-optimal tie & \texttt{bayes\_optimal\_\allowbreak tie} & \textbf{Theorem} in \texttt{Bayes\-OptimalTie.lean} (symmetric posterior $\Rightarrow$ tie) \\
-Pareto optimality & \texttt{dash\_pareto\_\allowbreak optimal} & \textbf{Theorem} in \texttt{Pareto\-Optimality.lean} (DASH achieves variance frontier) \\
+\multicolumn{3}{@{}l}{\emph{Additional derived theorems:}} \\
+Spearman bounds & \texttt{spearman\_instability\_bound} & \textbf{Theorem} in \texttt{SpearmanDef.lean} (from midranks) \\
+Attribution sum symmetry & \texttt{attribution\_sum\_symmetric} & \textbf{Theorem} in \texttt{SymmetryDerive.lean} \\
+Variance bound & \texttt{consensus\_variance\_bound} & \textbf{Theorem} in \texttt{VarianceDerivation.lean} \\
+Chebyshev query bound & \texttt{chebyshev\_query\_bound} & \textbf{Theorem} in \texttt{QueryComplexityDerived.lean} ($C=1/12$) \\
+Bayes-optimal tie & \texttt{bayes\_optimal\_tie} & \textbf{Theorem} in \texttt{BayesOptimalTie.lean} \\
+Pareto optimality & \texttt{dash\_pareto\_optimal} & \textbf{Theorem} in \texttt{ParetoOptimality.lean} \\
 \bottomrule
 \end{tabular}
 \end{table}
