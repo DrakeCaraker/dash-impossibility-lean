@@ -1341,7 +1341,23 @@ For each feature $j$, the variance $\Var_f[\varphi_j(f)]$ across the Rashomon se
 A natural concern: does the bilemma require exact Rashomon pairs? No. For binary $H$, $\varepsilon$-stability reduces to exact equality (the only $\varepsilon$-ball in $\{\text{pos}, \text{neg}\}$ with $\varepsilon < 1$ is the point itself). The bilemma holds at every tolerance level. For continuous $H$: $\text{unfaith}(\theta_1) + \text{unfaith}(\theta_2) \geq \Delta - \delta$ for $(\varepsilon, \delta)$-stable $E$ on an $\varepsilon$-Rashomon pair with gap $\Delta$.
 
 \paragraph{Clinical decision reversal.}
-Feature instability changes the explanations real people receive. On German Credit (1,000 loan applications, 30 models per condition): under standard regularization (\texttt{subsample=0.8}), \textbf{45\%} of applicants receive a different ``most important feature'' category across equivalent models (46\% for LightGBM, 35\% for Random Forest). The deterministic control (0\% for boosted models) confirms the instability is from model multiplicity. A single applicant can receive 6 different top-feature labels across 30 seeds. \DASH{} consensus at $M = 25$ achieves 92\% agreement.
+Feature instability changes the explanations real people receive. We train 30 models per condition on German Credit (1,000 loan applications, 24 features) and measure how often the top explanation category changes for individual applicants.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Condition & XGBoost & LightGBM & Random Forest \\
+\midrule
+Seed only (deterministic) & 0\% & 0\% & 35\% \\
+Seed + row subsample & \textbf{45\%} & \textbf{46\%} & 35\% \\
+Seed + col subsample & 39\% & 36\% & 35\% \\
+Full stochasticity & 80\% & 79\% & 67\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Under standard regularization, 45\% of applicants receive a different explanation category depending on the model. The deterministic control (0\% for boosted models) confirms the instability is from model multiplicity. A single applicant can receive 6 different top-feature labels across 30 seeds. \DASH{} consensus at $M = 25$ achieves 92\% agreement. The subsample sensitivity on Breast Cancer confirms the instability persists at every stochastic setting: 24 distinct top-3 rankings at \texttt{subsample=0.8}, 17 at 0.95, 1 only at 1.0 (deterministic).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 9. DIAGNOSTICS
