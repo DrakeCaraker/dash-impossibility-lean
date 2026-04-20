@@ -100,6 +100,8 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 \item Theorem~\ref{thm:fairness-audit} (Fairness Audit Impossibility) --- p.\pageref{thm:fairness-audit}
 \item Theorem~\ref{thm:fim-impossibility} (FIM Impossibility) --- p.\pageref{thm:fim-impossibility}
 \item Theorem~\ref{thm:query-complexity} (Query Complexity Lower Bound) --- p.\pageref{thm:query-complexity}
+\item Theorem~\ref{thm:impossibility-tight} (Tight Impossibility: $m^2$ Spearman Bound) --- p.\pageref{thm:impossibility-tight}
+\item Theorem~\ref{thm:no-method-beats-half} (No Method Beats Half for Within-Group Signs) --- p.\pageref{thm:no-method-beats-half}
 \end{enumerate}
 
 \newpage
@@ -752,7 +754,7 @@ An ensemble is \emph{balanced} if, within each group, every feature serves as fi
 \paragraph{\DASH{} consensus vs.\ \DASH{} pipeline.}
 \DASH{} operates at two layers. \emph{\DASH{} consensus} (Definition~\ref{def:dash}) is the mathematical operation: the arithmetic mean of $|\text{SHAP}|$ values across $M$ independently trained models. This is what Theorems~\ref{thm:dash-optimal} and~\ref{thm:design-space-main} prove is optimal---the minimum-variance unbiased \emph{linear} estimator via the Cauchy--Schwarz lower bound (Titu's lemma; Lean-verified via \texttt{sum\_squares\_ge\_inv\_M}), and the minimum-variance unbiased estimator among \emph{all} estimators by the Rao--Blackwell theorem (standard; not formalized in Lean), Pareto-optimal on the stable branch of the Design Space. In the parametric case, this coincides with the Cram\'er--Rao bound. The theoretical guarantees apply to \emph{any} i.i.d.\ ensemble averaging, including simple seed averaging (training $M$ models with different random seeds and identical hyperparameters).
 
-The companion paper on first-mover bias implements \DASH{} as a full pipeline that adds diversity enforcement (deliberate hyperparameter variation, greedy MaxMin model selection on feature utilization vectors) and stability diagnostics (FSI, IS~Plot). Diversity enforcement accelerates convergence to the balanced ensemble condition (Definition~\ref{def:dash}): at finite $M$, it produces more equitable attributions than seed averaging alone (within-group CV reduced by $0.011$, $p < 0.001$). For large $M$, simple seed averaging achieves approximate balance via the law of large numbers. For stability alone, seed averaging suffices; the full pipeline adds equity and diagnostics.
+The companion paper on first-mover bias \citep{caraker2026firstmover} implements \DASH{} as a full pipeline that adds diversity enforcement (deliberate hyperparameter variation, greedy MaxMin model selection on feature utilization vectors) and stability diagnostics (FSI, IS~Plot). Diversity enforcement accelerates convergence to the balanced ensemble condition (Definition~\ref{def:dash}): at finite $M$, it produces more equitable attributions than seed averaging alone (within-group CV reduced by $0.011$, $p < 0.001$). For large $M$, simple seed averaging achieves approximate balance via the law of large numbers. For stability alone, seed averaging suffices; the full pipeline adds equity and diagnostics.
 
 \begin{corollary}[\DASH{} achieves equity (axiom-derived)]
 \label{cor:equity}
@@ -819,7 +821,7 @@ Among all methods achieving $U_{jk} = 0$ (ties for symmetric features), no metho
 \end{theorem}
 
 \begin{proof}
-\textbf{Part I(a):} By DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = \Pr[\varphi_k(f) > \varphi_j(f)] = 1/2$. Any fixed ranking disagrees with exactly half the models (Theorem~\ref{thm:unfaithfulness-bound}).
+\textbf{Part I(a):} By DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = \Pr[\varphi_k(f) > \varphi_j(f)] = 1/2$. Any fixed ranking disagrees with exactly half the models (Theorem~\ref{thm:unfaithfulness-bound}).\label{thm:no-method-beats-half}
 
 \textbf{Part I(b):} By the Cauchy--Schwarz inequality (Titu's lemma), for any weights $w_i$ with $\sum w_i = 1$: $\sum w_i^2 \sigma_j^2 \geq \sigma_j^2/M$, with equality iff $w_i = 1/M$ for all $i$. Thus $\Var(\hat\mu_j) \geq \sigma_j^2/M$ for any unbiased linear estimator; Lean-verified via \texttt{sum\_squares\_ge\_inv\_M}. In the parametric case, the same bound follows from the Cram\'er--Rao bound with Fisher information $M/\sigma_j^2$.
 
@@ -1052,7 +1054,7 @@ The triple $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. At the extremes,
 The proof proceeds in four steps.
 
 \textbf{Step 1: Family $\mathcal{A}$ is forced.}
-By the Rashomon property, for any within-group pair $(j,k)$, there exist models ranking them in opposite orders. By Theorem~\ref{thm:unfaithfulness-bound}, any faithful, complete ranking has $U = 1/2$ for symmetric pairs. Stability is bounded by $S \leq 1 - 3m^2/(P^3{-}P)$ from the Spearman bound (Lean-derived).
+By the Rashomon property, for any within-group pair $(j,k)$, there exist models ranking them in opposite orders. By Theorem~\ref{thm:unfaithfulness-bound}, any faithful, complete ranking has $U = 1/2$ for symmetric pairs. Stability is bounded by $S \leq 1 - 3m^2/(P^3{-}P)$ from the Spearman bound (Lean-derived).\label{thm:impossibility-tight}
 
 \textbf{Step 2: Family $\mathcal{B}$ is achievable.}
 By Corollary~\ref{cor:equity}, \DASH{} achieves $U = 0$ with ties within groups. By Theorem~\ref{thm:dash-optimal}, between-group stability satisfies $S_M \geq 1 - \exp(-M\Delta^2/(2\sigma^2))$.
@@ -2288,7 +2290,7 @@ for j in range(P):
 \end{itemize}
 
 \paragraph{Complementary diagnostics.}
-The single-model screen and multi-model Z-test developed here are formal hypothesis tests with controlled type~I error. The companion first-mover bias paper introduces complementary \emph{exploratory} diagnostics: FSI (Feature Stability Index, a per-feature coefficient of variation across models) and the IS~Plot (Importance-Stability scatter plot). The recommended combined workflow is: Screen (1 model) $\to$ Z-test (confirm, 5 models) $\to$ \DASH{} (resolve, $M \geq 25$) $\to$ FSI/IS~Plot (audit).
+The single-model screen and multi-model Z-test developed here are formal hypothesis tests with controlled type~I error. The companion first-mover bias paper \citep{caraker2026firstmover} introduces complementary \emph{exploratory} diagnostics: FSI (Feature Stability Index, a per-feature coefficient of variation across models) and the IS~Plot (Importance-Stability scatter plot). The recommended combined workflow is: Screen (1 model) $\to$ Z-test (confirm, 5 models) $\to$ \DASH{} (resolve, $M \geq 25$) $\to$ FSI/IS~Plot (audit).
 
 \paragraph{Recommended instability disclosure.}
 When reporting SHAP rankings for a model with collinear features: ``Features [X, Y, Z] form a correlated group ($|\rho| > [\text{threshold}]$). Their relative ranking is unstable across training seeds (estimated flip rate: [X]\%). They should be interpreted as interchangeable contributors. The between-group ranking is stable ($Z > 1.96$).'' For regulatory reporting (EU AI Act, SR~11-7 \citep{occ2011sr117}), the \DASH{} consensus ranking provides a defensible explanation.
@@ -2303,6 +2305,8 @@ When reporting feature importance for a model with correlated groups, we recomme
 
 \section{Empirical Validation}
 \label{sec:experiments}
+
+\noindent This section presents the core validation experiments. Extended experiments---financial case studies, high-dimensional scalability ($P = 500$), class imbalance, missing data, longitudinal drift, SAGE/Boruta comparison, NLP token attribution, time-series features, adversarial max instability, hyperparameter sensitivity, and DASH breakdown contamination---appear in Section~\ref{sec:extended-experiments}.
 
 \subsection{Experimental Setup}
 
@@ -3589,6 +3593,7 @@ Token A & Token B & Flip rate (fine-tuning) & Flip rate (perturbation) \\
 The gap between fine-tuning (14.5\% of pairs unstable) and perturbation (88\%) reflects the difference in weight divergence. The perturbation result represents the full Rashomon set; the fine-tuning result represents the subset explored by standard training. Attention weights are not SHAP values: they do not satisfy the proportionality axiom, and the ``collinear group'' structure of tree features does not map cleanly to token positions. A formal impossibility for transformer attention would require different axioms.
 
 \section{Extended Experimental Results}
+\label{sec:extended-experiments}
 
 \subsection{KernelSHAP Noise Control: Full Results}
 
