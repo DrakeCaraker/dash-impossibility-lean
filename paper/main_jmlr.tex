@@ -1334,6 +1334,15 @@ The advantage is decisive on California Housing ($r = 0.955$ vs.\ $r = 0.463$), 
 Precision at the 10\% threshold ranges from 0.74 to 0.86.
 The practical workflow extends to: Screen~$\to$~\textbf{Minority fraction}~$\to$~Z-test~$\to$~DASH.
 
+\paragraph{Variance budget: $\Var[\varphi_j]$ equals the explanation quality floor.}
+For each feature $j$, the variance $\Var_f[\varphi_j(f)]$ across the Rashomon set equals the minimum MSE any stable method achieves. \DASH{} (the mean) saturates this bound exactly---a mathematical identity (0/800 violations at machine precision across 5 datasets $\times$ 20 features $\times$ 8 configurations). The median costs 1.6\% more; the 5\%-trimmed mean 0.3\% more.
+
+\paragraph{Approximate bilemma.}
+A natural concern: does the bilemma require exact Rashomon pairs? No. For binary $H$, $\varepsilon$-stability reduces to exact equality (the only $\varepsilon$-ball in $\{\text{pos}, \text{neg}\}$ with $\varepsilon < 1$ is the point itself). The bilemma holds at every tolerance level. For continuous $H$: $\text{unfaith}(\theta_1) + \text{unfaith}(\theta_2) \geq \Delta - \delta$ for $(\varepsilon, \delta)$-stable $E$ on an $\varepsilon$-Rashomon pair with gap $\Delta$.
+
+\paragraph{Clinical decision reversal.}
+Feature instability changes the explanations real people receive. On German Credit (1,000 loan applications, 30 models per condition): under standard regularization (\texttt{subsample=0.8}), \textbf{45\%} of applicants receive a different ``most important feature'' category across equivalent models (46\% for LightGBM, 35\% for Random Forest). The deterministic control (0\% for boosted models) confirms the instability is from model multiplicity. A single applicant can receive 6 different top-feature labels across 30 seeds. \DASH{} consensus at $M = 25$ achieves 92\% agreement.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 9. DIAGNOSTICS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
