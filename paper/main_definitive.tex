@@ -2833,7 +2833,75 @@ mean radius $\leftrightarrow$ mean perimeter & 0.99 & 28\% & Yes \\
 \end{tabular}
 \end{center}
 
-Any study reporting a specific ranking among these features from a single model is reporting an artifact of the training seed. The ranking is not wrong---it faithfully reflects that specific model---but it is not replicable. This has implications for reproducibility of scientific studies using feature importance to identify ``key predictors'': if the dataset has correlated features (68\% of datasets do), a single-model SHAP analysis may produce results that do not replicate.
+Any study reporting a specific ranking among these features from a single model is reporting an artifact of the training seed. The ranking is not wrong---it faithfully reflects that specific model---but it is not replicable.
+
+\subsection{The Ranking Lottery}
+\label{sec:ranking-lottery}
+
+We train 50 XGBoost models (seeds 0--49, \texttt{subsample=0.8}, fixed test set seed 42, 80/20 split) on 5 public datasets and count how many distinct top-$K$ SHAP rankings appear across seeds.
+
+\begin{table}[t]
+\centering
+\caption{The ranking lottery: distinct top-3 SHAP rankings across 50 seeds. Deterministic control (\texttt{subsample=1.0}) gives 1 ranking for all datasets.}
+\label{tab:ranking-lottery}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Dataset & Samples & Distinct top-3 & Agreement & Stable? \\
+\midrule
+Breast Cancer & 569 & \textbf{24} & \textbf{4.2\%} & No \\
+Diabetes & 768 & 2 & 88.5\% & Borderline \\
+Wine Quality & 1,599 & 1 & 100\% & Yes \\
+Heart Disease & 270 & 1 & 100\% & Yes \\
+California Housing & 20,640 & 1 & 100\% & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds} under standard XGBoost configuration with recommended regularization (Table~\ref{tab:ranking-lottery}). The ``most common'' ranking appears in only 12\% of runs. Two random seeds agree only 4.2\% of the time for the top-3. For the top-5: 46 distinct rankings, 0.4\% agreement.
+
+Seven distinct features compete for the top-3 positions: worst concave points, mean concave points, worst area, worst concavity, worst texture, worst perimeter, and area error. The \#1 position alternates between worst concave points (50\%), mean concave points (32\%), and worst area (18\%). 13 distinct unordered top-3 sets appear; the 24 count reflects ordering differences within sets.
+
+DASH consensus across all 50 seeds produces a single stable ranking: worst concave points, mean concave points, worst area, worst concavity, worst texture.
+
+The theory correctly predicts the boundary: California Housing (20,640 samples), Heart Disease (270 samples), and Wine Quality (1,599 samples) are perfectly stable because their top features have clearly different importance---no similar-importance collinear pairs. The impossibility requires \emph{both} collinearity and similar importance; large gaps protect even correlated features. The deterministic control (\texttt{subsample=1.0}) gives exactly 1 ranking for all 5 datasets, confirming the instability is from model multiplicity, not from SHAP computation.
+
+\emph{``Just fix the seed''} does not resolve the problem: a fixed seed produces a reproducible but arbitrary ranking. A different practitioner choosing a different seed gets a different ``most important feature.'' The impossibility is that no seed is privileged---the Rashomon set exists regardless of which seed you pick.
+
+\paragraph{Cross-implementation ranking lottery.}
+On Breast Cancer with stochastic training: XGBoost produces 24 distinct top-3 rankings (4.2\% agreement), LightGBM produces 29 (3.6\%, with \texttt{subsample\_freq=1} to activate subsampling), and Random Forest produces 40 (2.5\% agreement, permutation importance). The instability is implementation-independent. When subsampling is disabled, all implementations produce 1 ranking.
+
+\subsection{Gene Expression: Pathway-Level Consequence}
+\label{sec:gene-expression}
+
+The ranking lottery extends to gene expression biomarker discovery, where co-expressed genes create the collinearity structure that drives instability.
+
+\paragraph{Colon vs.\ kidney (AP\_Colon\_Kidney).}
+On a 10{,}935-gene colon-vs-kidney expression dataset (AP\_Colon\_Kidney, 546 samples, top 50 genes by variance, OpenML), the \#1 gene alternates between two genes from distinct molecular programs:
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Gene (probe) & Molecular program & \#1 rate & DASH rank \\
+\midrule
+TSPAN8 (203824\_at) & Invasion/metastasis (tetraspanin signaling) & \textbf{80\%} & 1 \\
+CEACAM5/CEA (201884\_at) & Immune evasion (GPI-anchored, clinical marker) & \textbf{20\%} & 2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These genes are correlated ($\rho = 0.858$, both colon-enriched tissue markers) but have distinct roles in cancer biology: TSPAN8 in invasion/metastasis signaling via tetraspanin-enriched microdomains, and CEACAM5 (the classical clinical colon cancer marker CEA) in immune evasion and differentiation via GPI-anchored adhesion. A biomarker development pipeline reporting TSPAN8 as the top discriminator would target a different gene than one reporting CEA---and which one gets reported depends on the training seed. The broad pathway-level conclusion (colon identity genes drive the distinction) is preserved, but the specific biomarker target---the actionable output of a discovery pipeline---is a seed artifact.
+
+Probe-to-gene mappings verified via the Affymetrix HG-U133A annotation database (NetAffx, independently verifiable via BioGPS and GeneCards).
+
+DASH consensus ranks both TSPAN8 (\#1, importance 1.913) and CEACAM5 (\#2, importance 1.553) in the top-2, correctly reporting that both contribute without privileging either. The remaining top-5 genes (IGFBP3, RGS5, SPP1) have clearly lower importance and are stable across seeds.
+
+\paragraph{Positive control: breast vs.\ lung (AP\_Breast\_Lung).}
+On a separate 10{,}935-gene breast-vs-lung dataset (AP\_Breast\_Lung, 470 samples), the top-3 genes are stable (2 distinct rankings, 92\% agreement) despite 171 highly correlated gene pairs ($|\rho| > 0.8$). The top gene's importance (2.90) dominates the second (1.40) with a clear gap, protecting the ranking even under high collinearity. Instability appears only at positions 5+, where importance values converge (CV $> 22\%$). This confirms that large importance gaps protect even highly correlated features, precisely as the theory predicts.
+
+\paragraph{Implication for biomarker discovery.}
+Gene expression datasets routinely contain thousands of co-expressed genes organized into modules. When multiple genes in a module have similar SHAP importance, the ``top gene'' reported by a single-model analysis is one of several equally valid options. Studies reporting specific top genes from single-model SHAP without stability analysis may be reporting seed artifacts. The minority fraction diagnostic (\S~\ref{sec:nonparametric-flip}) identifies which genes are at risk: any gene with minority fraction $> 0$ has coverage conflict and is subject to the bilemma.
 
 \subsection{Expected Ranking Discordance}
 

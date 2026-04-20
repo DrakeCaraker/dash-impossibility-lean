@@ -3951,9 +3951,47 @@ property of the data.
 
 This finding has implications for the \textbf{reproducibility} of
 scientific studies that use feature importance to identify ``key
-predictors'': if the dataset has correlated features (60\% of
+predictors'': if the dataset has correlated features (68\% of
 datasets do, per our prevalence survey), a single-model SHAP
 analysis may produce results that do not replicate.
+
+\subsection{The Ranking Lottery}
+
+We extend the replication study to 5 public datasets, counting how many distinct top-$K$ SHAP rankings appear across 50 seeds (Table~\ref{tab:ranking-lottery-supp}).
+
+\begin{table}[t]
+\centering
+\caption{The ranking lottery: distinct top-3 and top-5 SHAP rankings across 50 seeds (\texttt{subsample=0.8}, fixed test set). Deterministic control (\texttt{subsample=1.0}): 1 ranking for all datasets.}
+\label{tab:ranking-lottery-supp}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Dataset & Samples & Distinct top-3 & Top-3 agree & Distinct top-5 & Top-5 agree \\
+\midrule
+Breast Cancer & 569 & \textbf{24} & \textbf{4.2\%} & \textbf{46} & \textbf{0.4\%} \\
+Diabetes & 768 & 2 & 88.5\% & 4 & 68.2\% \\
+Wine Quality & 1,599 & 1 & 100\% & 2 & 55.6\% \\
+Heart Disease & 270 & 1 & 100\% & 1 & 100\% \\
+California Housing & 20,640 & 1 & 100\% & 1 & 100\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Seven distinct features compete for the top-3 positions on Breast Cancer: worst concave points, mean concave points, worst area, worst concavity, worst texture, worst perimeter, and area error. The \#1 position alternates: worst concave points (50\%), mean concave points (32\%), worst area (18\%).
+
+\paragraph{Cross-implementation.}
+On Breast Cancer: XGBoost 24 distinct top-3 (4.2\% agreement), LightGBM 29 (3.6\%, \texttt{subsample\_freq=1}), Random Forest 40 (2.5\%, permutation importance). The instability is implementation-independent.
+
+\subsection{Gene Expression: Pathway-Level Consequence}
+
+On a 10{,}935-gene colon-vs-kidney expression dataset (AP\_Colon\_Kidney, 546 samples, top 50 genes by variance, OpenML), the \#1 biomarker gene alternates between TSPAN8 (203824\_at, invasion/metastasis pathway, 80\% of seeds) and CEACAM5/CEA (201884\_at, immune evasion pathway, 20\% of seeds). Both are cell adhesion molecules enriched in colon tissue ($\rho = 0.858$), but with distinct cancer biology roles: TSPAN8 in invasion/metastasis signaling via tetraspanin-enriched microdomains, and CEACAM5 (the classical clinical colon cancer marker CEA) in immune evasion and differentiation via GPI-anchored adhesion.
+
+The broad pathway-level conclusion (colon identity genes drive the distinction) is preserved, but the specific biomarker target differs. A biomarker development pipeline reporting TSPAN8 as the top discriminator would target a different gene than one reporting CEA. DASH consensus ranks both in the top-2 (TSPAN8: importance 1.913; CEACAM5: 1.553), correctly reporting that both contribute without privileging either.
+
+Probe-to-gene mappings verified via the Affymetrix HG-U133A annotation database.
+
+\paragraph{Positive control.}
+On AP\_Breast\_Lung (breast vs lung, 470 samples, 10{,}935 genes), the top-3 genes are stable (2 distinct rankings, 92\% agreement) despite 171 highly correlated gene pairs ($|\rho| > 0.8$), because the top gene's importance (2.90) dominates the second (1.40) with a clear gap.
 
 \section{Connection to Compressed Sensing}
 
