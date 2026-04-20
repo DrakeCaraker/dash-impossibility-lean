@@ -2671,6 +2671,29 @@ hyperparameter sweeps.
 \paragraph{German Credit.}
 We demonstrate the full Screen$\to$Z-test$\to$DASH workflow on German Credit (1000 samples, 20 features). Step~0: 4 correlated groups at $|\rho| > 0.3$. Step~1 (screen): a single model flags job$\leftrightarrow$own telephone ($Z^{\text{split}} = 0.69 < 1.96$). Step~2 (Z-test): 5 models confirm instability ($Z = 0.64$, flip rate 40\%). Step~3 (DASH): $M = 25$ models, flip rate drops from 40\% to 0\%. Consensus ranking: checking status (0.87), duration (0.44), credit amount (0.43), purpose (0.35). For regulatory reporting (ECOA adverse action reasons, SR~11-7 \citep{occ2011sr117}), the DASH ranking provides a defensible explanation.
 
+\paragraph{Clinical decision reversal on German Credit.}
+Feature instability changes the explanations real people receive. We train 30 models per condition on German Credit and measure how often the ``most important feature category'' changes for individual applicants across equivalent models.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Condition & XGBoost & LightGBM & Random Forest \\
+\midrule
+Seed only (deterministic) & 0\% & 0\% & 35\% \\
+Seed + row subsample & \textbf{45\%} & \textbf{46\%} & 35\% \\
+Seed + col subsample & 39\% & 36\% & 35\% \\
+Full stochasticity & 80\% & 79\% & 67\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Under standard regularization (\texttt{subsample=0.8}), \textbf{45\% of applicants} receive a different explanation category depending on which equivalent model is queried. The deterministic control (seed only, no subsampling) correctly shows 0\% reversal for boosted models. Random forests show 35\% even without subsampling (bootstrap aggregation). Under full stochasticity (seed + bootstrap + both subsamples), reversal reaches 80\%.
+
+A single applicant can receive 6 different ``most important feature'' labels across 30 equivalent models: checking status, duration, credit amount, purpose, employment years, and installment rate all take the top position under different seeds. The explanation the applicant receives is determined by training randomness, not by their data.
+
+\DASH{} consensus reduces reversal: at $M = 25$, cross-seed agreement rises to 92\%. The residual disagreements correspond to genuinely ambiguous cases where the minority fraction exceeds 0.3.
+
 \paragraph{Taiwan Credit Card Default.}
 To validate the impossibility on data with genuine high collinearity
 ($|\rho| > 0.9$), we apply the workflow to the UCI ``default of credit
