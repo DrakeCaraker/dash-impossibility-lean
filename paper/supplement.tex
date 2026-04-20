@@ -3977,10 +3977,33 @@ California Housing & 20,640 & 1 & 100\% & 1 & 100\% \\
 \end{tabular}
 \end{table}
 
-Seven distinct features compete for the top-3 positions on Breast Cancer: worst concave points, mean concave points, worst area, worst concavity, worst texture, worst perimeter, and area error. The \#1 position alternates: worst concave points (50\%), mean concave points (32\%), worst area (18\%).
+Seven distinct features compete for the top-3 positions on Breast Cancer: worst concave points, mean concave points, worst area, worst concavity, worst texture, worst perimeter, and area error. The \#1 position alternates: worst concave points (50\%), mean concave points (32\%), worst area (18\%). At 100 seeds: 35 distinct top-3 (up from 24) and 84 distinct top-5 (up from 46)---the count keeps growing, confirming 24 is a lower bound on the number of possible rankings.
+
+\paragraph{Subsample sensitivity.}
+The instability persists even at reduced stochasticity. On Breast Cancer (50 seeds):
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\texttt{subsample} & Distinct top-3 & Agreement \\
+\midrule
+0.80 & 24 & 4.2\% \\
+0.85 & 23 & 5.2\% \\
+0.90 & 22 & 6.9\% \\
+0.95 & 17 & 10.7\% \\
+1.00 & 1 & 100.0\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Only fully deterministic training eliminates the lottery. At \texttt{subsample=0.95}, 17 distinct rankings remain. ``Just use less stochasticity'' is not a resolution.
 
 \paragraph{Cross-implementation.}
 On Breast Cancer: XGBoost 24 distinct top-3 (4.2\% agreement), LightGBM 29 (3.6\%, \texttt{subsample\_freq=1}), Random Forest 40 (2.5\%, permutation importance). The instability is implementation-independent.
+
+\paragraph{Gene count robustness.}
+On AP\_Colon\_Kidney, the ranking lottery result is robust to the number of pre-selected genes: 8 distinct top-3 at 20 genes, 5 at 50, 7 at 100. The instability is not an artifact of the filtering threshold.
 
 \subsection{Gene Expression: Pathway-Level Consequence}
 

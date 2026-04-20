@@ -2858,13 +2858,35 @@ California Housing & 20,640 & 1 & 100\% & Yes \\
 \end{tabular}
 \end{table}
 
-Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds} under standard XGBoost configuration with recommended regularization (Table~\ref{tab:ranking-lottery}). The ``most common'' ranking appears in only 12\% of runs. Two random seeds agree only 4.2\% of the time for the top-3. For the top-5: 46 distinct rankings, 0.4\% agreement.
+Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds} under standard XGBoost configuration with recommended regularization (Table~\ref{tab:ranking-lottery}). At 100 seeds: \textbf{35 distinct top-3} and \textbf{84 distinct top-5}---the count keeps growing, confirming 24 is a lower bound. The ``most common'' ranking appears in only 12\% of runs. Two random seeds agree only 4.2\% of the time for the top-3. For the top-5: 46 distinct rankings, 0.4\% agreement.
 
 Seven distinct features compete for the top-3 positions: worst concave points, mean concave points, worst area, worst concavity, worst texture, worst perimeter, and area error. The \#1 position alternates between worst concave points (50\%), mean concave points (32\%), and worst area (18\%). 13 distinct unordered top-3 sets appear; the 24 count reflects ordering differences within sets.
 
 DASH consensus across all 50 seeds produces a single stable ranking: worst concave points, mean concave points, worst area, worst concavity, worst texture.
 
 The theory correctly predicts the boundary: California Housing (20,640 samples), Heart Disease (270 samples), and Wine Quality (1,599 samples) are perfectly stable because their top features have clearly different importance---no similar-importance collinear pairs. The impossibility requires \emph{both} collinearity and similar importance; large gaps protect even correlated features. The deterministic control (\texttt{subsample=1.0}) gives exactly 1 ranking for all 5 datasets, confirming the instability is from model multiplicity, not from SHAP computation.
+
+\paragraph{Subsample sensitivity.}
+The instability persists even at reduced stochasticity:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\texttt{subsample} & Distinct top-3 & Agreement & Interpretation \\
+\midrule
+0.80 & 24 & 4.2\% & Standard regularization \\
+0.85 & 23 & 5.2\% & Slightly less noise \\
+0.90 & 22 & 6.9\% & Moderate noise reduction \\
+0.95 & 17 & 10.7\% & Minimal noise \\
+1.00 & 1 & 100.0\% & Deterministic (control) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Only fully deterministic training (\texttt{subsample=1.0}) eliminates the ranking lottery. At \texttt{subsample=0.95}---the minimum stochasticity a practitioner might use---17 distinct top-3 rankings still appear. ``Just use less stochasticity'' reduces the count from 24 to 17 but cannot reach 1. The impossibility is structural: any stochastic training procedure produces a non-degenerate Rashomon set, and the ranking lottery follows from the Rashomon property.
+
+\emph{``Just fix the seed''} does not resolve the problem either: a fixed seed produces a reproducible but arbitrary ranking. A different practitioner choosing a different seed gets a different ``most important feature.'' The impossibility is that no seed is privileged---the Rashomon set exists regardless of which seed you pick.
 
 \emph{``Just fix the seed''} does not resolve the problem: a fixed seed produces a reproducible but arbitrary ranking. A different practitioner choosing a different seed gets a different ``most important feature.'' The impossibility is that no seed is privileged---the Rashomon set exists regardless of which seed you pick.
 
