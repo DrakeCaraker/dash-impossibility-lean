@@ -27,7 +27,7 @@
 \maketitle
 
 % Continue numbering from main paper
-\setcounter{theorem}{10}   % main ends at Definition 6 = shared counter 10
+\setcounter{theorem}{5}    % main ends at Corollary 5 (DASH equity)
 \setcounter{axiom}{1}      % main has Axiom 1
 \setcounter{figure}{2}     % main has Figures 1--2
 \setcounter{table}{0}      % main has no tables
@@ -1518,7 +1518,7 @@ $\varphi_k(\theta^-) > \varphi_j(\theta^-)$.
 \textbf{Step 4: Conclusion.}
 Both $\theta^+$ and $\theta^-$ lie in $R_\varepsilon$ with
 opposite feature orderings. This is the Rashomon property
-(Definition~4 in the main text). By Theorem~1,
+(the Rashomon property, \S2 of the main text). By Theorem~1,
 no faithful, stable, complete ranking exists for any model
 class containing $R_\varepsilon$.
 \end{proof}
@@ -2903,7 +2903,7 @@ method $A$ applied to $M \geq 1$ independently trained models, where:
 
 \begin{theorem}[Attribution Design Space]
 \label{thm:design-space}
-For any model class satisfying the Rashomon property (Definition~4)
+For any model class satisfying the Rashomon property (\S2 of the main text)
 under within-group correlation $\rho > 0$, the achievable set of
 $(S, U, C)$ triples is the union of exactly two families:
 
@@ -2948,7 +2948,7 @@ higher $S$ for the same $M$ while maintaining $U = 0$
 The proof proceeds in four steps, each building on previous results.
 
 \textbf{Step 1: Family $\mathcal{A}$ is forced.}
-By the Rashomon property (Definition~4), for any within-group pair
+By the Rashomon property (\S2 of the main text), for any within-group pair
 $(j,k)$, there exist models ranking them in opposite orders.
 By Theorem~\ref{thm:unfaithfulness}, any faithful, complete ranking
 has unfaithfulness $U = 1/2$ for symmetric pairs: exactly half the
