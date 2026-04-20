@@ -366,7 +366,7 @@ The 68\% prevalence figure is from benchmark-representative datasets and may not
 The binary limitation (SHAP sign IS binary) is acknowledged; the quantitative bilemma extends to continuous $H$.
 
 \paragraph{Broader implications.}
-Single-model SHAP audits for proxy discrimination are provably no better than coin flips for collinear features. We argue this constitutes a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}. The 45\% clinical reversal on German Credit demonstrates the consequence is not hypothetical.
+Single-model SHAP audits for proxy discrimination conclude ``proxy reliance'' with probability exactly $1/2$ for collinear features; for $K$ protected attributes with unstable proxies, joint audit correctness is $(1/2)^K$. We argue this constitutes a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}. The 45\% clinical reversal on German Credit demonstrates the consequence is not hypothetical.
 
 \paragraph{Lean verification.}
 357 theorems, 6 axioms, 0~\texttt{sorry}, 58 files---reduced from 16 axioms by defining split counts, attribution, and the testing constant as definitions with derived properties. The core impossibility has zero axiom dependencies. All binary instances (\texttt{SHAPSign}, \texttt{FeatureStatus}, \texttt{CounterfactualDir}) use constructive inductive types with zero axioms. The formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review.
