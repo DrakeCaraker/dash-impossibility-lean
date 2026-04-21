@@ -145,7 +145,7 @@ A natural concern: does the bilemma require exact Rashomon pairs, making it frag
 For $(\varepsilon, \delta)$-stable $E$ on an $\varepsilon$-Rashomon pair with gap $\Delta$: $\text{unfaith}(\theta_1) + \text{unfaith}(\theta_2) \geq \Delta - \delta$. At least one witness is unfaithful by $\geq (\Delta - \delta)/2$. Proof: triangle inequality. If models disagree by $\Delta = 0.3$ and you want $\delta = 0.05$ stability, unfaithfulness $\geq 0.125$ at one witness. (Lean: \texttt{ApproximateBilemma.lean}.)
 
 \paragraph{Tightness classification.}
-$F{+}S$ is achievable iff $H$ has a \emph{neutral element}---a value compatible with all native explanations (Lean: \texttt{tightness\_dichotomy}). Rankings have ties (neutral); SHAP signs do not. The classification is the structural explanation for why the trilemma admits a resolution (DASH) but the bilemma does not.
+$F{+}S$ is achievable iff $H$ has a \emph{neutral element}---a value compatible with all native explanations (Lean: \texttt{tightness\_dichotomy}). Rankings have ties (neutral); SHAP signs do not. The bilemma has \emph{collapsed} tightness: stability blocks both faithfulness and decisiveness individually. This is structurally more severe than the fairness impossibility \citep{chouldechova2017fair}, which has \emph{full} tightness (every pair of properties is achievable). Collapsed tightness means the only resolution is enrichment---adding neutral elements to $H$---which is precisely what DASH does.
 
 \subsection{Nonparametric Flip Predictor}
 
