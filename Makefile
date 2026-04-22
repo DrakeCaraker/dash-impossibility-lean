@@ -55,7 +55,10 @@ counts: ## Show current theorem/axiom/sorry/file counts
 	@echo "Sorry:           $$(grep -rc 'sorry' DASHImpossibility/*.lean | awk -F: '{s+=$$2} END {print s}')"
 	@echo "Files:           $$(ls DASHImpossibility/*.lean | wc -l | tr -d ' ')"
 
-verify: counts ## Verify Lean builds + counts are consistent
+registry-check: ## Verify PROJECT_REGISTRY.md against repo state (30 checks)
+	@python3 paper/scripts/verify_registry.py
+
+verify: counts registry-check ## Verify Lean builds + counts + registry
 	@echo ""
 	@echo "--- Verifying Lean build ---"
 	lake build
