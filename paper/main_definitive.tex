@@ -1877,6 +1877,8 @@ Coverage conflict implies no neutral element exists---there is no ``safe harbor'
 Conversely, a neutral element (such as a tie in feature rankings) makes faithful+stable achievable via the constant function $E(\theta) = c$ (\texttt{neutral\_implies\_FS\_achievable}).
 The tightness classification (\texttt{tightness\_dichotomy}) makes this precise: $F{+}S$ is achievable iff the explanation space has a neutral element.
 
+The bilemma has \emph{collapsed} tightness: stability blocks both faithfulness and decisiveness individually. This is structurally more severe than the fairness impossibility of \citet{chouldechova2017fair}, which has \emph{full} tightness---every pair of properties is independently achievable, and only the triple conjunction fails. Collapsed tightness means the standard ``pick two'' strategy fails: some pairs are blocked. The only resolution is \emph{enrichment}---adding neutral elements to $H$---which is precisely what DASH does for feature rankings (ties as neutral elements). This structural distinction explains why explanation methods cannot be designed like fairness methods: fairness allows trade-off, binary explanation demands qualitative change.
+
 \paragraph{Topological characterisation: the compatibility complex.}
 The tightness classification has a clean topological interpretation. Define the \emph{compatibility complex} $K$ on $H$: the simplicial complex whose vertices are elements of $H$ and whose simplices are pairwise-compatible subsets. The bilemma's severity corresponds to the topology of $K$:
 \begin{itemize}
@@ -2951,6 +2953,9 @@ DASH consensus ranks both TSPAN8 (\#1, importance 1.913) and CEACAM5 (\#2, impor
 
 \paragraph{Positive control: breast vs.\ lung (AP\_Breast\_Lung).}
 On a separate 10{,}935-gene breast-vs-lung dataset (AP\_Breast\_Lung, 470 samples), the top-3 genes are stable (2 distinct rankings, 92\% agreement) despite 171 highly correlated gene pairs ($|\rho| > 0.8$). The top gene's importance (2.90) dominates the second (1.40) with a clear gap, protecting the ranking even under high collinearity. Instability appears only at positions 5+, where importance values converge (CV $> 22\%$). This confirms that large importance gaps protect even highly correlated features, precisely as the theory predicts.
+
+\paragraph{Gene count robustness.}
+The AP\_Colon\_Kidney result is robust to the number of pre-selected genes: 8 distinct top-3 rankings at 20 genes, 5 at 50, 7 at 100. The instability is not an artifact of the filtering threshold.
 
 \paragraph{Implication for biomarker discovery.}
 Gene expression datasets routinely contain thousands of co-expressed genes organized into modules. When multiple genes in a module have similar SHAP importance, the ``top gene'' reported by a single-model analysis is one of several equally valid options. Studies reporting specific top genes from single-model SHAP without stability analysis may be reporting seed artifacts. The minority fraction diagnostic (\S~\ref{sec:nonparametric-flip}) identifies which genes are at risk: any gene with minority fraction $> 0$ has coverage conflict and is subject to the bilemma.
