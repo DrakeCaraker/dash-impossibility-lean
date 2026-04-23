@@ -28,10 +28,18 @@ paper/submission/
 .claude/.session-bookmark.json
 .claude/.pilot-consent.json
 .claude/.pilot-identity.json
+.claude/.collective-pending.json
+.claude/.last-signal-push
 .claude/settings.local.json
 .claude/worktrees/
 .claude/.pilot-session-start
 .claude/.session-count
+
+# Pilot telemetry
+.pilot/
+
+# Backup files
+*.bak
 
 # Provenance sidecar files
 *.meta
