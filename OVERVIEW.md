@@ -48,7 +48,7 @@ No third family exists. Both relaxation paths (drop completeness, drop stability
 
 ### The Fix: DASH
 
-**DASH** (Diversified Aggregation of SHAP) averages feature importance across multiple independently trained models. This is provably the minimum-variance unbiased estimator (via Cauchy-Schwarz / Titu's lemma). The required ensemble size is M_min = ceil(2.71 * sigma^2 / Delta^2) for a 5% flip rate.
+**DASH** (Diversified Aggregation for Stable Hypotheses) averages feature importance across multiple independently trained models. This is provably the minimum-variance unbiased estimator (via Cauchy-Schwarz / Titu's lemma). The required ensemble size is M_min = ceil(2.71 * sigma^2 / Delta^2) for a 5% flip rate.
 
 DASH is Pareto-optimal: no method achieves better stability without sacrificing more faithfulness. The tradeoff: within-group features that are genuinely interchangeable are reported as tied rather than arbitrarily ranked.
 
