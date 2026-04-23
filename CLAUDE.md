@@ -131,8 +131,9 @@ make setup         # full setup for new contributors
 
 ## Submission
 
-- **JMLR** (primary target): `paper/main_jmlr.tex` (54 pages, `jmlr.cls` from TeX Live). JMLR class: https://jmlr.org/format/
-- **NeurIPS 2026** (backup): `paper/main.tex` (10 pages) + `paper/supplement.tex` (79 pages). Abstract May 4, Paper May 6. Official `neurips_2026.sty` (verified identical to neurips.cc download).
+- **NeurIPS 2026** (primary): `paper/main.tex` (9 pages) + `paper/supplement.tex` (81 pages). Abstract May 4, Paper May 6. Official `neurips_2026.sty`.
+- **JMLR** (after NeurIPS decision): `paper/main_jmlr.tex` (59 pages, `jmlr.cls` from TeX Live).
+- **Monograph** (source of truth): `paper/main_definitive.tex` (79 pages).
 - **arXiv**: Run `paper/scripts/prepare_arxiv.sh` to uncomment authors and fill URLs.
 - Title: "The Attribution Impossibility: No Feature Ranking Is Faithful, Stable, and Complete Under Collinearity"
 - Authors: Drake Caraker, Bryan Arnold, David Rhoads

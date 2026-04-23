@@ -3,20 +3,22 @@
 **No feature ranking can be simultaneously faithful, stable, and complete when features are correlated — and we prove it in Lean 4.**
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19468379.svg)](https://doi.org/10.5281/zenodo.19468379)
-![Theorems](https://img.shields.io/badge/theorems-352-blue)
+![Theorems](https://img.shields.io/badge/theorems-357-blue)
 ![Axioms](https://img.shields.io/badge/axioms-6-blue)
 ![Sorry](https://img.shields.io/badge/sorry-0-brightgreen)
 ![Lean 4](https://img.shields.io/badge/Lean-4-purple)
 ![Files](https://img.shields.io/badge/Lean_files-58-informational)
 
 <!-- Verify badges with:
-  grep -c '^theorem\|^lemma' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'  # 352
+  grep -c '^theorem\|^lemma' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'  # 357
   grep -c '^axiom' DASHImpossibility/*.lean | awk -F: '{s+=$2}END{print s}'              # 6
   grep -rn 'sorry' DASHImpossibility/*.lean                                               # (empty)
   ls DASHImpossibility/*.lean | wc -l                                                     # 58
 -->
 
-If you have ever retrained an XGBoost model and noticed the "most important feature" changed, this paper proves that is not a bug — it is a mathematical inevitability. More broadly, we prove that NO explanation of an underspecified system — feature rankings, attention maps, circuit decompositions, concept probes — can simultaneously be faithful, stable, and decisive. For binary explanation problems (SHAP sign, feature selection, circuit analysis), the impossibility is strictly stronger: faithful + stable alone is impossible (the bilemma). We characterize the complete design space, prove the optimal resolution is unique (via Hunt-Stein), and machine-verify everything in Lean 4: 352 theorems across 58 files with 6 axioms and 0 sorry.
+If you have ever retrained an XGBoost model and noticed the "most important feature" changed, this paper proves that is not a bug — it is a mathematical inevitability. On Breast Cancer Wisconsin (the canonical SHAP tutorial dataset), 50 retrains produce **24 distinct top-3 rankings**. On a gene expression dataset, the #1 biomarker gene alternates between TSPAN8 (invasion pathway) and CEACAM5/CEA (immune evasion pathway) depending on the training seed. Under standard regularization, 45% of German Credit loan applicants receive a different "most important feature" across equivalent models. For binary attribution questions (SHAP sign, feature selection), the impossibility is strictly stronger: faithful + stable alone is impossible (the bilemma). We characterize the complete design space, provide a 7-line nonparametric diagnostic that outperforms the Gaussian formula by 2× on real data, prove DASH ensemble averaging is uniquely optimal, and machine-verify everything in Lean 4: 357 theorems across 58 files with 6 axioms and 0 sorry.
+
+**NeurIPS 2026 submission** (9 pages + 81-page supplement). Monograph: 79 pages.
 
 ---
 
@@ -175,7 +177,8 @@ Each extension is a self-contained theorem in its own Lean file:
 ```
 dash-impossibility-lean/
 │
-├── DASHImpossibility/                    # 58 Lean 4 files, 352 theorems, 6 axioms, 0 sorry
+├── PROJECT_REGISTRY.md                  # Complete catalogue: every proof, experiment, claim
+├── DASHImpossibility/                    # 58 Lean 4 files, 357 theorems, 6 axioms, 0 sorry
 │   │
 │   │  ── Level 0: Pure Logic ──
 │   ├── Trilemma.lean                     # attribution_impossibility (zero axiom deps, 4-line proof)
@@ -271,9 +274,9 @@ dash-impossibility-lean/
 │
 ├── paper/
 │   ├── main_definitive.tex               # 66-page monograph (source of truth)
-│   ├── main_jmlr.tex                     # 54-page JMLR submission
+│   ├── main_jmlr.tex                     # 59-page JMLR submission (after NeurIPS)
 │   ├── main.tex                          # 10-page NeurIPS version
-│   ├── supplement.tex                    # 79-page NeurIPS supplement
+│   ├── supplement.tex                    # 81-page NeurIPS supplement
 │   ├── references.bib                    # 49 references
 │   ├── FINDINGS_MAP.md                   # Complete 109-finding reference with tier classification
 │   ├── scripts/                          # 51 experiment scripts + utilities
@@ -310,20 +313,18 @@ dash-impossibility-lean/
 
 | Paper | File | Pages | Target | Status |
 |-------|------|-------|--------|--------|
-| **Monograph** (source of truth) | `paper/main_definitive.tex` | 67 | arXiv / reference | [arXiv:XXXX](link) |
-| **JMLR submission** | `paper/main_jmlr.tex` | 56 | JMLR | In preparation |
-| **NeurIPS universal** | `paper/neurips_universal.tex` | 10 | NeurIPS 2026 | In preparation |
-| **NeurIPS attribution** | `paper/main.tex` | 10 | NeurIPS 2026 (backup) | Draft |
-| **NeurIPS supplement** | `paper/supplement.tex` | 79 | NeurIPS supplement | Draft |
-| **Preprint** | `paper/main_preprint.tex` | 10 | arXiv preprint | Draft |
+| **NeurIPS 2026** (primary submission) | `paper/main.tex` | 9 | NeurIPS 2026 | **Submission-ready** |
+| **NeurIPS supplement** | `paper/supplement.tex` | 81 | NeurIPS supplement | **Submission-ready** |
+| **Monograph** (source of truth) | `paper/main_definitive.tex` | 79 | arXiv | Ready |
+| **JMLR** (expanded) | `paper/main_jmlr.tex` | 59 | JMLR (after NeurIPS) | Ready |
 
-The monograph is the definitive reference containing all results. The JMLR version is the deep treatment of the attribution impossibility. The NeurIPS universal version covers the full framework including the bilemma and mechanistic interpretability instance.
+The NeurIPS paper (9 pages + 81-page supplement) is the primary submission. The monograph (79 pages) is the definitive reference containing all results. The JMLR version (59 pages) expands the NeurIPS paper and will be submitted after the NeurIPS decision.
 
-**Edit flow:** monograph → JMLR → NeurIPS. Always update the monograph first.
+**Edit flow:** monograph → NeurIPS → JMLR. Always update the monograph first.
 
 ## Proof Architecture
 
-**352 theorems. 6 axioms. 0 sorry. 58 files. 15 abstraction levels. 115 multi-step proofs (>=5 tactic lines).**
+**357 theorems. 6 axioms. 0 sorry. 58 files. 15 abstraction levels. 139 multi-step proofs (>=5 tactic lines).**
 
 The Lean formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review. The axiom consistency proof (a `Fin 4` construction in [`Consistency.lean`](DASHImpossibility/Consistency.lean)) demonstrates the axiom system is non-vacuous — there exists a concrete model satisfying all 6 axioms.
 
@@ -447,11 +448,11 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 
 **Data scientist using SHAP.** Your feature rankings for correlated features are unreliable. The instability is not noise or a software bug — it is a provable consequence of how gradient boosting interacts with collinearity. The fix is DASH: average SHAP values from multiple independently trained models. See the [dash-shap](https://github.com/DrakeCaraker/dash-shap) companion package and the [stability API in PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255) for the single-model screen to Z-test (multi-model validation) to DASH (ensemble consensus) workflow.
 
-**Researcher in XAI or ML theory.** This is a formally verified impossibility theorem with 352 Lean proofs and 0 sorry. The Symmetric Bayes Dichotomy (Section 6 of the definitive paper) is a general proof technique from invariant decision theory that applies to any symmetric decision problem — we demonstrate it on feature attribution, model selection, and causal discovery under Markov equivalence. The Design Space Theorem characterizes the full achievable set.
+**Researcher in XAI or ML theory.** This is a formally verified impossibility theorem with 357 Lean proofs and 0 sorry. The Symmetric Bayes Dichotomy (Section 6 of the definitive paper) is a general proof technique from invariant decision theory that applies to any symmetric decision problem — we demonstrate it on feature attribution, model selection, and causal discovery under Markov equivalence. The Design Space Theorem characterizes the full achievable set.
 
 **Regulator or model risk officer.** Single-model SHAP explanations are provably unreliable under collinearity. In a survey of 77 public datasets, 68% exhibit attribution instability. This affects EU AI Act Art. 13(3)(b)(ii) requirements for disclosing "known and foreseeable circumstances" affecting accuracy, and SR 11-7 model risk management compliance. The paper provides disclosure templates and a diagnostic workflow.
 
-**Lean or Mathlib community.** 352 theorems across 58 files, 15 abstraction levels, using `MulAction` for orbit bounds, `ProbabilityTheory.cdf` for the Gaussian flip rate, and `Analysis.Calculus` for the FIM impossibility. The Gaussian CDF symmetry proofs (phi(0)=1/2, phi(-x)=1-phi(x)) via `NoAtoms` + `prob_compl_eq_one_sub` may be of independent interest. The axiom consistency proof constructs a `Fin 4` model satisfying all 6 axioms.
+**Lean or Mathlib community.** 357 theorems across 58 files, 15 abstraction levels, using `MulAction` for orbit bounds, `ProbabilityTheory.cdf` for the Gaussian flip rate, and `Analysis.Calculus` for the FIM impossibility. The Gaussian CDF symmetry proofs (phi(0)=1/2, phi(-x)=1-phi(x)) via `NoAtoms` + `prob_compl_eq_one_sub` may be of independent interest. The axiom consistency proof constructs a `Fin 4` model satisfying all 6 axioms.
 
 ## Contributing
 
@@ -478,14 +479,16 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 5. Update paper/FINDINGS_MAP.md
 6. Propagate to JMLR paper
 
-## Current State (verified 2026-04-16)
+## Current State (verified 2026-04-23)
 
 ```
-Theorems+lemmas: 352
+Theorems+lemmas: 357
 Axioms:          6
 Sorry:           0
 Files:           58
 ```
+
+Verify: `make registry-check` (30 automated checks) or `python3 paper/scripts/verify_registry.py`.
 
 ## Citation
 
@@ -562,5 +565,5 @@ Independent researchers. Contact: drakecaraker@gmail.com
 ---
 
 **Paper:** "The Attribution Impossibility: No Feature Ranking Is Faithful, Stable, and Complete Under Collinearity"
-**Primary target:** JMLR | **Backup:** NeurIPS 2026 (abstract May 4, paper May 6)
-**arXiv:** Preprint forthcoming. Run `paper/scripts/prepare_arxiv.sh` to prepare submission.
+**Primary target:** NeurIPS 2026 (abstract May 4, paper May 6) | **Expanded:** JMLR (after NeurIPS decision)
+**arXiv:** Preprint forthcoming (submit/7455861 under review). Monograph: 79 pages.

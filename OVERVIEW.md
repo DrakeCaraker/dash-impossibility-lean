@@ -67,7 +67,7 @@ For binary explanation problems — "is this feature positive or negative?", "is
 ## The Formalization
 
 Everything is machine-verified in Lean 4 using Mathlib:
-- **352 theorems**, 0 `sorry` (unproved claims), across 58 files
+- **357 theorems**, 0 `sorry` (unproved claims), across 58 files
 - **6 axioms** — the irreducible core (model type, first-mover function and surjectivity, cross-group baseline, proportionality constant, training distribution measure)
 - **10 former axioms** are now definitions or derived theorems
 - The core impossibility uses **zero axioms** — only the Rashomon property as a hypothesis
@@ -82,7 +82,7 @@ The formalization caught 2 logical inconsistencies and 1 type mismatch that surv
 
 **Regulators and model risk officers.** Single-model SHAP audits for proxy discrimination are provably unreliable — the audit conclusion is a coin flip for collinear features. This affects EU AI Act Art. 13(3)(b)(ii) disclosure requirements and SR 11-7 model risk management. The paper provides diagnostic workflows and disclosure templates.
 
-**The formal verification community.** 352 theorems across 58 files, 15 abstraction levels, using Mathlib's MulAction, ProbabilityTheory, and Analysis libraries. The axiom reduction from 16 to 6 demonstrates the "define rather than axiomatize" methodology.
+**The formal verification community.** 357 theorems across 58 files, 15 abstraction levels, using Mathlib's MulAction, ProbabilityTheory, and Analysis libraries. The axiom reduction from 16 to 6 demonstrates the "define rather than axiomatize" methodology.
 
 ## Ramifications
 
@@ -114,7 +114,7 @@ The formalization caught 2 logical inconsistencies and 1 type mismatch that surv
 ```bash
 git clone https://github.com/DrakeCaraker/dash-impossibility-lean
 cd dash-impossibility-lean
-make lean    # builds all 352 theorems (~5 min cached)
+make lean    # builds all 357 theorems (~5 min cached)
 make verify  # checks counts match documentation
 ```
 
@@ -132,4 +132,4 @@ make verify  # checks counts match documentation
 
 ## Paper
 
-The full paper (54 pages, JMLR format) is in `paper/main_jmlr.tex`. A 79-page supplement with all proofs and experiments is in `paper/supplement.tex`.
+**NeurIPS 2026 submission:** `paper/main.tex` (9 pages) + `paper/supplement.tex` (81 pages). **Monograph:** `paper/main_definitive.tex` (79 pages, complete reference). **JMLR:** `paper/main_jmlr.tex` (59 pages, to be submitted after NeurIPS decision).
