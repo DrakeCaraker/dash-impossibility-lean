@@ -49,11 +49,10 @@
 
 \begin{abstract}
 Feature importance explanations are provably unreliable under collinearity.
-We prove that no SHAP ranking can simultaneously be faithful, stable, and complete (the Attribution Impossibility), and for binary attribution questions (SHAP sign, feature selection), faithful + stable alone is impossible (the bilemma).
-The achievable design space has exactly two families; \DASH{} ensemble averaging is Pareto-optimal on the stable branch.
-A theory-derived nonparametric diagnostic---the minority fraction---identifies unstable features in seven lines of code, outperforming the Gaussian flip formula on real data (Spearman $0.96$ vs.\ $0.46$ on California Housing).
-A per-individual analysis on German Credit shows 45\% of loan applicants receive different explanation categories under standard model regularization.
-The entire framework is verified in Lean~4 (357 theorems, 6 axioms, 0~\texttt{sorry})---the first formally verified impossibility in explainable AI.
+We prove that no SHAP ranking can simultaneously be faithful, stable, and complete (the Attribution Impossibility); for binary questions (SHAP sign, feature selection), faithful + stable alone is impossible (the bilemma).
+On the canonical SHAP tutorial dataset, 50 retrains produce 24 distinct top-3 rankings (4.2\% pairwise agreement). On gene expression data, the \#1 biomarker alternates between TSPAN8 and CEACAM5/CEA---different drug targets---depending on the seed. Under standard regularization, 45\% of German Credit applicants receive different explanation categories.
+The design space has exactly two families; \DASH{} is Pareto-optimal. A 7-line nonparametric diagnostic outperforms the Gaussian formula by $2\times$ on real data.
+Verified in Lean~4 (357 theorems, 6 axioms, 0~\texttt{sorry})---the first formally verified impossibility in explainable AI.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

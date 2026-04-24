@@ -111,16 +111,19 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-No feature ranking can be simultaneously faithful, stable, and complete when features are collinear.
-We prove this impossibility and characterize the complete design space: exactly two families of attribution methods exist---faithful-complete methods (unstable, with rankings that flip up to 50\% of the time) and ensemble methods like \DASH{} (stable, reporting ties for symmetric features)---and \DASH{} ensemble averaging is Pareto-optimal on the stable branch.
-We quantify the impossibility for four model classes, resolve it via SHAP (SHapley Additive exPlanations) ensemble averaging with \DASH{}, and machine-verify it with 357 Lean~4 theorems.
-The impossibility is quantitative: we derive architecture-discriminating bounds showing the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests.
-\DASH{} (\textbf{D}iversified \textbf{A}ggregation for \textbf{S}table \textbf{H}ypotheses) ensemble averaging is provably Pareto-optimal among unbiased aggregations on the stable branch, achieving the Cauchy--Schwarz lower bound (Titu's lemma; Lean-verified via \texttt{sum\_squares\_ge\_inv\_M}) with a tight ensemble size formula.
-In a survey of 77 public datasets, 68\% exhibit attribution instability (conservative lower bound: survey power 32\% at the 10\% threshold; true prevalence likely higher).
-Switching to conditional SHAP does not escape the impossibility when features have equal causal effects.
-The framework includes practical diagnostics---a $Z$-test workflow and single-model screening tool---and has direct consequences for fairness auditing: SHAP-based proxy discrimination audits are provably unreliable under collinearity.
-The design space theorem, diagnostics, and impossibility are mechanically verified in Lean~4 (357 theorems from 6 axioms, 0 \texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines; the remainder are definitions, wrappers, and single-step applications)---to our knowledge, the first formally verified impossibility in explainable AI.
-Code and Lean proofs are available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}).
+No feature ranking can be simultaneously faithful, stable, and complete when features are collinear with similar true importance. We prove this impossibility, characterize the complete design space (exactly two families of methods, no third option), and resolve it via \DASH{} (\textbf{D}iversified \textbf{A}ggregation for \textbf{S}table \textbf{H}ypotheses), which is provably Pareto-optimal among unbiased aggregations.
+
+For binary attribution questions---SHAP sign, feature selection, counterfactual direction---the impossibility is strictly stronger: faithful + stable alone is impossible (the \emph{bilemma}). The bilemma has collapsed tightness, making it structurally more severe than the fairness impossibility of Chouldechova (2017): the only resolution is enrichment (adding neutral elements), not trade-off.
+
+On Breast Cancer Wisconsin---the canonical SHAP tutorial dataset---50 retrains produce 24 distinct top-3 rankings (35 at 100 retrains); two random seeds agree only 4.2\% of the time. On a 10{,}935-gene colon-vs-kidney expression dataset, the \#1 biomarker gene alternates between TSPAN8 (invasion/metastasis, 80\% of seeds) and CEACAM5/CEA (immune evasion, 20\%)---the specific drug target depends on the training seed. Under standard regularization, 45\% of German Credit loan applicants receive a different ``most important feature'' category across equivalent models.
+
+The impossibility is quantitative: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, conditional for neural networks (87\% of feature pairs unstable), and converges for random forests. A theory-derived nonparametric diagnostic---the minority fraction---identifies unstable features in seven lines of code, outperforming the Gaussian flip formula by $2\times$ on real data (Spearman $0.96$ vs.\ $0.46$ on California Housing). The variance $\Var[\varphi_j]$ across the Rashomon set equals the minimum MSE any stable method achieves; \DASH{} saturates it exactly. The diagnostic is model-class universal: validated for XGBoost, LightGBM, Random Forest, Ridge, and LASSO.
+
+In a survey of 77 public datasets, 68\% exhibit attribution instability. Switching to conditional SHAP does not escape the impossibility when features have equal causal effects. SHAP-based proxy discrimination audits conclude ``proxy reliance'' with probability exactly $1/2$ for collinear features; for $K$ protected attributes, joint audit correctness is $(1/2)^K$. Preliminary evidence extends the impossibility to mechanistic interpretability: 10 grokked transformers agree on only 36\% of the top-3 circuit components.
+
+The framework is mechanically verified in Lean~4 (357 theorems from 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines)---the first formally verified impossibility in explainable AI. The formalization caught two logical inconsistencies and one type mismatch that survived informal review.
+
+Code and Lean proofs: \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}).
 \end{abstract}
 
 \section*{Executive Summary}
@@ -139,10 +142,11 @@ The 50\% flip rate is the worst case (maximally collinear pair, $\rho \to 1$). F
 
 \noindent\textbf{The practical toolkit.}
 \begin{enumerate}
-    \item \textbf{Diagnose}: The single-model screen (94\% precision on Breast Cancer; tree-based models only) identifies unstable feature pairs from one model.
-    \item \textbf{Validate}: The multi-model Z-test ($|r| > 0.8$ on 9 of 10 datasets with unstable pairs) confirms instability with 5 models.
-    \item \textbf{Resolve}: \DASH{} consensus averaging with $M \geq 25$ models reduces flip rate below 1\%.
-    \item \textbf{Size}: The ensemble formula $M_{\min} = \lceil 2.71 \cdot \sigma^2/\Delta^2 \rceil$ gives the optimal model count (validated for SNR $\geq 0.35$; at lower SNR, use the bootstrap diagnostic directly).
+    \item \textbf{Screen}: The single-model screen (94\% precision; tree-based models) identifies unstable pairs from one model.
+    \item \textbf{Predict}: The minority fraction---a 7-line nonparametric diagnostic derived from coverage conflict theory---predicts flip rates with Spearman $0.92$--$0.98$, outperforming the Gaussian formula ($0.46$--$0.89$) by $2\times$ on real data. Model-class universal (XGBoost, RF, Ridge, LASSO).
+    \item \textbf{Validate}: The multi-model Z-test confirms instability with 5 models.
+    \item \textbf{Resolve}: \DASH{} consensus averaging with $M \geq 25$ models reduces flip rate below 1\%. Uniquely optimal for binary $H$ (majority vote); optimal for continuous $H$ (Cauchy--Schwarz / Hunt--Stein).
+    \item \textbf{Size}: The ensemble formula $M_{\min} = \lceil 2.71 \cdot \sigma^2/\Delta^2 \rceil$ gives the optimal model count.
 \end{enumerate}
 
 \noindent\textbf{For regulators.} SHAP-based proxy discrimination audits are provably unreliable under collinearity: the audit conclusion is a coin flip across training seeds. This constitutes a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii). The instability disclosure template in Section~9 provides ready-to-use language for model documentation.
