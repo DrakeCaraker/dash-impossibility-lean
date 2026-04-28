@@ -2,8 +2,10 @@
 """
 IOI (Indirect Object Identification) circuit analysis across 10 GPT-2-small models.
 
-Tests whether the IOI circuit's functional structure replicates across seeds while
-the specific head assignments permute — exactly as the Attribution Impossibility predicts.
+Tests whether IOI component importance exhibits the same within-layer instability
+as general importance — the theorem's prediction applied to a task-specific circuit.
+If within-layer flip ≈ 0.50 and G-invariant rho > 0.80, the IOI circuit's importance
+structure is seed-dependent within layers but stable between layers.
 
 Runs AFTER gpt2_train.py completes. Uses the same 10 trained models.
 
@@ -145,9 +147,14 @@ def patch_ioi_single_model(seed: int, device: torch.device):
     print(f"  Logit diff: {baseline['mean_logit_diff']:.2f} "
           f"(acc={baseline['accuracy']:.1%})")
 
-    if baseline["accuracy"] < 0.55:
-        print(f"  WARNING: model barely does IOI (acc={baseline['accuracy']:.1%}). "
-              f"Circuit analysis may not be meaningful.")
+    if baseline["accuracy"] < 0.60:
+        print(f"  SKIPPING: model cannot do IOI (acc={baseline['accuracy']:.1%} < 60%). "
+              f"Circuit analysis not meaningful.")
+        results = {"seed": seed, "baseline": baseline, "importance": {}, "skipped": True}
+        with open(patch_dir / "results.json", "w") as f:
+            json.dump(results, f, indent=2)
+        done_marker.write_text("skipped")
+        return
 
     # ── Patch each component, measure change in logit diff ────────────
     print(f"IOI seed {seed}: patching 156 components...")
@@ -244,11 +251,21 @@ def run_ioi_analysis():
 
     # Load all results
     all_results = {}
+    skipped = []
     for seed in range(CFG.n_seeds):
         path = IOI_DIR / f"patch_seed{seed}" / "results.json"
         if path.exists():
             with open(path) as f:
-                all_results[seed] = json.load(f)
+                data = json.load(f)
+            if data.get("skipped"):
+                skipped.append(seed)
+                continue
+            if not data.get("importance"):
+                skipped.append(seed)
+                continue
+            all_results[seed] = data
+    if skipped:
+        print(f"Skipped seeds (IOI acc < 60%): {skipped}")
 
     seeds = sorted(all_results.keys())
     n = len(seeds)
@@ -383,18 +400,23 @@ def run_ioi_analysis():
     wr = np.mean(within_flips)
     gr = np.mean(ginv_rhos)
     if wr > 0.40 and gr > 0.80:
-        print(f"Within-layer flip = {wr:.3f} ≈ 0.50: head assignments are SEED-DEPENDENT.")
-        print(f"G-invariant rho = {gr:.3f}: layer-level IOI structure is STABLE.")
-        print(f"The IOI circuit's functional structure replicates across seeds;")
-        print(f"the specific head assignments permute — exactly as the theorem predicts.")
+        print(f"Within-layer flip = {wr:.3f} ≈ 0.50: IOI importance rankings are SEED-DEPENDENT within layers.")
+        print(f"G-invariant rho = {gr:.3f}: layer-level IOI importance is STABLE across seeds.")
+        print(f"Which head is most important for IOI depends on the training seed;")
+        print(f"which LAYER is most important does not — exactly as the theorem predicts.")
+        print(f"NOTE: This measures importance instability, not functional role assignment.")
+        print(f"Whether the same computational function (e.g., 'name mover') permutes")
+        print(f"across heads requires attention pattern analysis (not tested here).")
     elif wr < 0.20:
-        print(f"Within-layer flip = {wr:.3f} << 0.50: head assignments are STABLE.")
-        print(f"The IOI circuit does NOT show the predicted permutation instability.")
-        print(f"This may indicate that IOI creates strong enough specialization pressure")
-        print(f"to break the architectural symmetry.")
+        print(f"Within-layer flip = {wr:.3f} << 0.50: IOI importance rankings are STABLE.")
+        print(f"The IOI task does NOT show the predicted permutation instability.")
+        print(f"Possible explanations: (a) IOI creates strong specialization pressure that")
+        print(f"breaks S_12 symmetry, (b) 50K training steps is insufficient for full")
+        print(f"circuit formation, (c) heads contribute unequally to IOI in a way that")
+        print(f"is consistent across seeds.")
     else:
         print(f"Within-layer flip = {wr:.3f}: INTERMEDIATE result.")
-        print(f"Some layers show permutation, others are stable.")
+        print(f"Some layers show importance permutation for IOI, others are stable.")
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
