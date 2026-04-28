@@ -1774,6 +1774,11 @@ The bilemma applies to three common binary questions:
 \subsection{Instance: Mechanistic Interpretability}
 \label{sec:mech-interp}
 
+Circuit importance via activation patching IS attribution---attributing importance to internal components rather than input features. The Attribution Impossibility (Theorem~\ref{thm:impossibility}) applies directly: activation patching scores are attributions ($\varphi_j$), independently trained networks are configurations ($\Theta$), and architectural symmetry ($S_k^L$, the symmetric group permuting $k$ attention heads within each of $L$ layers) provides the interchangeability that generates the Rashomon property. The same theorem, operating at a different granularity, predicts the same instability and admits the same resolution: orbit averaging via the $G$-invariant projection.
+
+\paragraph{The $G$-invariant projection as Reynolds operator.}
+The resolution for component-level attribution is the \emph{Reynolds operator} (orbit average) over the symmetry group $G = \prod_{\ell=1}^{L} S_{k_\ell}$, where $S_{k_\ell}$ permutes the $k_\ell$ attention heads in layer $\ell$. For an importance vector $v \in \mathbb{R}^n$, the $G$-invariant projection is $v^G_\ell = \frac{1}{k_\ell} \sum_{h=1}^{k_\ell} v_{\ell,h}$---the mean importance of heads within each layer. This is precisely the Reynolds operator $\mathcal{R}_G(v) = \frac{1}{|G|} \sum_{g \in G} g \cdot v$, which projects onto the subspace of $G$-invariant vectors. Components outside the symmetry group (MLP layers, layer norms) are invariant singletons and pass through unchanged. The $G$-invariant projection reduces the $n$-dimensional attribution problem to an $n_{\text{inv}}$-dimensional one: for Config~A ($n=20$, 4 heads/layer $\times$ 4 layers + 4 MLPs), $n_{\text{inv}} = 8$ (4 head-averages + 4 MLPs); for Config~B ($n=54$, 8 heads/layer $\times$ 6 layers + 6 MLPs), $n_{\text{inv}} = 12$.
+
 No circuit explanation of a neural network can be simultaneously faithful (report the actual circuit decomposition), stable (same circuit across functionally equivalent networks), and decisive (commit to a single decomposition).
 
 The bilemma applies with full force: circuit decomposition spaces are binary (each component is either part of the circuit or not), making them maximally incompatible. Faithful + stable alone is impossible --- even dropping decisiveness does not help. This is strictly stronger than the trilemma.
@@ -1851,6 +1856,148 @@ The bilemma complements the quantitative bounds:
 The bilemma, unfaithfulness bound, all-or-nothing theorem, and all three ML instances (SHAP sign, feature selection, counterfactual direction) are machine-verified in \texttt{Bilemma.lean} with zero axiom dependencies beyond the Rashomon property.
 All instances use constructive inductive types (not axiomatized opaque types): \texttt{SHAPSign}, \texttt{FeatureStatus}, and \texttt{CounterfactualDir} are each two-element types with decidable equality and pattern-matching proofs.
 The abstract framework (\texttt{ExplanationSystem.lean}) defines the general explanation system, faithful, stable, and decisive, and proves the abstract impossibility.
+
+\subsection{TinyStories Multi-Scale Circuit Stability}
+\label{sec:tinystories}
+
+\paragraph{Setup.}
+We train 10 transformers from independent random seeds on TinyStories~\citep{eldan2023tinystories} at three scales:
+\begin{itemize}
+  \item \textbf{Config~A} (Small): 4 layers, 4 heads, $d_{\text{model}} = 256$, $n = 20$ components (16 heads + 4 MLPs).
+  \item \textbf{Config~B} (Medium): 6 layers, 8 heads, $d_{\text{model}} = 512$, $n = 54$ components (48 heads + 6 MLPs).
+  \item \textbf{Config~C} (GPT-2 fine-tuned): 12 layers, 12 heads, $d_{\text{model}} = 768$, $n = 156$ components (144 heads + 12 MLPs). This serves as a boundary condition: fine-tuning from a shared checkpoint does not create genuine Rashomon diversity.
+\end{itemize}
+All 10 models within each configuration achieve near-identical perplexity (Config~A: mean PPL $= 8.584$, CV $= 0.659\%$; Config~B: mean PPL $= 9.976$, CV $= 1.033\%$; Config~C: mean PPL $= 18.539$, CV $= 0.076\%$).
+Component importance is measured by activation patching (weight zeroing): zero out each component's parameters and measure the change in loss.
+Seven pre-registered predictions derived from the theory are evaluated per configuration; all 7/7 pass for Configs~A and~B, while Config~C passes 4/7 (correctly predicted by the theory as a non-Rashomon regime).
+
+\paragraph{Results.}
+Table~\ref{tab:tinystories-results} presents the full results across all three scales.
+
+\begin{table}[ht]
+\centering
+\caption{TinyStories component-level attribution stability across three architectural scales. $\rho_{\text{full}}$: mean pairwise Spearman correlation of raw importance vectors. $\rho_{G\text{-inv}}$: Spearman correlation after $G$-invariant projection. $W_{\text{flip}}$: within-layer head flip rate. $B_{\text{flip}}$: between-group (head vs.\ MLP) flip rate. $d$: Cohen's $d$ for within vs.\ between flip rate separation. Split-half: within-model Spearman reliability. RP pctile: percentile of $G$-invariant $\rho$ under random projection null. Perm.\ $p$: permutation test $p$-value.}
+\label{tab:tinystories-results}
+\small
+\begin{tabular}{lccc}
+\toprule
+& \textbf{Config A} & \textbf{Config B} & \textbf{Config C} \\
+& Small (4L/4H/d256) & Medium (6L/8H/d512) & GPT-2 (12L/12H/d768) \\
+\midrule
+$n$ components & 20 & 54 & 156 \\
+$n_{\text{inv}}$ (after $G$-proj.) & 8 & 12 & 24 \\
+PPL mean (CV\%) & 8.584 (0.659\%) & 9.976 (1.033\%) & 18.539 (0.076\%) \\
+\midrule
+$\rho_{\text{full}}$ [95\% CI] & 0.565 [0.527, 0.603] & 0.540 [0.516, 0.565] & 0.993 [0.993, 0.994] \\
+$\rho_{G\text{-inv}}$ [95\% CI] & 0.972 [0.966, 0.979] & 0.982 [0.977, 0.986] & 0.999 [0.999, 1.000] \\
+\midrule
+$W_{\text{flip}}$ [95\% CI] & 0.496 [0.467, 0.526] & 0.489 [0.478, 0.500] & 0.043 [0.041, 0.045] \\
+$B_{\text{flip}}$ & 0.000 & 0.000 & 0.000 \\
+Cohen's $d$ & 5.389 & 11.939 & 9.354 \\
+\midrule
+Split-half reliability & 0.991 & 0.960 & 0.878 \\
+RP pctile (heads-only) & 100th & 100th & 82.5th \\
+Perm.\ $p$ & ${<}\,0.001$ & ${<}\,0.001$ & ${<}\,0.001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The pattern is striking: raw importance vectors are only moderately correlated ($\rho_{\text{full}} \approx 0.55$ for Configs~A and~B), but after the $G$-invariant projection they are nearly perfectly correlated ($\rho_{G\text{-inv}} > 0.97$). Within-layer head flip rates are at chance ($W_{\text{flip}} \approx 0.50$), consistent with the theory's prediction that symmetric components are interchangeable. Between-group flip rates are exactly zero: heads never outrank MLP layers (or vice versa) across seeds. Cohen's $d$ confirms massive separation between within-layer and between-group instability ($d = 5.4$ and $11.9$).
+
+\paragraph{Per-seed head importance: full $S_4$ realization.}
+Table~\ref{tab:tinystories-seeds} shows which attention head ranks highest in each seed for Config~A (excluding MLP components, which are invariant singletons and always dominate). All four layer-0 heads appear as the top-ranked head across the 10 seeds, realizing the full symmetric group $S_4$.
+
+\begin{table}[ht]
+\centering
+\caption{Top-ranked attention head per seed in Config~A (4 layers $\times$ 4 heads). All four layer-0 heads appear as \#1, realizing the full $S_4$ permutation symmetry. MLP components (which dominate overall) are excluded---they are invariant singletons outside the symmetry group.}
+\label{tab:tinystories-seeds}
+\small
+\begin{tabular}{cclr}
+\toprule
+\textbf{Seed} & \textbf{Component idx} & \textbf{Head} & \textbf{Importance} \\
+\midrule
+0 & 2 & L0H2 & 1.153 \\
+1 & 3 & L0H3 & 1.597 \\
+2 & 2 & L0H2 & 0.540 \\
+3 & 3 & L0H3 & 1.626 \\
+4 & 0 & L0H0 & 1.776 \\
+5 & 0 & L0H0 & 0.824 \\
+6 & 2 & L0H2 & 2.054 \\
+7 & 1 & L0H1 & 2.060 \\
+8 & 0 & L0H0 & 1.516 \\
+9 & 3 & L0H3 & 0.994 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This is the component-level analogue of the input-level impossibility: ``which head matters most?'' depends entirely on which random seed was used, even though all models achieve the same perplexity. The $G$-invariant projection resolves this by reporting the \emph{layer-averaged} importance, which is stable across all seeds.
+
+\paragraph{Controls.}
+Three controls validate that the $G$-invariant lift is not an artifact:
+\begin{enumerate}
+  \item \textbf{Split-half reliability}: within-model measurements are highly precise (Spearman $= 0.991$ for Config~A, $0.960$ for Config~B), far exceeding between-model agreement ($0.565$, $0.540$). The instability is between models, not within.
+  \item \textbf{Random projection null}: the $G$-invariant projection achieves the 100th percentile among 1{,}000 random projections to the same dimensionality (heads-only) at both scales. No random $n_{\text{inv}}$-dimensional subspace achieves comparable stability.
+  \item \textbf{Permutation test}: $p < 0.001$ at both scales (Config~A: actual $\rho_{G\text{-inv}} = 0.972$, null mean $= 0.836$, null SD $= 0.016$; Config~B: actual $= 0.982$, null mean $= 0.864$, null SD $= 0.010$).
+\end{enumerate}
+
+\paragraph{GPT-2 boundary condition.}
+Config~C (GPT-2 fine-tuned from a shared checkpoint) provides a crucial negative control. Raw agreement is already near-perfect ($\rho_{\text{full}} = 0.993$), and the $G$-invariant lift is negligible ($\rho_{G\text{-inv}} = 0.999$). The within-layer flip rate drops to $W_{\text{flip}} = 0.043$---far below chance. Critically, split-half reliability ($0.878$) is \emph{lower} than between-model agreement ($0.993$): within-model measurement noise exceeds between-model variation. This means fine-tuning from a shared checkpoint does not create genuine Rashomon diversity---the models are too similar. The theory correctly predicts: less Rashomon $\to$ less instability $\to$ less need for orbit averaging.
+
+\subsection{Method Robustness: Weight Zeroing vs.\ Mean Ablation}
+\label{sec:mean-ablation}
+
+Different ablation methods assign different importance scores to the same component in the same model. We compare weight zeroing (zero out all parameters) with mean ablation (replace activations with their dataset mean) to test whether the $G$-invariant projection is robust to the choice of attribution method.
+
+\paragraph{Raw disagreement, invariant agreement.}
+Table~\ref{tab:mean-ablation-agreement} shows that weight zeroing and mean ablation disagree substantially on raw head importance (cross-method per-model $\rho \approx 0.5$--$0.6$) but agree on the $G$-invariant projection ($\rho_{G\text{-inv}} > 0.97$).
+
+\begin{table}[ht]
+\centering
+\caption{Between-method agreement: weight zeroing vs.\ mean ablation. $\rho_{\text{full}}$: mean pairwise Spearman of raw importance vectors across seeds (within each method). Cross-method $\rho$: per-model Spearman between weight-zeroing and mean-ablation importance vectors.}
+\label{tab:mean-ablation-agreement}
+\small
+\begin{tabular}{lcc}
+\toprule
+& \textbf{Config A} & \textbf{Config B} \\
+\midrule
+Weight zeroing $\rho_{\text{full}}$ & 0.565 & 0.540 \\
+Mean ablation $\rho_{\text{full}}$ & 0.914 & 0.965 \\
+Mean ablation $\rho_{G\text{-inv}}$ & 0.975 & 0.987 \\
+\midrule
+Cross-method $\rho$ (mean) & 0.591 & 0.504 \\
+Cross-method $\rho$ (range) & [0.489, 0.718] & [0.433, 0.596] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Per-model cross-method correlations.}
+Table~\ref{tab:cross-method-per-model} shows the full per-model detail, confirming that the disagreement is systematic, not driven by outliers.
+
+\begin{table}[ht]
+\centering
+\caption{Per-model Spearman correlation between weight-zeroing and mean-ablation importance vectors. Each row is one independently trained model. The two methods agree moderately on raw components but converge after orbit averaging.}
+\label{tab:cross-method-per-model}
+\small
+\begin{tabular}{ccc}
+\toprule
+\textbf{Seed} & \textbf{Config A} & \textbf{Config B} \\
+\midrule
+0 & 0.629 & 0.532 \\
+1 & 0.524 & 0.596 \\
+2 & 0.694 & 0.477 \\
+3 & 0.529 & 0.453 \\
+4 & 0.536 & 0.466 \\
+5 & 0.718 & 0.537 \\
+6 & 0.489 & 0.433 \\
+7 & 0.524 & 0.578 \\
+8 & 0.604 & 0.475 \\
+9 & 0.665 & 0.490 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Interpretation.}
+The disagreement between ablation methods is itself an instance of the impossibility: different ``methods'' function as different ``seeds,'' producing different raw attributions from the same model. Weight zeroing measures the effect of removing a component's learned weights; mean ablation measures the effect of clamping its activations to the population mean. These are genuinely different attribution functions $\varphi$ applied to the same model $\theta$. Yet the orbit-averaged structure $v^G$ is invariant to this choice ($\rho_{G\text{-inv}} > 0.97$ for both methods at both scales). The $G$-invariant projection absorbs not only seed-to-seed variation but also method-to-method variation---exactly as the Reynolds operator framework predicts, since the symmetry group $G$ acts on the component indices regardless of how importance is measured.
 
 \subsection{Quantitative Bilemma for Continuous Explanations}
 \label{sec:quantitative-bilemma}
@@ -3391,11 +3538,15 @@ necessity.
 \citet{herren2023statistical} develop statistical inference for feature rankings under
 model multiplicity; our contribution is to prove that the multiplicity is unavoidable
 under collinearity, not merely empirically common.
+\citet{fisher2019models} compute model class reliance---variable importance ranges across the Rashomon set---showing that different models in the Rashomon set can assign very different importance to the same feature. Our theorem proves this variability is not merely possible but mathematically inevitable under collinearity, and provides the complete design space of methods that navigate it.
 \citet{krishna2022disagreement} document the ``disagreement problem'' in explainable
 ML---different explanation methods produce different outputs for the same
 model---complementary to our result that the \emph{same} method produces different
 outputs for different equivalent models.
 \end{sloppypar}
+
+\paragraph{Underspecification.}
+\citet{damour2022underspecification} document that underspecification---the existence of multiple models with equivalent held-out performance---causes instability in predictions, fairness metrics, and feature attributions across domains. Our contribution is complementary: we prove that attribution instability under underspecification is a mathematical impossibility (not merely an empirical observation), quantify the divergence rate by model class, and provide a provably optimal resolution.
 
 \paragraph{Attribution sensitivity and fragility.}
 \citet{ghorbani2019data} demonstrate that neural network attributions are empirically fragile to small input perturbations.
@@ -3409,6 +3560,9 @@ The model architectures we analyze were introduced by \citet{breiman2001random} 
 \paragraph{Fairness impossibility.}
 \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove calibration, balance, and equal false positive rates cannot coexist when base rates differ. Our trilemma (faithfulness, stability, completeness) is structurally analogous.
 
+\paragraph{Mechanistic interpretability and circuit multiplicity.}
+\citet{chughtai2023toy} show that independently trained networks learn distinct internal representations for the same group operation, demonstrating empirical Rashomon at the circuit level. \citet{meloux2025circuits} find 85 distinct valid circuits with zero circuit error for XOR. Our component-level results extend this line of work: the instability in circuit importance is mathematically inevitable under architectural symmetry, and the $G$-invariant projection provides a principled resolution---averaging within orbits of the symmetry group to recover the stable shared structure.
+
 \paragraph{Formal verification for ML.}
 \begin{sloppypar}
 \citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning theory in Lean~4 \citep{demoura2021lean4} using Mathlib \citep{mathlib2020}. Our formalization is the first formally verified impossibility result in explainable~AI.
@@ -3416,6 +3570,22 @@ The model architectures we analyze were introduced by \citet{breiman2001random} 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \endgroup% end sloppy for Related Work
+%% CODE AND DATA AVAILABILITY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Code and Data Availability}
+\label{sec:code-availability}
+
+\begin{sloppypar}
+\noindent\textbf{Reference implementation.} The DASH stability API, diagnostic tools, and all experiment scripts are available at \url{https://github.com/DrakeCaraker/dash-shap} (stability API in PR~\#255).
+
+\noindent\textbf{Lean formalization.} The 357-theorem, 6-axiom, 0-\texttt{sorry} formalization is available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (archived at \url{https://doi.org/10.5281/zenodo.19468379}).
+
+\noindent\textbf{TinyStories models.} All 30 transformer models (10 seeds $\times$ 2 configs from scratch + 10 GPT-2 fine-tunes) trained on TinyStories \citep{eldan2023tinystories} will be released with the camera-ready version.
+
+\noindent\textbf{Datasets.} All input-level experiments use publicly available datasets: Breast Cancer Wisconsin, German Credit (UCI ML Repository), California Housing, Diabetes, Wine Quality, Heart Disease. The gene expression datasets (AP\_Colon\_Kidney, AP\_Breast\_Lung) are from the ArrayExpress public repository.
+\end{sloppypar}
+
 %% 13. DISCUSSION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

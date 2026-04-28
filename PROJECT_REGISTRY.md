@@ -2,7 +2,7 @@
 
 **Auto-verified:** Run `make registry-check` or `python3 paper/scripts/verify_registry.py` to validate all machine-checkable claims below.
 
-**Last verified:** 2026-04-22 | **Lean:** 357 theorems, 6 axioms, 0 sorry, 58 files
+**Last verified:** 2026-04-25 | **Lean:** 357 theorems, 6 axioms, 0 sorry, 58 files
 
 ---
 
@@ -113,6 +113,10 @@ Mathlib:         yes (Analysis, Probability, Data.Finset)
 | Model-class universality | CC works for XGB/RF/Ridge/LASSO | model_class_rigorous.py (dash-shap repo) | **VALIDATED** |
 | NN attribution instability | 87% unstable, 8:1 model vs SHAP noise | paper experiments | **VALIDATED** |
 | MI circuit multiplicity | 36% Jaccard@3, 10 grokked transformers | results_mech_interp_definitive_v2.json (universal repo) | **VALIDATED** (weak control) |
+| **TinyStories Config A (4L/4H)** | **ρ=0.565→0.972, W-flip=0.496, d=5.4, 7/7 PASS** | **docs/tinystories-results-reference.json** | **VALIDATED** |
+| **TinyStories Config B (6L/8H)** | **ρ=0.540→0.982, W-flip=0.489, d=11.9, 7/7 PASS** | **docs/tinystories-results-reference.json** | **VALIDATED** |
+| **GPT-2 boundary condition** | **ρ=0.993, W-flip=0.043, 4/7 PASS (expected)** | **docs/tinystories-results-reference.json** | **VALIDATED** |
+| **Mean ablation robustness** | **G-inv ρ≈0.97-0.99; cross-method ρ≈0.5-0.6** | **docs/mean-ablation-results-reference.json** | **VALIDATED** |
 | Published ranking replication | 4 pairs reported stable, 28-48% flip | paper experiments | **VALIDATED** |
 | Prevalence survey | 68% of 77 datasets | paper experiments | **VALIDATED** |
 | SNR calibration | R²=0.94 across 1,325 pairs | paper experiments | **VALIDATED** |
@@ -143,10 +147,10 @@ Mathlib:         yes (Analysis, Probability, Data.Finset)
 
 | Paper | File | Pages | Status | Key counts |
 |-------|------|-------|--------|------------|
-| NeurIPS main | paper/main.tex | 9 | **Submission-ready** | 357/6/0 |
+| NeurIPS main | paper/main.tex | 10 | **Submission-ready** (input + component level) | 357/6/0 |
 | Supplement | paper/supplement.tex | 81 | **Submission-ready** | 357/6/0 |
 | JMLR | paper/main_jmlr.tex | 59 | Ready (after NeurIPS) | 357/6/0 |
-| Monograph | paper/main_definitive.tex | 77 | Exhaustive | 357/6/0 |
+| Monograph | paper/main_definitive.tex | 82 | **arXiv-ready** (incl. TinyStories, mean ablation) | 357/6/0 |
 
 ### 3.1 Distinctive Content Per Paper
 

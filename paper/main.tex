@@ -31,7 +31,7 @@
 \newcommand{\DASH}{\textsc{Dash}}
 \newcommand{\GBDT}{\textsc{GBDT}}
 
-\title{The Attribution Impossibility:\\{\large No Feature Ranking Is Faithful, Stable, and Complete Under Collinearity}}
+\title{The Attribution Impossibility:\\{\large No Importance Ranking Is Faithful, Stable, and Complete Under Symmetry}}
 
 % Author block hidden for anonymous review.
 % Uncomment for camera-ready / arXiv preprint:
@@ -48,78 +48,84 @@
 \maketitle
 
 \begin{abstract}
-Feature importance explanations are provably unreliable under collinearity.
-We prove that no SHAP ranking can simultaneously be faithful, stable, and complete (the Attribution Impossibility); for binary questions (SHAP sign, feature selection), faithful + stable alone is impossible (the bilemma).
-On the canonical SHAP tutorial dataset, 50 retrains produce 24 distinct top-3 rankings (4.2\% pairwise agreement). On gene expression data, the \#1 biomarker alternates between TSPAN8 and CEACAM5/CEA---different drug targets---depending on the seed. Under standard regularization, 45\% of German Credit applicants receive different explanation categories.
-The design space has exactly two families; \DASH{} is Pareto-optimal. A 7-line nonparametric diagnostic outperforms the Gaussian formula by $2\times$ on real data.
-Verified in Lean~4 (357 theorems, 6 axioms, 0~\texttt{sorry})---the first formally verified impossibility in explainable AI.
+Attribution instability is not a bug in SHAP---it is a mathematical property of attribution itself, at every level of a model.
+We prove that no attribution ranking can simultaneously be faithful, stable, and complete under the Rashomon property (the Attribution Impossibility); for binary questions, faithful + stable alone is impossible (the bilemma). The theorem applies to \emph{any} attribution system: input-level (which feature matters) and component-level (which circuit computes).
+\textbf{Input-level:} 50 retrains produce 24 distinct top-3 rankings (4.2\% agreement); 45\% of German Credit applicants receive different explanation categories; 68\% of 77 datasets show instability. A 7-line nonparametric diagnostic outperforms the Gaussian formula by $2\times$.
+\textbf{Component-level:} 10 independently trained transformers on TinyStories agree at only $\rho{=}0.54$ on circuit importance by activation patching. A $G$-invariant projection (orbit averaging over the architectural symmetry group) lifts agreement to $\rho{=}0.98$, with 14/14 theory-derived predictions confirmed across two scales. A fine-tuned GPT-2 confirms the boundary: without Rashomon diversity, instability vanishes ($\rho{=}0.993$).
+The design space has exactly two achievable families; \DASH{} (orbit averaging) is Pareto-optimal. Verified in Lean~4 (357 theorems, 6 axioms, 0~\texttt{sorry}).
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 \label{sec:intro}
 
-Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes---in 68\% of 77 public datasets (under the standard workflow; model variation accounts for ${\sim}63\%$ of the total).
-Before this work, practitioners assumed this was an engineering problem. We prove it is a mathematical impossibility---and provide the complete theory: an impossibility theorem, a nonparametric diagnostic that outperforms the parametric alternative by $2\times$, a constructive resolution with provable optimality, and machine verification in Lean~4.
+Train a gradient-boosted model. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes---in 68\% of 77 public datasets.
+Now look inside a neural network. Identify the most important circuit component by activation patching. Retrain from a different initialization. The most important component changes too---10 independently trained transformers on TinyStories agree at only $\rho = 0.54$.
 
-\paragraph{A concrete example.}
-Consider a credit model with annual income and debt-to-income ratio ($|\rho| \approx 0.7$--$0.85$). Across 30 retrains with different seeds, 45\% of German Credit applicants receive a different ``most important feature'' category. Under ECOA, the adverse action notice changes based solely on training randomness.
+The instability is not in SHAP, not in activation patching, and not in any specific method. It is in the mathematics of attribution itself. We prove that \emph{no} attribution ranking---at any level of a model, from input features to internal circuits---can simultaneously be faithful, stable, and complete when the Rashomon property holds. The same theorem, the same resolution, the same diagnostic, at different granularities.
+
+\paragraph{Two levels, one impossibility.}
+Consider \emph{input-level attribution}: across 30 retrains, 45\% of German Credit applicants receive a different ``most important feature'' category. The adverse action notice changes based solely on the training seed.
+Now consider \emph{component-level attribution}: across 10 independently trained transformers, all 4 attention heads in layer~0 appear as ``most important'' under different seeds---full $S_4$ symmetry realized. A circuit analysis depends on which equivalent network you happened to train.
+
+The reason is the same: collinear features (or architecturally symmetric components) create a Rashomon set where equivalent models attribute importance in opposite orders. The fix is the same: \emph{orbit averaging}---aggregate across the symmetry to recover what is shared. For features, this is \DASH{} (ensemble averaging); for circuits, this is the $G$-invariant projection. Both are the Reynolds operator on different symmetry groups.
 
 \paragraph{Contributions.}
 \begin{enumerate}
-    \item \textbf{The Attribution Impossibility} (Theorem~\ref{thm:impossibility}): no feature ranking is faithful, stable, and complete. Zero axiom dependencies. The \textbf{bilemma} (Theorem~\ref{thm:bilemma}): for binary $H$, faithful + stable alone is impossible.
-    \item \textbf{The Design Space Theorem} (Theorem~\ref{thm:design-space}): exactly two families of methods exist. \DASH{} is Pareto-optimal among unbiased aggregations.
-    \item \textbf{Nonparametric diagnostic}: the minority fraction predicts flip rates with Spearman $0.92$--$0.98$, outperforming the Gaussian formula ($0.46$--$0.89$). Bimodality confirmed (dip $p < 0.002$).
-    \item \textbf{Clinical decision reversal}: 45\% of German Credit applicants receive different explanations under standard regularization (ablation across 3 model classes).
-    \item \textbf{Machine-verified proof}: 357 Lean~4 theorems from 6 axioms, 0~\texttt{sorry}. All binary instances use constructive types (zero axioms).
+    \item \textbf{The Attribution Impossibility} (Theorem~\ref{thm:impossibility}): no attribution ranking is faithful, stable, and complete---at any granularity. Zero axiom dependencies. The \textbf{bilemma} (Theorem~\ref{thm:bilemma}): for binary attribution questions, faithful + stable alone is impossible.
+    \item \textbf{The Design Space Theorem} (Theorem~\ref{thm:design-space}): exactly two families of methods exist. \DASH{} (orbit averaging) is Pareto-optimal.
+    \item \textbf{Component-level validation}: 14/14 theory-derived predictions confirmed on TinyStories at two architectural scales. $G$-invariant projection lifts circuit agreement from $\rho{=}0.54$ to $\rho{=}0.98$. GPT-2 fine-tune confirms the boundary: without Rashomon diversity, instability drops to near-zero ($\rho{=}0.993$, flip $= 0.043$).
+    \item \textbf{Input-level validation}: 45\% explanation reversal, 24 distinct top-3 rankings on the canonical SHAP tutorial dataset, nonparametric diagnostic outperforming the Gaussian formula by $2\times$.
+    \item \textbf{Machine-verified proof}: 357 Lean~4 theorems from 6 axioms, 0~\texttt{sorry}---the first formally verified impossibility in explainable AI.
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Setup}
+\section{Setup and the Attribution Impossibility}
 \label{sec:setup}
 
-We consider $P$ features partitioned into $L$ groups by correlation structure ($\rho \in (0,1)$ within groups, independent between groups). A \emph{model} $f = \texttt{train}(s)$ is trained from seed $s$; its \emph{attribution} $\varphi_j(f) \geq 0$ measures the global importance of feature $j$. A \emph{feature ranking} $\succ$ on $[P]$ is:
+An \emph{attribution system} consists of a set of configurations $\Theta$ (trained models, circuits, or any parameterized explananda), an attribution function $\varphi_j(\theta) \geq 0$ measuring the importance of component $j$ in configuration $\theta$, and a ranking $\succ$ on the components.
 
 \begin{definition}[Faithful, Stable, Complete]
 \label{def:desiderata}
-$\succ$ is \emph{faithful} to $f$ if $j \succ k$ whenever $\varphi_j(f) > \varphi_k(f)$;
-\emph{stable} if $\succ$ does not depend on $f$;
+$\succ$ is \emph{faithful} to $\theta$ if $j \succ k$ whenever $\varphi_j(\theta) > \varphi_k(\theta)$;
+\emph{stable} if $\succ$ does not depend on $\theta$;
 \emph{complete} if for every $j \neq k$, either $j \succ k$ or $k \succ j$.
 \end{definition}
 
-The \emph{Rashomon property} \citep{rudin2024amazing}: for every group $\ell$ and features $j, k$ in $\ell$, there exist models $f, f'$ with $\varphi_j(f) > \varphi_k(f)$ and $\varphi_k(f') > \varphi_j(f')$.
-The Rashomon property is inevitable for any stochastic, symmetric training algorithm on collinear features with $\rho > 0$ (supplement: Rashomon Inevitability Theorem, Lean-verified).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The Attribution Impossibility}
-\label{sec:impossibility}
+The \emph{Rashomon property} \citep{rudin2024amazing}: for interchangeable components $j, k$, there exist configurations $\theta, \theta'$ with $\varphi_j(\theta) > \varphi_k(\theta)$ and $\varphi_k(\theta') > \varphi_j(\theta')$. It is inevitable for any stochastic algorithm whose training distribution is invariant under permutation of symmetric components (Rashomon Inevitability Theorem, Lean-verified; supplement). Deterministic algorithms with fixed tie-breaking rules can break this symmetry.
 
 \begin{theorem}[Attribution Impossibility]
 \label{thm:impossibility}
-If a model class satisfies the Rashomon property, no feature ranking is simultaneously faithful, stable, and complete.
+If an attribution system satisfies the Rashomon property, no ranking is simultaneously faithful, stable, and complete.
 \end{theorem}
 
 \begin{proof}
-Let $j, k$ be in the same group. Rashomon gives $f, f'$ with opposite orderings. Suppose $\succ$ is faithful, stable, complete. Completeness: WLOG $j \succ k$. Stability: holds for all models. Faithfulness at $f'$: requires $k \succ j$. Contradiction. \hfill Lean: \texttt{attribution\_impossibility}, zero axioms.
+Let $j, k$ be interchangeable. Rashomon gives $\theta, \theta'$ with opposite orderings. Suppose $\succ$ is faithful, stable, complete. Completeness: WLOG $j \succ k$. Stability: this holds for all configurations. Faithfulness at $\theta'$: requires $k \succ j$. Contradiction. \hfill Lean: \texttt{explanation\_impossibility}, zero domain axioms.
 \end{proof}
+
+\paragraph{Instance 1: Input-level attribution.}
+$\Theta$ = trained models; $\varphi_j$ = global SHAP importance of feature $j$; interchangeability = collinearity ($\rho > 0$).
+$P$ features are partitioned into $L$ groups by correlation structure.
+The attribution ratio diverges as $1/(1{-}\rho^2)$ for \GBDT{}, is $\infty$ for Lasso, conditional for neural nets, and $O(1/\sqrt{T})$ for random forests (supplement).
+
+\paragraph{Instance 2: Component-level attribution.}
+$\Theta$ = independently trained networks; $\varphi_j$ = importance of component $j$ (head, MLP block) by activation patching; interchangeability = the loss landscape has $S_k^L$ symmetry (permuting heads within a layer yields an equivalent minimum). After training, heads specialize---but different seeds realize different permutations of these specializations.
+The Rashomon property holds empirically: all 4 heads in layer~0 of TinyStories transformers appear as ``most important'' across 10 seeds.
 
 \begin{theorem}[Design Space]
 \label{thm:design-space}
 The achievable set of $(S, U, C)$ triples consists of exactly two families:
-\textbf{Family~$\mathcal{A}$} (single-model): $U = 1/2$, $C = \text{complete}$;
-\textbf{Family~$\mathcal{B}$} (\DASH{} ensemble): $U = 0$, $C = \text{ties}$, $S = 1 - O(1/M)$.
-No third family exists (Figure~\ref{fig:design-space}). $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. \DASH{} is Pareto-optimal among unbiased aggregations on the $\mathcal{B}$ branch.
+\textbf{Family~$\mathcal{A}$} (single-configuration): $U = 1/2$, $C = \text{complete}$;
+\textbf{Family~$\mathcal{B}$} (orbit averaging): $U = 0$, $C = \text{ties}$, $S = 1 - O(1/M)$.
+No third family exists among deterministic aggregation methods (Figure~\ref{fig:design-space}). $(S{=}1, U{=}0, C{=}\text{complete})$ is infeasible. \DASH{} is Pareto-optimal among unbiased aggregations on the $\mathcal{B}$ branch.
 \end{theorem}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.55\textwidth]{figures/design_space.pdf}
-\caption{The Attribution Design Space. Family $\mathcal{A}$ (single-model): faithful and complete but unstable ($U{=}1/2$). Family $\mathcal{B}$ (\DASH{}): stable with ties ($U{=}0$, $S$ increasing with $M$). The ideal point is infeasible. No third option.}
+\caption{The Attribution Design Space. Family $\mathcal{A}$ (single-model/network): faithful and complete but unstable ($U{=}1/2$). Family $\mathcal{B}$ (orbit averaging): stable with ties ($U{=}0$, $S$ increasing with ensemble size $M$). The ideal point is infeasible.}
 \label{fig:design-space}
 \end{figure}
-
-\paragraph{Quantitative bounds (supplement).}
-The attribution ratio diverges as $1/(1{-}\rho^2)$ for \GBDT{} (Lean-verified), is $\infty$ for Lasso, conditional for neural nets, and $O(1/\sqrt{T})$ for random forests (converging---the contrast case).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The Bilemma and Diagnostics}
@@ -127,30 +133,39 @@ The attribution ratio diverges as $1/(1{-}\rho^2)$ for \GBDT{} (Lean-verified), 
 
 \subsection{The Bilemma}
 
-For \emph{binary} attribution questions---``positive or negative?'', ``selected or not?'', ``increase or decrease?''---the impossibility is strictly stronger.
+For \emph{binary} attribution questions---``positive or negative?'', ``selected or not?'', ``in the circuit or not?''---the impossibility is strictly stronger.
 
 \begin{theorem}[The Bilemma]
 \label{thm:bilemma}
 For binary $H$ with $\mathrm{incompatible}(h_1, h_2) \Leftrightarrow h_1 \neq h_2$, no method is simultaneously faithful and stable under the Rashomon property. Completeness is not needed.
 \end{theorem}
 \begin{proof}
-Binary $H$ has no neutral element: every value contradicts the other. Faithful forces $E(\theta) = \mathrm{explain}(\theta)$ (there's nowhere else to go), making $E$ decisive. The trilemma gives $\bot$. \hfill Lean: \texttt{bilemma\_of\_compatible\_eq}, zero axioms.
+Binary $H$ has no neutral element: every value contradicts the other. Faithful forces $E(\theta) = \mathrm{explain}(\theta)$, making $E$ decisive. The trilemma gives $\bot$. \hfill Lean: \texttt{bilemma\_of\_compatible\_eq}, zero axioms.
 \end{proof}
 
-\paragraph{Approximate bilemma.}
-A natural concern: does the bilemma require exact Rashomon pairs, making it fragile to perturbations? No. For binary $H$, $\varepsilon$-stability reduces to exact equality (the only $\varepsilon$-ball in $\{\text{pos}, \text{neg}\}$ with $\varepsilon < 1$ is the point itself). The bilemma holds at every tolerance level. (Lean: \texttt{ApproximateBilemma.lean}.)
-
-\paragraph{Quantitative bilemma for continuous $H$.}
-For $(\varepsilon, \delta)$-stable $E$ on an $\varepsilon$-Rashomon pair with gap $\Delta$: $\text{unfaith}(\theta_1) + \text{unfaith}(\theta_2) \geq \Delta - \delta$. At least one witness is unfaithful by $\geq (\Delta - \delta)/2$. Proof: triangle inequality. If models disagree by $\Delta = 0.3$ and you want $\delta = 0.05$ stability, unfaithfulness $\geq 0.125$ at one witness. (Lean: \texttt{ApproximateBilemma.lean}.)
+The bilemma applies to input-level binary questions (SHAP sign, feature selection) and to component-level binary questions (``is this head part of the circuit?''). It is robust to perturbation: for binary $H$, $\varepsilon$-stability reduces to exact equality, so the bilemma holds at every tolerance level (Lean: \texttt{ApproximateBilemma.lean}). For continuous $H$, the quantitative bilemma gives: unfaithfulness $\geq (\Delta - \delta)/2$ for any $(\varepsilon,\delta)$-stable method on a Rashomon pair with gap $\Delta$ (supplement).
 
 \paragraph{Tightness classification.}
-$F{+}S$ is achievable iff $H$ has a \emph{neutral element}---a value compatible with all native explanations (Lean: \texttt{tightness\_dichotomy}). Rankings have ties (neutral); SHAP signs do not. The bilemma has \emph{collapsed} tightness: stability blocks both faithfulness and decisiveness individually. This is structurally more severe than the fairness impossibility \citep{chouldechova2017fair}, which has \emph{full} tightness (every pair of properties is achievable). Collapsed tightness means the only resolution is enrichment---adding neutral elements to $H$---which is precisely what DASH does.
+$F{+}S$ is achievable iff $H$ has a \emph{neutral element} (Lean: \texttt{tightness\_dichotomy}). Rankings have ties (neutral); SHAP signs and circuit membership do not. The bilemma has \emph{collapsed} tightness---structurally more severe than the fairness impossibility \citep{chouldechova2017fair}. The only resolution is enrichment: adding neutral elements, which is precisely what orbit averaging does.
 
-\subsection{Nonparametric Flip Predictor}
+\subsection{Diagnostics}
 
-The bilemma yields a practical diagnostic. For feature $j$ across $M$ models, the \emph{minority fraction}
+\paragraph{Input-level: nonparametric flip predictor.}
+For feature $j$ across $M$ models, the \emph{minority fraction}
 $\hat{p}_j = \min(\#\{m : \varphi_j(f_m) > 0\},\; \#\{m : \varphi_j(f_m) \leq 0\}) / M$
-directly estimates the flip rate---no distributional assumptions, no parameter estimation.
+directly estimates the flip rate. It achieves Spearman $0.92$--$0.98$ across all datasets (Table~\ref{tab:cc-comparison}), outperforming the Gaussian formula ($0.46$--$0.89$). The complete predictor is 7 lines:
+
+{\small
+\begin{verbatim}
+def predict_sign_instability(shap_matrix):
+    signs = np.sign(shap_matrix)  # M models × P features
+    n_pos = (signs > 0).sum(axis=0)
+    n_neg = (signs < 0).sum(axis=0)
+    total = n_pos + n_neg
+    return np.where(total > 0,
+        np.minimum(n_pos, n_neg) / total, 0)
+\end{verbatim}
+}
 
 \begin{table}[t]
 \centering
@@ -168,88 +183,43 @@ California Housing & \textbf{0.955} & \textbf{0.463} \\
 \end{tabular}
 \end{table}
 
-The minority fraction achieves Spearman $0.92$--$0.98$ across all datasets (Table~\ref{tab:cc-comparison}), outperforming the Gaussian formula ($0.46$--$0.89$). The advantage is decisive on real data where distributional assumptions break. The complete predictor is 7 lines:
+The variance $\Var_f[\varphi_j(f)]$ across the Rashomon set equals the minimum MSE any stable method achieves; \DASH{} saturates it exactly (0/800 violations). The diagnostic is model-class universal (XGBoost, RF, Ridge, LASSO; supplement) with bimodal flip rate distributions confirmed by the Hartigan dip test ($p < 0.002$; supplement).
 
-{\small
-\begin{verbatim}
-def predict_sign_instability(shap_matrix):
-    signs = np.sign(shap_matrix)  # M models × P features
-    n_pos = (signs > 0).sum(axis=0)
-    n_neg = (signs < 0).sum(axis=0)
-    total = n_pos + n_neg
-    return np.where(total > 0,
-        np.minimum(n_pos, n_neg) / total, 0)
-\end{verbatim}
-}
-
-\paragraph{Variance budget: $\Var[\SHAP] =$ explanation quality floor.}
-For each feature $j$, the variance $\Var_f[\varphi_j(f)]$ across the Rashomon set equals the minimum MSE any stable method achieves.
-\DASH{} (the mean) saturates this bound exactly---a mathematical identity (0/800 violations at machine precision across 5 datasets $\times$ 20 features $\times$ 8 configurations).
-The median costs 1.6\% more; the 5\%-trimmed mean 0.3\% more.
-The relative variance correlates with coverage conflict ($r = 0.91$, $p = 0.002$ per-dataset): features with high sign instability also have high magnitude instability.
-This provides practitioners a per-feature \emph{quality budget} computable before choosing a method: $\Var[\varphi_j]$ is the irreducible explanation noise for feature $j$ under model multiplicity.
-
-\paragraph{Model-class universality.}
-The coverage conflict diagnostic works across model classes: tested on XGBoost, Random Forest, Ridge, and LASSO across 3 datasets (Breast Cancer, Diabetes, California Housing), the minority fraction achieves Spearman $0.59$--$0.98$ with empirical flip rates for all model classes. Within-family instability patterns agree strongly (tree-tree $\rho = 0.79$--$0.92$; linear-linear $\rho = 0.94$), while cross-family agreement is non-significant---indicating a data-determined stable core (detectable by coverage conflict) plus model-family-specific variation in which \emph{unstable} features flip.
-
-\paragraph{Bimodality validation.}
-The all-or-nothing theorem predicts bimodal flip rate distributions under collinearity: a mode near $0$ (faithful features) and a second mode (Rashomon-caught features). The Hartigan dip test confirms: $p < 0.002$ for $\rho \geq 0.5$, control passes at $\rho = 0$ ($p = 0.373$). Permutation-validated (8--22\% spurious rejection vs.\ 66\% for control).
+\paragraph{Component-level: symmetry group diagnostic.}
+For neural network components, the architectural symmetry group $G = S_k^L$ (permutations of $k$ heads within each of $L$ layers) determines which components are interchangeable. The $G$-invariant importance $V^G_c = \frac{1}{|G_c|}\sum_{g \in G_c} \varphi_{g(c)}$ averages importance within orbits, separating stable structure (layer-level, head-vs-MLP) from unstable permutation (which specific head within a layer). This is the component-level analogue of the minority fraction: it identifies \emph{which} attributions are trustworthy before running multiple models.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Clinical Decision Reversal}
-\label{sec:clinical}
-
-Feature instability is not an abstract concern---it changes the explanations real people receive. We train 30 models per condition on German Credit (1,000 loan applications, 24 features) and measure how often the ``most important feature category'' changes for individual applicants across equivalent models.
-
-\begin{table}[t]
-\centering
-\caption{Clinical decision reversal on German Credit: fraction of applicants whose top explanation category changes across 30 equivalent models (gap threshold 0.0).}
-\label{tab:clinical}
-\small
-\begin{tabular}{@{}lccc@{}}
-\toprule
-Condition & XGBoost & LightGBM & Random Forest \\
-\midrule
-Seed only (deterministic) & 0\% & 0\% & 35\% \\
-Seed + row subsample & \textbf{45\%} & \textbf{46\%} & 35\% \\
-Seed + col subsample & 39\% & 36\% & 35\% \\
-Full stochasticity & 80\% & 79\% & 67\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Under standard regularization (\texttt{subsample=0.8}), 45\% of applicants receive a different explanation category depending on which equivalent model is queried (Table~\ref{tab:clinical}). The deterministic control (seed only, no subsampling) correctly shows 0\% reversal for boosted models. Random forests show 35\% even without subsampling (due to bootstrap aggregation). Under full stochasticity (seed + bootstrap + both subsamples), reversal reaches 80\%.
-
-\paragraph{The Applicant \#91 narrative.}
-A single applicant can receive 6 different ``most important feature'' labels across 30 equivalent models: checking status, duration, credit amount, purpose, employment years, and installment rate all take the top position under different seeds. No single-model explanation is wrong---each faithfully reflects its model---but the instability means the explanation the applicant actually receives is determined by training randomness, not by their data.
-
-\DASH{} consensus reduces reversal: at $M = 25$, cross-seed agreement rises to 92\%. The residual disagreements correspond to genuinely ambiguous cases where the theory predicts instability (minority fraction $> 0.3$).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{DASH Resolution}
+\section{Resolution: Orbit Averaging}
 \label{sec:resolution}
 
-\DASH{} (\textbf{D}iversified \textbf{A}ggregation for \textbf{S}table \textbf{H}ypotheses) averages $|\SHAP|$ values across $M$ independently trained models. \DASH{} changes explanations, not predictions.
+The impossibility at both levels admits the same resolution: \emph{average over the symmetry group}. This is orbit averaging (the Reynolds operator $R_G[\varphi]_j = \frac{1}{|G_j|}\sum_{g \in G_j} \varphi_{g(j)}$), applied to different groups at each level. The mathematical content is elementary---the power is in identifying \emph{which} group to average over and \emph{why} this is the minimal sufficient aggregation.
+
+\paragraph{Input-level: \DASH{}.}
+\DASH{} (\textbf{D}iversified \textbf{A}ggregation for \textbf{S}table \textbf{H}ypotheses) averages $|\SHAP|$ values across $M$ independently trained models. It changes explanations, not predictions.
 
 \begin{corollary}[\DASH{} equity]
 \label{cor:equity}
 For a balanced ensemble, $\bar\varphi_j = \bar\varphi_k$ for features $j, k$ in the same group.
 \end{corollary}
 
-\paragraph{Optimality.}
-\textbf{Binary $H$ (SHAP sign):} \DASH{} (majority vote across models) is the \emph{uniquely} optimal stable method. Any other stable method either agrees with the majority (same error rate) or picks the minority sign (strictly worse). Average unfaithfulness $= p \cdot \bar{f}$ where $p$ is the coverage conflict rate and $\bar{f} \approx 0.23$--$0.28$ is the mean minority fraction.
+\DASH{} is \emph{uniquely} optimal for binary $H$ (majority vote) and achieves the variance lower bound $\sigma_j^2/M$ with equality for continuous $H$ (Cauchy--Schwarz; Lean: \texttt{sum\_squares\_ge\_inv\_M}). By Rao--Blackwell, \DASH{} (the sufficient-statistic-based estimator for exchangeable models) minimizes MSE among unbiased estimators.
+Ensemble size: $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$ for 5\% between-group flip rate; $M = 25$ brings flips below 1\%.
 
-\textbf{Continuous $H$ (SHAP magnitude):} For any unbiased linear estimator, $\Var(\hat\mu_j) \geq \sigma_j^2/M$ (Cauchy--Schwarz / Titu's lemma; Lean: \texttt{sum\_squares\_ge\_inv\_M}). \DASH{} achieves this bound with equality (0/800 violations at machine precision). The conditional mean minimizes MSE; \DASH{} IS the conditional mean for i.i.d.\ models. By the Hunt--Stein theorem for $S_m$, \DASH{} is the best equivariant estimator.
+\paragraph{Component-level: $G$-invariant projection.}
+For a network with symmetry group $G = S_k^L$, the $G$-invariant importance $V^G$ averages activation patching scores within orbits (heads in the same layer). For $S_k^L$ this reduces to layer averaging---a familiar operation, but the theorem identifies \emph{why} it works (it is the unique orbit average for the architectural symmetry group) and \emph{when} it suffices (when $G$ captures the interchangeability). For richer symmetry groups (e.g., weight permutation symmetries), $V^G$ extends beyond simple layer averaging. On TinyStories: pairwise Spearman rises from $\rho = 0.54$ (raw) to $\rho = 0.98$ ($G$-invariant; Section~\ref{sec:component-experiments}).
 
-\paragraph{Ensemble size.}
-$M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$ for 5\% between-group flip rate. \DASH{} achieves this bound (to first order).
+\paragraph{The same mathematics.}
+Both resolutions are orbit averaging: \DASH{} averages attributions across models (trivially equivariant under $S_M$), while $V^G$ averages importance within architecturally symmetric components (equivariant under $S_k^L$). The substantive content is the $V^G$ construction: it identifies the \emph{minimal sufficient} aggregation from the symmetry group alone, without requiring multiple models. Both sacrifice completeness (report ties for interchangeable components) to gain stability. Both are Pareto-optimal on the $\mathcal{B}$ branch of the Design Space (Theorem~\ref{thm:design-space}).
 
 \paragraph{Workflow.}
-Screen (single model) $\to$ Minority fraction (fast, nonparametric) $\to$ Z-test (5 models) $\to$ \DASH{} consensus ($M \geq 25$).
+Screen (single model) $\to$ Minority fraction (nonparametric) $\to$ Z-test (5 models) $\to$ \DASH{} consensus ($M \geq 25$). For circuits: compute $V^G$ from architectural symmetry; no retraining needed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Empirical Validation}
 \label{sec:experiments}
+
+\subsection{Input-Level Attribution}
+\label{sec:input-experiments}
 
 \begin{figure}[t]
 \centering
@@ -276,14 +246,14 @@ Screen (single model) $\to$ Minority fraction (fast, nonparametric) $\to$ Z-test
 \end{figure}
 
 \paragraph{Synthetic Gaussian.}
-$P{=}20$, $L{=}4$, $m{=}5$, $T{=}100$, 50 seeds (Figure~\ref{fig:experiments}). At $\rho = 0.9$: 48\% within-group flips (near the 50\% theoretical maximum; Figure~\ref{fig:flips}). The corrected ratio $1/(1{-}\alpha\rho^2)$ with $\alpha \approx 2/\pi$ matches data ($R^2 = 0.89$; Figure~\ref{fig:ratio}). \DASH{} reduces flip rate below 1\% at $M = 25$ (Figure~\ref{fig:convergence}).
+$P{=}20$, $L{=}4$, $m{=}5$, $T{=}100$, 50 seeds (Figure~\ref{fig:experiments}). At $\rho = 0.9$: 48\% within-group flips (near the 50\% theoretical maximum). The corrected ratio $1/(1{-}\alpha\rho^2)$ with $\alpha \approx 2/\pi$ matches data ($R^2 = 0.89$). \DASH{} reduces flip rate below 1\% at $M = 25$.
 
 \paragraph{The ranking lottery (Table~\ref{tab:ranking-lottery}).}
-We train 50 XGBoost models (seeds 0--49, \texttt{subsample=0.8}, fixed test set) on 5 public datasets and count how many distinct top-3 SHAP rankings appear.
+50 XGBoost models (seeds 0--49, \texttt{subsample=0.8}) on 5 public datasets.
 
 \begin{table}[t]
 \centering
-\caption{The ranking lottery: distinct top-3 SHAP rankings across 50 seeds (Breast Cancer: 35 at 100 seeds). Datasets without similar-importance collinear features are perfectly stable. Deterministic control (\texttt{subsample=1.0}): 1 ranking for all.}
+\caption{The ranking lottery: distinct top-3 SHAP rankings across 50 seeds. Deterministic control (\texttt{subsample=1.0}): 1 ranking for all. Cross-implementation: LightGBM produces 29, Random Forest 40 (supplement).}
 \label{tab:ranking-lottery}
 \small
 \begin{tabular}{@{}lccc@{}}
@@ -299,55 +269,76 @@ California Housing & 1 & 100\% & Yes \\
 \end{tabular}
 \end{table}
 
-Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds} (35 at 100 seeds)---any study reporting a specific top-3 is reporting one of dozens of equally valid options. The ``most common'' ranking appears in only 12\% of runs. For the top-5: 46 distinct rankings, 0.4\% agreement (84 at 100 seeds). DASH consensus produces a single stable ranking: worst concave points, mean concave points, worst area, worst concavity, worst texture.
+Breast Cancer produces \textbf{24 distinct top-3 rankings across 50 seeds} (35 at 100 seeds). The ``most common'' ranking appears in only 12\% of runs. DASH consensus produces a single stable ranking. The theory correctly predicts the boundary: datasets without similar-importance collinear pairs are perfectly stable (100\% agreement).
 
-\paragraph{Subsample sensitivity (Figure~\ref{fig:subsample}).}
-The instability persists even at \texttt{subsample=0.95}: 17 distinct top-3 rankings. At \texttt{subsample=0.9}: 22. Only \texttt{subsample=1.0} (fully deterministic) eliminates it. ``Just use less stochasticity'' does not resolve the problem---it reduces the count from 24 to 17 but cannot reach 1.
+\paragraph{Explanation reversal.}
+30 models per condition on German Credit (1,000 applicants, 24 features). Under standard regularization (\texttt{subsample=0.8}), \textbf{45\% of applicants} receive a different ``most important feature'' category depending on which equivalent model is queried (Table~\ref{tab:clinical}). The deterministic control correctly shows 0\% reversal for boosted models. A single applicant (\#91) can receive 6 different top-feature labels across 30 seeds. \DASH{} consensus at $M=25$ reduces disagreement to 8\%.
 
-\begin{figure}[t]
+\begin{table}[t]
 \centering
-\includegraphics[width=0.45\textwidth]{figures/subsample_sensitivity.pdf}
-\caption{Distinct top-3 SHAP rankings vs.\ subsample rate on Breast Cancer (50 seeds). The instability persists at every stochastic setting. Only fully deterministic training (\texttt{subsample=1.0}) produces one ranking.}
-\label{fig:subsample}
-\end{figure}
+\caption{Explanation reversal on German Credit: fraction of applicants whose top explanation category changes across 30 equivalent models.}
+\label{tab:clinical}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Condition & XGBoost & LightGBM & Random Forest \\
+\midrule
+Seed only (deterministic) & 0\% & 0\% & 35\% \\
+Seed + row subsample & \textbf{45\%} & \textbf{46\%} & 35\% \\
+Full stochasticity & 80\% & 79\% & 67\% \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-The theory correctly predicts the boundary. California Housing, Heart Disease, and Wine Quality are perfectly stable (1 ranking, 100\% agreement)---no similar-importance collinear pairs.
+\paragraph{Prevalence and extended results.}
+Of 77 public datasets, 68\% exhibit attribution instability (any within-group flip rate $> 10\%$; Wilson CI: $[56\%, 77\%]$); for $P \geq 20$: 93\%. On gene expression data, the \#1 biomarker alternates between TSPAN8 and CEACAM5/CEA ($\rho = 0.86$)---different drug targets depending on the seed \citep[see][for full analysis]{anonymous2026attribution}. Subsample sensitivity, cross-implementation validation, published ranking replication, and parametric diagnostics in supplement.
 
-\paragraph{Gene expression: pathway-level consequence.}
-On a 10{,}935-gene colon-vs-kidney expression dataset (AP\_Colon\_Kidney, 546 samples, top 50 genes by variance), the \#1 gene alternates between TSPAN8 (\textbf{80\% of seeds}) and CEACAM5/CEA (\textbf{20\% of seeds}, Figure~\ref{fig:gene-pathway}). Both are cell adhesion molecules enriched in colon tissue ($\rho = 0.86$), but with distinct roles in cancer biology: TSPAN8 in invasion/metastasis signaling (tetraspanin-enriched microdomains) and CEACAM5 in immune evasion and differentiation (GPI-anchored, the classical clinical colon cancer marker). The broad pathway-level conclusion (colon identity) is preserved, but the specific biomarker target---the actionable output of a discovery pipeline---is a seed artifact. The result is robust to the gene count threshold: 8 distinct top-3 at 20 genes, 5 at 50, 7 at 100.
+\subsection{Component-Level Attribution}
+\label{sec:component-experiments}
 
-\begin{figure}[t]
+We test the impossibility at circuit level: does activation patching importance exhibit the same instability across independently trained networks, and does the $G$-invariant projection resolve it?
+
+\paragraph{Setup.}
+We train 10 transformers from independent random seeds on TinyStories \citep{eldan2023tinystories} at two architectural scales: Config~A (4 layers, 4 heads, $d{=}256$, 20 components) and Config~B (6 layers, 8 heads, $d{=}512$, 54 components). All models achieve near-identical perplexity (CV $< 1.1\%$). Component importance is measured by activation patching (weight zeroing). We derive 7 quantitative predictions from the theory (Table~\ref{tab:tinystories} caption) and evaluate them before any post-hoc analysis.
+
+\begin{table}[t]
 \centering
-\includegraphics[width=0.4\textwidth]{figures/gene_expression_pathway.pdf}
-\caption{AP\_Colon\_Kidney: the \#1 biomarker gene for colon-kidney classification alternates between TSPAN8 (invasion) and CEACAM5/CEA (immune evasion) depending on the training seed ($\rho = 0.858$).}
-\label{fig:gene-pathway}
-\end{figure}
+\caption{Component-level attribution: TinyStories multi-scale validation and GPT-2 boundary condition. $\rho_{\text{full}}$: pairwise Spearman on raw importance. $\rho_{G\text{-inv}}$: after $G$-invariant projection. W-flip: within-layer flip rate (predicted: 0.50). B-flip: head-vs-MLP flip rate (predicted: 0.00).}
+\label{tab:tinystories}
+\small
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Config & Components & $\rho_{\text{full}}$ & $\rho_{G\text{-inv}}$ & W-flip & B-flip & Cohen's $d$ \\
+\midrule
+A (4L/4H) & 20 & 0.565 & \textbf{0.972} & 0.496 & 0.000 & 5.4 \\
+B (6L/8H) & 54 & 0.540 & \textbf{0.982} & 0.489 & 0.000 & 11.9 \\
+\midrule
+GPT-2 (ft) & 156 & 0.993 & 0.999 & 0.043 & 0.000 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-DASH consensus ranks both in the top-2 (TSPAN8: 1.913, CEACAM5: 1.553), reporting that both contribute without privileging either.
+\paragraph{Results (Table~\ref{tab:tinystories}).}
+\textbf{All 14 theory-derived predictions pass} across both scales (7/7 each).
+Raw importance agreement is low ($\rho = 0.565$, $0.540$)---independently trained networks disagree substantially on which head is most important, exactly as the impossibility predicts. Within-layer flip rates are $0.496$ and $0.489$, indistinguishable from the theoretical coin-flip prediction of $0.50$. Head-vs-MLP flip rate is $0.000$ across all 30 models: the stable between-orbit structure is perfectly preserved. All 4 heads in layer~0 of Config~A appear as ``most important'' across 10 seeds---the full symmetric group $S_4$ is realized.
 
-On a separate breast-vs-lung expression dataset (AP\_Breast\_Lung, 470 samples), the top-3 genes are stable (2 distinct rankings, 92\% agreement) because the top gene dominates with a 2$\times$ importance gap---confirming that large gaps protect even highly correlated features. The impossibility requires \emph{both} collinearity and similar importance.
+The $G$-invariant projection lifts agreement to $\rho = 0.972$ and $0.982$---the residual stable structure (layer importance, head-vs-MLP) is nearly identical across independently trained networks. Split-half reliability ($0.991$, $0.960$) vastly exceeds between-model agreement ($0.565$, $0.540$), confirming that within-model measurements are precise but between-model variation is structural. Random projections of heads to the same dimensionality achieve only $\rho = 0.30$--$0.41$ (vs.\ $0.97$--$0.98$ for $V^G$); the $G$-invariant projection ranks at the 100th percentile of random projections (permutation $p < 0.001$).
 
-\paragraph{Cross-implementation ranking lottery.}
-On Breast Cancer with stochastic training: XGBoost produces 24 distinct top-3 rankings (4.2\% agreement), LightGBM produces 29 (3.6\%), and Random Forest produces 40 (2.5\% agreement, permutation importance). The instability is implementation-independent. When subsampling is disabled (deterministic training), all implementations produce 1 ranking---confirming the instability is from model multiplicity, not from SHAP computation.
+\paragraph{GPT-2 boundary condition.}
+A fine-tuned GPT-2 (same task, 10 seeds) shows $\rho = 0.993$ raw and within-layer flip $= 0.043$ (vs.\ ${\sim}0.50$ for from-scratch training). Fine-tuning does not create a diverse Rashomon set---it barely perturbs the pre-trained circuits. The theorem correctly predicts: \emph{less Rashomon diversity $\Rightarrow$ less instability}. The near-zero residual flip rate ($4.3\%$ vs.\ ${\sim}50\%$) confirms that the theory is falsifiable and the boundary holds.
 
-\emph{``Just fix the seed''} does not resolve the problem: a fixed seed produces a reproducible but arbitrary ranking. A different practitioner choosing a different seed gets a different ``most important feature.'' The impossibility is that no seed is privileged---the Rashomon set exists regardless of which seed you pick.
-
-\paragraph{Published ranking replication.}
-Multiple published studies report specific SHAP feature rankings on Breast Cancer as stable findings. Using our 50-model validation: worst perimeter $\leftrightarrow$ worst area ($|\rho|{=}0.98$): 48\% flip rate. Mean concavity $\leftrightarrow$ mean concave points ($|\rho|{=}0.96$): 42\%. Worst radius $\leftrightarrow$ worst perimeter ($|\rho|{=}0.99$): 36\%. All four pairs were reported as stable in published studies; none replicate. Seven distinct features compete for the top-3 positions across our 50 seeds, with the \#1 position alternating between worst concave points (50\%), mean concave points (32\%), and worst area (18\%). Any study reporting a specific ranking among these features from a single model is reporting an artifact of the training seed.
-
-\paragraph{Prevalence.}
-Of 77 public datasets, 68\% exhibit attribution instability (Wilson CI: $[56\%, 77\%]$). For $P \geq 20$: 93\% ($[81\%, 98\%]$). Selection caveat: the CC-18 suite may overrepresent feature-rich datasets.
-
-\paragraph{Parametric diagnostics (supplement).}
-The Gaussian flip formula $\Phi(-\text{SNR})$ validates across 1,325 pairs ($R^2 = 0.94$). The $Z$-test predicts instability ($r = -0.89$ on Breast Cancer). Both are outperformed by the minority fraction on real data. Extended results (neural networks, SAGE, conditional SHAP, financial case studies, regulatory analysis) in supplement.
+\paragraph{Method robustness.}
+Mean ablation (an alternative to weight zeroing) yields $G$-invariant $\rho \approx 0.97$--$0.99$ at both scales. Cross-method per-model agreement is only $\rho \approx 0.5$--$0.6$: the two ablation methods disagree on which specific head matters, but agree on $V^G$. The disagreement between methods is itself an instance of the impossibility---different ablation ``seeds'' produce different raw attributions, but the orbit-averaged structure is invariant.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Work}
 \label{sec:related}
 
-\citet{bilodeau2024impossibility} prove completeness + linearity cannot coexist (different axis: method properties, not cross-model stability). \citet{huang2024failings} show SHAP can misrank features; \citet{srinivas2019full} prove complete attributions cannot be weakly input-dependent; \citet{rao2025limits} establishes Kolmogorov complexity barriers. None address stability, quantitative bounds, or constructive resolution.
-\citet{laberge2023partial} find partial-order rankings across Rashomon sets; our theorem proves this is a mathematical necessity.
-\citet{krishna2022disagreement} document that different explanation methods disagree for the same model; we prove the complementary result that the \emph{same} method disagrees across equivalent models, and this is mathematically inevitable.
+\citet{bilodeau2024impossibility} prove completeness + linearity cannot coexist---a complementary axis (method properties vs.\ cross-model stability). The results are orthogonal: uncorrelated features with a linear SHAP method satisfy Bilodeau's impossibility but not ours ($\rho = 0 \Rightarrow$ no Rashomon); a nonlinear method on correlated features satisfies ours but not Bilodeau's (no linearity assumed). \citet{huang2024failings} show SHAP can misrank features; \citet{srinivas2019full} prove complete attributions cannot be weakly input-dependent; \citet{rao2025limits} establishes Kolmogorov complexity barriers. None address stability, quantitative bounds, or constructive resolution.
+\citet{fisher2019models} compute variable importance ranges across Rashomon sets; \citet{laberge2023partial} find partial-order rankings. Our theorem proves partial ordering is a mathematical necessity, not a pragmatic choice.
+\citet{damour2022underspecification} document that underspecification causes instability across domains empirically; we prove the impossibility that underspecification entails for attribution specifically.
+\citet{krishna2022disagreement} document that different explanation methods disagree for the same model; we prove the complementary result that the \emph{same} method disagrees across equivalent models.
+\citet{chughtai2023toy} show that independently trained networks learn different internal representations for the same group operation---empirical Rashomon for circuits. Our component-level results extend this: the instability in circuit importance is mathematically inevitable, and orbit averaging resolves it.
 \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove fairness trilemmas; ours is the explainability analogue.
 \citet{nipkow2009social} formalized Arrow in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning in Lean~4; ours is the first formally verified impossibility in XAI. Extended discussion in supplement.
 
@@ -360,22 +351,19 @@ The split-count axioms assume full signal capture ($\alpha = 1$; for finite-dept
 The equicorrelation assumption simplifies the axioms; the Rashomon property holds pairwise.
 \DASH{} requires $M \times$ training cost ($M = 25$ for $<$1\% flip rate).
 The 68\% prevalence figure is from benchmark-representative datasets and may not generalize to production pipelines with decorrelated features.
-The binary limitation (SHAP sign IS binary) is acknowledged; the quantitative bilemma extends to continuous $H$.
+The component-level validation uses weight zeroing and mean ablation; other patching methods (path patching, causal scrubbing) may show different instability patterns, though the theorem predicts the same structure.
 
 \paragraph{Broader implications.}
-Single-model SHAP audits for proxy discrimination conclude ``proxy reliance'' with probability exactly $1/2$ for collinear features; for $K$ protected attributes with unstable proxies, joint audit correctness is $(1/2)^K$. We argue this constitutes a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}. The 45\% clinical reversal on German Credit demonstrates the consequence is not hypothetical.
-Preliminary evidence suggests the impossibility extends to mechanistic interpretability: 10 independently grokked transformers on modular addition (all 100\% accuracy) agree on only 36\% of the top-3 circuit components by activation patching importance (min pairwise Spearman $= -0.18$).
+The impossibility operates at every level of a model. For input-level attribution, single-model SHAP audits for proxy discrimination conclude ``proxy reliance'' with probability exactly $1/2$ for collinear features; for $K$ protected attributes, joint audit correctness is $(1/2)^K$. We suggest this may constitute a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}; legal scholars should evaluate this interpretation.
+For component-level attribution, the impossibility constrains \emph{importance rankings} of circuit components: which head matters most depends on the training seed (Section~\ref{sec:component-experiments}: Cohen's $d = 5.4$--$11.9$). This does not necessarily constrain \emph{algorithmic identification}---whether a specific computational function (e.g., induction) exists may be stable even when the specific head implementing it is not. Safety cases built on ``does function $F$ exist?'' may be robust; safety cases built on ``which component is most important?'' are subject to the impossibility.
+Sparse autoencoder (SAE) features decompose a fixed model's activations into interpretable directions not tied to $S_k^L$. Whether SAE-based attribution escapes the Rashomon property---because the decomposition is post-hoc on a fixed model---is an open question with implications for the interpretability agenda.
+The resolution at both levels is orbit averaging, which recovers the shared structure across the Rashomon set.
 
 \paragraph{Lean verification.}
-357 theorems, 6 axioms, 0~\texttt{sorry}, 58 files---reduced from 16 axioms by defining split counts, attribution, and the testing constant as definitions with derived properties. The core impossibility has zero axiom dependencies. All binary instances (\texttt{SHAPSign}, \texttt{FeatureStatus}, \texttt{CounterfactualDir}) use constructive inductive types with zero axioms. The formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review.
-
-\paragraph{Axiom stratification (verified by \texttt{\#print axioms}).}
-Core impossibility: \textbf{0 axioms}. GBDT impossibility: \textbf{3 axioms}. DASH equity: \textbf{5 axioms}. Full system (variance bound): \textbf{6 axioms}. The 6 remaining axioms are the irreducible core: abstract \texttt{Model} type, \texttt{firstMover} function + surjectivity, cross-group baseline, proportionality constant, and training measure.
-
-The symmetric Bayes dichotomy (a general two-families theorem for symmetric decision problems), conditional SHAP impossibility, fairness audit impossibility, FIM-to-Rashomon bridge, and query complexity lower bound are all Lean-verified (supplement).
+357 theorems and lemmas (139 with multi-step proofs of ${\geq}5$ tactic lines), 6 axioms, 0~\texttt{sorry}, 58 files. The core impossibility (\texttt{explanation\_impossibility}) has zero domain axiom dependencies. All binary instances use constructive inductive types. The formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review. Axiom stratification: core impossibility 0 axioms $\to$ GBDT 3 $\to$ DASH equity 5 $\to$ full system 6. The symmetric Bayes dichotomy, conditional SHAP impossibility, fairness audit impossibility, and query complexity lower bound are all Lean-verified (supplement).
 
 \paragraph{Open problems.}
-Extending the diagnostic to high-dimensional gene expression, where the top-3 biomarker genes are stable (positive control: large importance gaps protect even co-expressed genes) but mid-tier genes (positions 5+) show high instability---implications for biomarker discovery panels that rely on features beyond the top-3. Formalizing the Bayes-optimal half of the design space in Lean (requires measure-theoretic decision theory). Fairness impossibilities \citep{chouldechova2017fair,kleinberg2017inherent} as formal instances of the abstract framework.
+Scaling the component-level analysis to frontier models (GPT-4 scale); extending the $G$-invariant projection to non-architectural symmetries (learned representations). Formalizing the Bayes-optimal half of the design space in Lean (requires measure-theoretic decision theory). The gap between prediction and explanation is structural at every level---developing practical workflows that acknowledge this gap, rather than assuming it away, is the central challenge for trustworthy AI.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
@@ -391,11 +379,11 @@ Extending the diagnostic to high-dimensional gene expression, where the top-3 bi
 
 \item \textbf{Theory.} Complete proofs in paper and machine-verified Lean~4 code. All assumptions (axioms) explicitly stated. [Yes]
 
-\item \textbf{Experiments.} Reproducible: fixed seeds, public datasets (Breast Cancer, German Credit, California Housing), open-source implementations (XGBoost, LightGBM, CatBoost). Compute: $<$30 min total on Apple Silicon. Code: \url{[anonymized for review]}. [Yes]
+\item \textbf{Experiments.} Reproducible: fixed seeds, public datasets (Breast Cancer, German Credit, California Housing, TinyStories), open-source implementations (XGBoost, LightGBM, PyTorch). Component-level: 7 pre-registered predictions per scale, all confirmed. Compute: $<$30 min (input-level) + $<$4 hours (TinyStories training) on Apple Silicon. Code: \url{[anonymized for review]}. [Yes]
 
 \item \textbf{Code of ethics.} No human subjects. German Credit dataset is publicly available (UCI ML Repository). Regulatory analysis is informational. [N/A]
 
-\item \textbf{Broader impacts.} Discussed: regulatory compliance (EU AI Act, ECOA), fairness auditing reliability, clinical decision reversal. The paper identifies a risk (explanation instability) and provides a remedy (DASH). [Yes]
+\item \textbf{Broader impacts.} Discussed: regulatory compliance (EU AI Act, ECOA), fairness auditing reliability, explanation reversal, AI safety implications for circuit-based interpretability. The paper identifies a risk (explanation instability at all model levels) and provides a remedy (orbit averaging). [Yes]
 
 \item \textbf{Safeguards.} Not applicable (theoretical + diagnostic work). [N/A]
 \item \textbf{Licenses.} All datasets are public domain or CC-BY. Code will be released under MIT. [Yes]

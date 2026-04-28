@@ -1,10 +1,10 @@
 # Complete Findings Map: The Attribution Impossibility
 
-> **Synced with:** `main_definitive.tex` (monograph, 64 pages)
-> **Last audit:** 2026-04-04
-> **Census:** 58 Lean files, 352 theorems, 6 axioms, 0 sorry, 89 definitions, 42 experiment scripts, 32 JSON result files, 12 figures
-> **Monograph:** 64 pages, 23 sections, 78 subsections, 19 theorems, 14 propositions, 3 lemmas, 16 definitions, 11 corollaries, 11 tables, 30 citations
-> **Total distinct findings:** 109
+> **Synced with:** `main_definitive.tex` (monograph, 82 pages)
+> **Last audit:** 2026-04-25
+> **Census:** 58 Lean files, 357 theorems, 6 axioms, 0 sorry, 89 definitions, 51 experiment scripts, 35 JSON result files, 14 figures
+> **Monograph:** 82 pages (includes TinyStories multi-scale, mean ablation, component-level framing, Code/Data Availability)
+> **Total distinct findings:** 116
 
 When updating the monograph, update this map. When adding experiments or Lean theorems, add entries here.
 
@@ -132,6 +132,17 @@ When updating the monograph, update this map. When adding experiments or Lean th
 | H21 | Lending Club (specificity control) | Zero unstable pairs (Z>36) | `lending_club_case_study.py` |
 | H26 | NLP bag-of-words | 60% top-1 unstable; 91% top-3 | `nlp_token_instability.py` |
 | H27 | Time-series features | 27% within-series unstable | `timeseries_instability.py` |
+
+### Component-Level Validations (TinyStories)
+| # | Experiment | Key Number | Script/Data |
+|---|-----------|------------|-------------|
+| H35 | TinyStories Config A (4L/4H) | ρ=0.565→0.972, W-flip=0.496, d=5.4, 7/7 PASS | docs/tinystories-results-reference.json |
+| H36 | TinyStories Config B (6L/8H) | ρ=0.540→0.982, W-flip=0.489, d=11.9, 7/7 PASS | docs/tinystories-results-reference.json |
+| H37 | GPT-2 boundary condition | ρ=0.993, W-flip=0.043, split-half<between-model | docs/tinystories-results-reference.json |
+| H38 | Full S₄ realization (Config A) | All 4 L0 heads appear as #1 across 10 seeds | docs/tinystories-results-reference.json |
+| H39 | Mean ablation robustness | G-inv ρ≈0.97-0.99; cross-method ρ≈0.5-0.6 | docs/mean-ablation-results-reference.json |
+| H40 | Split-half reliability | 0.991 (A), 0.960 (B) >> between-model 0.565, 0.540 | docs/tinystories-results-reference.json |
+| H41 | Random projection control | G-inv at 100th percentile, perm p<0.001 | docs/tinystories-results-reference.json |
 
 ### Robustness Validations (close loopholes)
 | # | Experiment | Key Number | Script |

@@ -1,6 +1,6 @@
 # The Attribution Impossibility
 
-**No feature ranking can be simultaneously faithful, stable, and complete when features are correlated — and we prove it in Lean 4.**
+**No importance ranking can be simultaneously faithful, stable, and complete under symmetry — at any level of a model, from input features to internal circuits — and we prove it in Lean 4.**
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19468379.svg)](https://doi.org/10.5281/zenodo.19468379)
 ![Theorems](https://img.shields.io/badge/theorems-357-blue)
@@ -16,9 +16,15 @@
   ls DASHImpossibility/*.lean | wc -l                                                     # 58
 -->
 
-If you have ever retrained an XGBoost model and noticed the "most important feature" changed, this paper proves that is not a bug — it is a mathematical inevitability. On Breast Cancer Wisconsin (the canonical SHAP tutorial dataset), 50 retrains produce **24 distinct top-3 rankings**. On a gene expression dataset, the #1 biomarker gene alternates between TSPAN8 (invasion pathway) and CEACAM5/CEA (immune evasion pathway) depending on the training seed. Under standard regularization, 45% of German Credit loan applicants receive a different "most important feature" across equivalent models. For binary attribution questions (SHAP sign, feature selection), the impossibility is strictly stronger: faithful + stable alone is impossible (the bilemma). We characterize the complete design space, provide a 7-line nonparametric diagnostic that outperforms the Gaussian formula by 2× on real data, prove DASH ensemble averaging is uniquely optimal, and machine-verify everything in Lean 4: 357 theorems across 58 files with 6 axioms and 0 sorry.
+If you have ever retrained an XGBoost model and noticed the "most important feature" changed, this paper proves that is not a bug — it is a mathematical inevitability. The same instability appears inside neural networks: 10 independently trained transformers on TinyStories agree at only ρ=0.54 on which circuit component matters most. The instability is not in SHAP, not in activation patching — it is in the mathematics of attribution itself.
 
-**NeurIPS 2026 submission** (9 pages + 81-page supplement). Monograph: 79 pages.
+**Input-level:** On Breast Cancer Wisconsin, 50 retrains produce **24 distinct top-3 rankings** (4.2% agreement). Under standard regularization, 45% of German Credit applicants receive a different "most important feature" across equivalent models. 68% of 77 public datasets show instability.
+
+**Component-level:** A G-invariant projection (orbit averaging over the architectural symmetry group) lifts circuit agreement from ρ=0.54 to ρ=0.98, with 14/14 theory-derived predictions confirmed across two architectural scales. A fine-tuned GPT-2 confirms the boundary: without Rashomon diversity, instability vanishes (ρ=0.993).
+
+For binary attribution questions (SHAP sign, feature selection, circuit membership), faithful + stable alone is impossible (the bilemma). The design space has exactly two families; DASH (orbit averaging) is Pareto-optimal. A 7-line nonparametric diagnostic outperforms the Gaussian formula by 2×. Everything is machine-verified in Lean 4: 357 theorems across 58 files with 6 axioms and 0 sorry.
+
+**NeurIPS 2026 submission** (10 pages + 81-page supplement). Monograph: 82 pages. arXiv preprint forthcoming.
 
 ---
 
@@ -45,13 +51,17 @@ make validate
 
 ### 1. The Problem
 
-SHAP feature rankings flip when you retrain a model. For collinear features with similar importance, the ranking is literally a coin flip — 50% of the time, the "most important" feature changes. In a survey of 77 public datasets, 68% exhibit this instability. This is not a software bug, not a tuning problem, and not specific to any one SHAP implementation. It is a mathematical inevitability that applies to XGBoost, LightGBM, CatBoost, Lasso, neural networks, and permutation importance alike.
+Attribution rankings flip when you retrain a model — at every level.
 
-The root cause is the **Rashomon property**: when features are correlated, multiple near-optimal models exist that rank them in opposite orders. Every model class with collinear features admits these equally-good-but-differently-explained solutions. The question is not whether to fix it, but what tradeoff to accept.
+**Input-level:** SHAP feature rankings flip for collinear features with similar importance. The ranking is literally a coin flip — 50% of the time, the "most important" feature changes. In a survey of 77 public datasets, 68% exhibit this instability. This applies to XGBoost, LightGBM, CatBoost, Lasso, neural networks, and permutation importance alike.
+
+**Component-level:** Activation patching importance rankings flip for architecturally symmetric components (heads within a layer). 10 independently trained transformers on TinyStories agree at only ρ=0.54. All 4 heads in layer 0 appear as "most important" across 10 seeds — full S₄ symmetry realized.
+
+The root cause is the **Rashomon property**: when components are interchangeable (collinear features, or architecturally symmetric heads), multiple configurations exist that rank them in opposite orders. The fix is the same at both levels: **orbit averaging** — aggregate across the symmetry to recover what is shared. For features, this is DASH (ensemble averaging). For circuits, this is the G-invariant projection.
 
 ### 2. The Impossibility (Theorem 1)
 
-No feature ranking can be simultaneously faithful (reflect what the model computed), stable (robust to retraining), and complete (decide every pair of features). **Faithful, Stable, Complete: Pick Two.**
+No importance ranking — of input features or internal components — can be simultaneously faithful (reflect what the model computed), stable (robust to retraining), and complete (decide every pair). **Faithful, Stable, Complete: Pick Two.**
 
 ```
                        The Attribution Trilemma
@@ -93,7 +103,11 @@ The GBDT ratio 1/(1-rho^2) means that at rho=0.9, the dominant feature gets appr
 
 ### 4. The Fix: DASH
 
-**DASH** (**D**iversified **A**ggregation of **SH**AP): average |SHAP| values across M independently trained models. This is not just "try averaging" — it is provably the minimum-variance unbiased linear estimator via the Cauchy-Schwarz inequality (Titu's lemma; Lean-verified).
+The impossibility at both levels admits the same resolution: **orbit averaging**.
+
+**Input-level: DASH** (**D**iversified **A**ggregation for **S**table **H**ypotheses): average |SHAP| values across M independently trained models. Provably the minimum-variance unbiased estimator via Rao-Blackwell (Lean-verified).
+
+**Component-level: G-invariant projection.** For a network with symmetry group G = S_k^L, average activation patching importance within orbits (heads in the same layer). Lifts agreement from ρ=0.54 to ρ=0.98 on TinyStories. No retraining needed — just a post-processing step on a single model.
 
 - `consensus_equity` in [`Corollary.lean`](DASHImpossibility/Corollary.lean) — DASH achieves equity (zero unfaithfulness) for collinear feature pairs in balanced ensembles
 - `sum_squares_ge_inv_M` in [`EnsembleBound.lean`](DASHImpossibility/EnsembleBound.lean) — Cauchy-Schwarz optimality via Titu's lemma (the sum of squares of weights is minimized by equal weights)
@@ -103,7 +117,7 @@ DASH is Pareto-optimal: no attribution method achieves better stability without 
 
 ### 5. The Complete Map (Design Space Theorem)
 
-The achievable set of attribution methods under collinearity has exactly two families — and nothing else:
+The achievable set of attribution methods under symmetry has exactly two families among deterministic methods — and nothing else:
 
 ```
                     The Attribution Design Space
@@ -273,7 +287,7 @@ dash-impossibility-lean/
 │   └── Basic.lean                        # Import hub (all 58 files)
 │
 ├── paper/
-│   ├── main_definitive.tex               # 66-page monograph (source of truth)
+│   ├── main_definitive.tex               # 82-page monograph (source of truth)
 │   ├── main_jmlr.tex                     # 59-page JMLR submission (after NeurIPS)
 │   ├── main.tex                          # 10-page NeurIPS version
 │   ├── supplement.tex                    # 81-page NeurIPS supplement
@@ -313,12 +327,13 @@ dash-impossibility-lean/
 
 | Paper | File | Pages | Target | Status |
 |-------|------|-------|--------|--------|
-| **NeurIPS 2026** (primary submission) | `paper/main.tex` | 9 | NeurIPS 2026 | **Submission-ready** |
+| **NeurIPS 2026** (primary submission) | `paper/main.tex` | 10 | NeurIPS 2026 | **Submission-ready** |
 | **NeurIPS supplement** | `paper/supplement.tex` | 81 | NeurIPS supplement | **Submission-ready** |
-| **Monograph** (source of truth) | `paper/main_definitive.tex` | 79 | arXiv | Ready |
+| **Monograph** (source of truth) | `paper/main_definitive.tex` | 82 | arXiv | **arXiv-ready** |
 | **JMLR** (expanded) | `paper/main_jmlr.tex` | 59 | JMLR (after NeurIPS) | Ready |
+| **arXiv preprint** | `paper/main_preprint.tex` | 10 | arXiv (NeurIPS format) | **Ready** |
 
-The NeurIPS paper (9 pages + 81-page supplement) is the primary submission. The monograph (79 pages) is the definitive reference containing all results. The JMLR version (59 pages) expands the NeurIPS paper and will be submitted after the NeurIPS decision.
+The NeurIPS paper (10 pages + 81-page supplement) covers both input-level and component-level attribution. The monograph (82 pages, including new TinyStories and mean ablation sections) is the definitive reference. The arXiv tarball is at `paper/arxiv_monograph.tar.gz`.
 
 **Edit flow:** monograph → NeurIPS → JMLR. Always update the monograph first.
 
@@ -412,6 +427,10 @@ The paper distinguishes four levels of verification:
 | Prevalence survey | 77 datasets, 68% exhibit instability | `prevalence_survey.py` |
 | German Credit, Taiwan CC, Lending Club | Positive control: correlated financial features flip | `financial_case_study.py` |
 | LLM attention | Instability under fine-tuning | `llm_attention_instability.py` |
+| **TinyStories Config A** | **ρ=0.565→0.972, 7/7 PASS, Cohen's d=5.4** | **docs/tinystories-results-reference.json** |
+| **TinyStories Config B** | **ρ=0.540→0.982, 7/7 PASS, Cohen's d=11.9** | **docs/tinystories-results-reference.json** |
+| **GPT-2 boundary** | **ρ=0.993, within-flip=0.043 (no Rashomon)** | **docs/tinystories-results-reference.json** |
+| **Mean ablation robustness** | **G-inv ρ≈0.97-0.99, cross-method ρ≈0.5-0.6** | **docs/mean-ablation-results-reference.json** |
 | Conditional SHAP sweep | Delta-beta threshold for escape | `conditional_shap_threshold.py` |
 | SNR calibration | R^2=0.94 for SNR>=0.5 | `snr_calibration.py` |
 | Causal DAG | Causal discovery instability | `causal_dag_experiment.py` |
@@ -479,7 +498,7 @@ All scripts use fixed random seeds and run on a standard laptop. Quick validatio
 5. Update paper/FINDINGS_MAP.md
 6. Propagate to JMLR paper
 
-## Current State (verified 2026-04-23)
+## Current State (verified 2026-04-25)
 
 ```
 Theorems+lemmas: 357
@@ -564,6 +583,6 @@ Independent researchers. Contact: drakecaraker@gmail.com
 
 ---
 
-**Paper:** "The Attribution Impossibility: No Feature Ranking Is Faithful, Stable, and Complete Under Collinearity"
+**Paper:** "The Attribution Impossibility: No Importance Ranking Is Faithful, Stable, and Complete Under Symmetry"
 **Primary target:** NeurIPS 2026 (abstract May 4, paper May 6) | **Expanded:** JMLR (after NeurIPS decision)
-**arXiv:** Preprint forthcoming (submit/7455861 under review). Monograph: 79 pages.
+**arXiv:** Monograph at `paper/arxiv_monograph.tar.gz` (82 pages). Categories: cs.LG, cs.AI, stat.ML, cs.LO.

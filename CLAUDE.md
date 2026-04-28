@@ -1,12 +1,12 @@
 # The Attribution Impossibility — Lean 4 Formalization
 
-Lean 4 formalization of the impossibility theorem for feature attribution under collinearity. Target venue: NeurIPS 2026 (abstract May 4, paper May 6). Paper 3 in the 5-paper research program housed in [dash-shap](https://github.com/DrakeCaraker/dash-shap). The F5→F1→DASH stability API is in [dash-shap PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255).
+Lean 4 formalization of the impossibility theorem for attribution under symmetry. Target venue: NeurIPS 2026 (abstract May 4, paper May 6). Paper 3 in the 5-paper research program housed in [dash-shap](https://github.com/DrakeCaraker/dash-shap). The F5→F1→DASH stability API is in [dash-shap PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255).
 
 ## What This Proves
 
-No single-model feature ranking can simultaneously be faithful (reflect the model's attributions), stable (consistent across equivalent models), and complete (rank all feature pairs) when features are collinear. The core theorem requires **zero model-specific axioms** — only the Rashomon property.
+No importance ranking — of input features or internal components — can simultaneously be faithful (reflect the model's attributions), stable (consistent across equivalent models), and complete (rank all pairs) when interchangeable components exist under the Rashomon property. The core theorem requires **zero domain axioms**.
 
-Model-specific instantiations show GBDT has ratio 1/(1-ρ²) → ∞, Lasso has ratio ∞, neural nets have conditional violations, and random forests have bounded O(1/√T) violations. DASH (ensemble averaging) resolves the impossibility for balanced ensembles.
+The impossibility operates at two levels: input-level (SHAP on collinear features) and component-level (activation patching on architecturally symmetric heads). The resolution at both levels is orbit averaging: DASH for features, G-invariant projection for circuits. Model-specific instantiations show GBDT has ratio 1/(1-ρ²) → ∞, Lasso has ratio ∞, neural nets have conditional violations, and random forests have bounded O(1/√T) violations.
 
 ## Architecture
 
@@ -131,11 +131,11 @@ make setup         # full setup for new contributors
 
 ## Submission
 
-- **NeurIPS 2026** (primary): `paper/main.tex` (9 pages) + `paper/supplement.tex` (81 pages). Abstract May 4, Paper May 6. Official `neurips_2026.sty`.
+- **NeurIPS 2026** (primary): `paper/main.tex` (10 pages) + `paper/supplement.tex` (81 pages). Abstract May 4, Paper May 6. Official `neurips_2026.sty`.
 - **JMLR** (after NeurIPS decision): `paper/main_jmlr.tex` (59 pages, `jmlr.cls` from TeX Live).
-- **Monograph** (source of truth): `paper/main_definitive.tex` (79 pages).
+- **Monograph** (source of truth): `paper/main_definitive.tex` (82 pages). arXiv tarball: `paper/arxiv_monograph.tar.gz`.
 - **arXiv**: Run `paper/scripts/prepare_arxiv.sh` to uncomment authors and fill URLs.
-- Title: "The Attribution Impossibility: No Feature Ranking Is Faithful, Stable, and Complete Under Collinearity"
+- Title: "The Attribution Impossibility: No Importance Ranking Is Faithful, Stable, and Complete Under Symmetry"
 - Authors: Drake Caraker, Bryan Arnold, David Rhoads
 - Companion code: [dash-shap PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255)
 

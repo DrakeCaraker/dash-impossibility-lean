@@ -1,0 +1,94 @@
+{
+  "_metadata": {
+    "created": "2026-04-27",
+    "status": "LOCKED — written before any GPT-2-from-scratch or SAE evaluation",
+    "methodology": "Predictions derived from the Attribution Impossibility theorem and TinyStories results (Configs A/B). No GPT-2-from-scratch data has been collected.",
+    "instructions": "This file MUST NOT be modified after any evaluation script runs. The analysis script loads these predictions and compares against observed values."
+  },
+
+  "gpt2_from_scratch": {
+    "P1_ppl_cv": {
+      "name": "Perplexity coefficient of variation < 5%",
+      "predicted": "< 5%",
+      "threshold": 5.0,
+      "direction": "less_than",
+      "justification": "All models use identical architecture and data. TinyStories CV was 0.7% (Config A) and 1.0% (Config B). GPT-2-small has more capacity, so convergence should be tighter.",
+      "field": "perplexity.cv_pct"
+    },
+    "P2_full_rho_low": {
+      "name": "Raw pairwise Spearman < 0.70",
+      "predicted": "< 0.70",
+      "threshold": 0.70,
+      "direction": "less_than",
+      "justification": "S_12^12 symmetry group is larger than S_4^4 or S_8^6. More heads per layer means more permutation freedom. TinyStories: 0.565 (4H) and 0.540 (8H). With 12 heads, raw agreement should be similar or lower.",
+      "field": "full_agreement.mean_spearman"
+    },
+    "P3_ginv_rho_high": {
+      "name": "G-invariant Spearman > 0.80",
+      "predicted": "> 0.80",
+      "threshold": 0.80,
+      "direction": "greater_than",
+      "justification": "Between-orbit structure (layer importance, head-vs-MLP) is determined by architecture and data, not by seed. TinyStories: 0.972 (4H) and 0.982 (8H). GPT-2-small should show similar or higher G-invariant agreement.",
+      "field": "g_invariant.mean_spearman"
+    },
+    "P4_head_lift": {
+      "name": "G-invariant lift (heads-only) > 0.15",
+      "predicted": "> 0.15",
+      "threshold": 0.15,
+      "direction": "greater_than",
+      "justification": "The G-invariant projection captures non-trivial structure beyond random dimensionality reduction. TinyStories: lift = 0.558 (4H) and 0.553 (8H).",
+      "field": "excl_mlp.head_lift"
+    },
+    "P5_within_flip_high": {
+      "name": "Within-layer flip rate > 0.40",
+      "predicted": "> 0.40",
+      "threshold": 0.40,
+      "direction": "greater_than",
+      "justification": "Theory predicts exactly 0.50 for perfectly symmetric training. TinyStories: 0.496 (4H) and 0.489 (8H). GPT-2-small with 12 heads should be indistinguishable from 0.50.",
+      "field": "flip_rates.within_layer"
+    },
+    "P6_between_flip_low": {
+      "name": "Head-vs-MLP flip rate < 0.15",
+      "predicted": "< 0.15",
+      "threshold": 0.15,
+      "direction": "less_than",
+      "justification": "Heads and MLPs are architecturally distinct (not in the same orbit). Their relative importance should be stable across seeds. TinyStories: 0.000 at both scales.",
+      "field": "flip_rates.head_vs_mlp"
+    },
+    "P7_perm_test": {
+      "name": "Permutation test p < 0.01",
+      "predicted": "< 0.01",
+      "threshold": 0.01,
+      "direction": "less_than",
+      "justification": "The G-invariant projection should be significantly better than random projections to the same dimensionality. TinyStories: p < 0.001 at both scales.",
+      "field": "permutation_test.p_value"
+    }
+  },
+
+  "sae_stability": {
+    "S1_feature_matching": {
+      "name": "Mean max cosine similarity of matched features",
+      "predicted": "> 0.80",
+      "threshold": 0.80,
+      "direction": "greater_than",
+      "justification": "Bricken et al. (2023) report high reproducibility of SAE features across training runs. SAEs decompose a FIXED model's activations, so there is no Rashomon set over models — only over SAE training seeds. The decomposition should be largely determined by the activation structure.",
+      "field": "feature_matching.mean_max_cosine"
+    },
+    "S2_importance_stability": {
+      "name": "Feature importance ranking Spearman after matching",
+      "predicted": "> 0.70",
+      "threshold": 0.70,
+      "direction": "greater_than",
+      "justification": "If features are well-matched (S1), their importance (activation frequency) should be similar. The importance is determined by the frozen model's activation statistics, not by the SAE seed.",
+      "field": "importance_stability.mean_spearman_matched"
+    },
+    "S3_dead_feature_stability": {
+      "name": "Dead feature fraction CV across seeds < 20%",
+      "predicted": "< 20%",
+      "threshold": 20.0,
+      "direction": "less_than",
+      "justification": "The number of dead features is determined primarily by the SAE capacity and the activation distribution, not by the seed. Some variation is expected from optimization dynamics.",
+      "field": "dead_features.cv_pct"
+    }
+  }
+}

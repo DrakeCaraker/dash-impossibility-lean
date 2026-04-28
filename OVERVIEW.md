@@ -10,7 +10,7 @@ When you train a machine learning model and ask "which feature was most importan
 
 This project began as a practical observation: SHAP feature rankings for gradient-boosted models were flipping between retrains. The [dash-shap](https://github.com/DrakeCaraker/dash-shap) Python package was built to diagnose and fix this instability through ensemble averaging (DASH). The theoretical question was: *is this fixable in principle, or is it a fundamental limitation?*
 
-The answer turned out to be a fundamental limitation — and a much deeper one than initially expected. The impossibility is not specific to SHAP, not specific to gradient boosting, and not specific to feature attribution. It applies to any explanation of any underspecified system.
+The answer turned out to be a fundamental limitation — and a much deeper one than initially expected. The impossibility is not specific to SHAP, not specific to gradient boosting, and not specific to feature attribution. It applies to any attribution at any level of a model: input features (SHAP), internal circuits (activation patching), or any system with interchangeable components under the Rashomon property.
 
 ## What Is Proved
 
@@ -103,11 +103,15 @@ The formalization caught 2 logical inconsistencies and 1 type mismatch that surv
 
 ## Future Directions
 
-1. **Deriving the remaining axioms.** The 6 remaining axioms are the irreducible core given the current abstraction. Deriving `firstMover_surjective` from a formal stochastic training model is the next target.
-2. **Extending to non-tabular domains.** The LLM attention experiment is a proxy; formal generalization to transformer attributions remains open.
-3. **Connecting to compressed sensing.** The measurement coherence parallel suggests information-theoretic lower bounds on attribution quality.
-4. **Formalizing the Bayes-optimal half of the Design Space** in Lean (requires measure-theoretic decision theory from Mathlib).
-5. **Building DASH into production ML pipelines.** The [dash-shap PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255) stability API is the implementation target.
+See [docs/future-research-directions.md](docs/future-research-directions.md) for the full list from the 9-reviewer panel. Key paths:
+
+1. **Algorithmic identification impossibility.** Prove that "what algorithm does the model implement" is also unstable, not just "which component is most important." This would make the safety implications airtight.
+2. **Frontier-scale from-scratch training.** Train multiple GPT-2+ models from scratch and verify the impossibility holds at scale.
+3. **Deep invariant theory.** Isotypic decomposition of attribution variance, Molien's theorem for information budgets, V^G on non-trivial symmetry groups.
+4. **General SBD theorem.** Prove the two-family decomposition for arbitrary G-invariant decision problems.
+5. **SAE escape hatch.** Do independently trained SAEs on the same model produce the same features? If so, SAE-based attribution may escape the Rashomon property.
+6. **Formalizing the Bayes-optimal half of the Design Space** in Lean (requires measure-theoretic decision theory from Mathlib).
+7. **Building DASH into production ML pipelines.** The [dash-shap PR #255](https://github.com/DrakeCaraker/dash-shap/pull/255) stability API is the implementation target.
 
 ## How to Verify
 
@@ -132,4 +136,4 @@ make verify  # checks counts match documentation
 
 ## Paper
 
-**NeurIPS 2026 submission:** `paper/main.tex` (9 pages) + `paper/supplement.tex` (81 pages). **Monograph:** `paper/main_definitive.tex` (79 pages, complete reference). **JMLR:** `paper/main_jmlr.tex` (59 pages, to be submitted after NeurIPS decision).
+**NeurIPS 2026 submission:** `paper/main.tex` (10 pages, input-level + component-level) + `paper/supplement.tex` (81 pages). **Monograph:** `paper/main_definitive.tex` (82 pages, complete reference including TinyStories and mean ablation sections). **arXiv:** `paper/arxiv_monograph.tar.gz`. **JMLR:** `paper/main_jmlr.tex` (59 pages, to be submitted after NeurIPS decision).
