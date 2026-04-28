@@ -33,7 +33,7 @@ class GPT2TrainConfig:
 
     # Training
     n_seeds: int = 10
-    max_steps: int = 100_000       # ~6B tokens at batch 60K
+    max_steps: int = 50_000        # ~3B tokens at batch 60K (fits 100GB volume)
     batch_size: int = 12           # per-GPU micro-batch
     gradient_accumulation: int = 5 # effective batch = 12*5*1024 = 61,440 tokens
     learning_rate: float = 6e-4

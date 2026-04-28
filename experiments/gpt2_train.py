@@ -50,8 +50,12 @@ class TokenDataset(Dataset):
         return x, y
 
 
+MAX_TRAIN_TOKENS = 3_000_000_000   # 3B tokens = 6GB on disk, enough for 50K steps
+MAX_VAL_TOKENS = 10_000_000        # 10M tokens for validation
+
+
 def prepare_data():
-    """Download and tokenize OpenWebText if not already done."""
+    """Download and tokenize OpenWebText using streaming (no disk cache)."""
     train_path = DATA_DIR / "openwebtext_train.bin"
     val_path = DATA_DIR / "openwebtext_val.bin"
 
@@ -59,44 +63,51 @@ def prepare_data():
         print(f"Data already prepared: {train_path} ({train_path.stat().st_size / 1e9:.1f} GB)")
         return train_path, val_path
 
-    print("Preparing OpenWebText data (this takes 30-60 minutes on first run)...")
+    # Clean any failed partial files
+    for p in [train_path.with_suffix(".tmp"), val_path.with_suffix(".tmp")]:
+        p.unlink(missing_ok=True)
+
+    print("Preparing OpenWebText data via streaming (no full download cache)...")
     from datasets import load_dataset
 
     enc = tiktoken.get_encoding("gpt2")
-    dataset = load_dataset(CFG.dataset_name, split="train", trust_remote_code=True)
 
-    # Shuffle and split: 99% train, 1% val
-    dataset = dataset.shuffle(seed=42)
-    split = dataset.train_test_split(test_size=0.01, seed=42)
+    # Stream to avoid caching the full arrow dataset on disk (~24GB)
+    dataset = load_dataset(CFG.dataset_name, split="train", streaming=True)
 
-    for split_name, split_data, out_path in [
-        ("train", split["train"], train_path),
-        ("val", split["test"], val_path),
+    for split_name, max_tokens, out_path in [
+        ("train", MAX_TRAIN_TOKENS, train_path),
+        ("val", MAX_VAL_TOKENS, val_path),
     ]:
-        print(f"Tokenizing {split_name} split ({len(split_data)} documents)...")
+        print(f"Tokenizing {split_name} (up to {max_tokens/1e9:.1f}B tokens)...")
         tmp_path = out_path.with_suffix(".tmp")
-        # Write in chunks to avoid OOM (10B tokens × 28 bytes/int = 280GB as Python list)
         total_tokens = 0
         with open(tmp_path, "wb") as f:
             chunk = []
-            for doc in split_data:
+            for doc in dataset:
                 tokens = enc.encode_ordinary(doc["text"])
                 chunk.extend(tokens)
-                # Flush every 10M tokens (~20MB on disk)
                 if len(chunk) >= 10_000_000:
                     arr = np.array(chunk, dtype=np.uint16)
                     arr.tofile(f)
                     total_tokens += len(chunk)
                     chunk = []
                     if total_tokens % 100_000_000 < 10_000_000:
-                        print(f"    {total_tokens/1e9:.1f}B tokens written...")
-            # Flush remaining
-            if chunk:
+                        print(f"    {total_tokens/1e9:.1f}B tokens...")
+                    if total_tokens >= max_tokens:
+                        break
+            if chunk and total_tokens < max_tokens:
                 arr = np.array(chunk, dtype=np.uint16)
                 arr.tofile(f)
                 total_tokens += len(chunk)
-        tmp_path.rename(out_path)  # atomic write
+        tmp_path.rename(out_path)
         print(f"  Saved {total_tokens:,} tokens to {out_path}")
+
+        # Re-create iterator for val split (streaming iterators are single-pass)
+        if split_name == "train":
+            dataset = load_dataset(CFG.dataset_name, split="train", streaming=True)
+            # Skip the documents we already used for training
+            dataset = dataset.skip(total_tokens // 200)  # ~200 tokens/doc avg
 
     return train_path, val_path
 
