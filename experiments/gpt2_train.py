@@ -75,39 +75,59 @@ def prepare_data():
     # Stream to avoid caching the full arrow dataset on disk (~24GB)
     dataset = load_dataset(CFG.dataset_name, split="train", streaming=True)
 
-    for split_name, max_tokens, out_path in [
-        ("train", MAX_TRAIN_TOKENS, train_path),
-        ("val", MAX_VAL_TOKENS, val_path),
-    ]:
-        print(f"Tokenizing {split_name} (up to {max_tokens/1e9:.1f}B tokens)...")
-        tmp_path = out_path.with_suffix(".tmp")
-        total_tokens = 0
-        with open(tmp_path, "wb") as f:
-            chunk = []
-            for doc in dataset:
-                tokens = enc.encode_ordinary(doc["text"])
-                chunk.extend(tokens)
-                if len(chunk) >= 10_000_000:
-                    arr = np.array(chunk, dtype=np.uint16)
-                    arr.tofile(f)
-                    total_tokens += len(chunk)
-                    chunk = []
-                    if total_tokens % 100_000_000 < 10_000_000:
-                        print(f"    {total_tokens/1e9:.1f}B tokens...")
-                    if total_tokens >= max_tokens:
-                        break
-            if chunk and total_tokens < max_tokens:
+    # Tokenize VALIDATION FIRST (take the first N documents),
+    # then TRAINING (remaining documents). This prevents train/val overlap.
+    # Streaming iterators are single-pass, so order matters.
+    val_doc_count = MAX_VAL_TOKENS // 200 + 1000  # ~200 tokens/doc, with margin
+
+    print(f"Tokenizing val (first {val_doc_count:,} docs, up to {MAX_VAL_TOKENS/1e6:.0f}M tokens)...")
+    tmp_path = val_path.with_suffix(".tmp")
+    total_tokens = 0
+    doc_count = 0
+    with open(tmp_path, "wb") as f:
+        chunk = []
+        for doc in dataset:
+            tokens = enc.encode_ordinary(doc["text"])
+            chunk.extend(tokens)
+            doc_count += 1
+            if len(chunk) >= 10_000_000:
                 arr = np.array(chunk, dtype=np.uint16)
                 arr.tofile(f)
                 total_tokens += len(chunk)
-        tmp_path.rename(out_path)
-        print(f"  Saved {total_tokens:,} tokens to {out_path}")
+                chunk = []
+            if total_tokens >= MAX_VAL_TOKENS or doc_count >= val_doc_count:
+                break
+        if chunk:
+            arr = np.array(chunk, dtype=np.uint16)
+            arr.tofile(f)
+            total_tokens += len(chunk)
+    tmp_path.rename(val_path)
+    print(f"  Saved {total_tokens:,} val tokens from {doc_count:,} docs to {val_path}")
 
-        # Re-create iterator for val split (streaming iterators are single-pass)
-        if split_name == "train":
-            dataset = load_dataset(CFG.dataset_name, split="train", streaming=True)
-            # Skip the documents we already used for training
-            dataset = dataset.skip(total_tokens // 200)  # ~200 tokens/doc avg
+    # Now tokenize TRAINING from the remaining documents (iterator continues)
+    print(f"Tokenizing train (up to {MAX_TRAIN_TOKENS/1e9:.1f}B tokens)...")
+    tmp_path = train_path.with_suffix(".tmp")
+    total_tokens = 0
+    with open(tmp_path, "wb") as f:
+        chunk = []
+        for doc in dataset:
+            tokens = enc.encode_ordinary(doc["text"])
+            chunk.extend(tokens)
+            if len(chunk) >= 10_000_000:
+                arr = np.array(chunk, dtype=np.uint16)
+                arr.tofile(f)
+                total_tokens += len(chunk)
+                chunk = []
+                if total_tokens % 100_000_000 < 10_000_000:
+                    print(f"    {total_tokens/1e9:.1f}B tokens...")
+                if total_tokens >= MAX_TRAIN_TOKENS:
+                    break
+        if chunk and total_tokens < MAX_TRAIN_TOKENS:
+            arr = np.array(chunk, dtype=np.uint16)
+            arr.tofile(f)
+            total_tokens += len(chunk)
+    tmp_path.rename(train_path)
+    print(f"  Saved {total_tokens:,} train tokens to {train_path}")
 
     return train_path, val_path
 

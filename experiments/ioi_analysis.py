@@ -93,7 +93,7 @@ def compute_logit_diff(model, tokenizer, prompts: list[dict], device) -> dict:
 
     with torch.no_grad(), torch.amp.autocast("cuda", dtype=torch.bfloat16):
         for p in prompts:
-            tokens = tokenizer.encode(p["text"], return_tensors="pt").to(device)
+            tokens = tokenizer(p["text"], return_tensors="pt")["input_ids"].to(device)
             logits = model(tokens).logits[0, -1, :]  # logits at last position
 
             io_token = tokenizer.encode(" " + p["io_name"])[0]

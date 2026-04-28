@@ -555,8 +555,8 @@ def run_full_analysis():
                 rho, _ = stats.spearmanr(vectors[i], vectors[j])
                 full_rhos.append(rho)
         full_rho_mean = np.mean(full_rhos)
-        full_rho_ci = [float(np.percentile(full_rhos, q)) for q in [2.5, 97.5]]
-        print(f"Full rho: {full_rho_mean:.3f} [{full_rho_ci[0]:.3f}, {full_rho_ci[1]:.3f}]")
+        full_rho_range = [float(min(full_rhos)), float(max(full_rhos))]
+        print(f"Full rho: {full_rho_mean:.3f} [range: {full_rho_range[0]:.3f}-{full_rho_range[1]:.3f}]")
 
         # ── G-invariant Spearman ──────────────────────────────────────────
         ginv_rhos = []
@@ -565,8 +565,8 @@ def run_full_analysis():
                 rho, _ = stats.spearmanr(ginv_vectors[i], ginv_vectors[j])
                 ginv_rhos.append(rho)
         ginv_rho_mean = np.mean(ginv_rhos)
-        ginv_rho_ci = [float(np.percentile(ginv_rhos, q)) for q in [2.5, 97.5]]
-        print(f"G-inv rho: {ginv_rho_mean:.3f} [{ginv_rho_ci[0]:.3f}, {ginv_rho_ci[1]:.3f}]")
+        ginv_rho_range = [float(min(ginv_rhos)), float(max(ginv_rhos))]
+        print(f"G-inv rho: {ginv_rho_mean:.3f} [range: {ginv_rho_range[0]:.3f}-{ginv_rho_range[1]:.3f}]")
 
         # ── Heads-only analysis ───────────────────────────────────────────
         heads_only = []
@@ -635,12 +635,12 @@ def run_full_analysis():
         output[method] = {
             "full_agreement": {
                 "mean_spearman": float(full_rho_mean),
-                "ci_95": full_rho_ci,
+                "range": full_rho_range,
                 "all_spearman": [float(r) for r in full_rhos],
             },
             "g_invariant": {
                 "mean_spearman": float(ginv_rho_mean),
-                "ci_95": ginv_rho_ci,
+                "range": ginv_rho_range,
             },
             "excl_mlp": {
                 "heads_raw_rho": float(np.mean(heads_raw_rhos)),
