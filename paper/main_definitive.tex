@@ -1488,7 +1488,44 @@ When multiple protected attributes (race, gender, age) are each proxied by colli
 In credit models, ``zip code'' (proxy for race) is often collinear with ``income bracket'' ($|\rho| \approx 0.6$--$0.8$). If both have similar predictive power, a single-model SHAP audit finding ``zip code is the 3rd most important feature'' may conclude proxy discrimination---but retraining with a different seed could produce a model where zip code drops to 8th and income rises to 3rd. The audit conclusion depends on the random seed, not on the model's actual reliance on the protected attribute.
 
 \paragraph{Fairness impossibilities as abstract framework instances.}
-The impossibility results of \citet{chouldechova2017fair} (calibration vs.\ balance vs.\ equal false positive rates) and \citet{kleinberg2017inherent} (same conclusion, different proof) can be cast as instances of the abstract impossibility framework: each defines an explanation system where the ``explanation'' is a fairness metric, the Rashomon property arises from base-rate differences, and the three fairness desiderata play the roles of faithful, stable, and decisive. The tightness classification would then characterise which pairs of fairness metrics are jointly achievable. We leave this formalisation to future work, noting that it would extend the framework's scope from explainability to algorithmic fairness and provide a unified Lean-verified treatment of both impossibility classes.
+The impossibility results of \citet{chouldechova2017fair} (calibration $P_1$ vs.\ equal FPR $P_2$ vs.\ equal FNR $P_3$) and \citet{kleinberg2017inherent} (same conclusion, different proof) can be cast as instances of the abstract impossibility framework: each defines an explanation system where the ``explanation'' is a fairness metric, the Rashomon property arises from base-rate differences, and the three fairness desiderata play the roles of faithful, stable, and decisive.
+
+\paragraph{Tightness transition under performance constraints.}
+We apply the framework's tightness classification to the fairness trilemma. The result is a \emph{transition}: the tightness type changes under performance constraints.
+
+\begin{table}[ht]
+\centering
+\caption{Fairness impossibility tightness transition under TPR constraints. At practical performance levels, calibration is the universal bottleneck.}
+\label{tab:fairness-tightness}
+\small
+\begin{tabular}{@{}llp{7cm}@{}}
+\toprule
+\textbf{TPR constraint} & \textbf{Tightness type} & \textbf{Achievable pairwise compromises} \\
+\midrule
+$\tau = 0$ (unconstrained) & Full & All three pairs achievable (but only by degenerate classifiers that predict nobody positive) \\
+$\tau \geq 0.3$ & PPV-blocked & Only $P_2{+}P_3$ (equalized odds); $P_1{+}P_2$ gap $> 0.10$; $P_1{+}P_3$ gap $> 0.13$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At $\tau = 0$ (no performance constraint), the tightness is \textbf{full}: all three pairwise compromises are achievable. However, the classifiers achieving them are degenerate --- they classify (almost) nobody as positive, achieving perfect calibration and equal error rates trivially. This is technically correct but practically vacuous.
+
+At $\tau \geq 0.3$ (TPR $\geq$ 30\% for both groups --- a minimal practical requirement), the tightness transitions to \textbf{PPV-blocked}: calibration (PPV parity, $P_1$) is individually incompatible with both equal FPR ($P_1{+}P_2$ gap $> 0.10$) and equal FNR ($P_1{+}P_3$ gap $> 0.13$). The only achievable pairwise fairness compromise is equalized odds ($P_2{+}P_3$, gap $< 0.006$).
+
+\paragraph{Validation.}
+Tested on Adult Income (sex as protected attribute, base rate gap 0.20) and two synthetic datasets (base rate gaps 0.25 and 0.40). Methodology: proper train/test split (70/30 stratified), group-specific thresholds ($100 \times 100 = 10{,}000$ classifiers per model), 3 base model classes (logistic regression, random forest, gradient boosting), and bootstrap with model retraining (20 iterations, 100\% stable classification). For the synthetic dataset with base rate gap 0.40, the tightness is PPV-blocked even at $\tau = 0$ --- larger base rate differences make the impossibility bind earlier.
+
+\paragraph{Practical implication.}
+The tightness transition changes the recommendation from ``choose a fairness criterion and accept the trade-off'' (the standard framing) to ``equalized odds is the only achievable criterion at practical performance; calibration is structurally incompatible with either component of equalized odds.'' This is a structural finding: it holds regardless of the model class, the threshold choice, or the optimization method. The framework's value is diagnostic --- it identifies not just \emph{that} an impossibility exists, but \emph{which} compromises are available and \emph{when} the impossibility becomes binding.
+
+\paragraph{Reynolds best-approximation optimality.}
+The orbit average (Reynolds projection) $Rv = \frac{1}{|G|}\sum_{g \in G} g \cdot v$ satisfies a \emph{best-approximation theorem}: for any $G$-invariant vector $w$,
+\[
+\|v - Rv\| \leq \|v - w\|.
+\]
+The proof follows from the Pythagorean decomposition $v = Rv + (v - Rv)$ where $Rv \in V^G$ (the $G$-invariant subspace) and $(v - Rv) \perp V^G$. Any $G$-invariant $w$ satisfies $R(v - w) = Rv - w$, so $\|v - w\|^2 = \|v - Rv\|^2 + \|Rv - w\|^2 \geq \|v - Rv\|^2$.
+
+This establishes that \DASH{} and the $G$-invariant projection $V^G$ minimize information loss among \emph{all} stable (i.e., $G$-invariant) approximations --- not just unbiased or linear ones. The result is machine-verified: \texttt{reynolds\_best\_approximation} in the universal impossibility formalization proves the inequality for any idempotent self-adjoint linear map on an inner product space.
 
 \subsection{Direct FIM Impossibility}
 \label{sec:fim}

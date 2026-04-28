@@ -4174,6 +4174,26 @@ directions is $(1/2)^K$, exponentially vanishing in $K$. For $K = 3$
 $1/8 = 12.5\%$. A full analysis of intersectional instability under
 model multiplicity is left to future work.
 
+\paragraph{Tightness transition under performance constraints.}
+The framework's tightness classification applies to the Chouldechova--Kleinberg fairness impossibility (calibration $P_1$ + equal FPR $P_2$ + equal FNR $P_3$ cannot coexist when base rates differ). Under performance constraints (TPR $\geq \tau$ for both groups):
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Constraint} & \textbf{Tightness type} & \textbf{Achievable pairs} \\
+\midrule
+$\tau = 0$ (unconstrained) & Full & All three pairs (degenerate classifiers) \\
+$\tau \geq 0.3$ & PPV-blocked & Only $P_2{+}P_3$ (equalized odds) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent At any practical performance level, calibration (PPV parity) is individually incompatible with both equal FPR ($P_1{+}P_2$ gap $> 0.10$) and equal FNR ($P_1{+}P_3$ gap $> 0.13$). The only achievable pairwise fairness compromise is equalized odds ($P_2{+}P_3$ gap $< 0.006$). Validated on Adult Income (sex, base rate gap 0.20) and synthetic data (base rate gap 0.25--0.40) with bootstrap model retraining (20 iterations, 100\% stable). This finding changes the practical recommendation from ``choose a fairness criterion'' to ``equalized odds is the only achievable criterion at practical performance; calibration is structurally incompatible.''
+
+\paragraph{Reynolds best-approximation optimality.}
+The orbit average $Rv = \frac{1}{|G|}\sum_{g \in G} g \cdot v$ is the \emph{closest $G$-invariant vector} to $v$ in $L^2$ norm. For any $G$-invariant $w$ (i.e., any stable approximation): $\|v - Rv\| \leq \|v - w\|$. The proof is a direct consequence of the Pythagorean decomposition: $v = Rv + (v - Rv)$ where $Rv \in V^G$ and $(v - Rv) \perp V^G$. Lean: \texttt{reynolds\_best\_approximation} (idempotent self-adjoint projection). This establishes that \DASH{} and $V^G$ minimize information loss among \emph{all} stable methods --- not just unbiased or linear ones.
+
 \section{Expected Ranking Discordance}
 
 We derive a closed-form formula for the expected disagreement

@@ -683,6 +683,9 @@ The sample median has asymptotic relative efficiency $2/\pi \approx 0.637$ relat
 \paragraph{Connection to invariant decision theory.}
 The DASH optimality has a deeper connection to classical invariant decision theory. The data-generating process is invariant under the permutation group $S_m$ acting on within-group features. By the Hunt--Stein theorem (Lehmann \& Romano, 2005, Theorem 9.3.3; for finite groups, the result follows from the complete class theorem), for a finite group, the best equivariant estimator is the Pitman estimator---the average over the group orbit (Lehmann \& Romano, 2005, \S 6.7). For the permutation group acting on $m$ features, this is exactly the sample mean of attributions, which is DASH. Hunt--Stein gives optimality among \emph{all} estimators (not just unbiased ones), and directly explains why DASH produces ties: the group average is constant on orbits.
 
+\paragraph{Best-approximation theorem.}
+A stronger geometric optimality: the orbit average $Rv$ is the \emph{closest $G$-invariant vector} to $v$ in $L^2$ norm. For any $G$-invariant $w$: $\|v - Rv\| \leq \|v - w\|$. The proof is the Pythagorean decomposition: $v = Rv + (v - Rv)$ where $Rv \in V^G$ and $(v - Rv) \perp V^G$. Then $\|v - w\|^2 = \|v - Rv\|^2 + \|Rv - w\|^2 \geq \|v - Rv\|^2$. This establishes that \DASH{} minimizes information loss among \emph{all} stable methods---not just unbiased or linear ones. Machine-verified: \texttt{reynolds\_best\_approximation}.
+
 \subsection{DASH Robustness and Breakdown Point}
 \label{sec:dash-robustness}
 
@@ -1076,6 +1079,9 @@ In credit models, ``zip code'' (proxy for race) is often collinear with ``income
 
 \paragraph{Worked adverse action example.}
 Consider a borrower denied credit, with correlated features income and DTI. Model~A (seed~1) cites income as the top adverse factor; Model~B (seed~2) cites DTI. Under ECOA, the lender must disclose the primary reason. The disclosure depends on the random seed---a model governance concern that is mathematically inevitable under collinearity. \DASH{} resolves this: the consensus ranks income and DTI as tied contributors.
+
+\paragraph{Tightness transition under performance constraints.}
+The framework's tightness classification applies to the Chouldechova--Kleinberg impossibility itself. Under performance constraints (TPR $\geq \tau$ for both groups), the tightness type \emph{transitions}: at $\tau = 0$ (unconstrained), tightness is full---all pairwise compromises are achievable (by degenerate classifiers). At $\tau \geq 0.3$ (practical performance), tightness becomes PPV-blocked: calibration is individually incompatible with both equal FPR (gap $> 0.10$) and equal FNR (gap $> 0.13$); only equalized odds ($P_2{+}P_3$, gap $< 0.006$) is achievable. Validated on Adult Income (sex, base rate gap 0.20) and synthetic data (base rate gaps 0.25--0.40) with bootstrap model retraining (20 iterations, 100\% stable). The finding changes the practical recommendation from ``choose a fairness criterion'' to ``equalized odds is the only achievable criterion at practical performance; calibration is structurally incompatible.''
 
 \subsection{Direct FIM Impossibility}
 \label{sec:fim}
