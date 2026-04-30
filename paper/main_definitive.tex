@@ -121,7 +121,7 @@ The impossibility is quantitative: the attribution ratio diverges as $1/(1{-}\rh
 
 In a survey of 77 public datasets, 68\% exhibit attribution instability. Switching to conditional SHAP does not escape the impossibility when features have equal causal effects. SHAP-based proxy discrimination audits conclude ``proxy reliance'' with probability exactly $1/2$ for collinear features; for $K$ protected attributes, joint audit correctness is $(1/2)^K$. Preliminary evidence extends the impossibility to mechanistic interpretability: 10 grokked transformers agree on only 36\% of the top-3 circuit components.
 
-The framework is mechanically verified in Lean~4 (357 theorems from 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines)---the first formally verified impossibility in explainable AI. The formalization caught two logical inconsistencies and one type mismatch that survived informal review.
+The framework is mechanically verified in Lean~4 (357 theorems from 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines)---to our knowledge, the first formally verified impossibility in explainable AI. The formalization caught two logical inconsistencies and one type mismatch that survived informal review.
 
 Code and Lean proofs: \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}).
 \end{abstract}
@@ -249,7 +249,7 @@ The core impossibility (Theorem~\ref{thm:impossibility}) depends on zero domain-
 beyond the Rashomon property; the DASH equity result (Corollary~\ref{cor:equity})
 depends on the \texttt{attribution\_sum\_symmetric} theorem (derived in
 \texttt{SymmetryDerive.lean} from the proportionality and split-count axioms).
-This is the first formally verified impossibility result in
+This is, to our knowledge, the first formally verified impossibility result in
 explainable AI (the core impossibility uses zero domain-specific axioms; quantitative bounds are
 conditional on 4 domain-specific axioms; query complexity uses 2 additional axioms
 from Le~Cam's method).
@@ -1908,7 +1908,7 @@ We train 10 transformers from independent random seeds on TinyStories~\citep{eld
 \end{itemize}
 All 10 models within each configuration achieve near-identical perplexity (Config~A: mean PPL $= 8.584$, CV $= 0.659\%$; Config~B: mean PPL $= 9.976$, CV $= 1.033\%$; Config~C: mean PPL $= 18.539$, CV $= 0.076\%$).
 Component importance is measured by activation patching (weight zeroing): zero out each component's parameters and measure the change in loss.
-Seven pre-registered predictions derived from the theory are evaluated per configuration; all 7/7 pass for Configs~A and~B, while Config~C passes 4/7 (correctly predicted by the theory as a non-Rashomon regime).
+Seven theory-derived predictions are evaluated per configuration; all 7/7 pass for Configs~A and~B, while Config~C passes 4/7 (correctly predicted by the theory as a non-Rashomon regime).
 
 \paragraph{Results.}
 Table~\ref{tab:tinystories-results} presents the full results across all three scales.
@@ -2053,7 +2053,7 @@ $$\text{unfaith}(\theta_1) + \text{unfaith}(\theta_2) \geq \Delta - \delta$$
 where $\text{unfaith}(\theta) = d(E(\theta), \text{exp}(\theta))$. At least one witness is unfaithful by $\geq (\Delta - \delta)/2$.
 \end{theorem}
 
-\noindent\textit{Proof.} Triangle inequality: $\Delta = d(\text{exp}(\theta_1), \text{exp}(\theta_2)) \leq d(\text{exp}(\theta_1), E(\theta_1)) + d(E(\theta_1), E(\theta_2)) + d(E(\theta_2), \text{exp}(\theta_2)) \leq \text{unfaith}(\theta_1) + \delta + \text{unfaith}(\theta_2)$. Rearrange.  Proved in Lean (\texttt{ApproximateBilemma.lean}). \hfill$\square$
+\noindent\textit{Proof.} Triangle inequality: $\Delta = d(\text{exp}(\theta_1), \text{exp}(\theta_2)) \leq d(\text{exp}(\theta_1), E(\theta_1)) + d(E(\theta_1), E(\theta_2)) + d(E(\theta_2), \text{exp}(\theta_2)) \leq \text{unfaith}(\theta_1) + \delta + \text{unfaith}(\theta_2)$. Rearrange.  Proved in Lean (\texttt{AlphaFaithful.lean}). \hfill$\square$
 
 \paragraph{Practical interpretation.}
 If two XGBoost models disagree on feature $j$'s SHAP value by $\Delta = 0.3$, and you want your method to be $\delta = 0.05$-stable (explanations change by $\leq 0.05$ for equivalent models), you must be unfaithful by $\geq (0.3 - 0.05)/2 = 0.125$ at one of them. The quantitative bilemma converts the binary impossibility (``SHAP sign flips'') into a continuous tradeoff (``SHAP magnitude deviates by at least $(\Delta - \delta)/2$'').
@@ -2288,7 +2288,7 @@ def predict_sign_instability(shap_matrix):
 For each feature $j$, the variance $\Var_f[\varphi_j(f)]$ across the Rashomon set equals the minimum MSE any stable method achieves. \DASH{} (the mean) saturates this bound exactly---a mathematical identity (0/800 violations at machine precision across 5 datasets $\times$ 20 features $\times$ 8 configurations). The median costs 1.6\% more; the 5\%-trimmed mean 0.3\% more. The relative variance correlates with coverage conflict ($r = 0.91$, $p = 0.002$ per-dataset, not pooled): features with high sign instability also have high magnitude instability. This provides practitioners a per-feature \emph{quality budget} computable before choosing a method: $\Var[\varphi_j]$ is the irreducible explanation noise for feature $j$ under model multiplicity. See supplement for the full variance-bound derivation and comparison across estimators.
 
 \paragraph{Approximate bilemma.}
-A natural concern: does the bilemma require exact Rashomon pairs, making it fragile to perturbations? No. For binary $H$, $\varepsilon$-stability reduces to exact equality (the only $\varepsilon$-ball in $\{\text{pos}, \text{neg}\}$ with $\varepsilon < 1$ is the point itself). The bilemma holds at every tolerance level. Proved in Lean (\texttt{ApproximateBilemma.lean}).
+A natural concern: does the bilemma require exact Rashomon pairs, making it fragile to perturbations? No. For binary $H$, $\varepsilon$-stability reduces to exact equality (the only $\varepsilon$-ball in $\{\text{pos}, \text{neg}\}$ with $\varepsilon < 1$ is the point itself). The bilemma holds at every tolerance level. Proved in Lean (\texttt{AlphaFaithful.lean}).
 
 \paragraph{DASH binary optimality.}
 For binary $H$ (SHAP sign), \DASH{} (majority vote across models) is the \emph{uniquely} optimal stable method: any other stable method either agrees with the majority (same error rate) or picks the minority sign (strictly worse). This is not an empirical finding but a mathematical theorem. Average unfaithfulness $= p \cdot \bar{f}$ where $p$ is the coverage conflict rate and $\bar{f} \approx 0.23$--$0.28$ is the mean minority fraction (corrected from the earlier $p/2$ bound, which assumed minority fractions of $0.50$; actual minority fractions are $0.23$--$0.28$).
@@ -3604,7 +3604,7 @@ The model architectures we analyze were introduced by \citet{breiman2001random} 
 
 \paragraph{Formal verification for ML.}
 \begin{sloppypar}
-\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning theory in Lean~4 \citep{demoura2021lean4} using Mathlib \citep{mathlib2020}. Our formalization is the first formally verified impossibility result in explainable~AI.
+\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning theory in Lean~4 \citep{demoura2021lean4} using Mathlib \citep{mathlib2020}. Our formalization is, to our knowledge, the first formally verified impossibility result in explainable~AI.
 \end{sloppypar}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

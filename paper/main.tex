@@ -76,7 +76,7 @@ The reason is the same: collinear features (or architecturally symmetric compone
     \item \textbf{The Design Space Theorem} (Theorem~\ref{thm:design-space}): exactly two families of methods exist. \DASH{} (orbit averaging) is Pareto-optimal.
     \item \textbf{Component-level validation}: 14/14 theory-derived predictions confirmed on TinyStories at two architectural scales. $G$-invariant projection lifts circuit agreement from $\rho{=}0.54$ to $\rho{=}0.98$. GPT-2 fine-tune confirms the boundary: without Rashomon diversity, instability drops to near-zero ($\rho{=}0.993$, flip $= 0.043$).
     \item \textbf{Input-level validation}: 45\% explanation reversal, 24 distinct top-3 rankings on the canonical SHAP tutorial dataset, nonparametric diagnostic outperforming the Gaussian formula by $2\times$.
-    \item \textbf{Machine-verified proof}: 357 Lean~4 theorems from 6 axioms, 0~\texttt{sorry}---the first formally verified impossibility in explainable AI.
+    \item \textbf{Machine-verified proof}: 357 Lean~4 theorems from 6 axioms, 0~\texttt{sorry}---to our knowledge, the first formally verified impossibility in explainable AI.
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -143,7 +143,7 @@ For binary $H$ with $\mathrm{incompatible}(h_1, h_2) \Leftrightarrow h_1 \neq h_
 Binary $H$ has no neutral element: every value contradicts the other. Faithful forces $E(\theta) = \mathrm{explain}(\theta)$, making $E$ decisive. The trilemma gives $\bot$. \hfill Lean: \texttt{bilemma\_of\_compatible\_eq}, zero axioms.
 \end{proof}
 
-The bilemma applies to input-level binary questions (SHAP sign, feature selection) and to component-level binary questions (``is this head part of the circuit?''). It is robust to perturbation: for binary $H$, $\varepsilon$-stability reduces to exact equality, so the bilemma holds at every tolerance level (Lean: \texttt{ApproximateBilemma.lean}). For continuous $H$, the \emph{explanation uncertainty bound} gives: unfaithfulness $\geq (\Delta - \delta)/2$ for any $(\varepsilon,\delta)$-stable method on a Rashomon pair with gap $\Delta$ (supplement).
+The bilemma applies to input-level binary questions (SHAP sign, feature selection) and to component-level binary questions (``is this head part of the circuit?''). It is robust to perturbation: for binary $H$, $\varepsilon$-stability reduces to exact equality, so the bilemma holds at every tolerance level (Lean: \texttt{AlphaFaithful.lean}). For continuous $H$, the \emph{explanation uncertainty bound} gives: unfaithfulness $\geq (\Delta - \delta)/2$ for any $(\varepsilon,\delta)$-stable method on a Rashomon pair with gap $\Delta$ (supplement).
 
 \paragraph{Tightness classification.}
 $F{+}S$ is achievable iff $H$ has a \emph{neutral element} (Lean: \texttt{tightness\_dichotomy}). Rankings have ties (neutral); SHAP signs and circuit membership do not. The bilemma has \emph{collapsed} tightness---structurally more severe than the fairness impossibility \citep{chouldechova2017fair}. The only resolution is enrichment: adding neutral elements, which is precisely what orbit averaging does.
@@ -340,7 +340,7 @@ Mean ablation (an alternative to weight zeroing) yields $G$-invariant $\rho \app
 \citet{krishna2022disagreement} document that different explanation methods disagree for the same model; we prove the complementary result that the \emph{same} method disagrees across equivalent models.
 \citet{chughtai2023toy} show that independently trained networks learn different internal representations for the same group operation---empirical Rashomon for circuits. Our component-level results extend this: the instability in circuit importance is mathematically inevitable, and orbit averaging resolves it.
 \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove fairness trilemmas; ours is the explainability analogue.
-\citet{nipkow2009social} formalized Arrow in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning in Lean~4; ours is the first formally verified impossibility in XAI. Extended discussion in supplement.
+\citet{nipkow2009social} formalized Arrow in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning in Lean~4; ours is, to our knowledge, the first formally verified impossibility in XAI. Extended discussion in supplement.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Discussion}
@@ -380,7 +380,7 @@ Scaling the component-level analysis to frontier models (GPT-4 scale); extending
 
 \item \textbf{Theory.} Complete proofs in paper and machine-verified Lean~4 code. All assumptions (axioms) explicitly stated. [Yes]
 
-\item \textbf{Experiments.} Reproducible: fixed seeds, public datasets (Breast Cancer, German Credit, California Housing, TinyStories), open-source implementations (XGBoost, LightGBM, PyTorch). Component-level: 7 pre-registered predictions per scale, all confirmed. Compute: $<$30 min (input-level) + $<$4 hours (TinyStories training) on Apple Silicon. Code: \url{[anonymized for review]}. [Yes]
+\item \textbf{Experiments.} Reproducible: fixed seeds, public datasets (Breast Cancer, German Credit, California Housing, TinyStories), open-source implementations (XGBoost, LightGBM, PyTorch). Component-level: 7 theory-derived predictions per scale, all confirmed. Compute: $<$30 min (input-level) + $<$4 hours (TinyStories training) on Apple Silicon. Code: \url{[anonymized for review]}. [Yes]
 
 \item \textbf{Code of ethics.} No human subjects. German Credit dataset is publicly available (UCI ML Repository). Regulatory analysis is informational. [N/A]
 
