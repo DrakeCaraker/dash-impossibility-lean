@@ -6,7 +6,9 @@ Lean 4 formalization of the impossibility theorem for attribution under symmetry
 
 No importance ranking — of input features or internal components — can simultaneously be faithful (reflect the model's attributions), stable (consistent across equivalent models), and complete (rank all pairs) when interchangeable components exist under the Rashomon property. The core theorem requires **zero domain axioms**.
 
-The impossibility operates at two levels: input-level (SHAP on collinear features) and component-level (activation patching on architecturally symmetric heads). The resolution at both levels is orbit averaging: DASH for features, G-invariant projection for circuits. Model-specific instantiations show GBDT has ratio 1/(1-ρ²) → ∞, Lasso has ratio ∞, neural nets have conditional violations, and random forests have bounded O(1/√T) violations.
+The impossibility operates at two levels: input-level (SHAP on collinear features) and component-level (activation patching on architecturally symmetric heads). The resolution at both levels is the stable projection (orbit averaging): DASH for features, G-invariant projection for circuits. Model-specific instantiations show GBDT has ratio 1/(1-ρ²) → ∞, Lasso has ratio ∞, neural nets have conditional violations, and random forests have bounded O(1/√T) violations.
+
+**Naming conventions:** See `docs/naming-conventions.md`. Canonical terms from the universal framework apply here. Key: "the stable projection" (not "the explanation code"), "explanation uncertainty bound" (not "tradeoff bound" or "uncertainty relation"), "Explanation Capacity Theorem" (not "Capacity Law"), "over-explanation penalty" (not "beyond-capacity penalty").
 
 ## Architecture
 
