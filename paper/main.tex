@@ -48,8 +48,8 @@
 \maketitle
 
 \begin{abstract}
-Attribution instability is not a bug in SHAP---it is a mathematical property of attribution itself, at every level of a model.
-We prove that no attribution ranking can simultaneously be faithful, stable, and complete under the Rashomon property (the Attribution Impossibility); for binary questions, faithful + stable alone is impossible (the bilemma). The theorem applies to \emph{any} attribution system: input-level (which feature matters) and component-level (which circuit computes).
+Attribution instability is a mathematical property of statistical dependence---and standard diagnostics are blind to it.
+We prove that no attribution ranking can simultaneously be faithful, stable, and complete when $I(X_j, X_k) > 0$ (the Attribution Impossibility), with a quantitative floor: any stable explanation has error ${\geq}\Delta/2$ on at least one model. For binary questions, faithful + stable alone is impossible (the bilemma). Standard multicollinearity diagnostics (VIF, Pearson) miss the nonlinear cases entirely: on drug discovery data, Pearson predicts zero instability for a pair with 23\% actual instability. The theorem applies to \emph{any} attribution system: input-level (which feature matters) and component-level (which circuit computes).
 \textbf{Input-level:} 50 retrains produce 24 distinct top-3 rankings (4.2\% agreement); 45\% of German Credit applicants receive different explanation categories; 68\% of 77 datasets show instability. A 7-line nonparametric diagnostic outperforms the Gaussian formula by $2\times$.
 \textbf{Component-level:} 10 independently trained transformers on TinyStories agree at only $\rho{=}0.54$ on circuit importance by activation patching. A $G$-invariant projection (orbit averaging over the architectural symmetry group) lifts agreement to $\rho{=}0.98$, with 14/14 theory-derived predictions confirmed across two scales. A fine-tuned GPT-2 confirms the boundary: without Rashomon diversity, instability vanishes ($\rho{=}0.993$).
 The design space has exactly two achievable families; \DASH{} (orbit averaging) is Pareto-optimal. Verified in Lean~4 (357 theorems, 6 axioms, 0~\texttt{sorry}).
@@ -62,7 +62,7 @@ The design space has exactly two achievable families; \DASH{} (orbit averaging) 
 Train a gradient-boosted model. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes---in 68\% of 77 public datasets.
 Now look inside a neural network. Identify the most important circuit component by activation patching. Retrain from a different initialization. The most important component changes too---10 independently trained transformers on TinyStories agree at only $\rho = 0.54$.
 
-The instability is not in SHAP, not in activation patching, and not in any specific method. It is in the mathematics of attribution itself. We prove that \emph{no} attribution ranking---at any level of a model, from input features to internal circuits---can simultaneously be faithful, stable, and complete when the Rashomon property holds. The same theorem, the same resolution, the same diagnostic, at different granularities.
+The instability is not in SHAP, not in activation patching, and not in any specific method. It is in the mathematics of attribution itself. We prove that \emph{no} attribution ranking---at any level of a model, from input features to internal circuits---can simultaneously be faithful, stable, and complete when features share mutual information ($I > 0$). Worse: the standard safeguard fails. Checking Pearson correlation or VIF catches only linear dependence. On drug discovery data (BBBP, binary molecular fingerprints), Pearson predicts 0\% instability for a nonlinearly dependent pair; actual instability is 23\%---invisible to any linear diagnostic.
 
 \paragraph{Two levels, one impossibility.}
 Consider \emph{input-level attribution}: across 30 retrains, 45\% of German Credit applicants receive a different ``most important feature'' category. The adverse action notice changes based solely on the training seed.
@@ -92,7 +92,7 @@ $\succ$ is \emph{faithful} to $\theta$ if $j \succ k$ whenever $\varphi_j(\theta
 \emph{complete} if for every $j \neq k$, either $j \succ k$ or $k \succ j$.
 \end{definition}
 
-The \emph{Rashomon property} \citep{rudin2024amazing}: for interchangeable components $j, k$, there exist configurations $\theta, \theta'$ with $\varphi_j(\theta) > \varphi_k(\theta)$ and $\varphi_k(\theta') > \varphi_j(\theta')$. It is inevitable for any stochastic algorithm whose training distribution is invariant under permutation of symmetric components (Rashomon Inevitability Theorem, Lean-verified; supplement). Deterministic algorithms with fixed tie-breaking rules can break this symmetry.
+The \emph{Rashomon property} \citep{rudin2024amazing}: for interchangeable components $j, k$, there exist configurations $\theta, \theta'$ with $\varphi_j(\theta) > \varphi_k(\theta)$ and $\varphi_k(\theta') > \varphi_j(\theta')$. The exact boundary is mutual information: $I(X_j, X_k) > 0 \Leftrightarrow$ the Rashomon property holds under symmetric DGP (Lean: \texttt{mi\_is\_exact\_boundary}). This captures nonlinear dependence that Pearson correlation misses entirely ($X_2 = X_1^2$: $|\rho| = 0.08$, $I = 1.91$). The Rashomon property is inevitable for any stochastic algorithm whose training distribution is invariant under permutation of symmetric components (supplement).
 
 \begin{theorem}[Attribution Impossibility]
 \label{thm:impossibility}
@@ -103,9 +103,11 @@ If an attribution system satisfies the Rashomon property, no ranking is simultan
 Let $j, k$ be interchangeable. Rashomon gives $\theta, \theta'$ with opposite orderings. Suppose $\succ$ is faithful, stable, complete. Completeness: WLOG $j \succ k$. Stability: this holds for all configurations. Faithfulness at $\theta'$: requires $k \succ j$. Contradiction. \hfill Lean: \texttt{explanation\_impossibility}, zero domain axioms.
 \end{proof}
 
+\paragraph{Quantitative floor.}
+Any stable explanation has unfaithfulness $\geq \Delta/2$ on at least one Rashomon witness, where $\Delta$ is the attribution gap. No algorithm can beat this bound (Lean: \texttt{mi\_quantitative\_unfaithfulness}).
+
 \paragraph{Instance 1: Input-level attribution.}
-$\Theta$ = trained models; $\varphi_j$ = global SHAP importance of feature $j$; interchangeability = collinearity ($\rho > 0$).
-$P$ features are partitioned into $L$ groups by correlation structure.
+$\Theta$ = trained models; $\varphi_j$ = global SHAP importance of feature $j$; interchangeability = $I(X_j, X_k) > 0$ (includes both linear collinearity and nonlinear dependence).
 The attribution ratio diverges as $1/(1{-}\rho^2)$ for \GBDT{}, is $\infty$ for Lasso, conditional for neural nets, and $O(1/\sqrt{T})$ for random forests (supplement).
 
 \paragraph{Instance 2: Component-level attribution.}
@@ -148,7 +150,9 @@ The bilemma applies to input-level binary questions (SHAP sign, feature selectio
 \paragraph{Tightness classification.}
 $F{+}S$ is achievable iff $H$ has a \emph{neutral element} (Lean: \texttt{tightness\_dichotomy}). Rankings have ties (neutral); SHAP signs and circuit membership do not. The bilemma has \emph{collapsed} tightness---structurally more severe than the fairness impossibility \citep{chouldechova2017fair}. The only resolution is enrichment: adding neutral elements, which is precisely what orbit averaging does.
 
-\subsection{Diagnostics}
+\subsection{Diagnostics: A Three-Level Hierarchy}
+
+Three questions require three tools: (1)~\emph{Structure}: what compromises are available? (tightness classification, \S\ref{sec:setup}). (2)~\emph{Existence}: does the impossibility apply to this pair? (MI screening catches nonlinear dependence Pearson misses). (3)~\emph{Magnitude}: how much instability? (coverage conflict, below).
 
 \paragraph{Input-level: nonparametric flip predictor.}
 For feature $j$ across $M$ models, the \emph{minority fraction}
@@ -209,10 +213,7 @@ Ensemble size: $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$
 For a network with symmetry group $G = S_k^L$, the $G$-invariant importance $V^G$ averages activation patching scores within orbits (heads in the same layer). The \emph{explanation capacity} $C = \dim(V^G)$ measures how much attribution information survives projection: for $S_k^L$, $C = 2L$ (one head-average and one MLP per layer). For $S_k^L$ this reduces to layer averaging---a familiar operation, but the theorem identifies \emph{why} it works (it is the unique orbit average for the architectural symmetry group) and \emph{when} it suffices (when $G$ captures the interchangeability). For richer symmetry groups (e.g., weight permutation symmetries), $V^G$ extends beyond simple layer averaging. On TinyStories: pairwise Spearman rises from $\rho = 0.54$ (raw) to $\rho = 0.98$ ($G$-invariant; Section~\ref{sec:component-experiments}).
 
 \paragraph{The same mathematics.}
-Both resolutions are orbit averaging: \DASH{} averages attributions across models (trivially equivariant under $S_M$), while $V^G$ averages importance within architecturally symmetric components (equivariant under $S_k^L$). The substantive content is the $V^G$ construction: it identifies the \emph{minimal sufficient} aggregation from the symmetry group alone, without requiring multiple models. Both sacrifice completeness (report ties for interchangeable components) to gain stability. Both are Pareto-optimal on the $\mathcal{B}$ branch of the Design Space (Theorem~\ref{thm:design-space}).
-
-\paragraph{Workflow.}
-Screen (single model) $\to$ Minority fraction (nonparametric) $\to$ Z-test (5 models) $\to$ \DASH{} consensus ($M \geq 25$). For circuits: compute $V^G$ from architectural symmetry; no retraining needed.
+Both are the stable projection on different symmetry groups: $S_M$ for \DASH{}, $S_k^L$ for $V^G$. Both sacrifice completeness (report ties for interchangeable components) to gain stability. Both are Pareto-optimal on the $\mathcal{B}$ branch (Theorem~\ref{thm:design-space}). Workflow: MI screening $\to$ minority fraction $\to$ Z-test (5 models) $\to$ \DASH{} consensus ($M \geq 25$). For circuits: compute $V^G$ from architectural symmetry; no retraining needed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Empirical Validation}
@@ -290,8 +291,11 @@ Full stochasticity & 80\% & 79\% & 67\% \\
 \end{tabular}
 \end{table}
 
-\paragraph{Prevalence and extended results.}
-Of 77 public datasets, 68\% exhibit attribution instability (any within-group flip rate $> 10\%$; Wilson CI: $[56\%, 77\%]$); for $P \geq 20$: 93\%. On gene expression data, the \#1 biomarker alternates between TSPAN8 and CEACAM5/CEA ($\rho = 0.86$)---different drug targets depending on the seed \citep[see][for full analysis]{anonymous2026attribution}. Subsample sensitivity, cross-implementation validation, published ranking replication, and parametric diagnostics in supplement.
+\paragraph{Prevalence.}
+Of 77 public datasets, 68\% exhibit attribution instability (any within-group flip rate $> 10\%$; Wilson CI: $[56\%, 77\%]$); for $P \geq 20$: 93\%. Extended results (gene expression, subsample sensitivity, cross-implementation, published ranking replication) in supplement.
+
+\paragraph{Drug discovery: nonlinear dependence.}
+On BBBP (blood-brain barrier permeability, binary molecular fingerprints), Pearson-based screening predicts $0\%$ instability for a nonlinearly dependent pair; MI-based screening ($I > \tau_{95} = 0.027$) predicts $19.4\%$; actual instability is $23.1\%$. MI reduces the prediction error from 23 percentage points to 3.6. Standard collinearity diagnostics (Pearson, VIF) fail entirely for nonlinear dependence.
 
 \subsection{Component-Level Attribution}
 \label{sec:component-experiments}
@@ -357,8 +361,8 @@ The component-level validation uses weight zeroing and mean ablation; other patc
 The impossibility operates at every level of a model. For input-level attribution, single-model SHAP audits for proxy discrimination conclude ``proxy reliance'' with probability exactly $1/2$ for collinear features; for $K$ protected attributes, joint audit correctness is $(1/2)^K$. We suggest this may constitute a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}; legal scholars should evaluate this interpretation.
 For component-level attribution, the impossibility constrains \emph{importance rankings} of circuit components: which head matters most depends on the training seed (Section~\ref{sec:component-experiments}: Cohen's $d = 5.4$--$11.9$). This does not necessarily constrain \emph{algorithmic identification}---whether a specific computational function (e.g., induction) exists may be stable even when the specific head implementing it is not. Safety cases built on ``does function $F$ exist?'' may be robust; safety cases built on ``which component is most important?'' are subject to the impossibility.
 Sparse autoencoder (SAE) features decompose a fixed model's activations into interpretable directions not tied to $S_k^L$. Whether SAE-based attribution escapes the Rashomon property---because the decomposition is post-hoc on a fixed model---is an open question with implications for the interpretability agenda.
-The resolution at both levels is orbit averaging---the \emph{stable projection} that recovers the shared structure across the Rashomon set, achieving the explanation capacity bound with equality.
-The framework's tightness classification extends to other impossibilities: the Chouldechova--Kleinberg fairness trilemma transitions from full tightness (all pairs achievable by degenerate classifiers) to PPV-blocked tightness (only equalized odds achievable) at practical performance levels ($\text{TPR} \geq 0.3$). Calibration is the universal bottleneck---a structural finding that changes the practical recommendation from ``choose a fairness criterion'' to ``equalized odds is the only achievable option'' (supplement).
+The resolution at both levels is orbit averaging---the \emph{stable projection} that recovers the shared structure, achieving the explanation capacity bound with equality.
+The tightness classification extends to fairness: the Chouldechova--Kleinberg trilemma transitions from full to PPV-blocked tightness at $\text{TPR} \geq 0.3$; calibration is the universal bottleneck (supplement).
 
 \paragraph{Lean verification.}
 357 theorems and lemmas (139 with multi-step proofs of ${\geq}5$ tactic lines), 6 axioms, 0~\texttt{sorry}, 58 files. The core impossibility (\texttt{explanation\_impossibility}) has zero domain axiom dependencies. All binary instances use constructive inductive types. The formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review. Axiom stratification: core impossibility 0 axioms $\to$ GBDT 3 $\to$ DASH equity 5 $\to$ full system 6. The symmetric Bayes dichotomy, conditional SHAP impossibility, fairness audit impossibility, and query complexity lower bound are all Lean-verified (supplement).
