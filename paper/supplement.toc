@@ -9,7 +9,7 @@
 \contentsline {paragraph}{Development methodology.}{10}{section*.7}%
 \contentsline {paragraph}{Proof depth distribution.}{10}{section*.8}%
 \contentsline {section}{\numberline {3}Inconsistencies Found During Formalization}{10}{section.3}%
-\contentsline {paragraph}{Joint consistency of all 16 axioms.}{11}{section*.9}%
+\contentsline {paragraph}{Joint consistency of all 6 axioms.}{11}{section*.9}%
 \contentsline {section}{\numberline {4}Gaussian Conditioning Argument}{11}{section.4}%
 \contentsline {section}{\numberline {5}Proof Sketch: $\alpha = 2/\pi $ from Gaussian Binary Quantization}{11}{section.5}%
 \contentsline {paragraph}{Connection to the corrected ratio.}{11}{section*.10}%
@@ -164,39 +164,47 @@
 \contentsline {paragraph}{Results.}{66}{section*.89}%
 \contentsline {paragraph}{Scope and limitations.}{67}{section*.90}%
 \contentsline {section}{\numberline {28}Replication Study: Published SHAP Rankings Are Unstable}{67}{section.28}%
-\contentsline {section}{\numberline {29}Connection to Compressed Sensing}{67}{section.29}%
-\contentsline {section}{\numberline {30}Fairness Audit Impossibility}{68}{section.30}%
-\contentsline {paragraph}{Setup.}{68}{section*.91}%
-\contentsline {paragraph}{Implications for AI governance.}{69}{section*.92}%
-\contentsline {paragraph}{Scope.}{69}{section*.93}%
-\contentsline {paragraph}{Example: lending.}{69}{section*.94}%
-\contentsline {paragraph}{Intersectional considerations.}{70}{section*.95}%
-\contentsline {section}{\numberline {31}Expected Ranking Discordance}{70}{section.31}%
-\contentsline {paragraph}{Normalized discordance rate.}{70}{section*.96}%
-\contentsline {paragraph}{Validation on Breast Cancer.}{71}{section*.97}%
-\contentsline {section}{\numberline {32}Attempted Common Generalization with Arrow's Theorem}{71}{section.32}%
-\contentsline {subsection}{\numberline {32.1}Structural comparison}{71}{subsection.32.1}%
-\contentsline {paragraph}{The critical asymmetry.}{72}{section*.98}%
-\contentsline {subsection}{\numberline {32.2}Attempted common framework}{72}{subsection.32.2}%
-\contentsline {paragraph}{The ``common axiom'' attempt.}{72}{section*.99}%
-\contentsline {subsection}{\numberline {32.3}Assessment}{73}{subsection.32.3}%
-\contentsline {paragraph}{Relationship to Sen's liberalism paradox.}{73}{section*.100}%
-\contentsline {section}{\numberline {33}Causal Identification Barrier Under Collinearity}{73}{section.33}%
-\contentsline {subsection}{\numberline {33.1}Setup}{73}{subsection.33.1}%
-\contentsline {paragraph}{The identification problem.}{74}{section*.101}%
-\contentsline {paragraph}{Interventional experiments.}{74}{section*.102}%
-\contentsline {subsection}{\numberline {33.2}The barrier: soft interventions}{74}{subsection.33.2}%
-\contentsline {subsection}{\numberline {33.3}Sample complexity}{74}{subsection.33.3}%
-\contentsline {paragraph}{Hard interventions resolve both problems.}{75}{section*.103}%
-\contentsline {section}{\numberline {34}Topological Analysis of the Impossibility}{75}{section.34}%
-\contentsline {subsection}{\numberline {34.1}The $m = 2$ case: connectedness only}{75}{subsection.34.1}%
-\contentsline {subsection}{\numberline {34.2}The $m = 3$ case: still just connectedness}{76}{subsection.34.2}%
-\contentsline {subsection}{\numberline {34.3}The $m \geq 4$ case: the permutohedron}{76}{subsection.34.3}%
-\contentsline {subsection}{\numberline {34.4}Assessment}{76}{subsection.34.4}%
-\contentsline {section}{\numberline {35}On Categorical/Axiomatic Strengthening}{77}{section.35}%
-\contentsline {subsection}{\numberline {35.1}The trivial version}{77}{subsection.35.1}%
-\contentsline {subsection}{\numberline {35.2}The ``constant attribution'' escape}{77}{subsection.35.2}%
-\contentsline {subsection}{\numberline {35.3}A non-trivial quantitative version}{77}{subsection.35.3}%
-\contentsline {subsection}{\numberline {35.4}Beyond binary: the Spearman version}{78}{subsection.35.4}%
-\contentsline {subsection}{\numberline {35.5}Assessment}{79}{subsection.35.5}%
-\contentsline {section}{\numberline {36}SymPy Verification}{79}{section.36}%
+\contentsline {subsection}{\numberline {28.1}The Ranking Lottery}{67}{subsection.28.1}%
+\contentsline {paragraph}{Subsample sensitivity.}{68}{section*.91}%
+\contentsline {paragraph}{Cross-implementation.}{68}{section*.92}%
+\contentsline {paragraph}{Gene count robustness.}{68}{section*.93}%
+\contentsline {subsection}{\numberline {28.2}Gene Expression: Pathway-Level Consequence}{68}{subsection.28.2}%
+\contentsline {paragraph}{Positive control.}{69}{section*.94}%
+\contentsline {section}{\numberline {29}Connection to Compressed Sensing}{69}{section.29}%
+\contentsline {section}{\numberline {30}Fairness Audit Impossibility}{70}{section.30}%
+\contentsline {paragraph}{Setup.}{70}{section*.95}%
+\contentsline {paragraph}{Implications for AI governance.}{71}{section*.96}%
+\contentsline {paragraph}{Scope.}{71}{section*.97}%
+\contentsline {paragraph}{Example: lending.}{71}{section*.98}%
+\contentsline {paragraph}{Intersectional considerations.}{71}{section*.99}%
+\contentsline {paragraph}{Tightness transition under performance constraints.}{71}{section*.100}%
+\contentsline {paragraph}{Reynolds best-approximation optimality.}{72}{section*.101}%
+\contentsline {section}{\numberline {31}Expected Ranking Discordance}{72}{section.31}%
+\contentsline {paragraph}{Normalized discordance rate.}{73}{section*.102}%
+\contentsline {paragraph}{Validation on Breast Cancer.}{73}{section*.103}%
+\contentsline {section}{\numberline {32}Attempted Common Generalization with Arrow's Theorem}{73}{section.32}%
+\contentsline {subsection}{\numberline {32.1}Structural comparison}{74}{subsection.32.1}%
+\contentsline {paragraph}{The critical asymmetry.}{74}{section*.104}%
+\contentsline {subsection}{\numberline {32.2}Attempted common framework}{74}{subsection.32.2}%
+\contentsline {paragraph}{The ``common axiom'' attempt.}{74}{section*.105}%
+\contentsline {subsection}{\numberline {32.3}Assessment}{75}{subsection.32.3}%
+\contentsline {paragraph}{Relationship to Sen's liberalism paradox.}{75}{section*.106}%
+\contentsline {section}{\numberline {33}Causal Identification Barrier Under Collinearity}{75}{section.33}%
+\contentsline {subsection}{\numberline {33.1}Setup}{76}{subsection.33.1}%
+\contentsline {paragraph}{The identification problem.}{76}{section*.107}%
+\contentsline {paragraph}{Interventional experiments.}{76}{section*.108}%
+\contentsline {subsection}{\numberline {33.2}The barrier: soft interventions}{76}{subsection.33.2}%
+\contentsline {subsection}{\numberline {33.3}Sample complexity}{76}{subsection.33.3}%
+\contentsline {paragraph}{Hard interventions resolve both problems.}{77}{section*.109}%
+\contentsline {section}{\numberline {34}Topological Analysis of the Impossibility}{77}{section.34}%
+\contentsline {subsection}{\numberline {34.1}The $m = 2$ case: connectedness only}{77}{subsection.34.1}%
+\contentsline {subsection}{\numberline {34.2}The $m = 3$ case: still just connectedness}{78}{subsection.34.2}%
+\contentsline {subsection}{\numberline {34.3}The $m \geq 4$ case: the permutohedron}{78}{subsection.34.3}%
+\contentsline {subsection}{\numberline {34.4}Assessment}{79}{subsection.34.4}%
+\contentsline {section}{\numberline {35}On Categorical/Axiomatic Strengthening}{79}{section.35}%
+\contentsline {subsection}{\numberline {35.1}The trivial version}{79}{subsection.35.1}%
+\contentsline {subsection}{\numberline {35.2}The ``constant attribution'' escape}{79}{subsection.35.2}%
+\contentsline {subsection}{\numberline {35.3}A non-trivial quantitative version}{79}{subsection.35.3}%
+\contentsline {subsection}{\numberline {35.4}Beyond binary: the Spearman version}{80}{subsection.35.4}%
+\contentsline {subsection}{\numberline {35.5}Assessment}{81}{subsection.35.5}%
+\contentsline {section}{\numberline {36}SymPy Verification}{81}{section.36}%

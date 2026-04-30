@@ -1,6 +1,6 @@
 \documentclass{article}
 % For anonymous submission (NeurIPS review):
-\usepackage{neurips_2026}
+\usepackage[preprint]{neurips_2026}
 % For preprint / arXiv (shows authors):
 % \usepackage[preprint]{neurips_2026}
 \usepackage[utf8]{inputenc}
@@ -35,13 +35,12 @@
 
 % Author block hidden for anonymous review.
 % Uncomment for camera-ready / arXiv preprint:
-% \author{
-%   Drake Caraker\thanks{Corresponding author: \texttt{drakecaraker@gmail.com}} \quad
-%   Bryan Arnold\thanks{\texttt{puremath86@gmail.com}} \quad
-%   David Rhoads\thanks{\texttt{drhoads9@gmail.com}} \\[4pt]
-%   \textit{Independent Researchers}
-% }
-\author{Anonymous Authors}
+\author{
+  Drake Caraker\thanks{Corresponding author: \texttt{drakecaraker@gmail.com}} \quad
+  Bryan Arnold\thanks{\texttt{puremath86@gmail.com}} \quad
+  David Rhoads\thanks{\texttt{drhoads9@gmail.com}} \\[4pt]
+  \textit{Independent Researchers}
+}
 
 \begin{document}
 
@@ -143,7 +142,7 @@ For binary $H$ with $\mathrm{incompatible}(h_1, h_2) \Leftrightarrow h_1 \neq h_
 Binary $H$ has no neutral element: every value contradicts the other. Faithful forces $E(\theta) = \mathrm{explain}(\theta)$, making $E$ decisive. The trilemma gives $\bot$. \hfill Lean: \texttt{bilemma\_of\_compatible\_eq}, zero axioms.
 \end{proof}
 
-The bilemma applies to input-level binary questions (SHAP sign, feature selection) and to component-level binary questions (``is this head part of the circuit?''). It is robust to perturbation: for binary $H$, $\varepsilon$-stability reduces to exact equality, so the bilemma holds at every tolerance level (Lean: \texttt{ApproximateBilemma.lean}). For continuous $H$, the \emph{explanation uncertainty relation} gives: unfaithfulness $\geq (\Delta - \delta)/2$ for any $(\varepsilon,\delta)$-stable method on a Rashomon pair with gap $\Delta$ (supplement).
+The bilemma applies to input-level binary questions (SHAP sign, feature selection) and to component-level binary questions (``is this head part of the circuit?''). It is robust to perturbation: for binary $H$, $\varepsilon$-stability reduces to exact equality, so the bilemma holds at every tolerance level (Lean: \texttt{ApproximateBilemma.lean}). For continuous $H$, the quantitative bilemma gives: unfaithfulness $\geq (\Delta - \delta)/2$ for any $(\varepsilon,\delta)$-stable method on a Rashomon pair with gap $\Delta$ (supplement).
 
 \paragraph{Tightness classification.}
 $F{+}S$ is achievable iff $H$ has a \emph{neutral element} (Lean: \texttt{tightness\_dichotomy}). Rankings have ties (neutral); SHAP signs and circuit membership do not. The bilemma has \emph{collapsed} tightness---structurally more severe than the fairness impossibility \citep{chouldechova2017fair}. The only resolution is enrichment: adding neutral elements, which is precisely what orbit averaging does.
@@ -202,11 +201,11 @@ The impossibility at both levels admits the same resolution: \emph{average over 
 For a balanced ensemble, $\bar\varphi_j = \bar\varphi_k$ for features $j, k$ in the same group.
 \end{corollary}
 
-\DASH{} is \emph{uniquely} optimal for binary $H$ (majority vote) and achieves the variance lower bound $\sigma_j^2/M$ with equality for continuous $H$ (Cauchy--Schwarz; Lean: \texttt{sum\_squares\_ge\_inv\_M}). More generally, the orbit average is the \emph{closest stable approximation} to the original attribution in $L^2$ norm: $\|v - Rv\| \leq \|v - w\|$ for any $G$-invariant $w$ (Lean: \texttt{reynolds\_best\_approximation}). \DASH{} and $V^G$ therefore minimize information loss among all stable methods, not just unbiased ones.
+\DASH{} is \emph{uniquely} optimal for binary $H$ (majority vote) and achieves the variance lower bound $\sigma_j^2/M$ with equality for continuous $H$ (Cauchy--Schwarz; Lean: \texttt{sum\_squares\_ge\_inv\_M}). By Rao--Blackwell, \DASH{} (the sufficient-statistic-based estimator for exchangeable models) minimizes MSE among unbiased estimators.
 Ensemble size: $M_{\min} = \lceil 2.71 \cdot \sigma_{jk}^2/\Delta_{jk}^2 \rceil$ for 5\% between-group flip rate; $M = 25$ brings flips below 1\%.
 
 \paragraph{Component-level: $G$-invariant projection.}
-For a network with symmetry group $G = S_k^L$, the $G$-invariant importance $V^G$ averages activation patching scores within orbits (heads in the same layer). The \emph{explanation capacity} $C = \dim(V^G)$ measures how much attribution information survives projection: for $S_k^L$, $C = 2L$ (one head-average and one MLP per layer). For $S_k^L$ this reduces to layer averaging---a familiar operation, but the theorem identifies \emph{why} it works (it is the unique orbit average for the architectural symmetry group) and \emph{when} it suffices (when $G$ captures the interchangeability). For richer symmetry groups (e.g., weight permutation symmetries), $V^G$ extends beyond simple layer averaging. On TinyStories: pairwise Spearman rises from $\rho = 0.54$ (raw) to $\rho = 0.98$ ($G$-invariant; Section~\ref{sec:component-experiments}).
+For a network with symmetry group $G = S_k^L$, the $G$-invariant importance $V^G$ averages activation patching scores within orbits (heads in the same layer). For $S_k^L$ this reduces to layer averaging---a familiar operation, but the theorem identifies \emph{why} it works (it is the unique orbit average for the architectural symmetry group) and \emph{when} it suffices (when $G$ captures the interchangeability). For richer symmetry groups (e.g., weight permutation symmetries), $V^G$ extends beyond simple layer averaging. On TinyStories: pairwise Spearman rises from $\rho = 0.54$ (raw) to $\rho = 0.98$ ($G$-invariant; Section~\ref{sec:component-experiments}).
 
 \paragraph{The same mathematics.}
 Both resolutions are orbit averaging: \DASH{} averages attributions across models (trivially equivariant under $S_M$), while $V^G$ averages importance within architecturally symmetric components (equivariant under $S_k^L$). The substantive content is the $V^G$ construction: it identifies the \emph{minimal sufficient} aggregation from the symmetry group alone, without requiring multiple models. Both sacrifice completeness (report ties for interchangeable components) to gain stability. Both are Pareto-optimal on the $\mathcal{B}$ branch of the Design Space (Theorem~\ref{thm:design-space}).
@@ -357,14 +356,13 @@ The component-level validation uses weight zeroing and mean ablation; other patc
 The impossibility operates at every level of a model. For input-level attribution, single-model SHAP audits for proxy discrimination conclude ``proxy reliance'' with probability exactly $1/2$ for collinear features; for $K$ protected attributes, joint audit correctness is $(1/2)^K$. We suggest this may constitute a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii)~\citep{euaiact2024}; legal scholars should evaluate this interpretation.
 For component-level attribution, the impossibility constrains \emph{importance rankings} of circuit components: which head matters most depends on the training seed (Section~\ref{sec:component-experiments}: Cohen's $d = 5.4$--$11.9$). This does not necessarily constrain \emph{algorithmic identification}---whether a specific computational function (e.g., induction) exists may be stable even when the specific head implementing it is not. Safety cases built on ``does function $F$ exist?'' may be robust; safety cases built on ``which component is most important?'' are subject to the impossibility.
 Sparse autoencoder (SAE) features decompose a fixed model's activations into interpretable directions not tied to $S_k^L$. Whether SAE-based attribution escapes the Rashomon property---because the decomposition is post-hoc on a fixed model---is an open question with implications for the interpretability agenda.
-The resolution at both levels is orbit averaging---the \emph{explanation code} that recovers the shared structure across the Rashomon set, achieving the explanation capacity bound with equality.
-The framework's tightness classification extends to other impossibilities: the Chouldechova--Kleinberg fairness trilemma transitions from full tightness (all pairs achievable by degenerate classifiers) to PPV-blocked tightness (only equalized odds achievable) at practical performance levels ($\text{TPR} \geq 0.3$). Calibration is the universal bottleneck---a structural finding that changes the practical recommendation from ``choose a fairness criterion'' to ``equalized odds is the only achievable option'' (supplement).
+The resolution at both levels is orbit averaging, which recovers the shared structure across the Rashomon set.
 
 \paragraph{Lean verification.}
 357 theorems and lemmas (139 with multi-step proofs of ${\geq}5$ tactic lines), 6 axioms, 0~\texttt{sorry}, 58 files. The core impossibility (\texttt{explanation\_impossibility}) has zero domain axiom dependencies. All binary instances use constructive inductive types. The formalization caught 2 logical inconsistencies and 1 type mismatch that survived informal review. Axiom stratification: core impossibility 0 axioms $\to$ GBDT 3 $\to$ DASH equity 5 $\to$ full system 6. The symmetric Bayes dichotomy, conditional SHAP impossibility, fairness audit impossibility, and query complexity lower bound are all Lean-verified (supplement).
 
 \paragraph{Open problems.}
-Scaling the component-level analysis to frontier models (GPT-4 scale); extending the $G$-invariant projection to non-architectural symmetries (learned representations). Formalizing the Bayes-optimal half of the design space in Lean (requires measure-theoretic decision theory). The impossibility generalizes beyond machine learning: the same theorem governs explanation of any underspecified system where interchangeable components admit a Rashomon set \citep{caraker2026limits}. The gap between prediction and explanation is structural at every level---developing practical workflows that acknowledge this gap, rather than assuming it away, is the central challenge for trustworthy AI.
+Scaling the component-level analysis to frontier models (GPT-4 scale); extending the $G$-invariant projection to non-architectural symmetries (learned representations). Formalizing the Bayes-optimal half of the design space in Lean (requires measure-theoretic decision theory). The gap between prediction and explanation is structural at every level---developing practical workflows that acknowledge this gap, rather than assuming it away, is the central challenge for trustworthy AI.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
@@ -380,7 +378,7 @@ Scaling the component-level analysis to frontier models (GPT-4 scale); extending
 
 \item \textbf{Theory.} Complete proofs in paper and machine-verified Lean~4 code. All assumptions (axioms) explicitly stated. [Yes]
 
-\item \textbf{Experiments.} Reproducible: fixed seeds, public datasets (Breast Cancer, German Credit, California Housing, TinyStories), open-source implementations (XGBoost, LightGBM, PyTorch). Component-level: 7 pre-registered predictions per scale, all confirmed. Compute: $<$30 min (input-level) + $<$4 hours (TinyStories training) on Apple Silicon. Code: \url{[anonymized for review]}. [Yes]
+\item \textbf{Experiments.} Reproducible: fixed seeds, public datasets (Breast Cancer, German Credit, California Housing, TinyStories), open-source implementations (XGBoost, LightGBM, PyTorch). Component-level: 7 pre-registered predictions per scale, all confirmed. Compute: $<$30 min (input-level) + $<$4 hours (TinyStories training) on Apple Silicon. Code: \url{https://github.com/DrakeCaraker/dash-impossibility-lean}. [Yes]
 
 \item \textbf{Code of ethics.} No human subjects. German Credit dataset is publicly available (UCI ML Repository). Regulatory analysis is informational. [N/A]
 
