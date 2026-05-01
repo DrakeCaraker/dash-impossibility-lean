@@ -214,11 +214,11 @@ make setup         # full setup for new contributors
 | `symmetric_bayes_dichotomy` | SymmetricBayes.lean | General SBD: any symmetric decision → two families. |
 | `rashomon_from_symmetry` | RashomonUniversality.lean | Permutation closure → Rashomon. |
 | `rashomon_inevitability` | RashomonInevitability.lean | Stochastic symmetric training → Rashomon. |
-| `local_ge_global` | LocalGlobal.lean | Local instability ≥ global instability. |
-| `conditional_impossibility` | ConditionalImpossibility.lean | Conditional SHAP impossibility when β_j = β_k. |
+| `local_attribution_impossibility` | LocalGlobal.lean | Local instability ≥ global instability. |
+| `conditional_attribution_impossibility` | ConditionalImpossibility.lean | Conditional SHAP impossibility when β_j = β_k. |
 | `fairness_audit_impossibility` | FairnessAudit.lean | SHAP proxy audit = coin flip. |
-| `intersectional_compounding` | IntersectionalFairness.lean | K-attribute audit: (1/2)^K. |
-| `fim_impossibility` | FIMImpossibility.lean | FIM → Rashomon ellipsoid. |
+| `intersectional_audit_impossibility` | IntersectionalFairness.lean | K-attribute audit: (1/2)^K. |
+| `gaussian_fim_impossibility` | FIMImpossibility.lean | FIM → Rashomon ellipsoid. |
 | `model_selection_impossibility` | ModelSelection.lean | Cannot select among equivalent models. |
 | `causal_discovery_impossibility` | CausalDiscovery.lean | Cannot orient edges in Markov equivalence. |
 | `mi_is_exact_boundary` | MutualInformation.lean | MI > 0 ↔ Rashomon (exact boundary). |
@@ -264,10 +264,10 @@ make setup         # full setup for new contributors
 #### Running Experiments (SageMaker ml.g5.12xlarge)
 | Experiment | Status | Script | Expected |
 |-----------|--------|--------|----------|
-| GPT-2-small from scratch (10 seeds) | TRAINING (~step 25K/50K) | experiments/gpt2_train.py | 7/7 predictions PASS |
+| GPT-2-small from scratch (10 seeds) | IN PROGRESS (SageMaker ml.g5.12xlarge, 4x A10G) | experiments/gpt2_train.py | 7/7 predictions PASS |
 | GPT-2 activation patching | QUEUED (after training) | experiments/gpt2_evaluate.py | rho < 0.70 raw, > 0.80 G-inv |
-| IOI circuit analysis (10 seeds) | QUEUED | experiments/ioi_analysis.py | Within-layer flip ≈ 0.50 |
-| SAE stability (10 SAEs) | QUEUED | experiments/sae_experiment.py | Feature cosine > 0.80 (escape hatch?) |
+| IOI circuit analysis (10 seeds) | QUEUED (after patching) | experiments/ioi_analysis.py | Within-layer flip ≈ 0.50 |
+| SAE stability (10 SAEs) | QUEUED (after patching) | experiments/sae_experiment.py | Feature cosine > 0.80 (escape hatch?) |
 
 ### Paper Versions
 | Paper | File | Pages | Status |
