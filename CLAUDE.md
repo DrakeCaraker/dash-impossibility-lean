@@ -168,6 +168,8 @@ make setup         # full setup for new contributors
 
 ## Complete Inventory of Proofs, Experiments, and Results
 
+> **Full reference with explanations, methodology, and provenance:** See [`docs/complete-reference.md`](docs/complete-reference.md). The tables below are a quick-lookup index; the reference doc explains WHY each result matters, HOW it was validated, and WHAT it depends on.
+
 ### Lean Formalization (58 files, 357 theorems, 6 axioms, 0 sorry)
 
 #### Core Impossibility (Level 0 — zero domain axioms)
