@@ -165,3 +165,153 @@ make setup         # full setup for new contributors
 - Run parallel subagents that both modify the same file (causes build cache corruption)
 - Axiomatize quantities that can be defined — prefer definitions with axiomatized bounds (see SpearmanDef.lean pattern)
 - Claim empirical results as "proved" or "Lean-verified" — distinguish: **proved** (zero axiom deps), **derived** (from axioms), **argued** (supplement proof only), **empirical** (experiments). The paper's "Proof status transparency" paragraph is the reference.
+
+## Complete Inventory of Proofs, Experiments, and Results
+
+### Lean Formalization (58 files, 357 theorems, 6 axioms, 0 sorry)
+
+#### Core Impossibility (Level 0 — zero domain axioms)
+| Theorem | File | What it proves |
+|---------|------|---------------|
+| `explanation_impossibility` | ExplanationSystem.lean | Abstract trilemma: F+S+D → ⊥ under Rashomon. ZERO axioms of any kind. |
+| `attribution_impossibility` | Trilemma.lean | Feature ranking trilemma (4-line proof). Depends only on Model type. |
+| `attribution_impossibility_weak` | Trilemma.lean | Implication-only faithfulness version (weaker assumption). |
+| `bilemma_of_compatible_eq` | Bilemma.lean | Binary H: F+S → ⊥ without completeness. Zero axioms. |
+| `rashomon_unfaithfulness` | Bilemma.lean | ≥1 unfaithful per Rashomon pair. |
+| `all_or_nothing` | Bilemma.lean | No approximate faithfulness for binary H. |
+| `tightness_dichotomy` | BeyondBinary.lean | Neutral element ↔ F+S achievable. |
+| `shap_sign_bilemma` | Bilemma.lean | SHAPSign constructive instance (zero axioms). |
+| `feature_selection_bilemma` | Bilemma.lean | FeatureStatus constructive instance. |
+| `counterfactual_bilemma` | Bilemma.lean | CounterfactualDir constructive instance. |
+| `mech_interp_bilemma` | MechInterp.lean | Circuit decomposition impossibility (derived Rashomon, zero custom axioms). |
+| `impossibility_qualitative` | Qualitative.lean | Impossibility from just dominance + surjectivity (2 axioms as hypotheses). |
+| `attribution_impossibility_bundled` | Setup.lean | Fully parametric via GBDTSetup (zero global axioms). |
+
+#### Model-Specific Bounds (Levels 2-3 — 3-5 axioms)
+| Theorem | File | What it proves |
+|---------|------|---------------|
+| `gbdt_impossibility_local` | ProportionalityLocal.lean | GBDT impossibility without proportionality_global (3 axioms). |
+| `split_gap_exact` | SplitGap.lean | Exact split gap = ρ²T/(2-ρ²) (pure algebra). |
+| `ratio_tendsto_atTop` | Ratio.lean | Attribution ratio 1/(1-ρ²) → ∞ as ρ → 1. |
+| `lasso_impossibility` | Lasso.lean | Lasso ratio = ∞ at any ρ > 0. |
+| `nn_impossibility` | NeuralNet.lean | NN impossibility conditional on captured feature. |
+| `binary_group_flip_rate` | FlipRate.lean | Binary group flip rate = exactly 1/2. |
+
+#### Resolution + Optimality (Levels 5-6 — 5-6 axioms)
+| Theorem | File | What it proves |
+|---------|------|---------------|
+| `consensus_equity` | Corollary.lean | DASH produces equal attributions for symmetric features. |
+| `design_space_theorem` | DesignSpace.lean | Design space has exactly two families. |
+| `family_a_or_family_b` | DesignSpaceFull.lean | Exhaustiveness: no third family among deterministic methods. |
+| `sum_squares_ge_inv_M` | EnsembleBound.lean | Cauchy-Schwarz / Titu's lemma variance bound. |
+| `dash_unique_pareto_optimal` | ParetoOptimality.lean | DASH Pareto-dominates all other stable methods. |
+| `tie_dominates_commitment` | BayesOptimalTie.lean | Bayes-optimal ties for symmetric features. |
+| `relaxation_paths_converge` | PathConvergence.lean | Both relaxation paths converge to DASH. |
+
+#### Generalizations (Levels 8-12)
+| Theorem | File | What it proves |
+|---------|------|---------------|
+| `symmetric_bayes_dichotomy` | SymmetricBayes.lean | General SBD: any symmetric decision → two families. |
+| `rashomon_from_symmetry` | RashomonUniversality.lean | Permutation closure → Rashomon. |
+| `rashomon_inevitability` | RashomonInevitability.lean | Stochastic symmetric training → Rashomon. |
+| `local_ge_global` | LocalGlobal.lean | Local instability ≥ global instability. |
+| `conditional_impossibility` | ConditionalImpossibility.lean | Conditional SHAP impossibility when β_j = β_k. |
+| `fairness_audit_impossibility` | FairnessAudit.lean | SHAP proxy audit = coin flip. |
+| `intersectional_compounding` | IntersectionalFairness.lean | K-attribute audit: (1/2)^K. |
+| `fim_impossibility` | FIMImpossibility.lean | FIM → Rashomon ellipsoid. |
+| `model_selection_impossibility` | ModelSelection.lean | Cannot select among equivalent models. |
+| `causal_discovery_impossibility` | CausalDiscovery.lean | Cannot orient edges in Markov equivalence. |
+| `mi_is_exact_boundary` | MutualInformation.lean | MI > 0 ↔ Rashomon (exact boundary). |
+
+#### Cross-Repo (universal-explanation-impossibility)
+| Theorem | File | What it proves |
+|---------|------|---------------|
+| `reynolds_best_approximation` | UncertaintyFromSymmetry.lean | Orbit average = closest stable approximation (L² optimality). |
+| `mi_quantitative_unfaithfulness` | MIQuantitativeBridge.lean | MI > 0 → any stable explanation has error ≥ Δ/2. |
+| `mi_implies_positive_gap` | MIQuantitativeBridge.lean | MI > 0 → Rashomon witnesses have opposite orderings. |
+
+### Empirical Results (53 scripts, 35 JSON result files, 14 figures)
+
+#### Input-Level Attribution
+| Experiment | Key Finding | Script | Result |
+|-----------|-------------|--------|--------|
+| Ranking lottery (Breast Cancer) | 24 distinct top-3 from 50 seeds (4.2% agreement) | ranking_replication_study.py | VALIDATED |
+| Cross-implementation lottery | XGB 24, LGB 29, RF 40 distinct rankings | ranking_replication_study.py | VALIDATED |
+| Subsample sensitivity | 17 distinct at subsample=0.95, 1 at 1.0 | ranking_replication_study.py | VALIDATED |
+| Explanation reversal (German Credit) | 45% XGB, 46% LGB, 35% RF | financial_case_study.py | VALIDATED |
+| Gene expression (TSPAN8 vs CEA) | 80/20 alternation, ρ=0.858 | inline | VALIDATED |
+| Prevalence survey | 68% of 77 datasets (>10% flip rate) | prevalence_survey.py | VALIDATED |
+| Coverage conflict diagnostic | Spearman 0.59-0.98, 4 model classes | comprehensive_validation.py | VALIDATED |
+| Minority fraction vs Gaussian | 0.96 vs 0.46 on California Housing | comprehensive_validation.py | VALIDATED |
+| Variance = min MSE | 0/800 violations at machine precision | (ostrowski repo) | VALIDATED |
+| Bimodality (dip test) | p < 0.002 for ρ ≥ 0.5, control p=0.373 | comprehensive_validation.py | VALIDATED |
+| Model-class universality | XGB/RF/Ridge/LASSO all show instability | (dash-shap repo) | VALIDATED |
+| NN attribution instability | 87% unstable pairs, 8:1 model vs SHAP noise | nn_shap_validation.py | VALIDATED |
+| SNR calibration | Φ(-SNR) R²=0.94 across 1,325 pairs | snr_calibration.py | VALIDATED |
+| Drug discovery (BBBP) | Pearson: 0%, MI: 19.4%, actual: 23.1% | (universal repo) | VALIDATED |
+
+#### Component-Level Attribution
+| Experiment | Key Finding | Source | Result |
+|-----------|-------------|--------|--------|
+| TinyStories Config A (4L/4H) | ρ=0.565→0.972, W-flip=0.496, d=5.4, 7/7 PASS | docs/tinystories-results-reference.json | VALIDATED |
+| TinyStories Config B (6L/8H) | ρ=0.540→0.982, W-flip=0.489, d=11.9, 7/7 PASS | docs/tinystories-results-reference.json | VALIDATED |
+| GPT-2 boundary condition | ρ=0.993, W-flip=0.043, 4/7 PASS (expected) | docs/tinystories-results-reference.json | VALIDATED |
+| Mean ablation robustness | G-inv ρ≈0.97-0.99; cross-method ρ≈0.5-0.6 | docs/mean-ablation-results-reference.json | VALIDATED |
+| Full S₄ realization (Config A) | All 4 L0 heads appear as #1 across 10 seeds | docs/tinystories-results-reference.json | VALIDATED |
+| Split-half reliability | 0.991 (A), 0.960 (B) >> between-model 0.565, 0.540 | docs/tinystories-results-reference.json | VALIDATED |
+| Random projection control | G-inv at 100th percentile, perm p<0.001 | docs/tinystories-results-reference.json | VALIDATED |
+
+#### Running Experiments (SageMaker ml.g5.12xlarge)
+| Experiment | Status | Script | Expected |
+|-----------|--------|--------|----------|
+| GPT-2-small from scratch (10 seeds) | TRAINING (~step 25K/50K) | experiments/gpt2_train.py | 7/7 predictions PASS |
+| GPT-2 activation patching | QUEUED (after training) | experiments/gpt2_evaluate.py | rho < 0.70 raw, > 0.80 G-inv |
+| IOI circuit analysis (10 seeds) | QUEUED | experiments/ioi_analysis.py | Within-layer flip ≈ 0.50 |
+| SAE stability (10 SAEs) | QUEUED | experiments/sae_experiment.py | Feature cosine > 0.80 (escape hatch?) |
+
+### Paper Versions
+| Paper | File | Pages | Status |
+|-------|------|-------|--------|
+| NeurIPS 2026 | paper/main.tex | 9+refs+checklist | SUBMISSION-READY (needs 1-page cut) |
+| NeurIPS supplement | paper/supplement.tex | 81 | READY |
+| Monograph | paper/main_definitive.tex | 83 | EXHAUSTIVE |
+| JMLR | paper/main_jmlr.tex | 59 | READY (after NeurIPS) |
+| arXiv preprint | paper/main_preprint.tex | 10 | READY |
+| OpenReview abstract | paper/abstract_openreview.txt | 200 words | READY |
+
+### Key Numbers (all verified against source)
+| Claim | Value | Source |
+|-------|-------|--------|
+| Lean theorems+lemmas | 357 | grep verification |
+| Lean axioms | 6 | grep verification |
+| Lean sorry | 0 | grep verification |
+| Lean files | 58 | ls count |
+| Prevalence | 68% of 77 datasets | prevalence_survey.py |
+| Ranking lottery | 24 distinct top-3 (50 seeds, Breast Cancer) | ranking_replication_study.py |
+| Explanation reversal | 45% (German Credit, XGB, subsample=0.8) | financial_case_study.py |
+| TinyStories A full ρ | 0.565 [0.527, 0.603] | tinystories-results-reference.json |
+| TinyStories A G-inv ρ | 0.972 [0.966, 0.979] | tinystories-results-reference.json |
+| TinyStories B full ρ | 0.540 [0.516, 0.565] | tinystories-results-reference.json |
+| TinyStories B G-inv ρ | 0.982 [0.977, 0.986] | tinystories-results-reference.json |
+| GPT-2 ft ρ | 0.993 | tinystories-results-reference.json |
+| Within-layer flip A | 0.496 [0.467, 0.526] | tinystories-results-reference.json |
+| Within-layer flip B | 0.489 [0.478, 0.500] | tinystories-results-reference.json |
+| Cohen's d A / B | 5.4 / 11.9 | tinystories-results-reference.json |
+| Drug discovery (BBBP) | Pearson 0%, MI 19.4%, actual 23.1% | handoff-mi-bridge-session.md |
+| MI permutation threshold | τ₉₅ = 0.027 (BBBP) | handoff-mi-bridge-session.md |
+
+### Diagnostic Tools
+| Tool | Lines | Performance | Script |
+|------|-------|-------------|--------|
+| Minority fraction (coverage conflict) | 7 | Spearman 0.92-0.98 vs flip rate | paper/main.tex (verbatim block) |
+| Single-model screen | ~20 | 94% precision (tree-based) | f1_f5_validation.py |
+| Z-test (multi-model) | ~10 | r = -0.89 on Breast Cancer | f1_f5_validation.py |
+| G-invariant projection (V^G) | ~5 | 100th percentile vs random | experiments/gpt2_evaluate.py |
+| MI screening | ~15 | Catches 67-93% hidden dependencies | (universal repo) |
+
+### Cross-Repo Dependencies
+| Repo | What it provides | Used by |
+|------|-----------------|---------|
+| dash-shap (PR #255) | DASH implementation, stability API, model-class comparison | Referenced in paper |
+| universal-explanation-impossibility | reynolds_best_approximation, MI bridge theorems, TinyStories data | Lean theorems cited in paper |
+| ostrowski-impossibility | Fairness tightness experiment, approximate bilemma (ostrowski version) | Referenced in supplement |
