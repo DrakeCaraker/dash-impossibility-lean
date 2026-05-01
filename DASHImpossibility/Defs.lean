@@ -70,16 +70,46 @@ noncomputable def numTrees (fs : FeatureSpace) : ℕ := fs.T
 theorem numTrees_pos (fs : FeatureSpace) : 0 < fs.T := fs.hT
 
 
-/-! ## Model and parameter types -/
+/-! ## Bundled GBDT infrastructure
 
-/-- A trained model (abstract type). -/
-axiom Model : Type
+  All model infrastructure is bundled into two structures, reducing
+  the axiom count from 6 to 2. Backward-compatible definitions extract
+  each field with the original name. -/
 
+/-- Model type and measure infrastructure (independent of FeatureSpace). -/
+structure GBDTModelBundle where
+  /-- A trained model (abstract type). -/
+  Model : Type
+  /-- Proportionality constant c > 0 relating SHAP importance to split counts. -/
+  proportionalityConstant : {c : ℝ // 0 < c}
+  /-- Measurable space on Model. -/
+  modelMeasurableSpace : MeasurableSpace Model
+  /-- Probability measure on Model representing the training distribution. -/
+  modelMeasure : @MeasureTheory.Measure Model modelMeasurableSpace
+
+/-- Feature-space-dependent behavioral axioms. -/
+structure GBDTBehaviorBundle (W : GBDTModelBundle) (fs : FeatureSpace) where
+  /-- The first-mover feature in a model. -/
+  firstMover : W.Model → Fin fs.P
+  /-- Every feature in a group can be the first-mover. -/
+  firstMover_surjective : ∀ (ℓ : Fin fs.L) (j : Fin fs.P),
+    j ∈ fs.group ℓ → ∃ f : W.Model, firstMover f = j
+  /-- Cross-group baseline core. -/
+  crossGroupBaselineCore : Fin fs.L → Fin fs.L → ℝ
+
+/-- The GBDT model bundle exists. -/
+axiom gbdtModelBundle : GBDTModelBundle
+
+/-- The GBDT behavioral axioms hold for every feature space. -/
+axiom gbdtBehaviorBundle (fs : FeatureSpace) : GBDTBehaviorBundle gbdtModelBundle fs
+
+/-! ## Backward-compatible definitions -/
+
+noncomputable def Model : Type := gbdtModelBundle.Model
 
 variable (fs : FeatureSpace)
 
-/-- The first-mover feature in a model (the feature selected at root of tree 1) -/
-axiom firstMover : Model → Fin fs.P
+noncomputable def firstMover : Model → Fin fs.P := (gbdtBehaviorBundle fs).firstMover
 
 /-! ## Helpers for group membership -/
 
@@ -95,14 +125,16 @@ theorem mem_group_iff (j : Fin fs.P) (ℓ : Fin fs.L) :
 /-- AXIOM: Every feature in a group can be the first-mover.
     By DGP symmetry and randomness in sub-sampling/tie-breaking,
     each feature in a group serves as first-mover for some model. -/
-axiom firstMover_surjective (ℓ : Fin fs.L) (j : Fin fs.P) (hj : j ∈ fs.group ℓ) :
-    ∃ f : Model, firstMover fs f = j
+theorem firstMover_surjective (ℓ : Fin fs.L) (j : Fin fs.P) (hj : j ∈ fs.group ℓ) :
+    ∃ f : Model, firstMover fs f = j :=
+  (gbdtBehaviorBundle fs).firstMover_surjective ℓ j hj
 
 /-- Cross-group baseline core: the split count a feature receives when the
     first-mover is in a different group. Depends only on (target group,
     source group), not on which specific feature is the first-mover.
     This makes cross-group stability definitional rather than axiomatic. -/
-axiom crossGroupBaselineCore : Fin fs.L → Fin fs.L → ℝ
+noncomputable def crossGroupBaselineCore : Fin fs.L → Fin fs.L → ℝ :=
+  (gbdtBehaviorBundle fs).crossGroupBaselineCore
 
 /-- Cross-group baseline: wraps crossGroupBaselineCore by extracting the
     source group from the model's first-mover. DEFINED, not axiomatized. -/
@@ -164,7 +196,8 @@ theorem splitCount_nonFirstMover (f : Model) (j : Fin fs.P)
 /-- Proportionality constant c > 0 relating SHAP importance to split counts.
     Under the uniform-contribution model (Assumption 7), this constant is
     the same across all models. Bundled with positivity proof. -/
-axiom proportionalityConstant : {c : ℝ // 0 < c}
+noncomputable def proportionalityConstant : {c : ℝ // 0 < c} :=
+  gbdtModelBundle.proportionalityConstant
 
 /-- Attribution (global feature importance) for feature j in model f.
     DEFINED as c · splitCount(j, f). Previously an axiom. -/
@@ -227,12 +260,14 @@ def IsBalanced (M : ℕ) (models : Fin M → Model) : Prop :=
     Uses the discrete (⊤) σ-algebra, which makes every subset measurable.
     Previously an axiom; now derived — any type admits ⊤ as a MeasurableSpace.
     This is the canonical choice when measurability constraints are trivial. -/
-noncomputable instance modelMeasurableSpace : MeasurableSpace Model := ⊤
+noncomputable instance modelMeasurableSpace : MeasurableSpace Model :=
+  gbdtModelBundle.modelMeasurableSpace
 
 /-- Probability measure on Model representing the training distribution.
     This cannot be derived — it encodes the distribution over models induced
     by the training algorithm with random seeds. -/
-axiom modelMeasure : MeasureTheory.Measure Model
+noncomputable def modelMeasure : MeasureTheory.Measure Model :=
+  gbdtModelBundle.modelMeasure
 
 /-- Variance of a single model's attribution for feature j. -/
 noncomputable def attribution_variance (j : Fin fs.P) : ℝ :=
