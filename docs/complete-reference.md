@@ -110,6 +110,16 @@ These 6 axioms are the only unproved assumptions in the entire formalization. Ev
 
 **Empirical validation:** The corrected ratio 1/(1-αρ²) with α ≈ 2/π fits empirical GBDT data at R² = 0.89. The correction α accounts for finite-depth trees (the Lean-verified 1/(1-ρ²) assumes infinite depth / full signal capture).
 
+#### Additional Key Results
+
+| Theorem | File | Axioms | What it proves | Why it matters |
+|---------|------|--------|---------------|---------------|
+| `attribution_prob_half` | UnfaithfulQuantitative.lean | 6 | Pr(unfaithful) = exactly 1/2 under DGP symmetry | The coin-flip result: a stable ranking is wrong for exactly half of all training runs |
+| `attribution_sum_symmetric` | SymmetryDerive.lean | 5 | ∑φ_j = ∑φ_k for balanced ensembles (35-line proof) | DASH equity — the key step proving orbit averaging works. Derived, not axiomatized. |
+| `conditional_escape` | ConditionalImpossibility.lean | 3 | Conditional SHAP escapes when Δβ > threshold | The positive result: when causal effects differ enough, conditional SHAP IS stable |
+| `ensemble_bound_formula` | EnsembleBound.lean | 5 | M_min = ⌈2.71σ²/Δ²⌉ for 5% between-group flip rate | Practitioner formula: how many models do you need? |
+| `mech_interp_impossibility` | MechInterp.lean | 0 | Circuit trilemma (F+S+D → ⊥) for neural network components | The impossibility applied to activation patching / circuit analysis |
+
 #### The Design Space (Complete Characterization)
 
 | Theorem | File | What it proves |

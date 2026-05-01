@@ -199,6 +199,15 @@ make setup         # full setup for new contributors
 | `nn_impossibility` | NeuralNet.lean | NN impossibility conditional on captured feature. |
 | `binary_group_flip_rate` | FlipRate.lean | Binary group flip rate = exactly 1/2. |
 
+#### Additional Key Results
+| Theorem | File | What it proves |
+|---------|------|---------------|
+| `attribution_prob_half` | UnfaithfulQuantitative.lean | Unfaithfulness probability = exactly 1/2 under DGP symmetry. |
+| `attribution_sum_symmetric` | SymmetryDerive.lean | DASH equity derivation (35-line proof from axioms). |
+| `conditional_escape` | ConditionalImpossibility.lean | Conditional SHAP DOES escape when Δβ is large enough. |
+| `ensemble_bound_formula` | EnsembleBound.lean | M_min = ⌈2.71σ²/Δ²⌉ for 5% flip rate. |
+| `mech_interp_impossibility` | MechInterp.lean | Circuit trilemma (F+S+D) for neural network components. |
+
 #### Resolution + Optimality (Levels 5-6 — 5-6 axioms)
 | Theorem | File | What it proves |
 |---------|------|---------------|
