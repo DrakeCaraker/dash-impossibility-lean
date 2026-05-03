@@ -73,3 +73,29 @@ for f in gpt2_from_scratch_results.json ioi/ioi_results.json ioi/pretrained_base
     p="$EXPERIMENT_DIR/results/$f"
     if [ -f "$p" ]; then echo "  OK: $p ($(du -h "$p" | cut -f1))"; else echo "  MISSING: $p"; fi
 done
+
+echo ""
+echo "=== Phase 6: Copy results to repo and push ==="
+REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+RESULTS_DEST="$REPO_DIR/docs/gpt2-experiment-results"
+mkdir -p "$RESULTS_DEST/ioi"
+
+cp "$EXPERIMENT_DIR/results/gpt2_from_scratch_results.json" "$RESULTS_DEST/" 2>/dev/null || true
+cp "$EXPERIMENT_DIR/results/ioi/ioi_results.json" "$RESULTS_DEST/ioi/" 2>/dev/null || true
+cp "$EXPERIMENT_DIR/results/ioi/pretrained_baseline.json" "$RESULTS_DEST/ioi/" 2>/dev/null || true
+cp "$EXPERIMENT_DIR/results/sae_stability_results.json" "$RESULTS_DEST/" 2>/dev/null || true
+
+cd "$REPO_DIR"
+git add docs/gpt2-experiment-results/
+git commit -m "data: GPT-2-from-scratch experiment results (auto-pushed from SageMaker)
+
+General patching: 10 seeds, weight zeroing + mean ablation, batch=8
+IOI circuit: 10 seeds, 156 components, within-layer flip, G-inv rho
+SAE stability: 10 SAEs on frozen model, feature matching
+Pretrained baseline: GPT-2-small reference IOI performance
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>" || echo "Nothing to commit"
+
+git push origin main || echo "Push failed — results saved locally at $RESULTS_DEST"
+echo ""
+echo "=== DONE. Results committed and pushed. ==="
