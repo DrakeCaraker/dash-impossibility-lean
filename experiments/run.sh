@@ -64,7 +64,9 @@ run_batch() {
     done
 
     # Wait for remaining
-    for pid in "${pids[@]}"; do wait $pid || true; done
+    if [ ${#pids[@]} -gt 0 ]; then
+        for pid in "${pids[@]}"; do wait $pid || true; done
+    fi
 }
 
 # Train all 10 seeds in batches of N_GPUS

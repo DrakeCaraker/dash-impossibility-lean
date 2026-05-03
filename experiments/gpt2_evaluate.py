@@ -101,7 +101,7 @@ def patch_single_model(seed: int, device: torch.device):
     with torch.no_grad(), torch.amp.autocast("cuda", dtype=torch.bfloat16):
         per_seq_baseline = []
         for i in range(0, len(eval_tokens), 8):
-            batch = eval_tokens[i:i+32]
+            batch = eval_tokens[i:i+8]
             logits = model(batch).logits[:, :-1, :]
             targets = batch[:, 1:]
             loss = F.cross_entropy(logits.reshape(-1, logits.size(-1)),
@@ -156,7 +156,7 @@ def patch_single_model(seed: int, device: torch.device):
 
     with torch.no_grad(), torch.amp.autocast("cuda", dtype=torch.bfloat16):
         for i in range(0, len(eval_tokens), 8):  # use ALL eval tokens for stable means
-            model(eval_tokens[i:i+32])
+            model(eval_tokens[i:i+8])
 
     for h in hooks:
         h.remove()
@@ -172,7 +172,7 @@ def patch_single_model(seed: int, device: torch.device):
         per_seq = []
         with torch.no_grad(), torch.amp.autocast("cuda", dtype=torch.bfloat16):
             for i in range(0, len(eval_tokens), 8):
-                batch = eval_tokens[i:i+32]
+                batch = eval_tokens[i:i+8]
                 logits = model(batch).logits[:, :-1, :]
                 targets = batch[:, 1:]
                 loss = F.cross_entropy(logits.reshape(-1, logits.size(-1)),

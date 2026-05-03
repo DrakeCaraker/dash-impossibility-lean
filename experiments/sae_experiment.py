@@ -135,9 +135,10 @@ def collect_activations(device: torch.device):
     all_acts = torch.cat(activations, dim=0)  # [n_seqs, seq_len, d_model]
     all_acts = all_acts.reshape(-1, GCFG.n_embd).numpy()  # flatten to [n_tokens, d_model]
 
-    # Split into train and eval
-    n_train = min(len(all_acts), CFG.n_activation_batches * CFG.sae_batch_size)
-    n_eval = min(len(all_acts) - n_train, CFG.n_eval_activations)
+    # Split into train (80%) and eval (20%)
+    n_total = len(all_acts)
+    n_eval = min(n_total // 5, CFG.n_eval_activations)  # 20% for eval, capped
+    n_train = n_total - n_eval
 
     tmp_train = SAE_DIR / "activations_train_tmp.npy"
     np.save(tmp_train, all_acts[:n_train])
