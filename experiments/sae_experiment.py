@@ -139,11 +139,13 @@ def collect_activations(device: torch.device):
     n_train = min(len(all_acts), CFG.n_activation_batches * CFG.sae_batch_size)
     n_eval = min(len(all_acts) - n_train, CFG.n_eval_activations)
 
-    np.save(SAE_DIR / "activations_train.npy.tmp", all_acts[:n_train])
-    Path(SAE_DIR / "activations_train.npy.tmp").rename(act_path)
+    tmp_train = SAE_DIR / "activations_train_tmp.npy"
+    np.save(tmp_train, all_acts[:n_train])
+    tmp_train.rename(act_path)
 
-    np.save(SAE_DIR / "activations_eval.npy.tmp", all_acts[n_train:n_train + n_eval])
-    Path(SAE_DIR / "activations_eval.npy.tmp").rename(act_eval_path)
+    tmp_eval = SAE_DIR / "activations_eval_tmp.npy"
+    np.save(tmp_eval, all_acts[n_train:n_train + n_eval])
+    tmp_eval.rename(act_eval_path)
 
     handle.remove()
     print(f"  Saved {n_train} train + {n_eval} eval activations")
@@ -257,8 +259,9 @@ def train_single_sae(sae_seed: int, device: torch.device):
 
     # Save decoder weights for feature matching
     decoder_weights = sae.W_dec.data.cpu().numpy()  # [d_sae, d_in]
-    np.save(sae_dir / "decoder_weights.npy.tmp", decoder_weights)
-    Path(sae_dir / "decoder_weights.npy.tmp").rename(sae_dir / "decoder_weights.npy")
+    tmp_dec = sae_dir / "decoder_weights_tmp.npy"
+    np.save(tmp_dec, decoder_weights)
+    tmp_dec.rename(sae_dir / "decoder_weights.npy")
 
     with open(sae_dir / "feature_stats.json", "w") as f:
         json.dump(feature_stats, f)
