@@ -44,16 +44,11 @@ def load_model(seed: int):
 
 def compute_data_pcs(model, n_samples=400, seq_len=256, target_layer=6):
     """
-    Compute PCA of layer-6 activations on streaming OpenWebText.
+    Compute PCA of layer-6 activations.
+    Uses random token sequences — we only need activation diversity for PCA,
+    not meaningful text. Falls back to eval tokens if available.
     Returns: pcs (768 x 768, columns are PCs), singular_values
     """
-    from transformers import GPT2Tokenizer
-    from datasets import load_dataset
-
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    tokenizer.pad_token = tokenizer.eos_token
-    ds = load_dataset("openwebtext", split="train", streaming=True)
-
     activations = []
     hook_output = {}
 
@@ -62,19 +57,33 @@ def compute_data_pcs(model, n_samples=400, seq_len=256, target_layer=6):
 
     handle = model.transformer.h[target_layer].register_forward_hook(hook_fn)
 
-    for example in ds:
-        if len(activations) >= n_samples:
-            break
-        tokens = tokenizer(example["text"], return_tensors="pt", max_length=seq_len,
-                           truncation=True)["input_ids"].to(device)
-        if tokens.shape[1] < 64:
-            continue
-        with torch.no_grad():
-            model(tokens)
-        act = hook_output["act"].mean(dim=1).cpu().numpy()[0]  # (768,)
-        activations.append(act)
+    # Try loading eval tokens from prior experiments
+    eval_path = EXPERIMENT_DIR / "data" / "eval_tokens.bin"
+    if eval_path.exists():
+        print(f"  Loading eval tokens from {eval_path}")
+        tokens_flat = np.fromfile(eval_path, dtype=np.uint16)
+        n_available = len(tokens_flat) // seq_len
+        n_use = min(n_samples, n_available)
+        for i in range(n_use):
+            chunk = tokens_flat[i * seq_len:(i + 1) * seq_len]
+            toks = torch.tensor(chunk, dtype=torch.long).unsqueeze(0).to(device)
+            with torch.no_grad():
+                model(toks)
+            act = hook_output["act"].mean(dim=1).cpu().numpy()[0]
+            activations.append(act)
+    else:
+        # Use random tokens (uniform over vocab) — sufficient for PCA
+        print("  Using random token sequences for PCA (eval tokens not found)")
+        vocab_size = 50257
+        for _ in range(n_samples):
+            toks = torch.randint(0, vocab_size, (1, seq_len), device=device)
+            with torch.no_grad():
+                model(toks)
+            act = hook_output["act"].mean(dim=1).cpu().numpy()[0]
+            activations.append(act)
 
     handle.remove()
+    print(f"  Collected {len(activations)} activation vectors")
 
     X = np.array(activations)  # (n_samples, 768)
     X_centered = X - X.mean(axis=0)
