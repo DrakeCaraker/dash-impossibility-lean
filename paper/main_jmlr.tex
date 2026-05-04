@@ -42,7 +42,7 @@
 \begin{abstract}
 Importance rankings---of input features (SHAP) and internal components (activation patching)---change when you retrain the model. In 68\% of 77 public datasets, the ``most important'' feature flips with the random seed. Ten GPT-2-small models trained from scratch produce 32 distinct top-5 component rankings with 8 different \#1 components---the ``most important attention head'' is a coin flip ($W_{\text{flip}} = 0.500$). We prove this is not an engineering problem but a mathematical impossibility: no importance ranking can be simultaneously faithful, stable, and complete when interchangeable elements exist under statistical dependence. The core proof requires zero domain axioms.
 
-The impossibility is quantitative: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests. At the component level, the $G$-invariant projection (orbit averaging over per-layer permutation symmetry) lifts agreement from $\rho = 0.277$ to $0.873$ on GPT-2 (Cohen's $d = 19.2$) and from $0.55$ to $> 0.97$ on TinyStories. The achievable design space consists of exactly two families; the stable projection (\DASH{} for features, $G$-invariant for circuits) is Pareto-optimal on the stable branch. The framework is verified in Lean~4 (358 theorems, 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines)---to our knowledge, the first formally verified impossibility in explainable AI.
+The impossibility is quantitative: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests. At the component level, the $G$-invariant projection (orbit averaging over per-layer permutation symmetry) lifts agreement from $\rho = 0.277$ to $0.873$ on GPT-2 (Cohen's $d = 19.2$) and from $0.55$ to $> 0.97$ on TinyStories. The achievable design space consists of exactly two families; the stable projection (\DASH{} for features, $G$-invariant for circuits) is Pareto-optimal on the stable branch. The framework is verified in Lean~4 (368 theorems, 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines)---to our knowledge, the first formally verified impossibility in explainable AI.
 \end{abstract}
 
 \begin{keywords}
@@ -128,7 +128,7 @@ The formalization also proved valuable beyond certification: during translation 
     \item \textbf{Architecture discrimination}: attribution ratios for \GBDT{} ($1/(1{-}\rho^2)$ Lean-verified; $1/(1{-}\alpha\rho^2)$ empirically corrected), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$, informal).
     \item \textbf{Constructive relaxation via \DASH{}}: ensemble averaging restores equitable attributions (derived for balanced ensembles) with variance $O(1/M)$, sacrificing within-group completeness.
     \item \textbf{The symmetric Bayes dichotomy} (\S~\ref{sec:sbd}): a proof technique from invariant decision theory \citep{lehmann2005testing}, demonstrated across three structurally distinct instances (feature attribution, model selection, and causal discovery under Markov equivalence) with different symmetry groups.
-    \item \textbf{Machine-verified proof}: formalized in Lean~4 (358 type-checked theorems from 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (archived at \url{https://doi.org/10.5281/zenodo.19468379}).\linebreak The axiom system is consistent: we construct an explicit model satisfying all 6 axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and~numerically.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (368 type-checked theorems from 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (archived at \url{https://doi.org/10.5281/zenodo.19468379}).\linebreak The axiom system is consistent: we construct an explicit model satisfying all 6 axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and~numerically.
 \end{enumerate}
 
 The core impossibility proof is deliberately simple---a four-line contradiction from the Rashomon property.
@@ -1473,7 +1473,9 @@ Resolution (averaged decoders) & 0.458 & --- & --- \\
 \end{tabular}
 \end{center}
 
-ReLU SAEs are catastrophically non-reproducible (cosine 0.136 $\approx$ random): without TopK's sparsity constraint, the overcomplete null space dominates. Pretrained GPT-2 is only marginally better (0.443 vs.\ 0.394), falsifying the hypothesis that the from-scratch model's idiosyncratic representations are the problem---all 10 SAEs are trained on the \emph{same frozen model} yet still non-reproducible. Resolution (averaging matched decoders) gives $+0.064$ improvement, confirming orbit averaging partially works but cannot overcome a continuous symmetry group. No condition achieves reproducibility.
+ReLU SAEs are catastrophically non-reproducible (cosine 0.136 $\approx$ random): without TopK's sparsity constraint, the overcomplete null space dominates. Pretrained GPT-2 is only marginally better (0.443 vs.\ 0.394), falsifying the hypothesis that the from-scratch model's idiosyncratic representations are the problem---all 10 SAEs are trained on the \emph{same frozen model} yet still non-reproducible. Resolution (averaging matched decoders) gives only $+0.005$ for non-reference seeds (the reported $+0.064$ is inflated by the matching-reference seed). No condition achieves reproducibility.
+
+The failure is explained by the \textbf{Explanation Capacity Theorem} (Lean-verified in \texttt{SAECapacity.lean}): for an $n$-feature SAE on $d$-dimensional data, the reproducible subspace has dimension $\leq d$. The explanation capacity $C \leq d/n = 768/6144 = 12.5\%$; the loss rate $\eta \geq 87.5\%$. The 5{,}376-dimensional null space guarantees non-reproducibility by rank-nullity, not by training methodology. The correct resolution is projection onto data principal components (seed-invariant), analogous to per-layer averaging for heads.
 
 \subsection{Mechanistic Interpretability Bilemma}
 \label{sec:mech-interp}
@@ -2106,7 +2108,7 @@ DASH breakdown & Robust to contaminated ensembles & \texttt{dash\_breakdown\_poi
 
 \subsection{Proof Architecture}
 
-The formalization comprises 58 Lean~4 files with 6 axioms and 358 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 139 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
+The formalization comprises 59 Lean~4 files with 6 axioms and 368 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 139 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
 The core impossibility (\textsf{attribution\_impossibility}) depends on zero axioms---only the Rashomon property as hypothesis.
 The DASH resolution (\textsf{consensus\_equity}) depends on the \textsf{attribution\_sum\_symmetric} theorem (derived); the variance convergence depends on \textsf{consensus\_variance\_bound} (also~derived).
 
@@ -2177,7 +2179,7 @@ The paper uses the Lean-derived bound $\rho_S \leq 1 - 3m^2/(P^3{-}P)$. The tigh
 
 \subsection{Proof Depth Distribution}
 
-Of 358 type-checked declarations: 139 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are listed below.
+Of 368 type-checked declarations: 139 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are listed below.
 
 \begin{center}
 \small
@@ -2227,7 +2229,7 @@ The three-layer verification (SymPy algebra, Lean type-checking, empirical valid
 
 \begin{table}[t]
 \centering
-\caption{Lean file cross-reference (58 files, 358 theorems, 6 axioms).}
+\caption{Lean file cross-reference (59 files, 368 theorems, 6 axioms).}
 \label{tab:lean-crossref}
 \scriptsize
 \begin{tabular}{@{}p{3.8cm}ll@{}}
@@ -2341,7 +2343,7 @@ The formalization uses 6 axioms total, but not all results require all axioms. S
 \end{itemize}
 This stratification directly addresses the proportionality axiom's empirical variance (CV $\approx 0.35$--$0.66$): the axiom is unnecessary for the impossibility and ratio bound, which depend only on split-count structure.
 
-The following are fully formalized in Lean (358 theorems, 0 \texttt{sorry}, 58 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, the Pareto dominance of DASH, and the mechanistic interpretability bilemma (derived Rashomon, zero custom axioms). The Z-test characterization, information loss analysis, multi-dataset validation, and component-level experiments (GPT-2, TinyStories, IOI, SAE) are empirical.
+The following are fully formalized in Lean (368 theorems, 0 \texttt{sorry}, 59 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, the Pareto dominance of DASH, and the mechanistic interpretability bilemma (derived Rashomon, zero custom axioms). The Z-test characterization, information loss analysis, multi-dataset validation, and component-level experiments (GPT-2, TinyStories, IOI, SAE) are empirical.
 
 \paragraph{Approximate faithfulness--stability tradeoff.}
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\pi(j) - \pi(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.
