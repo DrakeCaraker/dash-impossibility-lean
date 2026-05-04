@@ -2046,9 +2046,10 @@ The Lean formalization derives the Spearman bound (theorem \textsf{spearman\_ins
 $\rho_S \leq 1 - 3m^2/(P^3{-}P)$.
 The paper uses the Lean-derived bound $\rho_S \leq 1 - 3m^2/(P^3{-}P)$. The tighter classical bound $\rho_S \leq 1 - m^3/P^3$ from the full rank transposition counting argument is not yet formalized; both give the same qualitative conclusion ($S < 1$ for within-group pairs).
 
-\subsection{Development Methodology}
+\subsection{Development Methodology and AI Assistance}
+\label{sec:ai-disclosure-jmlr}
 
-The initial formalization (49 theorems, 15 files) was developed by the first author with iterative Claude Code assistance over several weeks. The expansion from 49 to 357 theorems (58 files) was produced in a single development session by dispatching targeted Lean-writing agents with detailed mathematical specifications. All proofs were machine-verified by \texttt{lake build} (the Lean~4 type-checker); no proof was accepted on the basis of AI output alone.
+\textbf{AI-assistance disclosure.} The Lean 4 formalization was developed with substantial assistance from Claude Code (Anthropic, Claude Opus 4.6). All 6 axioms and all theorem statements were human-conceived. Approximately 80\% of proof tactics were initially AI-drafted and then human-verified. Every proof was accepted only after passing \texttt{lake build} (the Lean 4 type-checker) with zero \texttt{sorry}. The paper text was written with AI drafting and editing assistance; all mathematical claims, experimental designs, and interpretations are the responsibility of the human authors. We view AI-assisted formal verification as a methodology contribution: the type-checker guarantees correctness given the axioms, while human judgment ensures the axioms capture the intended mathematics.
 
 \subsection{Proof Depth Distribution}
 

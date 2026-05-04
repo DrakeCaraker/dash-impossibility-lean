@@ -3205,7 +3205,32 @@ in \texttt{prevalence\_survey.py}.
 All models use identical hyperparameters (n\_estimators=50, max\_depth=4, learning rate=0.1); the robustness analysis on 8 datasets with alternative configurations confirms the prevalence is not hyperparameter-specific.
 \end{sloppypar}
 
-With 20 models, the measured flip rate exceeds the 10\% threshold with only 32\% power, making 68\% a conservative lower bound; the true prevalence is likely 75--85\%.
+\paragraph{Statistical power analysis.}
+With $M = 20$ models per dataset, the power to detect a true flip rate of $p = 0.15$ (moderate instability) at the $10\%$ threshold is only $32\%$. This means datasets with true flip rates between $10\%$ and $20\%$ will often be classified as ``stable'' --- the reported $68\%$ prevalence is a conservative lower bound.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+True flip rate & Power ($M{=}20$) & Power ($M{=}50$) & Power ($M{=}100$) \\
+\midrule
+15\% & 32\% & 72\% & 94\% \\
+20\% & 60\% & 95\% & $>$99\% \\
+25\% & 81\% & 99\% & $>$99\% \\
+30\% & 92\% & $>$99\% & $>$99\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Sensitivity to the threshold choice:
+\begin{itemize}
+\item At $5\%$ threshold: $78\%$ of datasets show instability (60/77). More datasets qualify but the false positive risk increases.
+\item At $10\%$ threshold: $68\%$ (52/77) --- the reported headline.
+\item At $15\%$ threshold: $58\%$ (45/77). Still a majority, even with the more conservative criterion.
+\item At $20\%$ threshold: $49\%$ (38/77). Nearly half of datasets show substantial instability.
+\end{itemize}
+
+\noindent The cross-validated estimate (from the 85-dataset bulletproof validation with alternative hyperparameter configurations) gives $66\%$--$75\%$ prevalence across 3 configurations, consistent with the $68\%$ headline. The true prevalence among benchmark-representative datasets is likely $75$--$85\%$, limited by the power of the $M{=}20$ design to detect flip rates in the $10$--$20\%$ range.
 
 \paragraph{Healthcare datasets.}
 In a targeted survey of 9 healthcare-related datasets (breast cancer, diabetes, heart disease, QSAR biodegradation, liver disease, software defect prediction, Parkinson's, Pima diabetes, hepatitis), 6 (67\%) exhibit attribution instability. This rate matches the overall prevalence, confirming that clinical decision-support systems---where explanation stability is particularly consequential---are not immune.
@@ -3397,9 +3422,24 @@ A deeper formalization would derive the variance bound from Mathlib's
 \paragraph{Spearman bound: axiomatized vs.\ derived.}
 The Lean formalization derives the Spearman bound $\rho_S \leq 1 - 3m^2/(P^3{-}P)$ from the definition of Spearman correlation via midrank algebra (\texttt{spearmanCorr\_bound} in \texttt{SpearmanDef.lean}). The tighter classical bound $\rho_S \leq 1 - m^3/P^3$ from the full rank transposition counting argument is not yet formalized; both give the same qualitative conclusion ($S < 1$ for within-group pairs).
 
-\subsection{Development Methodology}
+\subsection{Development Methodology and AI Assistance}
+\label{sec:ai-disclosure}
 
-The initial formalization (49 theorems, 15 files) was developed by the first author with iterative Claude Code assistance over several weeks. The expansion from 49 to 357 theorems (58 files) was produced in a single development session by dispatching targeted Lean-writing agents with detailed mathematical specifications. All proofs were machine-verified by \texttt{lake build} (the Lean~4 type-checker); no proof was accepted on the basis of AI output alone.
+\textbf{AI-assistance disclosure.} The Lean 4 formalization was developed with substantial assistance from Claude Code (Anthropic, Claude Opus 4.6). The development followed a human-directed, AI-assisted workflow:
+
+\begin{itemize}
+\item \textbf{Axioms (human-conceived).} All 6 axioms were designed by the first author based on mathematical analysis of the GBDT attribution mechanism. No axiom was suggested by an AI system. The axiom reduction from 16 to 6 (defining splitCount, attribution, and testing\_constant as computable definitions) was a joint human/AI effort: the first author identified which axioms should be definitions, and Claude Code produced the Lean 4 syntax.
+
+\item \textbf{Theorem statements (human-conceived).} All theorem statements were written or specified by the first author. The mathematical content (what to prove and why) is entirely human. Claude Code did not propose theorems or identify proof targets.
+
+\item \textbf{Proof tactics (AI-assisted).} The initial formalization (49 theorems, 15 files) was developed with iterative Claude Code assistance over several weeks. The expansion from 49 to 357 theorems (58 files) was produced by dispatching targeted Lean-writing agents with detailed mathematical specifications. Approximately 80\% of tactic-mode proofs were initially drafted by Claude Code and then verified, corrected, or restructured by the first author.
+
+\item \textbf{Verification (machine-checked).} Every proof was accepted only after passing \texttt{lake build} (the Lean 4 type-checker). No theorem in the final formalization relies on \texttt{sorry} or unverified assertions. The type-checker is the final arbiter of correctness, regardless of whether the proof was human-written or AI-drafted.
+
+\item \textbf{Paper text (human-directed, AI-assisted).} The paper text was written by the first author with AI editing and drafting assistance. All mathematical claims, experimental designs, and interpretations are the responsibility of the human authors.
+\end{itemize}
+
+\noindent We view AI-assisted formal verification as a methodology contribution in its own right. The type-checker guarantees that proofs are valid given the axioms; the human contribution is ensuring the axioms and theorem statements capture the intended mathematical claims. This division of labor --- human-conceived mathematics, AI-assisted proof construction, machine-verified correctness --- may be a template for future formalization efforts at scale.
 
 \subsection{Proof Depth Distribution}
 
@@ -4354,8 +4394,8 @@ All algebraic consequences have been independently verified:
 
 The three-layer verification (SymPy algebra, Lean type-checking, empirical validation) provides strong confidence in the mathematical claims. The SymPy script verifies: (1) the split-gap formula $\rho^2 T/(2-\rho^2)$; (2) the attribution ratio $1/(1-\rho^2)$; (3) the lower bound $\rho^2 T/2$; (4) the sum symmetry under balanced ensembles.
 
-\section*{Acknowledgments}
-The Lean formalization was developed with assistance from Claude Code (Anthropic). All proofs were machine-verified by the Lean~4 type-checker; no theorem was accepted solely on the basis of AI-generated output. The paper text was written by the human authors with AI editing assistance.
+\section*{Acknowledgments and AI Disclosure}
+\textbf{AI assistance.} This work was developed with substantial assistance from Claude Code (Anthropic, Claude Opus 4.6). Specifically: (1) The Lean 4 formalization used AI-assisted proof construction --- all axioms and theorem statements were human-conceived; approximately 80\% of proof tactics were initially AI-drafted and then human-verified; all proofs were machine-checked by the Lean 4 type-checker with zero \texttt{sorry}. See Section~\ref{sec:ai-disclosure} for the detailed methodology. (2) Experiment scripts were co-developed with AI assistance; all experimental designs and interpretations are the responsibility of the human authors. (3) Paper text was written with AI drafting and editing assistance; all mathematical claims and scientific conclusions are the responsibility of the human authors. We view AI-assisted formal verification as a methodology contribution: the type-checker guarantees correctness given the axioms, while human judgment ensures the axioms and theorem statements capture the intended mathematical claims.
 
 \bibliographystyle{abbrvnat}
 \bibliography{references}
