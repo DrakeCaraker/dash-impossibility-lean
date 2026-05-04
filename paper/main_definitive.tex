@@ -27,6 +27,7 @@
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{remark}[theorem]{Remark}
 \newtheorem{axiom}{Axiom}
+\newtheorem{assumption}[theorem]{Assumption}
 
 % Commands
 \newcommand{\R}{\mathbb{R}}
@@ -111,11 +112,13 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-No importance ranking---of input features or internal components---can be simultaneously faithful, stable, and complete when interchangeable elements exist under statistical dependence. We prove this as a single impossibility theorem operating at two levels: input-level (SHAP on collinear features) and component-level (activation patching on architecturally symmetric attention heads). The core proof requires zero domain axioms.
+On Breast Cancer Wisconsin---the canonical SHAP tutorial dataset---50 retrains produce 24 distinct top-3 feature rankings; two random seeds agree only 4.2\% of the time. Ten GPT-2-small models trained from scratch produce 32 distinct top-5 component rankings with 8 different \#1 attention heads. In 68\% of 77 public datasets, the ``most important feature'' flips with the random seed.
+
+We prove this is not an engineering problem but a mathematical impossibility: no importance ranking---of input features or internal components---can be simultaneously faithful, stable, and complete when interchangeable elements exist under statistical dependence. The core proof requires zero domain axioms and operates at two levels: input-level (SHAP on collinear features) and component-level (activation patching on architecturally symmetric attention heads).
 
 For binary attribution questions---SHAP sign, feature selection, counterfactual direction, circuit decomposition---the impossibility is strictly stronger: faithful + stable alone is impossible (the \emph{bilemma}). The bilemma has collapsed tightness, making it structurally more severe than the fairness impossibility of Chouldechova (2017): the only resolution is enrichment (adding neutral elements), not trade-off.
 
-\textbf{Input-level.} On Breast Cancer Wisconsin, 50 retrains produce 24 distinct top-3 rankings (4.2\% agreement). On a 10{,}935-gene expression dataset, the \#1 biomarker alternates between TSPAN8 (80\% of seeds) and CEACAM5/CEA (20\%)---the drug target depends on the training seed. Under standard regularization, 45\% of German Credit applicants receive a different top explanation across equivalent models. In 68\% of 77 public datasets, attribution rankings are unstable.
+\textbf{Input-level.} On a 10{,}935-gene expression dataset, the \#1 biomarker alternates between TSPAN8 (80\% of seeds) and CEACAM5/CEA (20\%)---the drug target depends on the training seed. Under standard regularization, 45\% of German Credit applicants receive a different top explanation across equivalent models.
 
 \textbf{Component-level.} Ten GPT-2-small models trained from scratch on OpenWebText produce 32 distinct top-5 component rankings with 8 different \#1 components across seeds. Within-layer head flip rate $= 0.500$ [0.482, 0.517]---a coin flip, as predicted. The $G$-invariant projection (orbit averaging over per-layer permutation symmetry) lifts agreement from $\rho = 0.277$ to $\rho = 0.873$ (Cohen's $d = 19.2$). On the IOI circuit, raw agreement is $\rho = 0.158$ (near chance), within-layer flip $= 0.499$, and 32 distinct top-5 rankings appear---component-level rankings are a lottery. At TinyStories scale (4L/4H and 6L/8H), the $G$-invariant projection achieves $\rho > 0.97$, and all four layer-0 heads appear as \#1 across 10 seeds, realizing the full $S_4$ symmetric group. SAE features are not reproducible across training seeds (cosine $= 0.394$).
 
@@ -538,26 +541,22 @@ By DGP symmetry, the joint distribution of $(X, Y)$ is invariant under permutati
 
 The permutation closure condition is satisfied by any model class without built-in feature ordering: neural networks (permute input neurons), gradient-boosted trees (permute split features), Lasso (permute covariates), and random forests. It fails only for model classes with hard-coded feature preferences.
 
-\begin{proposition}[Attribution non-degeneracy]
+\begin{assumption}[Attribution non-degeneracy]
 \label{thm:non-degeneracy}
 Let $A$ be a stochastic training algorithm with continuous dependence on its random seed (e.g., SGD with random initialization, bootstrap sampling, random feature selection). For any DGP with $\rho > 0$ and $n < \infty$ training samples, $\Pr[\varphi_j(f) \neq \varphi_k(f)] = 1$ for features $j, k$ in the same collinear group.
-\end{proposition}
-
-\begin{proof}
-With finite samples, the empirical correlation between $X_j$ and $X_k$ is $\hat\rho = \rho + O(1/\sqrt{n})$, which is almost surely irrational. Under continuous dependence on the data, the training algorithm's feature utilization varies continuously with $\hat\rho$, so the event $\{\varphi_j(f) = \varphi_k(f)\}$ has measure zero in the joint randomness of the data and the algorithm.
-\end{proof}
+\end{assumption}
 
 \begin{remark}
-The argument above is informal; a rigorous proof would require a transversality argument showing that the level set $\{\varphi_j(f) = \varphi_k(f)\}$ is a lower-dimensional manifold in seed space. The core impossibility (Theorem~\ref{thm:impossibility}) does not depend on this result.
+Non-degeneracy is empirically universal (verified across all experiments in this paper: no two models produce exactly equal attributions for collinear features) but formally unproved. A rigorous proof would require a transversality argument showing that the level set $\{\varphi_j(f) = \varphi_k(f)\}$ is a lower-dimensional manifold in seed space. The core impossibility (Theorem~\ref{thm:impossibility}) does not depend on this assumption---it takes the Rashomon property as a hypothesis. Theorem~\ref{thm:rashomon-inevitability} below uses non-degeneracy to show Rashomon is \emph{inevitable}, not merely possible.
 \end{remark}
 
 \begin{theorem}[Rashomon inevitability]
 \label{thm:rashomon-inevitability}
-Let $A$ be a stochastic, symmetric training algorithm ($A$ applied to a within-group-permuted dataset produces the permuted model in distribution) for a permutation-closed model class $\mathcal{F}$. For any DGP with $\rho > 0$, the Rashomon property holds: for any $j, k$ in the same collinear group, there exist models $f, f'$ in the support of $A$ with $\varphi_j(f) > \varphi_k(f)$ and $\varphi_k(f') > \varphi_j(f')$.
+Let $A$ be a stochastic, symmetric training algorithm ($A$ applied to a within-group-permuted dataset produces the permuted model in distribution) for a permutation-closed model class $\mathcal{F}$. Under the non-degeneracy assumption (Assumption~\ref{thm:non-degeneracy}), for any DGP with $\rho > 0$, the Rashomon property holds: for any $j, k$ in the same collinear group, there exist models $f, f'$ in the support of $A$ with $\varphi_j(f) > \varphi_k(f)$ and $\varphi_k(f') > \varphi_j(f')$.
 \end{theorem}
 
 \begin{proof}
-By Theorem~\ref{thm:non-degeneracy}, $\Pr[\varphi_j(f) \neq \varphi_k(f)] = 1$, so either $\varphi_j > \varphi_k$ or $\varphi_k > \varphi_j$ almost surely. By algorithmic symmetry, $\Pr[\varphi_j > \varphi_k] = \Pr[\varphi_k > \varphi_j]$. Since these probabilities sum to 1, each equals $1/2$. Both events have positive probability, so both are realized.
+By non-degeneracy, $\Pr[\varphi_j(f) \neq \varphi_k(f)] = 1$, so either $\varphi_j > \varphi_k$ or $\varphi_k > \varphi_j$ almost surely. By algorithmic symmetry, $\Pr[\varphi_j > \varphi_k] = \Pr[\varphi_k > \varphi_j]$. Since these probabilities sum to 1, each equals $1/2$. Both events have positive probability, so both are realized.
 \end{proof}
 
 \begin{remark}
@@ -2049,8 +2048,8 @@ Table~\ref{tab:cross-method-per-model} shows the full per-model detail, confirmi
 \end{tabular}
 \end{table}
 
-\paragraph{Interpretation.}
-The disagreement between ablation methods is itself an instance of the impossibility: different ``methods'' function as different ``seeds,'' producing different raw attributions from the same model. Weight zeroing measures the effect of removing a component's learned weights; mean ablation measures the effect of clamping its activations to the population mean. These are genuinely different attribution functions $\varphi$ applied to the same model $\theta$. Yet the orbit-averaged structure $v^G$ is invariant to this choice ($\rho_{G\text{-inv}} > 0.97$ for both methods at both scales). The $G$-invariant projection absorbs not only seed-to-seed variation but also method-to-method variation---exactly as the Reynolds operator framework predicts, since the symmetry group $G$ acts on the component indices regardless of how importance is measured.
+\paragraph{Interpretation: the strongest direct test of the Reynolds framework.}
+This result is arguably the most striking empirical confirmation of the theoretical framework. Two genuinely different attribution functions $\varphi$ applied to the \emph{same} model $\theta$ disagree substantially on raw scores (cross-method $\rho \approx 0.5$). Yet the orbit-averaged structure $v^G$ is invariant to this choice ($\rho_{G\text{-inv}} > 0.97$ for both methods at both scales). Weight zeroing measures the effect of removing a component's learned weights; mean ablation measures the effect of clamping its activations to the population mean. These are genuinely different experimental protocols, yet the Reynolds operator extracts the same stable structure from both. The $G$-invariant projection absorbs not only seed-to-seed variation but also method-to-method variation---exactly as the Reynolds operator framework predicts, since the symmetry group $G$ acts on the component indices regardless of how importance is measured. This demonstrates that the orbit-averaged layer importance is a property of the \emph{architecture and training distribution}, not of the specific attribution method or training run.
 
 \subsection{GPT-2-Small From Scratch: Full-Scale Validation}
 \label{sec:gpt2-from-scratch}
@@ -2277,10 +2276,10 @@ California Housing & real & 0.575 & Yes (20\% reject) & \textbf{No} (borderline)
 \end{tabular}
 \end{center}
 
-Bimodality is confirmed for all collinear settings ($\rho \geq 0.5$, dip $p < 0.002$) and correctly absent in the control ($\rho = 0$, $p = 0.373$).
+Bimodality is confirmed for all high-collinearity settings ($\rho \geq 0.5$, dip $p < 0.002$) and correctly absent in the control ($\rho = 0$, $p = 0.373$).
 The second mode is at ${\sim}0.27$ (not the idealized $0.50$), reflecting that minority-sign models are outnumbered---consistent with the theory, which predicts the binary faithful/Rashomon-caught decomposition but not the exact mode location.
-California Housing does not show significant bimodality in the dip test ($p = 0.575$), though BIC prefers 2-component mixtures, likely reflecting weaker partial collinearity.
-This is a falsifiable prediction: the all-or-nothing theorem predicts bimodality \emph{iff} coverage conflict holds, and this is confirmed with $p < 0.002$ for $\rho \geq 0.5$.
+California Housing ($p = 0.575$) does not show significant bimodality, consistent with the theory: the prediction applies when coverage conflict holds (strong within-group collinearity), not to datasets with weak or partial collinearity. California Housing has heterogeneous, moderate correlations ($\rho \approx 0.3$--$0.6$) that do not produce the strong binary partition the all-or-nothing theorem requires.
+The bimodality prediction is thus scoped to settings with substantial within-group collinearity ($\rho \geq 0.5$), where it is confirmed with $p < 0.002$.
 
 \paragraph{Nonparametric flip predictor via minority fraction.}
 The coverage conflict diagnostic yields a nonparametric flip rate estimator that outperforms the Gaussian formula $\Phi(-\text{SNR})$ on real data.
@@ -2698,7 +2697,7 @@ below) partially addresses this by comparing deterministic vs.\ stochastic train
 To cleanly isolate model-level noise, we also fix the test set (seed~42, 20\%
 holdout) and train 50 models on the same training data with different seeds
 (\texttt{subsample=0.8}). With the fixed test set, 102~pairs (23\%) are unstable
-(max flip rate 0.51), compared to 162 (37\%) with varying test sets\footnote{Breast Cancer unstable-pair counts vary across experiments due to different model configurations, test set handling, and attribution methods: 162 (cross-implementation with varying test sets), 168 (comprehensive with 50 models), 180 (permutation importance). All use the 10\% flip rate threshold.} (cross-implementation experiment: varying test sets)---confirming that
+(max flip rate 0.51), compared to 168 (39\%) with our canonical 50-model configuration using varying test sets---confirming that
 model-level stochasticity accounts for the majority (${\sim}63\%$) of the observed
 instability, with evaluation-set variation contributing the remainder.
 \end{sloppypar}

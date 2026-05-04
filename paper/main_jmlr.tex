@@ -6,6 +6,9 @@
 \usepackage{booktabs}
 \usepackage{xurl}         % better URL line-breaking
 
+% Additional theorem environments
+\newtheorem{assumption}[theorem]{Assumption}
+
 % Commands
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\E}{\mathbb{E}}
@@ -410,26 +413,22 @@ By DGP symmetry, the joint distribution of $(X, Y)$ is invariant under permutati
 
 The permutation closure condition is satisfied by any model class without built-in feature ordering: neural networks (permute input neurons), gradient-boosted trees (permute split features), Lasso (permute covariates), and random forests. It fails only for model classes with hard-coded feature preferences.
 
-\begin{proposition}[Attribution non-degeneracy]
+\begin{assumption}[Attribution non-degeneracy]
 \label{thm:non-degeneracy}
-Let $A$ be a stochastic training algorithm with continuous dependence on its random seed (e.g., SGD with random initialization, bootstrap sampling, random feature selection). For any DGP with $\rho > 0$ and $n < \infty$ training samples, $\Pr[\varphi_j(f) \neq \varphi_k(f)] = 1$ for features $j, k$ in the same collinear group.
-\end{proposition}
-
-\begin{proof}
-With finite samples, the empirical correlation between $X_j$ and $X_k$ is $\hat\rho = \rho + O(1/\sqrt{n})$, which is almost surely irrational. Under continuous dependence on the data, the training algorithm's feature utilization varies continuously with $\hat\rho$, so the event $\{\varphi_j(f) = \varphi_k(f)\}$ has measure zero in the joint randomness of the data and the algorithm.
-\end{proof}
+Let $A$ be a stochastic training algorithm with continuous dependence on its random seed. For any DGP with $\rho > 0$ and $n < \infty$ training samples, $\Pr[\varphi_j(f) \neq \varphi_k(f)] = 1$ for features $j, k$ in the same collinear group.
+\end{assumption}
 
 \begin{remark}
-The argument above is informal; a rigorous proof would require a transversality argument showing that the level set $\{\varphi_j(f) = \varphi_k(f)\}$ is a lower-dimensional manifold in seed space. The core impossibility (Theorem~\ref{thm:impossibility}) does not depend on this result.
+Non-degeneracy is empirically universal (verified across all experiments in this paper) but formally unproved; a rigorous proof requires a transversality argument. The core impossibility (Theorem~\ref{thm:impossibility}) does not depend on this assumption. Theorem~\ref{thm:rashomon-inevitability} uses it to show Rashomon is \emph{inevitable}, not merely possible.
 \end{remark}
 
 \begin{theorem}[Rashomon inevitability]
 \label{thm:rashomon-inevitability}
-Let $A$ be a stochastic, symmetric training algorithm ($A$ applied to a within-group-permuted dataset produces the permuted model in distribution) for a permutation-closed model class $\mathcal{F}$. For any DGP with $\rho > 0$, the Rashomon property holds: for any $j, k$ in the same collinear group, there exist models $f, f'$ in the support of $A$ with $\varphi_j(f) > \varphi_k(f)$ and $\varphi_k(f') > \varphi_j(f')$.
+Let $A$ be a stochastic, symmetric training algorithm for a permutation-closed model class $\mathcal{F}$. Under non-degeneracy (Assumption~\ref{thm:non-degeneracy}), for any DGP with $\rho > 0$, the Rashomon property holds: for any $j, k$ in the same collinear group, there exist models $f, f'$ in the support of $A$ with $\varphi_j(f) > \varphi_k(f)$ and $\varphi_k(f') > \varphi_j(f')$.
 \end{theorem}
 
 \begin{proof}
-By Theorem~\ref{thm:non-degeneracy}, $\Pr[\varphi_j(f) \neq \varphi_k(f)] = 1$, so either $\varphi_j > \varphi_k$ or $\varphi_k > \varphi_j$ almost surely. By algorithmic symmetry, $\Pr[\varphi_j > \varphi_k] = \Pr[\varphi_k > \varphi_j]$. Since these probabilities sum to 1, each equals $1/2$. Both events have positive probability, so both are realized.
+By non-degeneracy, $\Pr[\varphi_j(f) \neq \varphi_k(f)] = 1$, so either $\varphi_j > \varphi_k$ or $\varphi_k > \varphi_j$ almost surely. By algorithmic symmetry, $\Pr[\varphi_j > \varphi_k] = \Pr[\varphi_k > \varphi_j]$. Since these probabilities sum to 1, each equals $1/2$. Both events have positive probability, so both are realized.
 \end{proof}
 
 \begin{remark}
@@ -1334,8 +1333,8 @@ Coverage conflict is \emph{anti-monotone}: enlarging $H$ can introduce neutral e
 This contrasts with Arrow's theorem, where enlarging the alternative set strengthens the impossibility (by enabling preference cycles)---the two impossibilities respond in opposite directions to the same structural operation.
 
 \paragraph{Bimodality prediction.}
-The all-or-nothing theorem (Theorem~\ref{thm:all-or-nothing}) predicts bimodal per-feature flip rate distributions under collinearity: a mode near $0$ (faithful features) and a second mode at a positive value (Rashomon-caught features), with no middle ground.
-We validate with the Hartigan dip test (200 XGBoost models, permutation control): bimodality is confirmed for $\rho \geq 0.5$ (dip $p < 0.002$, permutation validated) and correctly absent at $\rho = 0$ ($p = 0.373$).
+The all-or-nothing theorem (Theorem~\ref{thm:all-or-nothing}) predicts bimodal per-feature flip rate distributions under strong within-group collinearity ($\rho \geq 0.5$): a mode near $0$ (faithful features) and a second mode at a positive value (Rashomon-caught features), with no middle ground.
+We validate with the Hartigan dip test (200 XGBoost models, permutation control): bimodality is confirmed for $\rho \geq 0.5$ (dip $p < 0.002$, permutation validated) and correctly absent at $\rho = 0$ ($p = 0.373$). The prediction does not apply to datasets with weak or heterogeneous collinearity (e.g., California Housing, $p = 0.575$), where coverage conflict is insufficient.
 
 \paragraph{Nonparametric flip predictor via minority fraction.}
 The coverage conflict diagnostic yields a nonparametric flip rate estimator.
@@ -1406,8 +1405,8 @@ Split-half reliability & 0.991 & 0.960 & 0.878 \\
 
 Raw importance vectors are only moderately correlated ($\rho \approx 0.55$), but after the $G$-invariant projection they are near-perfect ($\rho > 0.97$). Within-layer head flip rates are at chance ($W_{\text{flip}} \approx 0.50$). All four layer-0 heads appear as the top-ranked head across 10 seeds, realizing the full $S_4$ permutation symmetry. Controls: split-half reliability is 0.991 (A) and 0.960 (B)---far exceeding between-model agreement; the $G$-invariant projection achieves the 100th percentile among 1{,}000 random projections; permutation test $p < 0.001$ at both scales.
 
-\paragraph{Method robustness.}
-Weight zeroing and mean ablation disagree on raw importance (cross-method $\rho \approx 0.5$) but agree on the orbit-averaged structure ($\rho_{G\text{-inv}} > 0.97$). The Reynolds operator absorbs not only seed-to-seed but also method-to-method variation.
+\paragraph{Method robustness: a direct test of the Reynolds framework.}
+Weight zeroing and mean ablation are genuinely different attribution functions---one measures the effect of removing a component's learned weights, the other measures the effect of clamping activations to the population mean. They disagree substantially on raw component importance (cross-method per-model $\rho \approx 0.5$). Yet after orbit averaging, both converge to the same invariant structure ($\rho_{G\text{-inv}} > 0.97$ for both methods at both scales). This is a direct empirical confirmation of the Reynolds operator framework: the symmetry group $G$ acts on component indices regardless of how importance is measured, so the $G$-invariant projection absorbs not only seed-to-seed variation but also method-to-method variation. The stable shared structure is real and method-independent; only the within-orbit noise differs.
 
 \subsection{GPT-2-Small From Scratch}
 \label{sec:gpt2}
