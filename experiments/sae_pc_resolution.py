@@ -52,7 +52,7 @@ def compute_data_pcs(model, n_samples=400, seq_len=256, target_layer=6):
 
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     tokenizer.pad_token = tokenizer.eos_token
-    ds = load_dataset("openwebtext", split="train", streaming=True, trust_remote_code=True)
+    ds = load_dataset("openwebtext", split="train", streaming=True)
 
     activations = []
     hook_output = {}
