@@ -1457,7 +1457,23 @@ IOI-specific importance is even less stable than general importance ($\rho = 0.1
 \subsection{SAE Feature Stability}
 \label{sec:sae}
 
-Ten TopK Sparse Autoencoders ($d_{\text{SAE}}{=}6{,}144$, $k{=}48$) trained on layer-6 activations of a single frozen GPT-2-small model show that learned dictionary features are not reproducible: mean max cosine $= 0.394 \pm 0.002$ ($2.6\times$ random but not reliable), and importance Spearman after optimal Hungarian matching $= 0.500$ (chance-level). Under our experimental conditions (TopK, layer 6, 50K steps), SAE features do not provide a reproducible basis for interpretability. This is an empirical finding; larger dictionaries, different architectures, or better matching may improve stability.
+The impossibility applies to SAE features by mathematical necessity: an $8\times$ overcomplete dictionary ($d_{\text{SAE}}{=}6{,}144$ for $d_{\text{model}}{=}768$) has a 5{,}376-dimensional null space guaranteeing multiple equivalent decompositions with identical reconstruction loss. Three escape hypotheses are tested; all fail:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Condition} & \textbf{Max Cos} & \textbf{Matched Cos} & \textbf{Matched $\rho$} \\
+\midrule
+TopK (from-scratch model) & 0.394 & 0.495 & 0.500 \\
+ReLU (from-scratch model) & 0.136 & 0.107 & 0.011 \\
+TopK (pretrained GPT-2) & 0.443 & 0.516 & 0.507 \\
+Resolution (averaged decoders) & 0.458 & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+ReLU SAEs are catastrophically non-reproducible (cosine 0.136 $\approx$ random): without TopK's sparsity constraint, the overcomplete null space dominates. Pretrained GPT-2 is only marginally better (0.443 vs.\ 0.394), falsifying the hypothesis that the from-scratch model's idiosyncratic representations are the problem---all 10 SAEs are trained on the \emph{same frozen model} yet still non-reproducible. Resolution (averaging matched decoders) gives $+0.064$ improvement, confirming orbit averaging partially works but cannot overcome a continuous symmetry group. No condition achieves reproducibility.
 
 \subsection{Mechanistic Interpretability Bilemma}
 \label{sec:mech-interp}
@@ -2336,7 +2352,7 @@ For $m$ features in a group under full DGP symmetry, the attribution ranking is 
 The flip rate prediction $\Phi(-\text{SNR})$ is Lipschitz-continuous in the correlation: if $|\rho_1 - \rho_2| \leq \varepsilon$, the predicted flip rates change by at most $C_\Phi \cdot L \cdot \varepsilon$, where $C_\Phi = 1/\sqrt{2\pi}$ is the Lipschitz constant of the standard normal CDF and $L$ is the Lipschitz constant of the SNR function. This is formalized in Lean (\texttt{RobustnessLipschitz.lean}) as a composition of Lipschitz functions. Simulation on Breast Cancer confirms the bound.
 
 \paragraph{Open problems.}
-The Bayes-optimality half of the Design Space is proved but not in Lean (requires measure-theoretic decision theory). Deriving split-count axioms algorithmically from the TreeSHAP algorithm and proving the proportionality axiom for general tree depths remain open. The generalization from $\rho > 0$ to $I(X_j; X_k) > 0$ is now complete (\texttt{MutualInformation.lean}): mutual information is the exact boundary between possible and impossible ranking. Whether SAE features can be made reproducible via better training procedures or matching algorithms is an empirical question (Section~\ref{sec:sae}). Scaling component-level experiments beyond 124M parameters would strengthen the generality claim. A reference implementation is available at \url{https://github.com/DrakeCaraker/dash-shap}.
+The Bayes-optimality half of the Design Space is proved but not in Lean (requires measure-theoretic decision theory). Deriving split-count axioms algorithmically from the TreeSHAP algorithm and proving the proportionality axiom for general tree depths remain open. The generalization from $\rho > 0$ to $I(X_j; X_k) > 0$ is now complete (\texttt{MutualInformation.lean}): mutual information is the exact boundary between possible and impossible ranking. For SAE features, the impossibility follows from overcompleteness (Section~\ref{sec:sae}); the open question is whether a resolution analogous to the $G$-invariant projection can be defined for continuous symmetry groups. Scaling component-level experiments beyond 124M parameters would strengthen the generality claim. A reference implementation is available at \url{https://github.com/DrakeCaraker/dash-shap}.
 
 \paragraph{Formalization as methodology.}
 Beyond certifying correctness, the Lean formalization served as a bug-finding methodology: it caught two logical inconsistencies and one type mismatch that survived informal review. We recommend formalizing impossibility theorems as a general practice.

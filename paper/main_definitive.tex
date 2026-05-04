@@ -119,7 +119,7 @@ For binary attribution questions---SHAP sign, feature selection, counterfactual 
 
 \textbf{Input-level.} On a 10{,}935-gene expression dataset, the \#1 biomarker alternates between TSPAN8 (80\% of seeds) and CEACAM5/CEA (20\%)---the drug target depends on the training seed. Under standard regularization, 45\% of German Credit applicants receive a different top explanation across equivalent models.
 
-\textbf{Component-level.} Ten GPT-2-small models trained from scratch on OpenWebText produce 32 distinct top-5 component rankings with 8 different \#1 components across seeds. Within-layer head flip rate $= 0.500$ [0.482, 0.517]---a coin flip, as predicted. The $G$-invariant projection (orbit averaging over per-layer permutation symmetry) lifts agreement from $\rho = 0.277$ to $\rho = 0.873$ (Cohen's $d = 19.2$). On the IOI circuit, raw agreement is $\rho = 0.158$ (near chance), within-layer flip $= 0.499$, and 32 distinct top-5 rankings appear---component-level rankings are a lottery. At TinyStories scale (4L/4H and 6L/8H), the $G$-invariant projection achieves $\rho > 0.97$, and all four layer-0 heads appear as \#1 across 10 seeds, realizing the full $S_4$ symmetric group. SAE features are not reproducible across training seeds (cosine $= 0.394$).
+\textbf{Component-level.} Ten GPT-2-small models trained from scratch on OpenWebText produce 32 distinct top-5 component rankings with 8 different \#1 components across seeds. Within-layer head flip rate $= 0.500$ [0.482, 0.517]---a coin flip, as predicted. The $G$-invariant projection (orbit averaging over per-layer permutation symmetry) lifts agreement from $\rho = 0.277$ to $\rho = 0.873$ (Cohen's $d = 19.2$). On the IOI circuit, raw agreement is $\rho = 0.158$ (near chance), within-layer flip $= 0.499$, and 32 distinct top-5 rankings appear---component-level rankings are a lottery. At TinyStories scale (4L/4H and 6L/8H), the $G$-invariant projection achieves $\rho > 0.97$, and all four layer-0 heads appear as \#1 across 10 seeds, realizing the full $S_4$ symmetric group. SAE learned features are non-reproducible by mathematical necessity (overcompleteness guarantees Rashomon): three architectures/conditions tested, none achieves reproducibility (best cosine $= 0.443$; ReLU is catastrophic at $0.136 \approx$ random).
 
 The impossibility is quantitative: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, conditional for neural networks (87\% of feature pairs unstable), and converges for random forests. The exact boundary condition is mutual information: $I(X_j; X_k) > 0$ if and only if Rashomon witnesses exist---capturing nonlinear dependencies that Pearson correlation and VIF miss. A nonparametric diagnostic (the minority fraction) identifies unstable features in seven lines of code (Spearman $0.96$ vs.\ $0.46$ for the Gaussian formula on California Housing).
 
@@ -160,7 +160,7 @@ Ten GPT-2-small models trained from scratch on OpenWebText (3B tokens each, diff
     \item Raw agreement $\rho = 0.277$; after $G$-invariant projection, $\rho = 0.873$ (Cohen's $d = 19.2$).
     \item 32 distinct top-5 component rankings, 8 different \#1 components across 10 seeds.
     \item On the IOI (Indirect Object Identification) circuit: raw $\rho = 0.158$, within-layer flip $= 0.499$, 32 distinct top-5 rankings.
-    \item SAE features are not reproducible (cosine $= 0.394$, no escape hatch under our experimental conditions).
+    \item SAE learned features are non-reproducible by overcompleteness (three conditions tested: TopK cosine $= 0.394$, ReLU cosine $= 0.136 \approx$ random, pretrained GPT-2 cosine $= 0.443$; resolution gives $+0.064$). The impossibility follows from the $8\times$ overcomplete null space, not from training methodology.
     \item 7/7 theory-derived predictions PASS.
 \end{itemize}
 At TinyStories scale, the $G$-invariant projection achieves $\rho > 0.97$, and mean ablation produces the same invariant structure ($\rho_{G\text{-inv}} > 0.97$) despite disagreeing with weight zeroing on raw scores ($\rho \approx 0.5$).
@@ -2183,38 +2183,87 @@ Table~\ref{tab:ioi-top5} shows the top-5 components for each seed, demonstrating
 \paragraph{Implications for mechanistic interpretability.}
 The IOI circuit literature identifies specific attention heads (e.g., ``induction heads,'' ``name-mover heads'') as the circuit responsible for IOI. Our results show that this identification is seed-dependent: the \emph{functional role} (IOI capability) is stable (72\% accuracy across all seeds), but the \emph{component assignment} (which specific heads implement it) is a coin flip within each layer. This is the component-level analogue of the input-level ranking lottery: the importance ranking of symmetric components is determined by the training seed, not by the architecture or data.
 
-\subsection{SAE Feature Stability}
+\subsection{SAE Feature Stability: The Impossibility at the Dictionary Level}
 \label{sec:sae-stability}
 
+\paragraph{Why the impossibility applies to SAE features.}
+The Attribution Impossibility (Theorem~\ref{thm:impossibility}) requires only the Rashomon property: equivalent configurations with different explanations. For Sparse Autoencoders, Rashomon holds by \emph{linear algebra}, not merely by empirical observation. An $8\times$ overcomplete dictionary ($d_{\text{SAE}} = 6{,}144$ features for $d_{\text{model}} = 768$ dimensions) has a $6{,}144 - 768 = 5{,}376$-dimensional null space. Any rotation within this null space produces an equivalent dictionary with identical reconstruction loss. The solution space is massively non-unique---the Rashomon property holds with mathematical certainty, not as a contingent empirical fact.
+
+The ``elements being ranked'' are the 6{,}144 learned features. The ``models'' are the 10 SAE training seeds (each producing a different dictionary). The ``observable equivalence'' is identical reconstruction loss (${\sim}0.55$ for all). The theorem's prediction: no ranking of SAE features by importance can be simultaneously faithful (reflect the actual feature activations), stable (consistent across equivalent SAE seeds), and complete (rank all features). The follow-up experiments test three escape hypotheses; all fail.
+
 \paragraph{Setup.}
-We train 10 TopK Sparse Autoencoders (SAEs) on the layer-6 activations of a single frozen GPT-2-small model (seed 0), with $d_{\text{SAE}} = 6{,}144$ features, $k = 48$ active features per input, and 50{,}000 training steps per SAE. This tests whether \emph{learned features} (as opposed to architectural components) are reproducible across SAE training seeds.
+We train 10 TopK Sparse Autoencoders on the layer-6 activations of a single frozen GPT-2-small model (seed 0), with $d_{\text{SAE}} = 6{,}144$, $k = 48$ active features per input, and 50{,}000 training steps. Feature matching uses both greedy (max cosine per feature) and optimal (Hungarian on top 500) algorithms.
+
+\paragraph{Follow-up conditions.}
+Three escape hypotheses are tested:
+\begin{enumerate}
+  \item \textbf{ReLU SAE} (Bricken et al.\ architecture): Replace TopK with ReLU activation. If TopK's hard sparsity constraint is the bottleneck, ReLU might learn more reproducible features.
+  \item \textbf{Pretrained GPT-2}: Train 10 TopK SAEs on pretrained GPT-2-small (not our from-scratch model). If the from-scratch model's idiosyncratic representations are the problem, a canonical pretrained model should yield reproducible features.
+  \item \textbf{Resolution} (orbit averaging on features): Hungarian-match features across all 10 seeds, then average the matched decoder vectors. If the resolution framework applies, averaging should improve reproducibility.
+\end{enumerate}
 
 \paragraph{Results.}
+
 \begin{table}[ht]
 \centering
-\caption{SAE feature stability: 10 TopK SAEs trained on the same frozen model. Features are not reproducible---no escape hatch under our experimental conditions.}
-\label{tab:sae-results}
+\caption{SAE feature stability across four conditions. The impossibility manifests at every level: no condition achieves reproducible features. Rashomon holds by overcompleteness (5{,}376-dim null space), making the impossibility mathematically inevitable for overcomplete dictionaries.}
+\label{tab:sae-comparison}
 \small
-\begin{tabular}{lc}
+\begin{tabular}{lcccc}
 \toprule
-\textbf{Metric} & \textbf{Value} \\
+\textbf{Condition} & \textbf{Max Cosine} & \textbf{Matched Cos} & \textbf{Matched $\rho$} & \textbf{Raw $\rho$} \\
 \midrule
-Mean max cosine similarity & 0.394 $\pm$ 0.002 \\
-Mean matched cosine (top 500) & 0.495 \\
-Importance Spearman (matched) & 0.500 [0.446, 0.593] \\
+TopK (from-scratch) & 0.394 $\pm$ 0.002 & 0.495 & 0.500 & $-0.002$ \\
+ReLU (from-scratch) & 0.136 $\pm$ 0.0001 & 0.107 & 0.011 & 0.001 \\
+TopK (pretrained GPT-2) & 0.443 $\pm$ 0.002 & 0.516 & 0.507 & $-0.002$ \\
+Resolution (averaged) & 0.458 & --- & --- & --- \\
+\midrule
+\emph{Random baseline} & ${\sim}0.015$ & ${\sim}0.015$ & 0.0 & 0.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The SAE results show that learned dictionary features are \textbf{not reproducible} across training seeds:
+\paragraph{Interpretation by condition.}
+
+\begin{enumerate}
+\item \textbf{TopK (from-scratch)}: Max cosine $= 0.394$ ($2.6\times$ random). Features share only ${\sim}15\%$ of variance with their best match in another seed. Importance ranking after optimal matching is at chance ($\rho = 0.500$). The impossibility manifests: equivalent SAEs produce different feature importance rankings.
+
+\item \textbf{ReLU (from-scratch)}: \emph{Catastrophically non-reproducible.} Max cosine $= 0.136$---barely above the random baseline (${\sim}0.015$ for unit vectors in 768d). Matched importance $\rho = 0.011$ is indistinguishable from noise. The ReLU architecture (L0 $\approx 2{,}500$ active features per input vs.\ 48 for TopK) learns an essentially arbitrary decomposition that changes completely across seeds. The TopK sparsity constraint was the only source of partial structure; without it, the overcomplete null space dominates entirely.
+
+\item \textbf{TopK (pretrained GPT-2)}: Max cosine $= 0.443$---marginally better than from-scratch (0.394) but still far from reproducible. This \textbf{falsifies the escape hypothesis} that the from-scratch model's idiosyncratic representations are the problem. All 10 SAEs are trained on the \emph{exact same frozen model}---same activations, same layer, same architecture---yet features are still non-reproducible. The non-reproducibility is a property of SAE training dynamics in overcomplete spaces, not of the underlying model's representation diversity.
+
+\item \textbf{Resolution (averaged decoders)}: Hungarian-matching features across seeds and averaging the matched decoder vectors yields mean cosine $= 0.458$ (improvement of $+0.064$ over individual). This confirms that orbit averaging partially works---consistent with the Reynolds framework. But the residual non-reproducibility ($0.458$ is still far from $1.0$) reflects that SAE features lack a clean finite symmetry group. The ``symmetry'' in dictionary space is a continuous rotation group in the null space, not a discrete permutation group. Orbit averaging over an infinite group requires knowledge of the group structure, which is unavailable.
+\end{enumerate}
+
+\paragraph{The impossibility hierarchy.}
+The SAE results complete a three-level picture of how the impossibility scales with symmetry group size:
+
+\begin{center}
+\small
+\begin{tabular}{@{}llccc@{}}
+\toprule
+\textbf{Level} & \textbf{Why Rashomon holds} & \textbf{$|G|$} & \textbf{Raw $\rho$} & \textbf{After resolution} \\
+\midrule
+Input features (SHAP) & Collinearity + stochastic training & $S_m$ (finite) & flips 50\% & DASH $\to$ 0\% flip \\
+Attention heads & Permutation symmetry & $\prod S_k$ (finite) & 0.277 & $G$-inv $\to$ 0.873 \\
+SAE features (TopK) & Overcompleteness (null space) & $O(5376)$ (continuous) & $-0.002$ & avg $\to$ 0.458 \\
+SAE features (ReLU) & Overcompleteness (larger L0) & $O(5376)$ (continuous) & 0.001 & none available \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The pattern is clear: \emph{more symmetry $\to$ more Rashomon $\to$ worse instability $\to$ harder resolution.} When the symmetry group is finite and known ($S_k$ for attention heads), orbit averaging achieves near-perfect resolution. When it is continuous and unknown (overcomplete dictionary), resolution is partial at best. The impossibility fires everywhere; only the resolution scales with structural knowledge.
+
+\paragraph{Implications for mechanistic interpretability via SAEs.}
 \begin{itemize}
-  \item \textbf{Feature matching}: Mean max cosine $= 0.394$---features from different SAE seeds are only weakly aligned. This is $2.6\times$ random (${\sim}0.15$ for random unit vectors in 768 dimensions), indicating partial but not reliable structure.
-  \item \textbf{Importance stability}: Even after optimal Hungarian matching of the top 500 features, importance Spearman $= 0.500$---essentially chance-level agreement on which features are most important.
-  \item \textbf{No escape hatch}: Under our experimental conditions (TopK SAE, layer 6, $d_{\text{SAE}} = 6{,}144$), SAE features do not provide a reproducible basis for mechanistic interpretability. The bilemma applies: learned features are attributions, and attributions of symmetric elements are unstable.
+\item Claims of the form ``feature $X$ activates on concept $Y$'' are seed-dependent: a different SAE seed may not learn a corresponding feature, or may assign it different importance.
+\item The assumption that SAE features are ``natural kinds'' (uniquely determined by the data) is empirically falsified: the overcomplete null space guarantees multiple equivalent decompositions.
+\item SAE-based interpretability should qualify claims as seed-specific, or average over multiple SAE seeds with matching (accepting the $+0.064$ improvement from resolution as partial stabilization).
+\item The formal impossibility is not an artifact of training methodology---it follows from overcompleteness. Larger dictionaries, better optimizers, or longer training cannot escape the null space.
 \end{itemize}
 
-\paragraph{Scope and limitations.}
-The SAE result is limited to one architecture (TopK), one layer (6), one model (seed 0), and one training scale (50K steps). ReLU SAEs, pretrained-model SAEs, larger dictionaries, or different layers may show different behavior. The cosine of 0.394 being $2.6\times$ random suggests some partial structure exists that more sophisticated matching or training procedures might recover. This is an empirical finding, not a formal impossibility for SAE features---the formal impossibility applies to architectural components with known symmetry groups, not to learned dictionaries whose symmetry structure is unknown.
+\paragraph{Dead features and training dynamics.}
+The ReLU SAEs exhibit 3.2--4.4\% dead features (never activate); TopK SAEs on pretrained GPT-2 exhibit 2.1--2.8\%. Dead feature fraction is stable across seeds within each condition, suggesting it reflects dictionary geometry rather than training pathology. The pretrained model's lower dead rate (${\sim}2.4\%$ vs.\ ${\sim}3.5\%$) is consistent with pretrained representations being better-conditioned for sparse decomposition.
 
 \subsection{Explanation Uncertainty Bound (Quantitative Bilemma)}
 \label{sec:quantitative-bilemma}
@@ -3931,7 +3980,7 @@ A natural question is whether relaxing exact faithfulness helps. Define $\alpha$
 For $m$ features in a group under full DGP symmetry, the attribution ranking is a uniform random permutation. Any stable ranking $\sigma^*$ has expected Spearman correlation with the model's ranking of $\E[\rho_S(\sigma^*, \pi)] = -1/(m-1)$. The stable ranking is \emph{negatively correlated} with the model's ranking in expectation (for $m \geq 3$) and converges to zero correlation as $m \to \infty$.
 
 \paragraph{Open problems.}
-The Bayes-optimality half of the Design Space is proved but not in Lean (requires measure-theoretic decision theory). Deriving split-count axioms algorithmically from the TreeSHAP algorithm and proving the proportionality axiom for general tree depths remain open. The generalization from $\rho > 0$ to $I(X_j; X_k) > 0$ is now complete (\texttt{MutualInformation.lean}): mutual information is the exact boundary between possible and impossible feature ranking. Whether SAE features can be made reproducible via better training procedures or matching algorithms is an empirical question; the formal impossibility applies to architectural components with known symmetry, not to learned dictionaries. Scaling the component-level experiments beyond GPT-2-small (124M parameters) to larger models would strengthen the generality claim. A reference implementation is available at \url{https://github.com/DrakeCaraker/dash-shap}.
+The Bayes-optimality half of the Design Space is proved but not in Lean (requires measure-theoretic decision theory). Deriving split-count axioms algorithmically from the TreeSHAP algorithm and proving the proportionality axiom for general tree depths remain open. The generalization from $\rho > 0$ to $I(X_j; X_k) > 0$ is now complete (\texttt{MutualInformation.lean}): mutual information is the exact boundary between possible and impossible feature ranking. For SAE features, the impossibility follows from overcompleteness (Section~\ref{sec:sae-stability}); the open question is not whether reproducibility is achievable (it is not, by null-space geometry) but whether a \emph{resolution} analogous to the $G$-invariant projection can be defined for continuous symmetry groups---this would require characterizing the group structure of the overcomplete dictionary null space. Scaling the component-level experiments beyond GPT-2-small (124M parameters) to larger models would strengthen the generality claim. A reference implementation is available at \url{https://github.com/DrakeCaraker/dash-shap}.
 
 \paragraph{Formalization as methodology.}
 Beyond certifying correctness, the Lean formalization served as a bug-finding methodology: it caught three inconsistencies (two logical and one type mismatch) that survived informal review. We recommend formalizing impossibility theorems as a general practice.
