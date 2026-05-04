@@ -111,35 +111,29 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-On Breast Cancer Wisconsin---the canonical SHAP tutorial dataset---50 retrains produce 24 distinct top-3 feature rankings; two random seeds agree only 4.2\% of the time. Ten GPT-2-small models trained from scratch produce 32 distinct top-5 component rankings with 8 different \#1 attention heads. In 68\% of 77 public datasets, the ``most important feature'' flips with the random seed.
+On Breast Cancer Wisconsin, 50 retrains produce 24 distinct top-3 SHAP rankings. Ten GPT-2-small models trained from scratch produce 32 distinct top-5 component rankings with 8 different \#1 attention heads. When correlated features have similar importance, the ranking is determined by the training seed.
 
-We prove this is not an engineering problem but a mathematical impossibility: no importance ranking---of input features or internal components---can be simultaneously faithful, stable, and complete when interchangeable elements exist under statistical dependence. The core proof requires zero domain axioms and operates at two levels: input-level (SHAP on collinear features) and component-level (activation patching on architecturally symmetric attention heads).
+The root cause is a conflict among three desiderata: no importance ranking can be simultaneously faithful (agree with the model's attributions), stable (consistent across equivalent models), and complete (order all elements) when the Rashomon property holds---when equivalent models rank elements in opposite orders. We characterize the \textbf{complete design space}: exactly two families of methods exist, no third option is possible, and \DASH{} (ensemble orbit averaging) is the optimal method on the stable branch. \DASH{} is the orbit average under the natural symmetry group; by classical invariant decision theory (Hunt--Stein, Rao--Blackwell), it is the optimal equivariant estimator, achieving Cauchy--Schwarz-optimal variance. For binary attribution questions (SHAP sign, feature selection), faithful + stable alone is impossible---a corollary with collapsed tightness that forecloses approximate fixes.
 
-For binary attribution questions---SHAP sign, feature selection, counterfactual direction, circuit decomposition---the impossibility is strictly stronger: faithful + stable alone is impossible (the \emph{bilemma}). The bilemma has collapsed tightness, making it structurally more severe than the fairness impossibility of Chouldechova (2017): the only resolution is enrichment (adding neutral elements), not trade-off.
+The instability is quantitative. For gradient-boosted stumps, the attribution ratio diverges as $1/(1{-}\rho^2)$; this bound is stump-specific, though the qualitative pattern---GBDT diverges, Lasso is infinite, random forests converge---holds across depths. A nonparametric diagnostic (the minority fraction) predicts flip rates in seven lines of code (Spearman $0.96$ vs.\ $0.46$ for the Gaussian formula on California Housing). In a survey of 77 datasets with $M{=}20$ models, at least 52 (68\%, 95\% CI: [56\%, 77\%]) show flip rates exceeding 10\%, though detection power at this threshold is approximately 32\%.
 
-\textbf{Input-level.} On a 10{,}935-gene expression dataset, the \#1 biomarker alternates between TSPAN8 (80\% of seeds) and CEACAM5/CEA (20\%)---the drug target depends on the training seed. Under standard regularization, 45\% of German Credit applicants receive a different top explanation across equivalent models.
+\textbf{Component-level.} Ten GPT-2-small models trained from scratch produce within-layer head flip rate $= 0.500$ [0.482, 0.517]---near 50\% as predicted for symmetric components. The $G$-invariant projection lifts agreement from $\rho = 0.277$ to $0.873$ (Cohen's $d = 19.2$). At TinyStories scale, $\rho_{G\text{-inv}} > 0.97$ with all four layer-0 heads appearing as \#1 (full $S_4$). Two different ablation methods (weight zeroing, mean ablation) disagree on raw scores ($\rho \approx 0.5$) but converge after orbit averaging ($\rho > 0.97$)---the strongest direct evidence for the symmetry framework. SAE individual features are non-reproducible (overcomplete null space); coarse-grained behavioral allocation is partially reproducible ($\rho = 0.878$ at top-10 PCs, degrading to $0.711$ at fine grain).
 
-\textbf{Component-level.} Ten GPT-2-small models trained from scratch on OpenWebText produce 32 distinct top-5 component rankings with 8 different \#1 components across seeds. Within-layer head flip rate $= 0.500$ [0.482, 0.517]---a coin flip, as predicted. The $G$-invariant projection (orbit averaging over per-layer permutation symmetry) lifts agreement from $\rho = 0.277$ to $\rho = 0.873$ (Cohen's $d = 19.2$). On the IOI circuit, raw agreement is $\rho = 0.158$ (near chance), within-layer flip $= 0.499$, and 32 distinct top-5 rankings appear---component-level rankings are a lottery. At TinyStories scale (4L/4H and 6L/8H), the $G$-invariant projection achieves $\rho > 0.97$, and all four layer-0 heads appear as \#1 across 10 seeds, realizing the full $S_4$ symmetric group. SAE individual features are non-reproducible (overcompleteness guarantees Rashomon). Coarse behavioral allocation is reproducible: projecting activation-weighted importance onto model PCs gives $\rho = 0.878$ at top-10 directions, degrading to $0.711$ at all 768 as fine-grained noise accumulates.
-
-The impossibility is quantitative: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, conditional for neural networks (87\% of feature pairs unstable), and converges for random forests. The exact boundary condition is mutual information: $I(X_j; X_k) > 0$ if and only if Rashomon witnesses exist---capturing nonlinear dependencies that Pearson correlation and VIF miss. A nonparametric diagnostic (the minority fraction) identifies unstable features in seven lines of code (Spearman $0.96$ vs.\ $0.46$ for the Gaussian formula on California Housing).
-
-The resolution at both levels is the \emph{stable projection} (orbit averaging): \DASH{} for features, $G$-invariant projection for circuits. \DASH{} is Pareto-optimal among unbiased aggregations, and the Reynolds operator provides the minimum-information-loss stable approximation at both levels. The achievable design space consists of exactly two families; no third option exists.
-
-The framework is mechanically verified in Lean~4 (368 theorems from 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines)---to our knowledge, the first formally verified impossibility in explainable AI. The formalization caught two logical inconsistencies and one type mismatch that survived informal review.
+The framework is mechanically verified in Lean~4 (368 theorems, 6 axioms, 0~\texttt{sorry}). The formalization caught two logical inconsistencies and one type mismatch that survived informal review.
 
 Code and Lean proofs: \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (DOI: \url{https://doi.org/10.5281/zenodo.19468379}).
 \end{abstract}
 
 \section*{Executive Summary}
 
-\noindent\textbf{The problem.} Importance rankings---of input features (SHAP) and internal components (activation patching)---are unreliable when interchangeable elements exist. Retraining the same model with a different random seed can invert which feature or component is ``most important.'' In a survey of 77 public datasets, 68\% exhibit input-level instability. Ten GPT-2-small models trained from scratch produce 32 distinct top-5 component rankings---component-level rankings are a lottery. Of the observed instability, approximately 63\% is attributable to model-level stochasticity and 37\% to evaluation-set variation (Section~\ref{sec:mechanism-isolation}).
+\noindent\textbf{The problem.} Importance rankings---of input features (SHAP) and internal components (activation patching)---are unreliable when correlated elements have similar importance. Retraining the same model with a different random seed can change which feature or component ranks highest. In a survey of 77 public datasets ($M{=}20$ models each), at least 68\% show flip rates exceeding 10\% (detection power ${\sim}32\%$ at this threshold; true prevalence may be higher). Ten GPT-2-small models produce 32 distinct top-5 component rankings. Of the observed instability, approximately 63\% is attributable to model-level stochasticity and 37\% to evaluation-set variation (Section~\ref{sec:mechanism-isolation}).
 
-\noindent\textbf{The theorem.} We prove this is not an engineering failure but a mathematical impossibility: no importance ranking can simultaneously be \emph{faithful} (reflect the model), \emph{stable} (robust to retraining), and \emph{complete} (rank all elements) when interchangeable elements exist under the Rashomon property. The proof requires only four lines and zero domain axioms. The impossibility operates at two levels: input-level (SHAP on collinear features) and component-level (activation patching on architecturally symmetric heads).
+\noindent\textbf{The root cause.} The three desiderata---faithfulness (agree with the model), stability (consistent across retrains), completeness (rank all elements)---cannot be jointly satisfied when the Rashomon property holds. This observation is immediate once the definitions are stated: if equivalent models rank elements in opposite orders, no single ranking can agree with all of them. The contribution is not in this observation itself, but in identifying the right abstraction and fully characterizing its consequences.
 
 \noindent\textbf{The design space.} The complete set of achievable methods consists of exactly two families:
 \begin{itemize}
-    \item \textbf{Family A} (single-model): Faithful and complete, but rankings flip up to 50\% of the time.
-    \item \textbf{Family B} (\DASH{} ensemble): Stable, but reports ties for symmetric features. Provably Pareto-optimal among unbiased aggregations.
+    \item \textbf{Family A} (single-model): Faithful and complete, but rankings flip---up to 50\% for maximally symmetric pairs, typically 15--30\% at moderate collinearity.
+    \item \textbf{Family B} (\DASH{} ensemble): Stable, but reports ties for symmetric features. By classical invariant decision theory (Hunt--Stein), the orbit average is the optimal equivariant estimator under the natural symmetry group.
 \end{itemize}
 
 The 50\% flip rate is the worst case (maximally collinear pair, $\rho \to 1$). For moderate collinearity ($\rho \approx 0.7$), empirical flip rates are lower but still significant (typically 15--30\%). The average-case flip rate across all feature pairs depends on the dataset's correlation structure.
@@ -149,25 +143,25 @@ The 50\% flip rate is the worst case (maximally collinear pair, $\rho \to 1$). F
     \item \textbf{Screen}: The single-model screen (94\% precision; tree-based models) identifies unstable pairs from one model.
     \item \textbf{Predict}: The minority fraction---a 7-line nonparametric diagnostic derived from coverage conflict theory---predicts flip rates with Spearman $0.92$--$0.98$, outperforming the Gaussian formula ($0.46$--$0.89$) by $2\times$ on real data. Model-class universal (XGBoost, RF, Ridge, LASSO).
     \item \textbf{Validate}: The multi-model Z-test confirms instability with 5 models.
-    \item \textbf{Resolve}: \DASH{} consensus averaging with $M \geq 25$ models reduces flip rate below 1\%. Uniquely optimal for binary $H$ (majority vote); optimal for continuous $H$ (Cauchy--Schwarz / Hunt--Stein).
+    \item \textbf{Resolve}: \DASH{} consensus averaging with $M \geq 25$ models reduces flip rate below 1\%. As the orbit average under the natural symmetry group, DASH is the optimal equivariant estimator by classical invariant decision theory.
     \item \textbf{Size}: The ensemble formula $M_{\min} = \lceil 2.71 \cdot \sigma^2/\Delta^2 \rceil$ gives the optimal model count.
 \end{enumerate}
 
 \noindent\textbf{Component-level results.}
 Ten GPT-2-small models trained from scratch on OpenWebText (3B tokens each, different random seeds) show:
 \begin{itemize}
-    \item Within-layer head flip rate $= 0.500$ [0.482, 0.517]---exactly a coin flip.
+    \item Within-layer head flip rate $= 0.500$ [0.482, 0.517]---near 50\%, as predicted for symmetric components.
     \item Raw agreement $\rho = 0.277$; after $G$-invariant projection, $\rho = 0.873$ (Cohen's $d = 19.2$).
     \item 32 distinct top-5 component rankings, 8 different \#1 components across 10 seeds.
     \item On the IOI (Indirect Object Identification) circuit: raw $\rho = 0.158$, within-layer flip $= 0.499$, 32 distinct top-5 rankings.
-    \item SAE learned features are non-reproducible by overcompleteness (three conditions tested: TopK cosine $= 0.394$, ReLU cosine $= 0.136 \approx$ random, pretrained GPT-2 cosine $= 0.443$; resolution gives $+0.064$). The impossibility follows from the $8\times$ overcomplete null space, not from training methodology.
+    \item SAE individual features are non-reproducible (overcomplete null space). Coarse behavioral allocation is partially reproducible ($\rho = 0.878$ at top-10 PCs, $0.711$ at all 768).
     \item 7/7 theory-derived predictions PASS.
 \end{itemize}
 At TinyStories scale, the $G$-invariant projection achieves $\rho > 0.97$, and mean ablation produces the same invariant structure ($\rho_{G\text{-inv}} > 0.97$) despite disagreeing with weight zeroing on raw scores ($\rho \approx 0.5$).
 
-\noindent\textbf{For regulators.} SHAP-based proxy discrimination audits are provably unreliable under collinearity: the audit conclusion is a coin flip across training seeds. This constitutes a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii). The instability disclosure template in Section~9 provides ready-to-use language for model documentation.
+\noindent\textbf{Regulatory implications.} If the Rashomon conditions hold for a deployed model, single-model SHAP audits for proxy discrimination are mathematically unreliable---the audit conclusion changes across training seeds. A regulator might reasonably treat undisclosed instability as a foreseeable risk under frameworks such as EU AI Act Art.~13(3)(b)(ii), though this legal assessment requires domain expertise beyond the scope of this paper.
 
-\noindent\textbf{Verification.} The framework is mechanically verified in Lean~4: 368 theorems from 6 axioms with 0 \texttt{sorry} across 59 files. The formalization caught three inconsistencies (two logical and one type mismatch) that survived informal review.
+\noindent\textbf{Verification.} The framework is mechanically verified in Lean~4 (368 theorems, 6 axioms, 0 \texttt{sorry}, 59 files; 139 with multi-step proofs). The formalization served as a bug-finding methodology, catching two logical inconsistencies and one type mismatch that survived informal review.
 
 \noindent\textbf{Code.}
 \begin{sloppypar}
@@ -200,8 +194,7 @@ for j, k in pairs:
 \section{Introduction}
 \label{sec:intro}
 
-Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes---in 68\% of 77 public datasets. Train 10 GPT-2-small models from scratch. Run activation patching. The ``most important attention head'' changes---32 distinct top-5 rankings from 10 seeds, with 8 different \#1 components. Most practitioners assume this is an engineering problem. We prove it is a mathematical impossibility at both levels---input features and internal components---arising from a single theorem with zero domain axioms. For interchangeable elements, ranking is literally a coin flip.
-Beyond the impossibility, we characterize the complete design space: exactly two families of attribution methods exist, DASH is Pareto-optimal on the stable branch, and no method lies outside this dichotomy. The resolution at both levels is the stable projection (orbit averaging): DASH for features, $G$-invariant projection for circuits.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes---in 68\% of 77 public datasets. Train 10 GPT-2-small models from scratch. Run activation patching. The ``most important attention head'' changes---32 distinct top-5 rankings from 10 seeds, with 8 different \#1 components. Most practitioners assume this is an engineering problem. We show it is a mathematical inevitability: faithfulness, stability, and completeness conflict under the Rashomon property. We characterize the \emph{complete design space}: exactly two families of attribution methods exist, no third option is possible, and \DASH{} (the orbit average under the natural symmetry group) is the optimal equivariant estimator on the stable branch by classical invariant decision theory.
 
 This document is the complete reference: impossibility theorem, quantitative bounds, constructive resolution, three Symmetric Bayes Dichotomy (SBD) instances, diagnostics, experiments across 11 datasets and 3 GBDT implementations, component-level experiments on GPT-2-small (general importance, IOI circuits, and SAE stability), TinyStories multi-scale validation, financial case studies, and a 368-theorem Lean~4 formalization.
 
@@ -210,8 +203,8 @@ Consider a credit model with annual income and debt-to-income ratio
 (typically $|\rho| \approx 0.7$--$0.85$ in lending data). Across 20 retrains with different seeds, SHAP
 can report income as the top driver roughly half the time and DTI the other half.
 A compliance report citing income as the primary adverse factor
-is a coin flip---the same model architecture, same data, different
-random seed. Under the Equal Credit Opportunity Act (ECOA), the lender's adverse action notice
+is unstable---the same model architecture, same data, different
+random seed produces a different answer. Under the Equal Credit Opportunity Act (ECOA), the lender's adverse action notice
 changes based solely on the training randomness.
 
 \begin{sloppypar}
@@ -719,7 +712,7 @@ By first-mover surjectivity and DGP symmetry, each feature in a group of size $m
 \textbf{Part (v).} When ties are broken uniformly, $\Pr[j > k \mid \text{tie}] = 1/2$. The effective $\Pr[j > k] = 1/m + (1/2)(m-2)/m = 1/2$ by algebra. Two independent draws disagree with probability $2 \cdot (1/2) \cdot (1/2) = 1/2$.
 \end{proof}
 
-For $m = 2$, ranking collinear pairs is literally a coin flip. For $m > 2$ without tie-breaking, most model pairs produce ties, with flips at rate $2/m^2$. But once ties are broken (as required for a complete ranking), symmetry forces the flip rate back to $1/2$. The impossibility is \emph{exactly} as severe for every within-group pair, regardless of $m$.
+For $m = 2$ with exact DGP symmetry ($\mu_j = \mu_k$), the flip rate is $1/2$. For $m > 2$ without tie-breaking, most model pairs produce ties, with flips at rate $2/m^2$. But once ties are broken (as required for a complete ranking), symmetry forces the flip rate back to $1/2$. The impossibility is \emph{exactly} as severe for every within-group pair, regardless of $m$.
 
 \subsection{Lasso: Infinite Violation}
 \label{sec:lasso}
@@ -1484,7 +1477,7 @@ If features $j$ (protected proxy) and $k$ (non-protected) satisfy collinearity (
 \[
     \Pr[\text{audit flags proxy}] = \frac{1}{2} \pm \varepsilon_{\text{BE}}.
 \]
-The audit conclusion is a coin flip. Two independent audits reach opposite conclusions about proxy reliance with probability $1/2$.
+Under exact DGP symmetry, two independent audits reach opposite conclusions about proxy reliance with probability $1/2$.
 \end{theorem}
 
 \begin{proof}
@@ -1492,9 +1485,9 @@ Direct corollary of the Attribution Impossibility applied to the pair $(j, k)$. 
 \end{proof}
 
 \paragraph{Implications for AI governance.}
-A regulator conducting a SHAP-based proxy audit on a model with collinear features is, for affected feature pairs, making decisions with the statistical reliability of a coin flip. Two auditors examining the \emph{same model architecture trained on the same data} with different random seeds may reach opposite conclusions about whether the model relies on a protected attribute.
+When features correlated with a protected attribute have similar importance to non-protected features, two auditors examining the \emph{same model architecture trained on the same data} with different random seeds may reach opposite conclusions about proxy reliance.
 
-Under the EU AI Act Art.~13(3)(b)(ii), providers must disclose ``known and foreseeable circumstances'' which may lead to risks to health, safety or fundamental rights. Our theorem establishes that this includes: ``SHAP-based proxy audits are unreliable for features that are collinear with both the protected attribute and a non-protected feature.'' The remedy is ensemble auditing: train $M$ models and use \DASH{} consensus.
+If the Rashomon conditions hold for a deployed model, a regulator might reasonably treat undisclosed instability as a foreseeable risk under frameworks such as EU AI Act Art.~13(3)(b)(ii); however, this legal assessment requires domain expertise beyond the scope of this paper. The mathematical remedy is ensemble auditing: train $M$ models and use \DASH{} consensus.
 
 \paragraph{Worked example: adverse action notices.}
 Consider a credit model with two collinear features: \emph{income} and \emph{debt-to-income ratio} (DTI), with $|\rho| \approx 0.85$. Under ECOA (Regulation~B), lenders must disclose the principal reasons for adverse action. With a single model:
@@ -2106,7 +2099,7 @@ The results at GPT-2 scale are striking:
 \begin{itemize}
   \item \textbf{Raw agreement near chance}: $\rho_{\text{full}} = 0.277$ is barely above zero---full component importance vectors are nearly uncorrelated across training seeds. This is \emph{worse} than TinyStories ($\rho \approx 0.55$) because GPT-2 has 12 heads per layer (larger symmetric groups, more permutation freedom).
   \item \textbf{$G$-invariant lift}: After orbit averaging, $\rho_{G\text{-inv}} = 0.873$---a $3.2\times$ lift. The shared structure is real but hidden by within-layer permutation noise.
-  \item \textbf{Within-layer flip = coin flip}: $W_{\text{flip}} = 0.500$ [0.482, 0.517], exactly as predicted. Within each layer, ``which head matters most?'' is determined by the random seed, not by the data.
+  \item \textbf{Within-layer flip near 50\%}: $W_{\text{flip}} = 0.500$ [0.482, 0.517], as predicted for symmetric components. Within each layer, ``which head matters most?'' is determined by the random seed, not by the data.
   \item \textbf{Between-group stability}: $B_{\text{flip}} = 0.014$---heads almost never outrank MLP layers across seeds. The between- vs.\ within-group separation is massive (Cohen's $d = 19.2$).
   \item \textbf{Ranking lottery}: 32 distinct components appear in the top-5 across just 10 seeds, with 8 different \#1 components. Claiming ``component X is most important'' based on one training run is an artifact.
 \end{itemize}
@@ -2150,7 +2143,7 @@ The IOI results are more extreme than general importance:
 \begin{itemize}
   \item \textbf{Raw agreement near zero}: $\rho = 0.158$ means IOI-specific importance vectors are nearly uncorrelated. The ``IOI circuit'' identified in one model has almost no relation to the circuit in another model trained on the same data.
   \item \textbf{$G$-invariant lift moderate}: $\rho_{G\text{-inv}} = 0.538$ is lower than for general importance (0.873). Task-specific circuits show more idiosyncratic structure that orbit averaging cannot fully recover---consistent with there being less stable between-layer signal to extract.
-  \item \textbf{Within-layer flip = coin flip}: $W_{\text{flip}} = 0.499$, confirming the impossibility at the task-specific level.
+  \item \textbf{Within-layer flip near 50\%}: $W_{\text{flip}} = 0.499$, confirming the impossibility at the task-specific level.
   \item \textbf{32 distinct top-5 rankings}: Every seed produces a different set of ``most important'' IOI components. Reporting a specific IOI circuit from a single training run is reporting an artifact.
 \end{itemize}
 
