@@ -2285,13 +2285,21 @@ The decoder maps $n$-dimensional feature space to $d$-dimensional data space. It
 \paragraph{Empirical validation of the capacity bound.}
 The theoretical ceiling is $C \leq 12.5\%$ (768 reproducible dimensions out of 6{,}144). Our empirical observation: matched importance $\rho = 0.500$ on 500 features gives effective reproducibility $C_{\text{eff}} \approx 500 \times 0.500^2 / 6{,}144 \approx 2.0\%$---well below the theoretical ceiling. The gap (2\% observed vs.\ 12.5\% theoretical) indicates that current matching algorithms recover only ${\sim}16\%$ of the maximum possible reproducible structure.
 
-\paragraph{The correct resolution for SAEs: PC projection.}
-The capacity theorem implies that the natural basis for the reproducible subspace $V^G$ is \textbf{not} the SAE's feature directions (which are seed-dependent) but the data's principal directions (which are seed-invariant). The correct resolution: project feature importance onto the data PCs and report importance in that basis. This is the SAE analogue of per-layer averaging for attention heads:
+\paragraph{Why PCA fails as a resolution (empirical validation).}
+A natural proposal: use PCA on importance vectors to discover the reproducible subspace data-driven. We test this on the GPT-2 importance data (10 seeds, 156 components). Result: PCA achieves Spearman $\rho = -0.031$ (worse than raw $= 0.277$), while the $G$-invariant projection achieves $\rho = 0.833$. PCA \textbf{actively hurts}.
+
+Why? PCA finds directions of \emph{maximum variance}---which are exactly the \emph{within-layer permutation noise} (PC-1 loads 95\% on layer~0 heads, capturing which L0 head got lucky). The $G$-invariant projection averages \emph{out} this noise. They are literally opposite operations: PCA maximizes the signal PCA can explain (variance), but the variance IS the instability.
+
+Leave-one-out validation confirms: predicting a held-out seed's G-invariant importance from the other 9 seeds gives $\rho = 0.860$. Predicting the held-out raw importance from the other 9 raw means gives only $\rho = 0.212$. The $G$-invariant projection identifies structure that \emph{generalizes} to unseen seeds; raw averaging does not.
+
+\paragraph{The resolution requires group knowledge.}
+This validates the core theoretical claim: \emph{resolution quality is proportional to knowledge of the symmetry group.} Data-driven methods (PCA) actively fail because they identify the symmetry noise as the dominant signal. The correct resolution must KNOW the group (or a proxy): for heads, average within layers; for SAE features, project onto the data's principal components (which are seed-invariant and form a natural basis for $V^G$).
+
 \begin{itemize}
-  \item \textbf{Heads}: average importance within each layer $\to$ $L$-dimensional invariant ($L = 12$ for GPT-2)
-  \item \textbf{SAE features}: project onto data PCs $\to$ $d$-dimensional invariant ($d = 768$)
+  \item \textbf{Heads}: average importance within each layer $\to$ $L$-dimensional invariant ($L = 12$ for GPT-2). Requires knowing the layer structure.
+  \item \textbf{SAE features}: project onto data PCs $\to$ $d$-dimensional invariant ($d = 768$). Requires computing the data covariance (seed-invariant). Untested empirically (requires raw decoder weights not available locally).
 \end{itemize}
-Both sacrifice feature-level granularity for stability---exactly the faithfulness-completeness tradeoff the Design Space Theorem predicts.
+Both sacrifice feature-level granularity for stability---exactly the faithfulness-completeness tradeoff the Design Space Theorem predicts. The open question for SAEs is whether the data-PC resolution achieves a useful level of reproducibility in practice.
 
 \subsection{Explanation Uncertainty Bound (Quantitative Bilemma)}
 \label{sec:quantitative-bilemma}
