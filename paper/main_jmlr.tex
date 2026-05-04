@@ -14,7 +14,7 @@
 \newcommand{\DASH}{\textsc{Dash}}
 \newcommand{\GBDT}{\textsc{GBDT}}
 
-\title[The Attribution Impossibility]{The Attribution Impossibility:\\{\large No Feature Ranking Is Faithful, Stable, and Complete Under Collinearity}}
+\title[The Attribution Impossibility]{The Attribution Impossibility:\\{\large No Importance Ranking Is Faithful, Stable, and Complete Under Symmetry}}
 
 \author{\Name{Drake Caraker} \Email{drakecaraker@gmail.com}\\
   \addr Independent Researcher
@@ -40,11 +40,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-Feature rankings from SHAP change when you retrain the model---in 68\% of 77 public datasets (under the standard workflow; model variation accounts for ${\sim}63\%$ of the total), the ``most important'' feature flips with the random seed. We prove this is not an engineering problem but a mathematical impossibility: no feature ranking can be simultaneously faithful (reflecting the model), stable (consistent across retrains), and complete (ordering all features) when features are collinear with similar true importance. The impossibility is quantitative, with architecture-discriminating bounds: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting and is infinite for Lasso, while random forests converge. The achievable design space consists of exactly two families; \DASH{} ensemble averaging is Pareto-optimal among unbiased aggregations on the stable branch, achieving equitable attributions with Cauchy--Schwarz-optimal variance. The impossibility, design space, and resolution are mechanically verified in Lean~4 (357 theorems, 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines)---the first formally verified impossibility result in explainable AI.
+Importance rankings---of input features (SHAP) and internal components (activation patching)---change when you retrain the model. In 68\% of 77 public datasets, the ``most important'' feature flips with the random seed. Ten GPT-2-small models trained from scratch produce 32 distinct top-5 component rankings with 8 different \#1 components---the ``most important attention head'' is a coin flip ($W_{\text{flip}} = 0.500$). We prove this is not an engineering problem but a mathematical impossibility: no importance ranking can be simultaneously faithful, stable, and complete when interchangeable elements exist under statistical dependence. The core proof requires zero domain axioms.
+
+The impossibility is quantitative: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, and converges for random forests. At the component level, the $G$-invariant projection (orbit averaging over per-layer permutation symmetry) lifts agreement from $\rho = 0.277$ to $0.873$ on GPT-2 (Cohen's $d = 19.2$) and from $0.55$ to $> 0.97$ on TinyStories. The achievable design space consists of exactly two families; the stable projection (\DASH{} for features, $G$-invariant for circuits) is Pareto-optimal on the stable branch. The framework is verified in Lean~4 (358 theorems, 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines)---to our knowledge, the first formally verified impossibility in explainable AI.
 \end{abstract}
 
 \begin{keywords}
-Feature attribution impossibility, faithful stable complete, Shapley value stability, Rashomon effect, ensemble explanation methods, formal verification (Lean 4)
+Attribution impossibility, faithful stable complete, Shapley value stability, mechanistic interpretability, Rashomon effect, ensemble explanation methods, formal verification (Lean 4)
 \end{keywords}
 
 \section*{Notation}
@@ -80,9 +82,9 @@ $\sigma_{jk}$ & Attribution noise: $\sqrt{\Var(\varphi_j(f) - \varphi_k(f))}$ \\
 \section{Introduction}
 \label{sec:intro}
 
-Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The `most important feature' changes---in 68\% of 77 public datasets (under the standard workflow; on Breast Cancer, \S~\ref{sec:experiments} isolates the model-only component at approximately 63\% of the total variation). Before this work, practitioners assumed this was an engineering problem. We prove it is a mathematical impossibility---and we provide the complete theory: an impossibility theorem, quantitative architecture-discriminating bounds, a constructive resolution with provable optimality, and machine verification in Lean~4.
+Train a gradient-boosted model on your data. Compute SHAP values. Retrain with a different random seed. The ``most important feature'' changes---in 68\% of 77 public datasets. Train 10 GPT-2-small models from scratch. Run activation patching. The ``most important attention head'' changes---32 distinct top-5 rankings from 10 seeds. Before this work, practitioners assumed this was an engineering problem. We prove it is a mathematical impossibility at both levels---input features and internal components---arising from a single theorem with zero domain axioms. We provide the complete theory: an impossibility theorem, quantitative bounds, a constructive resolution (the stable projection: \DASH{} for features, $G$-invariant projection for circuits), and machine verification in Lean~4.
 
-For $m{=}2$ with exactly symmetric features, ranking collinear pairs reduces to a coin flip.
+For interchangeable elements ($m{=}2$ symmetric features or $k$ heads within a layer), ranking reduces to a coin flip.
 
 The classical multicollinearity concern is about estimation variance. Our result is qualitatively different: it concerns \emph{ranking impossibility}. Even with perfect estimates, the ranking of symmetric features is determined by the training seed, not by the data.
 
@@ -126,7 +128,7 @@ The formalization also proved valuable beyond certification: during translation 
     \item \textbf{Architecture discrimination}: attribution ratios for \GBDT{} ($1/(1{-}\rho^2)$ Lean-verified; $1/(1{-}\alpha\rho^2)$ empirically corrected), Lasso ($\infty$), and random forests ($O(1/\sqrt{T})$, informal).
     \item \textbf{Constructive relaxation via \DASH{}}: ensemble averaging restores equitable attributions (derived for balanced ensembles) with variance $O(1/M)$, sacrificing within-group completeness.
     \item \textbf{The symmetric Bayes dichotomy} (\S~\ref{sec:sbd}): a proof technique from invariant decision theory \citep{lehmann2005testing}, demonstrated across three structurally distinct instances (feature attribution, model selection, and causal discovery under Markov equivalence) with different symmetry groups.
-    \item \textbf{Machine-verified proof}: formalized in Lean~4 (357 type-checked theorems from 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (archived at \url{https://doi.org/10.5281/zenodo.19468379}).\linebreak The axiom system is consistent: we construct an explicit model satisfying all 6 axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and~numerically.
+    \item \textbf{Machine-verified proof}: formalized in Lean~4 (358 type-checked theorems from 6 axioms, 0~\texttt{sorry}; 139 with multi-step proofs of ${\geq}5$ tactic lines), publicly available at \url{https://github.com/DrakeCaraker/dash-impossibility-lean} (archived at \url{https://doi.org/10.5281/zenodo.19468379}).\linebreak The axiom system is consistent: we construct an explicit model satisfying all 6 axioms simultaneously, both in Lean (\texttt{Consistency.lean}) and~numerically.
 \end{enumerate}
 
 The core impossibility proof is deliberately simple---a four-line contradiction from the Rashomon property.
@@ -188,8 +190,11 @@ The model architectures we analyze were introduced by \citet{breiman2001random} 
 \citet{chouldechova2017fair} and \citet{kleinberg2017inherent} prove calibration, balance, and equal false positive rates cannot coexist.
 Our trilemma (faithfulness, stability, completeness) is structurally analogous.
 
+\paragraph{Mechanistic interpretability and circuit multiplicity.}
+\citet{chughtai2023toy} show that independently trained networks learn distinct internal representations for the same group operation. \citet{meloux2025circuits} find 85 distinct valid circuits with zero error for XOR. Our component-level results (Section~\ref{sec:component-level}) extend this line: the instability in circuit importance is mathematically inevitable under architectural symmetry, and the $G$-invariant projection provides a principled resolution.
+
 \paragraph{Formal verification for ML.}
-\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning theory in Lean~4 \citep{demoura2021lean4} using Mathlib \citep{mathlib2020}. Our formalization is the first formally verified impossibility result in explainable AI.
+\citet{nipkow2009social} formalized Arrow's theorem in Isabelle/HOL; \citet{zhang2026statistical} formalized statistical learning theory in Lean~4 \citep{demoura2021lean4} using Mathlib \citep{mathlib2020}. Our formalization is, to our knowledge, the first formally verified impossibility result in explainable AI.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. SETUP
@@ -1366,7 +1371,116 @@ Full stochasticity & 80\% & 79\% & 67\% \\
 Under standard regularization, 45\% of applicants receive a different explanation category depending on the model. The deterministic control (0\% for boosted models) confirms the instability is from model multiplicity. A single applicant can receive 6 different top-feature labels across 30 seeds. \DASH{} consensus at $M = 25$ achieves 92\% agreement. The subsample sensitivity on Breast Cancer confirms the instability persists at every stochastic setting: 24 distinct top-3 rankings at \texttt{subsample=0.8}, 17 at 0.95, 1 only at 1.0 (deterministic).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% 9. DIAGNOSTICS
+%% COMPONENT-LEVEL ATTRIBUTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Component-Level Attribution: Circuits Under Symmetry}
+\label{sec:component-level}
+
+The impossibility theorem applies not only to input features but to \emph{any} importance ranking of interchangeable elements under the Rashomon property. Circuit importance via activation patching IS attribution---attributing importance to internal components rather than input features. Architectural symmetry ($G = \prod_{\ell=1}^{L} S_{k_\ell}$, permuting $k_\ell$ attention heads within each layer $\ell$) provides the interchangeability that generates Rashomon. The same theorem predicts the same instability and admits the same resolution: orbit averaging via the $G$-invariant projection (Reynolds operator).
+
+\subsection{TinyStories: Multi-Scale Validation}
+\label{sec:tinystories}
+
+We train 10 transformers from independent random seeds on TinyStories~\citep{eldan2023tinystories} at two scales: Config~A (4 layers, 4 heads, $d{=}256$, $n{=}20$ components) and Config~B (6 layers, 8 heads, $d{=}512$, $n{=}54$ components). A third configuration (Config~C: GPT-2 fine-tuned from a shared checkpoint, 12 layers, 12 heads) serves as a non-Rashomon boundary condition. Component importance is measured by activation patching (weight zeroing). Seven theory-derived predictions are evaluated; 7/7 pass for Configs~A and~B, 4/7 for Config~C (correctly predicted).
+
+\begin{table}[ht]
+\centering
+\caption{TinyStories component-level attribution stability. $\rho_{\text{full}}$: raw Spearman. $\rho_{G\text{-inv}}$: after orbit averaging. $W_{\text{flip}}$: within-layer head flip rate.}
+\label{tab:tinystories}
+\small
+\begin{tabular}{lccc}
+\toprule
+& \textbf{Config A} & \textbf{Config B} & \textbf{Config C} \\
+& Small (4L/4H) & Medium (6L/8H) & GPT-2 (12L/12H) \\
+\midrule
+$\rho_{\text{full}}$ [95\% CI] & 0.565 [0.527, 0.603] & 0.540 [0.516, 0.565] & 0.993 [0.993, 0.994] \\
+$\rho_{G\text{-inv}}$ [95\% CI] & 0.972 [0.966, 0.979] & 0.982 [0.977, 0.986] & 0.999 [0.999, 1.000] \\
+\midrule
+$W_{\text{flip}}$ [95\% CI] & 0.496 [0.467, 0.526] & 0.489 [0.478, 0.500] & 0.043 [0.041, 0.045] \\
+Cohen's $d$ & 5.389 & 11.939 & 9.354 \\
+Split-half reliability & 0.991 & 0.960 & 0.878 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Raw importance vectors are only moderately correlated ($\rho \approx 0.55$), but after the $G$-invariant projection they are near-perfect ($\rho > 0.97$). Within-layer head flip rates are at chance ($W_{\text{flip}} \approx 0.50$). All four layer-0 heads appear as the top-ranked head across 10 seeds, realizing the full $S_4$ permutation symmetry. Controls: split-half reliability is 0.991 (A) and 0.960 (B)---far exceeding between-model agreement; the $G$-invariant projection achieves the 100th percentile among 1{,}000 random projections; permutation test $p < 0.001$ at both scales.
+
+\paragraph{Method robustness.}
+Weight zeroing and mean ablation disagree on raw importance (cross-method $\rho \approx 0.5$) but agree on the orbit-averaged structure ($\rho_{G\text{-inv}} > 0.97$). The Reynolds operator absorbs not only seed-to-seed but also method-to-method variation.
+
+\subsection{GPT-2-Small From Scratch}
+\label{sec:gpt2}
+
+We train 10 GPT-2-small models (12 layers, 12 heads, 124M parameters) from scratch on OpenWebText with independent random seeds (${\sim}3$B tokens each, bfloat16, cosine LR schedule). Component importance is measured by weight zeroing across all $n{=}156$ components. Seven theory-derived predictions are evaluated with SHA-256 hash verification.
+
+\begin{table}[ht]
+\centering
+\caption{GPT-2-small from scratch: 10 seeds, 156 components. All 7/7 predictions PASS.}
+\label{tab:gpt2}
+\small
+\begin{tabular}{lc}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+PPL mean (CV\%) & 23.48 (0.36\%) \\
+$\rho_{\text{full}}$ [range] & 0.277 [0.121, 0.435] \\
+$\rho_{G\text{-inv}}$ [range] & 0.873 [0.775, 0.964] \\
+$W_{\text{flip}}$ [95\% CI] & 0.500 [0.482, 0.517] \\
+$B_{\text{flip}}$ (head vs.\ MLP) & 0.014 [0.008, 0.019] \\
+Cohen's $d$ & 19.2 \\
+Distinct top-5 / \#1 & 32 / 8 \\
+Predictions & 7/7 PASS \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At GPT-2 scale, raw importance vectors are nearly uncorrelated ($\rho = 0.277$)---\emph{worse} than TinyStories because 12 heads per layer create larger symmetric groups. The $G$-invariant projection recovers $\rho = 0.873$ ($3.2\times$ lift, Cohen's $d = 19.2$). Within-layer flip $= 0.500$ is exactly a coin flip. The 32 distinct top-5 rankings from 10 seeds confirm that ``the most important component'' is a seed artifact.
+
+The random projection test ($p = 1.0$) confirms dimensionality reduction alone achieves high agreement; the random grouping test ($p = 0.001$) validates that the layer structure specifically is critical.
+
+\subsection{IOI Circuit: The Component-Level Ranking Lottery}
+\label{sec:ioi}
+
+On 200 Indirect Object Identification (IOI) prompts, the 10 GPT-2-small models achieve mean accuracy 72.1\% (range: 63\%--84\%; pretrained GPT-2: 99.5\%). Task-specific component importance shows:
+
+\begin{center}
+\small
+\begin{tabular}{lc}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+Raw agreement $\rho$ [range] & 0.158 [$-0.089$, 0.284] \\
+$G$-invariant $\rho$ [range] & 0.538 [0.141, 0.860] \\
+Within-layer flip & 0.499 \\
+Distinct top-5 & 32 components \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+IOI-specific importance is even less stable than general importance ($\rho = 0.158$ vs.\ $0.277$). The ``IOI circuit'' identified in one model has almost no relation to the circuit in another model trained on the same data. The $G$-invariant lift is moderate ($\rho = 0.538$), consistent with task-specific circuits having more idiosyncratic between-layer structure.
+
+\subsection{SAE Feature Stability}
+\label{sec:sae}
+
+Ten TopK Sparse Autoencoders ($d_{\text{SAE}}{=}6{,}144$, $k{=}48$) trained on layer-6 activations of a single frozen GPT-2-small model show that learned dictionary features are not reproducible: mean max cosine $= 0.394 \pm 0.002$ ($2.6\times$ random but not reliable), and importance Spearman after optimal Hungarian matching $= 0.500$ (chance-level). Under our experimental conditions (TopK, layer 6, 50K steps), SAE features do not provide a reproducible basis for interpretability. This is an empirical finding; larger dictionaries, different architectures, or better matching may improve stability.
+
+\subsection{Mechanistic Interpretability Bilemma}
+\label{sec:mech-interp}
+
+Circuit decomposition spaces are binary (each component is either part of the circuit or not), making the bilemma apply with full force: faithful + stable is impossible even without completeness.
+
+\begin{theorem}[Mechanistic Interpretability Bilemma]\label{thm:mech-interp}
+For any two functionally equivalent neural networks with incompatible circuit decompositions, no explanation method can be simultaneously faithful and stable.
+\end{theorem}
+
+\noindent The resolution is reporting \emph{equivalence classes} of valid circuits---the computational structure shared across all valid decompositions (the circuit analogue of CPDAGs for causal discovery). The formal theorem is machine-verified in \texttt{MechInterp.lean} with zero custom axioms.
+
+\paragraph{Safety implications.}
+Interpretability-based safety cases that depend on identifying ``the circuit'' for a behavior are subject to this impossibility. A circuit found in one training run may not exist in a functionally equivalent run. Safety claims require verification across multiple equivalent networks or explicit qualification as instance-specific.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% DIAGNOSTICS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Diagnostics}
@@ -1770,9 +1884,9 @@ Zero unstable pairs despite correlated features ($Z > 36$ for all pairs), confir
 
 \noindent All have $Z > 36$, confirming distinguishable importance. Not every correlated dataset exhibits instability. The diagnostic distinguishes datasets where instability is a genuine concern from those where it is not.
 
-\subsection{LLM Attention Attribution Instability}
+\subsection{LLM Attribution Instability}
 
-Fine-tuning DistilBERT on SST-2 with different seeds produces 14.5\% unstable adjacent-token attention pairs. This is a \emph{proxy experiment only}: attention weights are not feature attributions in the Shapley value sense and do not satisfy the axioms in our framework. The observed instability may reflect a distinct phenomenon (attention weight sensitivity to initialization) rather than the Rashomon-driven impossibility we prove. Full generalization to LLM attribution methods remains an open problem.
+Fine-tuning DistilBERT on SST-2 with different seeds produces 14.5\% unstable adjacent-token attention pairs. This is a \emph{proxy experiment only}: attention weights are not feature attributions in the Shapley value sense. The formal component-level impossibility and its full-scale empirical confirmation are in Section~\ref{sec:component-level}, where activation patching on 10 GPT-2-small models trained from scratch demonstrates within-layer flip rate $= 0.500$ with the $G$-invariant projection as the resolution.
 
 \subsection{Replication Study: Published SHAP Rankings}
 
@@ -1982,7 +2096,7 @@ DASH breakdown & Robust to contaminated ensembles & \texttt{dash\_breakdown\_poi
 
 \subsection{Proof Architecture}
 
-The formalization comprises 58 Lean~4 files with 6 axioms and 357 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 139 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
+The formalization comprises 58 Lean~4 files with 6 axioms and 358 type-checked theorems and lemmas (0~\texttt{sorry}). Of these, 139 require multi-line proofs ($\geq$5 tactic lines); the remainder are definitions, wrappers, and single-step applications.
 The core impossibility (\textsf{attribution\_impossibility}) depends on zero axioms---only the Rashomon property as hypothesis.
 The DASH resolution (\textsf{consensus\_equity}) depends on the \textsf{attribution\_sum\_symmetric} theorem (derived); the variance convergence depends on \textsf{consensus\_variance\_bound} (also~derived).
 
@@ -2053,7 +2167,7 @@ The paper uses the Lean-derived bound $\rho_S \leq 1 - 3m^2/(P^3{-}P)$. The tigh
 
 \subsection{Proof Depth Distribution}
 
-Of 357 type-checked declarations: 139 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are listed below.
+Of 358 type-checked declarations: 139 require multi-step proofs (${\geq}5$ tactic lines), 21 require ${\geq}10$ lines, and 5 require ${\geq}20$ lines. The five deepest proofs are listed below.
 
 \begin{center}
 \small
@@ -2103,7 +2217,7 @@ The three-layer verification (SymPy algebra, Lean type-checking, empirical valid
 
 \begin{table}[t]
 \centering
-\caption{Lean file cross-reference (58 files, 357 theorems, 6 axioms).}
+\caption{Lean file cross-reference (58 files, 358 theorems, 6 axioms).}
 \label{tab:lean-crossref}
 \scriptsize
 \begin{tabular}{@{}p{3.8cm}ll@{}}
@@ -2190,7 +2304,7 @@ For batch pipelines, training $M{=}25$ models is feasible. For real-time explana
 In a survey of 77 public datasets, 92\% have feature pairs with $|\rho| > 0.5$ and 68\% exhibit attribution instability under the standard SHAP workflow (93\%, CI: [81\%, 98\%], for $P \geq 20$); the model-only component accounts for approximately 63\% of the total variation on Breast Cancer (\S~\ref{sec:experiments})---the impossibility is a practical reality. We argue that our theorem identifies a ``known and foreseeable circumstance'' under EU AI Act Art.~13(3)(b)(ii) \citep{euaiact2024}.
 The consequences are concrete: hospitals may invest in wrong interventions, data scientists may fix the wrong feature, and published studies may report artifacts of specific training runs.
 The impossibility has direct consequences for fairness auditing (Theorem~\ref{thm:fairness-audit}): single-model SHAP audits for proxy discrimination are provably unreliable under collinearity.
-Preliminary evidence suggests the impossibility extends to mechanistic interpretability: 10 independently grokked transformers on modular addition (all 100\% accuracy) agree on only 36\% of the top-3 circuit components by activation patching importance (min pairwise Spearman $= -0.18$).
+The impossibility extends to mechanistic interpretability (Section~\ref{sec:component-level}): 10 GPT-2-small models trained from scratch produce 32 distinct top-5 component rankings with within-layer flip rate $= 0.500$. At TinyStories scale, all four layer-0 heads appear as \#1 across seeds (full $S_4$ realization). The $G$-invariant projection provides the same resolution: orbit averaging over per-layer permutation symmetry lifts $\rho$ from 0.277 to 0.873 on GPT-2 and from 0.55 to 0.97 on TinyStories.
 
 \paragraph{Rashomon set vs.\ deployed model.}
 The impossibility characterizes the Rashomon set, not a single deployed model. A fixed pipeline with a fixed seed produces a deterministic, reproducible ranking. The instability arises upon retraining, auditing, or model comparison---all routine in regulated settings.
@@ -2205,7 +2319,7 @@ The impossibility characterizes the Rashomon set, not a single deployed model. A
 The impossibility has a geometric interpretation: near-singular Fisher information creates ridges in the loss landscape along which feature importance redistributes without changing model quality. The same flatness that makes optimization easy makes attribution hard.
 
 \paragraph{Named techniques.}
-This paper contributes three reusable techniques: (1) the \emph{Rashomon reduction}---reducing a design-space question to a model-multiplicity check; (2) the \emph{FIM-to-Rashomon bridge}---connecting Fisher information rank deficiency to the Rashomon property; and (3) the \emph{symmetric Bayes dichotomy}---the general two-families theorem for symmetric decision problems.
+This paper contributes four reusable techniques: (1) the \emph{Rashomon reduction}---reducing a design-space question to a model-multiplicity check; (2) the \emph{FIM-to-Rashomon bridge}---connecting Fisher information rank deficiency to the Rashomon property; (3) the \emph{symmetric Bayes dichotomy}---the general two-families theorem for symmetric decision problems; and (4) the \emph{stable projection}---orbit averaging (Reynolds operator) as the minimum-information-loss resolution at both input and component levels.
 
 \paragraph{Proof status transparency and axiom stratification.}
 The formalization uses 6 axioms total, but not all results require all axioms. Six former axioms (split-count function, 4 split-count properties, and the query-complexity constant) are now definitions or derived theorems. The Lean type-checker's \texttt{\#print axioms} command verifies exact dependencies:
@@ -2217,7 +2331,7 @@ The formalization uses 6 axioms total, but not all results require all axioms. S
 \end{itemize}
 This stratification directly addresses the proportionality axiom's empirical variance (CV $\approx 0.35$--$0.66$): the axiom is unnecessary for the impossibility and ratio bound, which depend only on split-count structure.
 
-The following are fully formalized in Lean (357 theorems, 0 \texttt{sorry}, 58 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, and the Pareto dominance of DASH. The Z-test characterization, information loss analysis, and multi-dataset validation are empirical.
+The following are fully formalized in Lean (358 theorems, 0 \texttt{sorry}, 58 files): the Design Space Theorem, the symmetric Bayes dichotomy, all three impossibility instances, the conditional attribution impossibility, the Gaussian FIM impossibility and flip rate formula, the fairness audit impossibility, the intersectional fairness compounding, the exact GBDT flip rate, DASH variance optimality, the Rashomon inevitability, the flip rate robustness (Lipschitz continuity in $\rho$), the mutual information generalization, the unfaithfulness/path-convergence results, the unfaithfulness probability of exactly $1/2$, the Bayes-optimality of ties, the consensus variance $\sigma^2/M$ from independence, the binary quantizer fraction $2/\pi$, the Chebyshev query complexity bound, the loss-preserving Rashomon construction, the Pareto dominance of DASH, and the mechanistic interpretability bilemma (derived Rashomon, zero custom axioms). The Z-test characterization, information loss analysis, multi-dataset validation, and component-level experiments (GPT-2, TinyStories, IOI, SAE) are empirical.
 
 \paragraph{Approximate faithfulness--stability tradeoff.}
 A natural question is whether relaxing exact faithfulness helps. Define $\alpha$-faithfulness: $\Pr_f[\text{sign}(\varphi_j(f) - \varphi_k(f)) = \text{sign}(\pi(j) - \pi(k))] \geq \alpha$. Under the Rashomon property with symmetric DGP, any $\alpha$-faithful stable ranking satisfies $\alpha \leq 1/2$. The proof is immediate: by DGP symmetry, $\Pr[\varphi_j(f) > \varphi_k(f)] = 1/2$, and a stable ranking fixes one direction, so it agrees with at most half the models. A coin flip achieves $\alpha = 1/2$; the stable ranking is no better than random for symmetric feature pairs.
@@ -2228,13 +2342,13 @@ For $m$ features in a group under full DGP symmetry, the attribution ranking is 
 The flip rate prediction $\Phi(-\text{SNR})$ is Lipschitz-continuous in the correlation: if $|\rho_1 - \rho_2| \leq \varepsilon$, the predicted flip rates change by at most $C_\Phi \cdot L \cdot \varepsilon$, where $C_\Phi = 1/\sqrt{2\pi}$ is the Lipschitz constant of the standard normal CDF and $L$ is the Lipschitz constant of the SNR function. This is formalized in Lean (\texttt{RobustnessLipschitz.lean}) as a composition of Lipschitz functions. Simulation on Breast Cancer confirms the bound.
 
 \paragraph{Open problems.}
-The Bayes-optimality half of the Design Space is proved but not in Lean (requires measure-theoretic decision theory). Deriving split-count axioms algorithmically from the TreeSHAP algorithm and proving the proportionality axiom for general tree depths remain open. The generalization from $\rho > 0$ to $I(X_j; X_k) > 0$ is now complete (\texttt{MutualInformation.lean}): mutual information is the exact boundary between possible and impossible feature ranking. A reference implementation is available at \url{https://github.com/DrakeCaraker/dash-shap}.
+The Bayes-optimality half of the Design Space is proved but not in Lean (requires measure-theoretic decision theory). Deriving split-count axioms algorithmically from the TreeSHAP algorithm and proving the proportionality axiom for general tree depths remain open. The generalization from $\rho > 0$ to $I(X_j; X_k) > 0$ is now complete (\texttt{MutualInformation.lean}): mutual information is the exact boundary between possible and impossible ranking. Whether SAE features can be made reproducible via better training procedures or matching algorithms is an empirical question (Section~\ref{sec:sae}). Scaling component-level experiments beyond 124M parameters would strengthen the generality claim. A reference implementation is available at \url{https://github.com/DrakeCaraker/dash-shap}.
 
 \paragraph{Formalization as methodology.}
 Beyond certifying correctness, the Lean formalization served as a bug-finding methodology: it caught two logical inconsistencies and one type mismatch that survived informal review. We recommend formalizing impossibility theorems as a general practice.
 
-\section*{Acknowledgments}
-The Lean formalization was developed with assistance from Claude Code (Anthropic). All proofs were machine-verified by the Lean~4 type-checker; no theorem was accepted solely on the basis of AI-generated output. The paper text was written by the human authors with AI editing assistance.
+\section*{Acknowledgments and AI Disclosure}
+This work was developed jointly with Claude (Anthropic, Opus 4.6 with 1M context). The collaboration was comprehensive: theorem statements were human-directed and AI-drafted, with human review at every stage; proofs were joint human/AI work, machine-verified by the Lean~4 type-checker; experiment design, code, and analysis were collaborative; paper writing involved AI drafting with human editing and direction. All Lean theorems are verified by the type-checker regardless of origin. The GPT-2 experiments were run on AWS SageMaker (ml.g5.12xlarge, 4$\times$ A10G GPUs). No theorem was accepted solely on the basis of AI-generated output.
 
 \bibliography{references}
 
