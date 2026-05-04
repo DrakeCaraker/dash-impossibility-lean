@@ -53,7 +53,9 @@ def compute_data_pcs(model, n_samples=400, seq_len=256, target_layer=6):
     hook_output = {}
 
     def hook_fn(module, input, output):
-        hook_output["act"] = output[0].detach()
+        # output is tuple; output[0] is hidden states (batch, seq, 768)
+        out = output[0] if isinstance(output, tuple) else output
+        hook_output["act"] = out.detach()
 
     handle = model.transformer.h[target_layer].register_forward_hook(hook_fn)
 
@@ -75,17 +77,23 @@ def compute_data_pcs(model, n_samples=400, seq_len=256, target_layer=6):
         # Use random tokens (uniform over vocab) — sufficient for PCA
         print("  Using random token sequences for PCA (eval tokens not found)")
         vocab_size = 50257
-        for _ in range(n_samples):
+        for i in range(n_samples):
             toks = torch.randint(0, vocab_size, (1, seq_len), device=device)
             with torch.no_grad():
                 model(toks)
-            act = hook_output["act"].mean(dim=1).cpu().numpy()[0]
+            raw = hook_output["act"]  # (1, seq, 768)
+            act = raw.mean(dim=1).squeeze().cpu().numpy()  # (768,)
+            assert act.shape == (768,), f"Expected (768,), got {act.shape}"
             activations.append(act)
+            if i == 0:
+                print(f"  Hook output shape: {raw.shape}, activation shape: {act.shape}")
 
     handle.remove()
     print(f"  Collected {len(activations)} activation vectors")
+    print(f"  First vector shape: {np.array(activations[0]).shape}")
 
-    X = np.array(activations)  # (n_samples, 768)
+    X = np.stack(activations)  # (n_samples, 768)
+    print(f"  Stacked shape: {X.shape}")
     X_centered = X - X.mean(axis=0)
     _, S, Vt = np.linalg.svd(X_centered, full_matrices=False)
     return Vt.T, S  # pcs: (768, 768) columns; S: singular values
