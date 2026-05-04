@@ -119,7 +119,7 @@ For binary attribution questions---SHAP sign, feature selection, counterfactual 
 
 \textbf{Input-level.} On a 10{,}935-gene expression dataset, the \#1 biomarker alternates between TSPAN8 (80\% of seeds) and CEACAM5/CEA (20\%)---the drug target depends on the training seed. Under standard regularization, 45\% of German Credit applicants receive a different top explanation across equivalent models.
 
-\textbf{Component-level.} Ten GPT-2-small models trained from scratch on OpenWebText produce 32 distinct top-5 component rankings with 8 different \#1 components across seeds. Within-layer head flip rate $= 0.500$ [0.482, 0.517]---a coin flip, as predicted. The $G$-invariant projection (orbit averaging over per-layer permutation symmetry) lifts agreement from $\rho = 0.277$ to $\rho = 0.873$ (Cohen's $d = 19.2$). On the IOI circuit, raw agreement is $\rho = 0.158$ (near chance), within-layer flip $= 0.499$, and 32 distinct top-5 rankings appear---component-level rankings are a lottery. At TinyStories scale (4L/4H and 6L/8H), the $G$-invariant projection achieves $\rho > 0.97$, and all four layer-0 heads appear as \#1 across 10 seeds, realizing the full $S_4$ symmetric group. SAE individual features are non-reproducible (overcompleteness guarantees Rashomon), but the dictionary's aggregate coverage geometry IS reproducible: projecting onto model activation PCs achieves $\rho = 0.960$ (vs.\ raw $-0.002$). The resolution maps 6{,}144 seed-dependent features to ${\sim}400$ seed-invariant directional densities.
+\textbf{Component-level.} Ten GPT-2-small models trained from scratch on OpenWebText produce 32 distinct top-5 component rankings with 8 different \#1 components across seeds. Within-layer head flip rate $= 0.500$ [0.482, 0.517]---a coin flip, as predicted. The $G$-invariant projection (orbit averaging over per-layer permutation symmetry) lifts agreement from $\rho = 0.277$ to $\rho = 0.873$ (Cohen's $d = 19.2$). On the IOI circuit, raw agreement is $\rho = 0.158$ (near chance), within-layer flip $= 0.499$, and 32 distinct top-5 rankings appear---component-level rankings are a lottery. At TinyStories scale (4L/4H and 6L/8H), the $G$-invariant projection achieves $\rho > 0.97$, and all four layer-0 heads appear as \#1 across 10 seeds, realizing the full $S_4$ symmetric group. SAE individual features are non-reproducible (overcompleteness guarantees Rashomon). Coarse behavioral allocation is reproducible: projecting activation-weighted importance onto model PCs gives $\rho = 0.878$ at top-10 directions, degrading to $0.711$ at all 768 as fine-grained noise accumulates.
 
 The impossibility is quantitative: the attribution ratio diverges as $1/(1{-}\rho^2)$ for gradient boosting, is infinite for Lasso, conditional for neural networks (87\% of feature pairs unstable), and converges for random forests. The exact boundary condition is mutual information: $I(X_j; X_k) > 0$ if and only if Rashomon witnesses exist---capturing nonlinear dependencies that Pearson correlation and VIF miss. A nonparametric diagnostic (the minority fraction) identifies unstable features in seven lines of code (Spearman $0.96$ vs.\ $0.46$ for the Gaussian formula on California Housing).
 
@@ -2295,57 +2295,74 @@ Leave-one-out validation confirms: predicting a held-out seed's G-invariant impo
 \paragraph{The resolution requires group knowledge.}
 This validates the core theoretical claim: \emph{resolution quality is proportional to knowledge of the symmetry group.} Data-driven methods (PCA on importance vectors) actively fail because they identify the symmetry noise as the dominant signal. The correct resolution must use a \emph{seed-invariant basis}: for heads, average within layers; for SAE features, project onto the data's principal components.
 
-\paragraph{PC resolution: dictionary coverage geometry.}
-We test whether projecting SAE feature properties onto the principal components of model activations produces reproducible rankings. The PCs are computed from 400 random-token sequences passed through the base model's layer~6 (SAE-seed-invariant, as all SAEs share the same frozen model). For each SAE seed, we compute the \emph{per-direction coverage}: $w_j = \sum_i \text{imp}_i \cdot (d_i \cdot u_j)^2 / \|d_i\|^2$, measuring how much total decoder mass each seed allocates to each PC direction.
+\paragraph{PC resolution: what IS reproducible about SAE dictionaries?}
+We test what structure is stable across SAE seeds by projecting feature properties onto the principal components of model activations (computed from 2{,}000 random-token sequences through layer~6 of the base model, yielding all 768 PCs). Two importance metrics are tested:
+\begin{enumerate}
+  \item \textbf{L2 geometric} (decoder column norm): TopK SAEs normalize all columns to unit norm ($\|d_i\| = 1.000$), so this is constant across features. The PC projection measures \emph{directional density}---how many decoder columns point toward each PC direction. This is trivially determined by the reconstruction objective.
+  \item \textbf{Activation-weighted} (mean $|z_i|$ across 500 inputs): the standard behavioral metric measuring how often and how strongly each feature fires. This depends on the SAE encoder and is NOT trivially determined by the loss.
+\end{enumerate}
 
 \begin{table}[ht]
 \centering
-\caption{PC resolution for SAE features. Projecting decoder coverage onto model activation PCs produces $\rho = 0.960$, demonstrating that the dictionary's aggregate geometry is seed-invariant. Note: the $G$-invariant comparison (attention heads, $\rho = 0.873$) involves a harder task---10 different models vs.\ 10 SAEs on the same model---and is shown for context, not as a direct comparison.}
+\caption{PC resolution for SAE features: geometric vs.\ behavioral importance. The geometric coverage is trivially reproducible (forced by the reconstruction loss). Behavioral importance is partially reproducible---high at coarse grain (top-10 PCs: $\rho = 0.878$), degrading as finer directions are added.}
 \label{tab:pc-resolution}
 \small
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-\textbf{Method} & \textbf{Spearman $\rho$} & \textbf{Dimensions} \\
+\textbf{Metric} & \textbf{Raw $\rho$} & \textbf{PC-proj (768)} & \textbf{PC-proj (top 10)} \\
 \midrule
-Raw SAE feature ranking & $-0.002$ & 6{,}144 \\
-Hungarian matching (prior) & 0.500 & 500 \\
-$G$-invariant (attention heads, different task$^*$) & 0.873 & 24 \\
-\textbf{PC projection (SAE coverage)} & \textbf{0.960} & \textbf{400} \\
+L2 geometric (all norms $= 1.0$) & $-0.002$ & 0.977 & 0.764 \\
+Activation-weighted (behavioral) & 0.003 & 0.711 & \textbf{0.878} \\
 \midrule
-\multicolumn{3}{l}{\emph{By PC dimensionality (limited by $n_{\text{samples}} = 400$):}} \\
-\quad Top-10 PCs & 0.888 & 10 \\
-\quad Top-50 PCs & 0.811 & 50 \\
-\quad Top-100 PCs & 0.888 & 100 \\
-\quad Top-200 PCs & 0.937 & 200 \\
-\quad Top-400 PCs (all available) & 0.960 & 400 \\
+\multicolumn{4}{l}{\emph{Activation-weighted by dimensionality:}} \\
+\quad Top-10 PCs & & & 0.878 \\
+\quad Top-50 PCs & & & 0.875 \\
+\quad Top-100 PCs & & & 0.869 \\
+\quad Top-200 PCs & & & 0.836 \\
+\quad Top-768 PCs (all) & & & 0.711 \\
 \bottomrule
-\multicolumn{3}{l}{\footnotesize $^*$10 different models trained from scratch vs.\ 10 SAEs on one frozen model.}
 \end{tabular}
 \end{table}
 
-\paragraph{What is being measured.}
-TopK SAEs normalize decoder columns to unit norm during training. With $\|d_i\| \approx 1$ for all features, the ``importance'' (L2 norm) is approximately constant. The PC projection therefore measures the \emph{density of decoder directions} in each PC direction---i.e., how many features point toward each principal axis of the data. This is the dictionary's \textbf{coverage geometry}: how it allocates representational capacity across data directions. The coverage geometry is determined by the reconstruction objective (which forces the dictionary to cover all high-variance directions), not by the SAE random seed.
+\paragraph{Interpretation.}
+Three findings emerge:
 
-\paragraph{Interpretation and scope.}
-The $\rho = 0.960$ result demonstrates that SAE dictionaries trained with different seeds converge to the same aggregate coverage geometry, even though individual feature-to-direction assignments differ. This is analogous to: ``every SAE covers the same landscape, just with different hiking trails.'' The trails (individual features) are non-reproducible; the landscape (coverage per direction) is.
+\begin{enumerate}
+\item \textbf{Geometric coverage is trivially reproducible} ($\rho = 0.977$). With unit-norm decoders, the PC projection measures the density of features in each data direction. The reconstruction objective forces all SAEs to cover the same directions similarly, making this near-tautological. The high $\rho$ reflects loss-function constraints, not a deep property of the dictionary.
 
-\textbf{What this does NOT yet show:} whether \emph{activation-weighted importance} (the standard behavioral metric: how often and how strongly each feature fires on real data) is also reproducible under PC projection. The L2-norm-based coverage geometry is reproducible because the reconstruction objective forces it. Activation-weighted importance depends on the SAE encoder (not just decoder) and may have additional non-reproducible structure. This is the critical open experiment.
+\item \textbf{Behavioral importance is partially reproducible at coarse grain} ($\rho = 0.878$ at top-10 PCs). The major data directions (those explaining the most activation variance) have reproducible behavioral allocation across SAE seeds. This is genuine: the activation-weighted importance depends on the encoder, not just the decoder, and is not directly forced by the reconstruction loss. Many features contribute to each major direction, so the law of large numbers produces stable aggregates.
 
-\paragraph{Why model activation PCs work but importance PCA fails.}
+\item \textbf{Behavioral reproducibility degrades at fine grain} ($\rho = 0.711$ at all 768 PCs). Minor data directions (lower PCs) are covered by fewer features, so their aggregate activation importance is dominated by individual feature noise---the very non-reproducibility the impossibility theorem predicts. The pattern inverts with dimensionality: behavioral $\rho$ decreases from $0.878$ (top-10) to $0.711$ (all 768) as noise-dominated directions are added.
+\end{enumerate}
+
+\paragraph{The honest picture.}
+\begin{center}
+\small
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{What} & \textbf{Status} & \textbf{$\rho$} \\
+\midrule
+Individual features & Non-reproducible (impossibility) & $\approx 0$ \\
+Geometric coverage & Trivially reproducible (loss-forced) & 0.977 \\
+Coarse behavioral allocation & Reproducible (genuine signal) & 0.878 \\
+Fine behavioral allocation & Partially reproducible & 0.711 \\
+\midrule
+\emph{For comparison:} \\
+Attention heads ($G$-invariant, different task$^*$) & Reproducible & 0.873 \\
+\bottomrule
+\multicolumn{3}{l}{\footnotesize $^*$10 different models vs.\ 10 SAEs on one model---not directly comparable.}
+\end{tabular}
+\end{center}
+
+The SAE result confirms the impossibility at the feature level and reveals a nuanced resolution: coarse-grained behavioral summaries (${\sim}10$--$50$ PC directions) are genuinely reproducible, while fine-grained summaries degrade as non-reproducible directions accumulate. This parallels the attention-head resolution: layer-averaged importance (coarse) is stable at $\rho = 0.873$; per-head importance (fine) is unstable at $\rho = 0.277$. Both levels exhibit the Design Space tradeoff: granularity for stability.
+
+\paragraph{Why activation PCs work but importance PCA fails.}
 The two PCAs operate on fundamentally different data:
 \begin{itemize}
   \item \textbf{PCA on importance vectors} (across seeds): finds directions of maximum \emph{variation across seeds} $=$ the symmetry noise. Result: $\rho = -0.031$ (Section~\ref{sec:gpt2-from-scratch}).
-  \item \textbf{PCA on model activations} (across inputs): finds directions of maximum \emph{variation in the data} $=$ the structure every SAE must cover. Result: $\rho = 0.960$.
+  \item \textbf{PCA on model activations} (across inputs): finds directions of maximum \emph{variation in the data} $=$ the structure the SAE must cover. These are seed-invariant (same frozen model).
 \end{itemize}
-The first identifies what changes; the second identifies what's shared. This distinction is the empirical version of the theoretical claim: the reproducible subspace is orthogonal to the symmetry noise.
-
-\begin{itemize}
-  \item \textbf{Heads}: average importance within each layer $\to$ $L$-dimensional invariant ($L = 12$). Group: $S_{12}$ per layer (known, finite). Task: 10 different models.
-  \item \textbf{SAE features}: project onto activation PCs $\to$ ${\sim}200$--$400$-dimensional invariant$^\dagger$. Group: null-space rotations (continuous). Task: 10 SAEs on one model.
-\end{itemize}
-{\footnotesize $^\dagger$Limited by $n_{\text{samples}} = 400$; true effective dimension may be higher with more PCA samples.}
-
-Both sacrifice feature-level granularity for stability---the Design Space Theorem's faithfulness-completeness tradeoff. The PC resolution provides a candidate Reynolds operator for the dictionary's continuous symmetry group, though formal proof that it IS the Reynolds operator (rather than a fortuitously effective projection) remains open.
+The first identifies what changes; the second identifies what's shared.
 
 \subsection{Explanation Uncertainty Bound (Quantitative Bilemma)}
 \label{sec:quantitative-bilemma}
