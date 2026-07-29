@@ -39,7 +39,7 @@ Contrast:                 RandomForest.lean (bounded violations, no formal proof
 
 ```
 DASHImpossibility/
-  Defs.lean              — FeatureSpace, 6 axioms, stability/equity defs, consensus, variance from Mathlib
+  Defs.lean              — FeatureSpace, bundled axiom declarations (2 total repo-wide), stability/equity defs, consensus, variance from Mathlib
   Trilemma.lean          — RashimonProperty, attribution_impossibility, attribution_impossibility_weak
   Iterative.lean         — IterativeOptimizer abstraction
   General.lean           — GBDT instance, gbdt_impossibility, gbdtOptimizer
@@ -85,7 +85,9 @@ paper/
   figures/           — PDF figures (ratio, instability, DASH, design space, SNR calibration, conditional threshold, etc.)
 ```
 
-## Lean State: 58 files, 6 axioms, 357 theorems+lemmas, 0 sorry
+## Lean State: 59 files, 2 axiom declarations (bundled), 368 theorems+lemmas, 0 sorry
+
+Note: "6 axioms" in level descriptions below refers to the six behavioral assumptions, now bundled as fields of the 2 axiom declarations.
 
 ## Axiom Inventory (6 total)
 
@@ -161,7 +163,7 @@ make setup         # full setup for new contributors
 - Use `sorry` without a `-- TODO:` comment explaining what's needed
 - Change axioms without re-running the SymPy verification (in companion repo: `dash-shap/paper/proofs/verify_lemma6_algebra.py`)
 - Add `autoImplicit true` — all variables must be explicit
-- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print s}'` (currently 357)
+- Claim "N theorems" without verifying — count with `grep -c "^theorem\|^lemma" DASHImpossibility/*.lean | awk -F: '{s+=$2} END {print s}'` (currently 368)
 - Run parallel subagents that both modify the same file (causes build cache corruption)
 - Axiomatize quantities that can be defined — prefer definitions with axiomatized bounds (see SpearmanDef.lean pattern)
 - Claim empirical results as "proved" or "Lean-verified" — distinguish: **proved** (zero axiom deps), **derived** (from axioms), **argued** (supplement proof only), **empirical** (experiments). The paper's "Proof status transparency" paragraph is the reference.
@@ -170,7 +172,7 @@ make setup         # full setup for new contributors
 
 > **Full reference with explanations, methodology, and provenance:** See [`docs/complete-reference.md`](docs/complete-reference.md). The tables below are a quick-lookup index; the reference doc explains WHY each result matters, HOW it was validated, and WHAT it depends on.
 
-### Lean Formalization (58 files, 357 theorems, 6 axioms, 0 sorry)
+### Lean Formalization (59 files, 368 theorems+lemmas, 2 axiom declarations, 0 sorry)
 
 #### Core Impossibility (Level 0 — zero domain axioms)
 | Theorem | File | What it proves |
@@ -293,7 +295,7 @@ make setup         # full setup for new contributors
 ### Key Numbers (all verified against source)
 | Claim | Value | Source |
 |-------|-------|--------|
-| Lean theorems+lemmas | 357 | grep verification |
+| Lean theorems+lemmas | 368 | grep verification |
 | Lean axioms | 6 | grep verification |
 | Lean sorry | 0 | grep verification |
 | Lean files | 58 | ls count |
